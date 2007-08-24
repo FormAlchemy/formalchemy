@@ -22,8 +22,8 @@ class formalchemy(object):
         """ Returns column names of `model`.
 
             The following keywords can be given:
-            * `pk=True` - If set to False, it won't return primary key columns.
-            * `fk=True` - If set to False, it won't return foreign key columns.
+            * `pk=True` - If set to `False`, it won't return primary key columns.
+            * `fk=True` - If set to `False`, it won't return foreign key columns.
             * `exclude=[]` - This should be an iterable containing column names to exclude.
         """
 
@@ -50,8 +50,8 @@ class formalchemy(object):
         """ Returns a list of columns that should be readonly.
 
             The following keywords can be given:
-            * `readonly_pk=False` - This will prohibits changes to primary key columns if set to True.
-            * `readonly_fk=False` - This will prohibits changes to foreign key columns if set to True.
+            * `readonly_pk=False` - This will prohibit changes to primary key columns if set to `True`.
+            * `readonly_fk=False` - This will prohibit changes to foreign key columns if set to `True`.
             * `readonly=[]` - This should be an iterable containing column names to set as readonly.
         """
 

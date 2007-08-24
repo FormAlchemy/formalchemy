@@ -1,5 +1,5 @@
 from distutils.core import setup
-setup(name='formalchemy',
+setup(name='FormAlchemy',
       license='MIT License',
       version='0.1',
       description='Auto-generated, customizable HTML input forms for your SQLAlchemy mapped classes',
