@@ -1,4 +1,4 @@
-# Copyright (C) 2007 Alexandre Conrad, aconard(dot.)tlv(at@)go2france(dot.)com
+# Copyright (C) 2007 Alexandre Conrad, aconrad(dot.)tlv(at@)magic(dot.)fr
 #
 # This module is part of FormAlchemy and is released under
 # the MIT License: http://www.opensource.org/licenses/mit-license.php
