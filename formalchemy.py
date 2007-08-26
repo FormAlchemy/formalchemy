@@ -9,22 +9,109 @@ from sqlalchemy.types import Boolean, DateTime, Date, Time
 __all__ = ["formalchemy"]
 __version__ = "0.1"
 
-class formalchemy(object):
-    """A class taking a SQLAlchemy mapped class as argument. This tool
-       generates HTML forms from SQLAlchemy models."""
+INDENTATION = "  "
 
-    INDENTATION = "  "
+def prettify(text):
+    return text.replace("_", " ").capitalize()
+
+def wrap(start, text, end):
+    return "\n".join([start, indent(text), end])
+
+def indent(text):
+    return "\n".join([INDENTATION + line for line in text.splitlines()])
+
+class formalchemy(object):
+    """The `Formalchemy` class.
+
+    This is the class responsible for generating HTML form fields. It needs
+    to be instantiate with a SQLAlchemy mapped class as argument. The
+    SQLAlchemy mapped class is held under `model`.
+
+    The one method to use is `make_fields`. This is the method that returns
+    generated HTML code from the `model` object.
+
+    FormAlchemy has some default behaviour set. It is configured to generate
+    the most HTML possible that will reflect the `model` object. Although,
+    you can configure FormAlchemy to behave differently, thus altering the
+    generated HTML output by many ways:
+
+      * By passing keyword options to the `make_fields` method:
+
+        make_fields(pk=False, fk=False, exclude=["private_column"])
+
+      These options are NOT persistant. You'll need to pass these options
+      everytime you call `make_fields` or FormAlchemy will fallback to it's
+      default behaviour. Passing keyword options is usually meant to alter
+      the HTML output on the fly.
+
+      * At the SQLAlchemy mapped class level, by creating a `FormAlchemy`
+      subclass, it is possible to setup attributes which names and values
+      correspond to the keyword options passed to `make_fields`:
+
+        class MyClass(object):
+            class FormAlchemy:
+                pk = False
+                fk = False
+                exclude = ["private_column"]
+
+      These attributes are persistant and will be used as FormAlchemy's
+      default behaviour.
+
+      * By passing the keyword options to FormAlchemy's `configure` method.
+      These options are persistant. and will be used as FormAlchemy's default
+      behaviour.
+
+        configure(pk=False, fk=False, exclude=["private_column"])
+
+    Note: In any case, options set at the SQLAlchemy mapped class level or
+    via the `configure` method will be overridden if these same keyword
+    options are passed to `make_fields`.
+
+    """
 
     def __init__(self, model):
+        """Construct the `Formalchemy` class.
+
+        Arguments are:
+
+          `model`
+            An SQLAlchemy mapped class. This is the reference class.
+
+        """
         self.model = model
 
-    def get_cols(self, **kwargs):
-        """ Returns column names of `model`.
+        # Configure class level options.
+        if hasattr(self.model, "FormAlchemy"):
+            self.options = dict([(k, v) for k, v in self.model.FormAlchemy.__dict__.items() if not k.startswith('_')])
 
-            The following keywords can be given:
-            * `pk=True` - If set to `False`, it won't return primary key columns.
-            * `fk=True` - If set to `False`, it won't return foreign key columns.
-            * `exclude=[]` - This should be an iterable containing column names to exclude.
+    def configure(self, **options):
+        """Configure FormAlchemy's default behaviour.
+
+        This will update FormAlchemy's default behaviour with the given
+        keyword options. Any other previously set options will be kept intact.
+
+        """
+        self.options.update(options)
+
+    def reconfigure(self, **options):
+        """Reconfigure FormAlchemy's default behaviour from scratch.
+
+        This will clear any previously set option and update FormAlchemy's
+        default behaviour with the given keyword options.
+
+        """
+
+        self.options.clear()
+        self.configure(**options)
+
+    def get_cols(self, **kwargs):
+        """Return column names of `self.model`.
+
+        Keywords arguments:
+        * `pk=True` - Won't return primary key columns if set to `False`.
+        * `fk=True` - Won't return foreign key columns if set to `False`.
+        * `exclude=[]` - An iterable containing column names to exclude.
+
         """
 
         exclude = kwargs.get("exclude", [])
@@ -47,12 +134,13 @@ class formalchemy(object):
         return columns
 
     def get_readonlys(self, **kwargs):
-        """ Returns a list of columns that should be readonly.
+        """Return a list of columns that should be readonly.
 
-            The following keywords can be given:
-            * `readonly_pk=False` - This will prohibit changes to primary key columns if set to `True`.
-            * `readonly_fk=False` - This will prohibit changes to foreign key columns if set to `True`.
-            * `readonly=[]` - This should be an iterable containing column names to set as readonly.
+        Keywords arguments:
+        * `readonly_pk=False` - Will prohibit changes to primary key columns if set to `True`.
+        * `readonly_fk=False` - Will prohibit changes to foreign key columns if set to `True`.
+        * `readonly=[]` - An iterable containing column names to set as readonly.
+
         """
 
         readonlys = kwargs.get("readonly", [])
@@ -74,66 +162,65 @@ class formalchemy(object):
         return columns
 
     def get_unnulls(self):
-        """ Returns a list of non-nullable columns. """
+        """Return a list of non-nullable columns."""
         return [col for col in self.model.c.keys() if not self.model.c[col].nullable]
 
     def get_bools(self):
-        """ Returns a list of Boolean columns. """
+        """Return a list of Boolean columns."""
         return [col for col in self.model.c.keys() if isinstance(self.model.c[col].type, Boolean)]
 
     def get_datetimes(self):
-        """ Returns a list of DateTime columns. """
+        """Return a list of DateTime columns."""
         return [col for col in self.model.c.keys() if isinstance(self.model.c[col].type, DateTime)]
 
     def get_dates(self):
-        """ Returns a list of Date columns. """
+        """Return a list of Date columns."""
         return [col for col in self.model.c.keys() if isinstance(self.model.c[col].type, Date)]
 
     def get_times(self):
-        """ Returns a list of Time columns. """
+        """Return a list of Time columns."""
         return [col for col in self.model.c.keys() if isinstance(self.model.c[col].type, Time)]
 
     def get_pks(self):
-        """ Returns a list of primary key columns. """
+        """Return a list of primary key columns."""
         return [col for col in self.model.c.keys() if self.model.c[col].primary_key]
 
     def get_fks(self):
-        """ Returns a list of foreign key columns. """
+        """Return a list of foreign key columns."""
         return [col for col in self.model.c.keys() if self.model.c[col].foreign_key]
 
     def get_default(self, col):
-        """ Returns column `col`'s default or None. """
+        """Return column `col`'s default value or None."""
         if self.model.c[col].default:
             return self.model.c[col].default.arg
         return None
 
     def get_value(self, col):
-        """ Returns column `col`'s current value. """
+        """Return column `col`'s current value."""
         return 
 
     def make_fields(self, **options):
-        """ Returns HTML fields generated from an SQLAlchemy model.
+        """Return HTML fields generated from the SQLAlchemy `self.model`.
 
-            The following keywords can be given:
-            * `password=[]` - An iterable of column names that should be set as password fields.
-            * `hidden=[]` - An iterable of column names that should be set as hidden fields.
-            * `fileobj=[]` - An iterable of column names that should be set as file fields.
-            * `dropdown={}` - A dict holding column names as keys, dicts as values. These dicts can contain 4 keys:
-              1) `opts`: holds either:
-                - an iterable of option names: `["small", "medium", "large"]`. Options will have the same name and value.
-                - an iterable of option paired name/value: `[("small", "$0.99"), ("medium", "$1.29"), ("large", "$1.59")]`.
-                - a dict where dict keys are option names and dict values are option values: `{"small":"$0.99", "medium":"$1.29", "large":"$1.59"}`.
-              2) `selected=None`: a string or a container of strings (when multiple select) that will set the "selected" HTML tag to items that match the value.
-              3) `multiple=None`: set the HTML tag "multiple" if it holds a non-zero value.
-              4) `size=None`: an integer that will set the size of the menu. Browsers should change the menu from a dropdown to a listing.
-
+        Keywords arguments:
+        * `password=[]` - An iterable of column names that should be set as password fields.
+        * `hidden=[]` - An iterable of column names that should be set as hidden fields.
+        * `fileobj=[]` - An iterable of column names that should be set as file fields.
+        * `dropdown={}` - A dict holding column names as keys, dicts as values. These dicts can contain 4 keys:
+          1) `opts`: holds either:
+            - an iterable of option names: `["small", "medium", "large"]`. Options will have the same name and value.
+            - an iterable of paired option name/value: `[("small", "$0.99"), ("medium", "$1.29"), ("large", "$1.59")]`.
+            - a dict where dict keys are option names and dict values are option values: `{"small":"$0.99", "medium":"$1.29", "large":"$1.59"}`.
+          2) `selected=None`: a string or a container of strings (when multiple select) that will set the "selected" HTML tag to items that match the value.
+          3) `multiple=None`: set the HTML tag "multiple" if it holds a non-zero value.
+          4) `size=None`: an integer that will set the size of the menu. Browsers usually change the menu from a dropdown to a listing.
 
 {"meal":
     {"opts":[("Hamburger", "HB"),
              ("Cheeseburger", "CB"),
              ("Bacon Burger", "BB"),
              ("Roquefort Burger", "RB"),
-             ("Pasta Burger", "RB"),
+             ("Pasta Burger", "PB"),
              ("Veggie Burger", "VB")],
      "selected":["CB", "BB"],    ## Or just "CB"
      "multiple":True,
@@ -141,19 +228,28 @@ class formalchemy(object):
     }
 }
 
-            * `radio={}` - A dict holding column names as keys and an iterable as values. The iterable can hold:
-              - input names: `["small", "medium", "large"]`. Inputs will have the same name and value.
-              - paired name/value: `[("small", "$0.99"), ("medium", "$1.29"), ("large", "$1.59")]`.
-              - a dict where dict keys are input names and dict values are input values: `{"small":"$0.99", "medium":"$1.29", "large":"$1.59"}`.
-            * `errors={}` - Should be a dict holding the column name as the key and the error message as the value.
-            * `docs={}` - Should be a dict holding the column name as the key and the help message as the value.
-            * `cls_req="field_req"` - Sets the desired HTML class name for columns that are not nullable.
-            * `cls_opt="field_opt"` - Same for nullable columns.
-            * `cls_err=field_err` - Sets the class for error information text.
-            * `cls_doc="field_doc"` - Sets the class for documentation text.
+        * `radio={}` - A dict holding column names as keys and an iterable as values. The iterable can hold:
+          - input names: `["small", "medium", "large"]`. Inputs will have the same name and value.
+          - paired name/value: `[("small", "$0.99"), ("medium", "$1.29"), ("large", "$1.59")]`.
+          - a dict where dict keys are input names and dict values are input values: `{"small":"$0.99", "medium":"$1.29", "large":"$1.59"}`.
 
-            It also takes the same keywords as `get_readonlys`.
+        * `prettify` - A function through which all label names will go. Defaults to: `"my_label".replace("_", " ").capitalize()`
+        * `alias={}` - A dict holding the field name as the key and the alias name as the value. Note that aliases are beeing `prettify`ed as well.
+        * `error={}` - A dict holding the field name as the key and the error message as the value.
+        * `doc={}` - A dict holding the field name as the key and the help message as the value.
+        * `cls_req="field_req"` - Sets the HTML class for fields that are not nullable (required).
+        * `cls_opt="field_opt"` - Sets the HTML class for fields that are nullable (optional).
+        * `cls_err=field_err` - Sets the HTML class for error messages.
+        * `cls_doc="field_doc"` - Sets the HTML class for help messages.
+
+        It also takes the same keywords as `get_readonlys`.
+
         """
+
+        # Merge class level options with argument level options.
+        default_opts = self.options.copy()
+        default_opts.update(**options)
+        options = default_opts
 
         # Categorize columns
         columns = self.get_cols(**options)
@@ -169,8 +265,11 @@ class formalchemy(object):
         radios = options.get('radio', {})
         fileobj = options.get('file', [])
 
-        errors = options.get('errors', {})
-        docs = options.get('docs', {})
+        pretty_func = options.get('prettify', prettify)
+        aliases = options.get('alias', {})
+
+        errors = options.get('error', {})
+        docs = options.get('doc', {})
 
         # Setup HTML class
 #        class_label = options.get('cls_lab', 'form_label')
@@ -195,7 +294,7 @@ class formalchemy(object):
 
             params = {}
             params['name'] = col
-            params['display'] = params['name'].replace("_", " ").capitalize()
+            params['display'] = pretty_func(aliases.get(col) or params['name'])
             params['labelfor'] = params['name']
             if col in unnullables:
                 params['class'] = class_required
@@ -261,14 +360,8 @@ class formalchemy(object):
                 field += "\n" + h.content_tag("span", content=docs[col], class_=class_doc)
 
             # Wrap the whole thing into a div
-            field = self.wrap("<div>", field, "</div>")
+            field = wrap("<div>", field, "</div>")
 
             html.append(field)
 
         return "\n".join(html)
-
-    def wrap(self, start, txt, end):
-        return "\n".join([start, self.indent(txt), end])
-
-    def indent(self, txt):
-        return "\n".join([self.INDENTATION + i for i in txt.splitlines()])
