@@ -4,15 +4,18 @@
 # the MIT License: http://www.opensource.org/licenses/mit-license.php
 
 import webhelpers as h
-from sqlalchemy.types import Boolean, DateTime, Date, Time
+from sqlalchemy.types import Boolean, DateTime, Date, Integer, String, Time, Unicode
 
 __all__ = ["formalchemy"]
 __version__ = "0.1"
 
-INDENTATION = "  "
+# FIXME 
+# implement FieldMaker
+# implement SelectField
+# implement DropDownField
+# Don't iterrate so much over the model to find out what the column types are.
 
-def prettify(text):
-    return text.replace("_", " ").capitalize()
+INDENTATION = "  "
 
 def wrap(start, text, end):
     return "\n".join([start, indent(text), end])
@@ -83,6 +86,8 @@ class formalchemy(object):
         # Configure class level options.
         if hasattr(self.model, "FormAlchemy"):
             self.options = dict([(k, v) for k, v in self.model.FormAlchemy.__dict__.items() if not k.startswith('_')])
+        else:
+            self.options = dict()
 
     def configure(self, **options):
         """Configure FormAlchemy's default behaviour.
@@ -123,6 +128,7 @@ class formalchemy(object):
         columns = []
 
         for col in self.model.c.keys():
+#            print col, self.model.c[col].type, "#" * 100
             if col in exclude:
                 continue
             if col in pkcols and not pk:
@@ -161,6 +167,18 @@ class formalchemy(object):
 
         return columns
 
+    def get_strings(self):
+        """Return a list of String columns."""
+        return [col for col in self.model.c.keys() if isinstance(self.model.c[col].type, String)]
+
+    def get_unicodes(self):
+        """Return a list of Unicode columns."""
+        return [col for col in self.model.c.keys() if isinstance(self.model.c[col].type, Unicode)]
+
+    def get_integers(self):
+        """Return a list of Integer columns."""
+        return [col for col in self.model.c.keys() if isinstance(self.model.c[col].type, Integer)]
+
     def get_unnulls(self):
         """Return a list of non-nullable columns."""
         return [col for col in self.model.c.keys() if not self.model.c[col].nullable]
@@ -194,10 +212,6 @@ class formalchemy(object):
         if self.model.c[col].default:
             return self.model.c[col].default.arg
         return None
-
-    def get_value(self, col):
-        """Return column `col`'s current value."""
-        return 
 
     def make_fields(self, **options):
         """Return HTML fields generated from the SQLAlchemy `self.model`.
@@ -254,6 +268,9 @@ class formalchemy(object):
         # Categorize columns
         columns = self.get_cols(**options)
         readonlys = self.get_readonlys(**options)
+        strings = self.get_strings()
+        unicodes = self.get_unicodes()
+        integers = self.get_integers()
         unnullables = self.get_unnulls()
         booleans = self.get_bools()
         datetimes = self.get_datetimes()
@@ -265,7 +282,7 @@ class formalchemy(object):
         radios = options.get('radio', {})
         fileobj = options.get('file', [])
 
-        pretty_func = options.get('prettify', prettify)
+        pretty_func = options.get('prettify')
         aliases = options.get('alias', {})
 
         errors = options.get('error', {})
@@ -288,25 +305,22 @@ class formalchemy(object):
 
             # Process hidden fields first.
             if col in hiddens:
-                field = h.hidden_field(col, value=getattr(self.model, col))
-                html.append(field)
+                html.append(str(HiddenField(self.model, col)))
                 continue
 
-            params = {}
-            params['name'] = col
-            params['display'] = pretty_func(aliases.get(col) or params['name'])
-            params['labelfor'] = params['name']
-            if col in unnullables:
-                params['class'] = class_required
-            else:
-                params['class'] = class_optional
-
             # Make the label
-            field = h.content_tag("label", content=params['display'], for_=params['labelfor'], class_=params['class'])
+            label = Label(self.model, col)
+            if callable(pretty_func):
+                label.set_prettify(pretty_func)
+            if col in unnullables:
+                label.set_class(class_required)
+            else:
+                label.set_class(class_optional)
+            field = str(label)
 
             # Make the input
             if col in fileobj:
-                field += "\n" + h.file_field(col)
+                field += "\n" + str(FileField(self.model, col))
 
             elif col in dropdowns:
                 col_dict = dropdowns[col]
@@ -337,20 +351,28 @@ class formalchemy(object):
                 field += "<br/>".join(radiofields)
 
             elif col in booleans:
-                value = getattr(self.model, col)
-                if value is None:
-                    field += "\n" + h.check_box(col, default, checked=default)
-                else:
-                    field += "\n" + h.check_box(col, value, checked=value)
+                field += "\n" + str(BooleanField(self.model, col))
 
-            elif hasattr(self.model.c[col].type, "length"):
+            elif col in strings + unicodes:
                 if col in passwords:
-                    field += "\n" + h.password_field(col, value=getattr(self.model, col), maxlength=self.model.c[col].type.length, readonly=col in readonlys)
+                    field += "\n" + str(PasswordField(self.model, col, readonly=col in readonlys))
                 else:
-                    field += "\n" + h.text_field(col, value=getattr(self.model, col), maxlength=self.model.c[col].type.length, readonly=col in readonlys)
+                    field += "\n" + str(TextField(self.model, col))
+
+            elif col in datetimes:
+                field += "\n" + str(DateTimeField(self.model, col))
+
+            elif col in dates:
+                field += "\n" + str(DateField(self.model, col))
+
+            elif col in times:
+                field += "\n" + str(TimeField(self.model, col))
+
+            elif col in integers:
+                field += "\n" + str(IntegerField(self.model, col))
 
             else:
-                field += "\n" + h.text_field(col, value=getattr(self.model, col), readonly=col in readonlys)
+                field += "\n" + str(Field(self.model, col))
 
             # Make the error
             if col in errors:
@@ -365,3 +387,182 @@ class formalchemy(object):
             html.append(field)
 
         return "\n".join(html)
+
+
+class FieldMaker(object):
+    """The `FieldMaker` class.
+
+    The `FieldMaker` class is responsible for generating the appropriate HTML
+    code given a `Field` object.
+
+    The generated HTML returned contains <label> and <input> tags.
+
+    """
+
+    html = ""
+
+    def set_alias(self, alias):
+        self.alias = alias
+
+    def set_error(self, error):
+        self.error = error
+
+    def set_doc(self, doc):
+        self.doc = doc
+
+    def set_cls_req(self, cls_req):
+        self.cls_req = cls_req
+
+    def set_cls_opt(self, cls_opt):
+        self.cls_opt = cls_opt
+
+    def set_cls_err(self, cls_err):
+        self.cls_err = cls_err
+
+    def set_cls_doc(self, cls_doc):
+        self.cls_doc = cls_doc
+
+class Label(object):
+    """The `Label` class."""
+
+    name = None
+    cls = None
+    alias = None
+
+    def __init__(self, model, col):
+        self.name = col
+
+    def set_class(self, cls):
+        self.cls = cls
+
+    def set_prettify(self, func):
+        self.prettify = func
+
+    def set_alias(self, alias):
+        self.alias = alias
+
+    def prettify(self, text):
+        return text.replace("_", " ").capitalize()
+
+    def get_display(self):
+        if callable(self.prettify):
+            return self.prettify(self.alias or self.name)
+        return self.alias or self.name
+
+    def __str__(self):
+        return h.content_tag("label", content=self.get_display(), for_=self.name, class_=self.cls)
+
+class Field(object):
+    """The `Field` class. This is the base class for all fields objects."""
+
+    name = None
+    value = None
+    default = None
+    cls = None
+    readonly = None
+
+    def __init__(self, model, col, readonly=False):
+        self.set_name(col)
+        self.set_value(getattr(model, col))
+        if model.c[col].default:
+            self.set_default(model.c[col].default.arg)
+        self.set_readonly(readonly)
+
+    def set_name(self, name):
+        self.name = name
+
+    def set_value(self, value):
+        self.value = value
+
+    def set_default(self, default_value):
+        self.default = default_value
+
+    def set_class(self, cls):
+        self.cls = cls
+
+    def set_readonly(self, value):
+        self.readonly = value
+
+    def get_value(self):
+        if self.value is not None:
+            return self.value
+        else:
+            return self.default
+
+#    def __str__(self):
+#        return h.text_field(self.name, value=self.get_value(), readonly=self.readonly)
+
+class TextField(Field):
+    """The `TextField` class."""
+
+    length = None
+
+    def __init__(self, model, col, readonly=None):
+        super(TextField, self).__init__(model, col, readonly=readonly)
+        self.set_length(model.c[col].type.length)
+
+    def set_length(self, length):
+        self.length = length
+
+    def __str__(self):
+        return h.text_field(self.name, value=self.get_value(), maxlength=self.length, readonly=self.readonly)
+
+class PasswordField(TextField):
+    """The `PasswordField` class."""
+
+    def __init__(self, model, col, readonly=None):
+        super(PasswordField, self).__init__(model, col, readonly=readonly)
+
+    def __str__(self):
+        return h.password_field(self.name, value=self.get_value(), maxlength=self.length, readonly=self.readonly)
+
+class HiddenField(Field):
+    """The `HiddenField` class."""
+
+    def __init__(self, model, col):
+        super(HiddenField, self).__init__(model, col)
+
+    def __str__(self):
+        return h.hidden_field(self.name, value=self.get_value())
+
+class BooleanField(Field):
+    """The `BooleanField` class."""
+
+    def __init__(self, model, col):
+        super(BooleanField, self).__init__(model, col)
+
+    def __str__(self):
+        return h.check_box(self.name, self.get_value(), checked=self.get_value(), readonly=self.readonly)
+
+class FileField(Field):
+    """The `FileField` class."""
+
+    def __init__(self, model, col):
+        super(FileField, self).__init__(model, col)
+
+    def __str__(self):
+        return h.file_field(self.name, self.get_value(), readonly=self.readonly)
+
+class IntegerField(Field):
+    def __str__(self):
+        return h.text_field(self.name, value=self.get_value(), readonly=self.readonly)
+
+class DateTimeField(Field):
+    def __str__(self):
+        return h.text_field(self.name, value=self.get_value(), readonly=self.readonly)
+
+
+class DateField(Field):
+    def __str__(self):
+        return h.text_field(self.name, value=self.get_value(), readonly=self.readonly)
+
+
+class TimeField(Field):
+    def __str__(self):
+        return h.text_field(self.name, value=self.get_value(), readonly=self.readonly)
+
+class SelectField(Field):
+    pass
+
+class DropDownField(Field):
+    pass
