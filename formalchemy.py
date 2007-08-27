@@ -4,7 +4,7 @@
 # the MIT License: http://www.opensource.org/licenses/mit-license.php
 
 import webhelpers as h
-from sqlalchemy.types import Boolean, DateTime, Date, Integer, String, Time, Unicode
+from sqlalchemy.types import Binary, Boolean, Date, DateTime, Integer, Numeric, String, Time
 
 __all__ = ["formalchemy"]
 __version__ = "0.1"
@@ -167,37 +167,41 @@ class formalchemy(object):
 
         return columns
 
-    def get_strings(self):
-        """Return a list of String columns."""
-        return [col for col in self.model.c.keys() if isinstance(self.model.c[col].type, String)]
+    def get_binaries(self):
+        """Return a list of Binary type columns."""
+        return [col for col in self.model.c.keys() if isinstance(self.model.c[col].type, Binary)]
 
-    def get_unicodes(self):
-        """Return a list of Unicode columns."""
-        return [col for col in self.model.c.keys() if isinstance(self.model.c[col].type, Unicode)]
-
-    def get_integers(self):
-        """Return a list of Integer columns."""
-        return [col for col in self.model.c.keys() if isinstance(self.model.c[col].type, Integer)]
-
-    def get_unnulls(self):
-        """Return a list of non-nullable columns."""
-        return [col for col in self.model.c.keys() if not self.model.c[col].nullable]
-
-    def get_bools(self):
-        """Return a list of Boolean columns."""
+    def get_booleans(self):
+        """Return a list of Boolean type columns."""
         return [col for col in self.model.c.keys() if isinstance(self.model.c[col].type, Boolean)]
 
-    def get_datetimes(self):
-        """Return a list of DateTime columns."""
-        return [col for col in self.model.c.keys() if isinstance(self.model.c[col].type, DateTime)]
-
     def get_dates(self):
-        """Return a list of Date columns."""
+        """Return a list of Date type columns."""
         return [col for col in self.model.c.keys() if isinstance(self.model.c[col].type, Date)]
 
+    def get_datetimes(self):
+        """Return a list of DateTime type columns."""
+        return [col for col in self.model.c.keys() if isinstance(self.model.c[col].type, DateTime)]
+
+    def get_integers(self):
+        """Return a list of Integer type columns."""
+        return [col for col in self.model.c.keys() if isinstance(self.model.c[col].type, Integer)]
+
+    def get_numerics(self):
+        """Return a list of Numeric type columns."""
+        return [col for col in self.model.c.keys() if isinstance(self.model.c[col].type, Numeric)]
+
+    def get_strings(self):
+        """Return a list of String type columns."""
+        return [col for col in self.model.c.keys() if isinstance(self.model.c[col].type, String)]
+
     def get_times(self):
-        """Return a list of Time columns."""
+        """Return a list of Time type columns."""
         return [col for col in self.model.c.keys() if isinstance(self.model.c[col].type, Time)]
+
+    def get_unnullables(self):
+        """Return a list of non-nullable columns."""
+        return [col for col in self.model.c.keys() if not self.model.c[col].nullable]
 
     def get_pks(self):
         """Return a list of primary key columns."""
@@ -219,7 +223,6 @@ class formalchemy(object):
         Keywords arguments:
         * `password=[]` - An iterable of column names that should be set as password fields.
         * `hidden=[]` - An iterable of column names that should be set as hidden fields.
-        * `fileobj=[]` - An iterable of column names that should be set as file fields.
         * `dropdown={}` - A dict holding column names as keys, dicts as values. These dicts can contain 4 keys:
           1) `opts`: holds either:
             - an iterable of option names: `["small", "medium", "large"]`. Options will have the same name and value.
@@ -268,19 +271,22 @@ class formalchemy(object):
         # Categorize columns
         columns = self.get_cols(**options)
         readonlys = self.get_readonlys(**options)
-        strings = self.get_strings()
-        unicodes = self.get_unicodes()
-        integers = self.get_integers()
-        unnullables = self.get_unnulls()
-        booleans = self.get_bools()
-        datetimes = self.get_datetimes()
+        unnullables = self.get_unnullables()
+
+        # By type
+        binaries = self.get_binaries()
+        booleans = self.get_booleans()
         dates = self.get_dates()
+        datetimes = self.get_datetimes()
+        integers = self.get_integers()
+        numerics = self.get_numerics()
+        strings = self.get_strings()
         times = self.get_times()
+
         passwords = options.get('password', [])
         hiddens = options.get('hidden', [])
         dropdowns = options.get('dropdown', {})
         radios = options.get('radio', {})
-        fileobj = options.get('file', [])
 
         pretty_func = options.get('prettify')
         aliases = options.get('alias', {})
@@ -319,7 +325,7 @@ class formalchemy(object):
             field = str(label)
 
             # Make the input
-            if col in fileobj:
+            if col in binaries:
                 field += "\n" + str(FileField(self.model, col))
 
             elif col in dropdowns:
@@ -353,7 +359,7 @@ class formalchemy(object):
             elif col in booleans:
                 field += "\n" + str(BooleanField(self.model, col))
 
-            elif col in strings + unicodes:
+            elif col in strings:
                 if col in passwords:
                     field += "\n" + str(PasswordField(self.model, col, readonly=col in readonlys))
                 else:
