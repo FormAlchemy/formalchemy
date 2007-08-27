@@ -550,25 +550,35 @@ class FileField(Field):
         return h.file_field(self.name, self.get_value(), readonly=self.readonly)
 
 class IntegerField(Field):
+    """The `IntegerField` class."""
+
     def __str__(self):
         return h.text_field(self.name, value=self.get_value(), readonly=self.readonly)
 
 class DateTimeField(Field):
+    """The `DateTimeField` class."""
+
     def __str__(self):
         return h.text_field(self.name, value=self.get_value(), readonly=self.readonly)
 
 
 class DateField(Field):
+    """The `DateField` class."""
+
     def __str__(self):
         return h.text_field(self.name, value=self.get_value(), readonly=self.readonly)
 
 
 class TimeField(Field):
+    """The `TimeField` class."""
+
     def __str__(self):
         return h.text_field(self.name, value=self.get_value(), readonly=self.readonly)
 
 class SelectField(Field):
+    """The `SelectField` class."""
     pass
 
 class DropDownField(Field):
+    """The `DropDownField` class."""
     pass
