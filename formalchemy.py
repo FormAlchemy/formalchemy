@@ -4,7 +4,8 @@
 # the MIT License: http://www.opensource.org/licenses/mit-license.php
 
 import webhelpers as h
-from sqlalchemy.types import Binary, Boolean, Date, DateTime, Integer, NullType, Numeric, String, Time
+#from sqlalchemy.types import Binary, Boolean, Date, DateTime, Integer, NullType, Numeric, String, Time
+from sqlalchemy.types import Binary, Boolean, Date, DateTime, Integer, Numeric, String, Time
 
 __all__ = ["FieldSet", "FieldMaker", "Label", "Field", "TextField",
     "PasswordField", "HiddenField", "BooleanField", "FileField",
@@ -14,6 +15,7 @@ __version__ = "0.1"
 
 # FIXME
 # implement FieldMaker
+# better NullType detection
 
 INDENTATION = "  "
 
@@ -123,7 +125,7 @@ class FieldSet(object):
           * `Date=[]` - a list of Date column names.
           * `DateTime=[]` - a list of DateTime column names.
           * `Integer=[]` - a list of Integer column names.
-          * `NullType=[]` - a list of NullType column names.
+          * `NullType=[]` - a list of NullType column names. # NOT AVAILABLE RIGHT NOW
           * `Numeric=[]` - a list of Numeric column names.
           * `String=[]` - a list of String column names.
           * `Time=[]` - a list of Time column names.
@@ -135,7 +137,8 @@ class FieldSet(object):
         # built directly off of a TypeEngine?
         # Although, this should handle custum types built from one of those.
 
-        col_types = dict.fromkeys([t for t in [Binary, Boolean, Date, DateTime, Integer, NullType, Numeric, String, Time]], [])
+#        col_types = dict.fromkeys([t for t in [Binary, Boolean, Date, DateTime, Integer, NullType, Numeric, String, Time]], [])
+        col_types = dict.fromkeys([t for t in [Binary, Boolean, Date, DateTime, Integer, Numeric, String, Time]], [])
 
         for t in col_types:
             col_types[t] = [col.name for col in self.model.c if isinstance(col.type, t)]
@@ -212,7 +215,7 @@ class FieldSet(object):
           * "date"
           * "datetime"
           * "integer"
-          * "nulltype"
+          * "nulltype" # NOT AVAILABLE RIGHT NOW
           * "numeric"
           * "string"
           * "time"
@@ -225,7 +228,7 @@ class FieldSet(object):
             "date":Date,
             "datetime":DateTime,
             "integer":Integer,
-            "nulltype":NullType,
+#            "nulltype":NullType,
             "numeric":Numeric,
             "string":String,
             "time":Time,
