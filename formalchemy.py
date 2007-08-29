@@ -14,8 +14,6 @@ __version__ = "0.1"
 
 # FIXME
 # implement FieldMaker
-# implement SelectField
-# Don't iterrate so much over the model to find out what the column types are.
 
 INDENTATION = "  "
 
@@ -258,9 +256,8 @@ class FieldSet(object):
             - an iterable of paired option name/value: `[("small", "$0.99"), ("medium", "$1.29"), ("large", "$1.59")]`.
             - a dict where dict keys are option names and dict values are option values: `{"small":"$0.99", "medium":"$1.29", "large":"$1.59"}`.
             The `selected` key can also be set:
-            `selected=value`: a string or a container of strings (when multiple selected values) that will set the "selected" HTML tag to matching value options. It defaults to the SQLAlchemy mapped class's current value (if not None) or column default.
-          3) `multiple=None`: set the HTML tag "multiple" if it holds a non-zero value.
-          4) `size=None`: an integer that will set the size of the menu. Browsers usually change the menu from a dropdown to a listing.
+            `selected=value`: a string or a container of strings (when multiple values are selected) that will set the "selected" HTML tag to matching value options. It defaults to the SQLAlchemy mapped class's current value (if not None) or column default.
+            Other keys can be given to be passed as standard HTML attributes, like multiple=<bool>, size=<integer> and so on.
 
 {"meal":
     {"opts":[("Hamburger", "HB"),
