@@ -247,12 +247,6 @@ class FieldSet(object):
         """Return a list of foreign key column names."""
         return [col for col in self.model.c.keys() if self.model.c[col].foreign_key]
 
-    def get_default(self, col):
-        """Return column `col`'s default value or None."""
-        if self.model.c[col].default:
-            return self.model.c[col].default.arg
-        return None
-
     def make_fields(self, **options):
         """Return HTML fields generated from the SQLAlchemy `self.model`.
 
@@ -264,7 +258,7 @@ class FieldSet(object):
             - an iterable of paired option name/value: `[("small", "$0.99"), ("medium", "$1.29"), ("large", "$1.59")]`.
             - a dict where dict keys are option names and dict values are option values: `{"small":"$0.99", "medium":"$1.29", "large":"$1.59"}`.
             The `selected` key can also be set:
-            `selected=value`: a string or a container of strings (when multiple select) that will set the "selected" HTML tag to items that match the value. This defaults to the SQLAlchemy mapped class's current value (if not None) or column default.
+            `selected=value`: a string or a container of strings (when multiple selected values) that will set the "selected" HTML tag to matching value options. It defaults to the SQLAlchemy mapped class's current value (if not None) or column default.
           3) `multiple=None`: set the HTML tag "multiple" if it holds a non-zero value.
           4) `size=None`: an integer that will set the size of the menu. Browsers usually change the menu from a dropdown to a listing.
 
@@ -331,9 +325,6 @@ class FieldSet(object):
 
         # Generate fields.
         for col in columns:
-
-            # Get column's default value.
-            default = self.get_default(col)
 
             # Process hidden fields first as they don't need a `Label`.
             if col in hiddens:
