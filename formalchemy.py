@@ -30,7 +30,7 @@ class FieldSet(object):
     to be instantiate with a SQLAlchemy mapped class as argument. The
     SQLAlchemy mapped class is held as `model`.
 
-    The one method to use is `make_fields`. This is the method that returns
+    The one method to use is `render`. This is the method that returns
     generated HTML code from the `model` object.
 
     FormAlchemy has some default behaviour set. It is configured to generate
@@ -38,18 +38,18 @@ class FieldSet(object):
     you can configure FormAlchemy to behave differently, thus altering the
     generated HTML output by many ways:
 
-      * By passing keyword options to the `make_fields` method:
+      * By passing keyword options to the `render` method:
 
-        make_fields(pk=False, fk=False, exclude=["private_column"])
+        render(pk=False, fk=False, exclude=["private_column"])
 
       These options are NOT persistant. You'll need to pass these options
-      everytime you call `make_fields` or FormAlchemy will fallback to it's
+      everytime you call `render` or FormAlchemy will fallback to it's
       default behaviour. Passing keyword options is usually meant to alter
       the HTML output on the fly.
 
       * At the SQLAlchemy mapped class level, by creating a `FormAlchemy`
       subclass, it is possible to setup attributes which names and values
-      correspond to the keyword options passed to `make_fields`:
+      correspond to the keyword options passed to `render`:
 
         class MyClass(object):
             class FormAlchemy:
@@ -68,7 +68,7 @@ class FieldSet(object):
 
     Note: In any case, options set at the SQLAlchemy mapped class level or
     via the `configure` method will be overridden if these same keyword
-    options are passed to `make_fields`.
+    options are passed to `render`.
 
     """
 
@@ -245,8 +245,8 @@ class FieldSet(object):
         """Return a list of foreign key column names."""
         return [col for col in self.model.c.keys() if self.model.c[col].foreign_key]
 
-    def make_fields(self, **options):
-        """Return HTML fields generated from the SQLAlchemy `self.model`.
+    def render(self, **options):
+        """Return HTML fields generated from the `model`.
 
         Keywords arguments:
         * `password=[]` - An iterable of column names that should be set as password fields.
