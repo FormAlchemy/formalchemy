@@ -4,15 +4,17 @@
 # the MIT License: http://www.opensource.org/licenses/mit-license.php
 
 import webhelpers as h
-from sqlalchemy.types import Binary, Boolean, Date, DateTime, Integer, Numeric, String, Time
+from sqlalchemy.types import Binary, Boolean, Date, DateTime, Integer, NullType, Numeric, String, Time
 
-__all__ = ["formalchemy"]
+__all__ = ["FieldSet", "FieldMaker", "Label", "Field", "TextField",
+    "PasswordField", "HiddenField", "BooleanField", "FileField",
+    "IntegerField", "DateTimeField", "DateField", "TimeField",
+    "SelectField", "DropDownField"]
 __version__ = "0.1"
 
-# FIXME 
+# FIXME
 # implement FieldMaker
 # implement SelectField
-# implement DropDownField
 # Don't iterrate so much over the model to find out what the column types are.
 
 INDENTATION = "  "
@@ -23,12 +25,12 @@ def wrap(start, text, end):
 def indent(text):
     return "\n".join([INDENTATION + line for line in text.splitlines()])
 
-class formalchemy(object):
-    """The `Formalchemy` class.
+class FieldSet(object):
+    """The `FieldSet` class.
 
     This is the class responsible for generating HTML form fields. It needs
     to be instantiate with a SQLAlchemy mapped class as argument. The
-    SQLAlchemy mapped class is held under `model`.
+    SQLAlchemy mapped class is held as `model`.
 
     The one method to use is `make_fields`. This is the method that returns
     generated HTML code from the `model` object.
@@ -73,7 +75,7 @@ class formalchemy(object):
     """
 
     def __init__(self, model):
-        """Construct the `Formalchemy` class.
+        """Construct the `FieldSet` class.
 
         Arguments are:
 
@@ -82,12 +84,16 @@ class formalchemy(object):
 
         """
         self.model = model
+        self.col_names = self.get_colnames()
+        self.col_types = self.get_coltypes()
+        self.pk_cols = self.get_pks()
+        self.fk_cols = self.get_fks()
 
         # Configure class level options.
         if hasattr(self.model, "FormAlchemy"):
             self.options = dict([(k, v) for k, v in self.model.FormAlchemy.__dict__.items() if not k.startswith('_')])
         else:
-            self.options = dict()
+            self.options = {}
 
     def configure(self, **options):
         """Configure FormAlchemy's default behaviour.
@@ -96,6 +102,7 @@ class formalchemy(object):
         keyword options. Any other previously set options will be kept intact.
 
         """
+
         self.options.update(options)
 
     def reconfigure(self, **options):
@@ -109,33 +116,63 @@ class formalchemy(object):
         self.options.clear()
         self.configure(**options)
 
-    def get_cols(self, **kwargs):
-        """Return column names of `self.model`.
+    def get_coltypes(self):
+        """Categorize columns by type.
 
-        Keywords arguments:
+        Return a 9 key dict. Each key is a direct subclass of TypeEngine:
+          * `Binary=[]` - a list of Binary column names.
+          * `Boolean=[]` - a list of Boolean column names.
+          * `Date=[]` - a list of Date column names.
+          * `DateTime=[]` - a list of DateTime column names.
+          * `Integer=[]` - a list of Integer column names.
+          * `NullType=[]` - a list of NullType column names.
+          * `Numeric=[]` - a list of Numeric column names.
+          * `String=[]` - a list of String column names.
+          * `Time=[]` - a list of Time column names.
+
+        """
+
+        # FIXME: Is this the good way to handle form generation?
+        # What shall we do about non-standard SQLAlchemy types that were
+        # built directly off of a TypeEngine?
+        # Although, this should handle custum types built from one of those.
+
+        col_types = dict.fromkeys([t for t in [Binary, Boolean, Date, DateTime, Integer, NullType, Numeric, String, Time]], [])
+
+        for t in col_types:
+            col_types[t] = [col.name for col in self.model.c if isinstance(col.type, t)]
+
+        return col_types
+
+    def get_colnames(self, **kwargs):
+        """Return column names."""
+        if kwargs:
+            return self.get_filtered_cols(**kwargs)
+        return self.model.c.keys()
+
+    def get_filtered_cols(self, **kwargs):
+        """Return a list of filtered column names.
+
+        Keyword arguments:
         * `pk=True` - Won't return primary key columns if set to `False`.
         * `fk=True` - Won't return foreign key columns if set to `False`.
         * `exclude=[]` - An iterable containing column names to exclude.
 
         """
 
-        exclude = kwargs.get("exclude", [])
         pk = kwargs.get("pk", True)
         fk = kwargs.get("fk", True)
-        pkcols = self.get_pks()
-        fkcols = self.get_fks()
+        exclude = kwargs.get("exclude", [])
+        if not pk:
+            exclude += self.pk_cols
+        if not fk:
+            exclude += self.fk_cols
 
         columns = []
 
-        for col in self.model.c.keys():
-#            print col, self.model.c[col].type, "#" * 100
-            if col in exclude:
-                continue
-            if col in pkcols and not pk:
-                continue
-            elif col in fkcols and not fk:
-                continue
-            columns.append(col)
+        for col in self.col_names:
+            if not col in exclude:
+                columns.append(col)
 
         return columns
 
@@ -149,66 +186,65 @@ class formalchemy(object):
 
         """
 
+        ro_pks = kwargs.get("readonly_pk", False)
+        ro_fks = kwargs.get("readonly_fk", False)
         readonlys = kwargs.get("readonly", [])
-        readonly_pk = kwargs.get("readonly_pk", False)
-        readonly_fk = kwargs.get("readonly_fk", False)
-        pkcols = self.get_pks()
-        fkcols = self.get_fks()
+
+        if ro_pks:
+            readonlys += self.pk_cols
+        if ro_fks:
+            readonlys += self.fk_cols
 
         columns = []
 
-        for col in self.model.c.keys():
-            if col in pkcols and readonly_pk:
-                columns.append(col)
-            elif col in fkcols and readonly_fk:
-                columns.append(col)
-            elif col in readonlys:
+        for col in self.col_names:
+            if col in readonlys:
                 columns.append(col)
 
         return columns
 
-    def get_binaries(self):
-        """Return a list of Binary type columns."""
-        return [col for col in self.model.c.keys() if isinstance(self.model.c[col].type, Binary)]
+    def get_type(self, string):
+        """Return a list of `string` type column names.
 
-    def get_booleans(self):
-        """Return a list of Boolean type columns."""
-        return [col for col in self.model.c.keys() if isinstance(self.model.c[col].type, Boolean)]
+        `string` is case insensitive.
 
-    def get_dates(self):
-        """Return a list of Date type columns."""
-        return [col for col in self.model.c.keys() if isinstance(self.model.c[col].type, Date)]
+        Valid `string` values:
+          * "binary"
+          * "boolean"
+          * "date"
+          * "datetime"
+          * "integer"
+          * "nulltype"
+          * "numeric"
+          * "string"
+          * "time"
 
-    def get_datetimes(self):
-        """Return a list of DateTime type columns."""
-        return [col for col in self.model.c.keys() if isinstance(self.model.c[col].type, DateTime)]
+        """
 
-    def get_integers(self):
-        """Return a list of Integer type columns."""
-        return [col for col in self.model.c.keys() if isinstance(self.model.c[col].type, Integer)]
+        d = {
+            "binary":Binary,
+            "boolean":Boolean,
+            "date":Date,
+            "datetime":DateTime,
+            "integer":Integer,
+            "nulltype":NullType,
+            "numeric":Numeric,
+            "string":String,
+            "time":Time,
+        }
 
-    def get_numerics(self):
-        """Return a list of Numeric type columns."""
-        return [col for col in self.model.c.keys() if isinstance(self.model.c[col].type, Numeric)]
-
-    def get_strings(self):
-        """Return a list of String type columns."""
-        return [col for col in self.model.c.keys() if isinstance(self.model.c[col].type, String)]
-
-    def get_times(self):
-        """Return a list of Time type columns."""
-        return [col for col in self.model.c.keys() if isinstance(self.model.c[col].type, Time)]
+        return self.col_types.get(d[string.lower()], [])
 
     def get_unnullables(self):
-        """Return a list of non-nullable columns."""
+        """Return a list of non-nullable column names."""
         return [col for col in self.model.c.keys() if not self.model.c[col].nullable]
 
     def get_pks(self):
-        """Return a list of primary key columns."""
+        """Return a list of primary key column names."""
         return [col for col in self.model.c.keys() if self.model.c[col].primary_key]
 
     def get_fks(self):
-        """Return a list of foreign key columns."""
+        """Return a list of foreign key column names."""
         return [col for col in self.model.c.keys() if self.model.c[col].foreign_key]
 
     def get_default(self, col):
@@ -223,12 +259,12 @@ class formalchemy(object):
         Keywords arguments:
         * `password=[]` - An iterable of column names that should be set as password fields.
         * `hidden=[]` - An iterable of column names that should be set as hidden fields.
-        * `dropdown={}` - A dict holding column names as keys, dicts as values. These dicts can contain 4 keys:
-          1) `opts`: holds either:
+        * `dropdown={}` - A dict holding column names as keys, dicts as values. These dicts have at least a `opts` key used for options. `opts` holds either:
             - an iterable of option names: `["small", "medium", "large"]`. Options will have the same name and value.
             - an iterable of paired option name/value: `[("small", "$0.99"), ("medium", "$1.29"), ("large", "$1.59")]`.
             - a dict where dict keys are option names and dict values are option values: `{"small":"$0.99", "medium":"$1.29", "large":"$1.59"}`.
-          2) `selected=None`: a string or a container of strings (when multiple select) that will set the "selected" HTML tag to items that match the value.
+            The `selected` key can also be set:
+            `selected=value`: a string or a container of strings (when multiple select) that will set the "selected" HTML tag to items that match the value. This defaults to the SQLAlchemy mapped class's current value (if not None) or column default.
           3) `multiple=None`: set the HTML tag "multiple" if it holds a non-zero value.
           4) `size=None`: an integer that will set the size of the menu. Browsers usually change the menu from a dropdown to a listing.
 
@@ -269,19 +305,9 @@ class formalchemy(object):
         options = default_opts
 
         # Categorize columns
-        columns = self.get_cols(**options)
+        columns = self.get_colnames(**options)
         readonlys = self.get_readonlys(**options)
         unnullables = self.get_unnullables()
-
-        # By type
-        binaries = self.get_binaries()
-        booleans = self.get_booleans()
-        dates = self.get_dates()
-        datetimes = self.get_datetimes()
-        integers = self.get_integers()
-        numerics = self.get_numerics()
-        strings = self.get_strings()
-        times = self.get_times()
 
         passwords = options.get('password', [])
         hiddens = options.get('hidden', [])
@@ -309,73 +335,53 @@ class formalchemy(object):
             # Get column's default value.
             default = self.get_default(col)
 
-            # Process hidden fields first.
+            # Process hidden fields first as they don't need a `Label`.
             if col in hiddens:
                 html.append(str(HiddenField(self.model, col)))
                 continue
 
             # Make the label
-            label = Label(self.model, col)
+            label = Label(self.model, col, alias=aliases.get(col, col))
             if callable(pretty_func):
-                label.set_prettify(pretty_func)
+                label.prettify = pretty_func # Apply staticmethod(pretty_func) ?
             if col in unnullables:
-                label.set_class(class_required)
+                label.cls = class_required
             else:
-                label.set_class(class_optional)
+                label.cls = class_optional
             field = str(label)
 
             # Make the input
-            if col in binaries:
-                field += "\n" + str(FileField(self.model, col))
+            if col in radios:
+                radio = RadioSet(self.model, col, choices=radios[col])
+                field += "\n" + str(radio)
 
             elif col in dropdowns:
-                col_dict = dropdowns[col]
-                opts = col_dict.get("opts")
-                selected = col_dict.get("selected")
-                multiple = col_dict.get("multiple")
-                size = col_dict.get("size")
-                field += "\n" + h.select(col, h.options_for_select(opts, selected=selected), multiple=multiple, size=size)
+                dropdown = DropDownField(self.model, col, dropdowns[col].pop("opts"), **dropdowns[col])
+                field += "\n" + str(dropdown)
 
-            elif col in radios:
-                choices = radios[col]
-                radiofields = []
-                for choice in choices:
-                    # Choice is a list/tuple...
-                    if isinstance(choice, (list, tuple)):
-                        if not len(choice) == 2:
-                            raise ValueError, "Invalid radio button choice for '%s': %s. Paired sequence needed: (name, value)" % (col, repr(choice))
-                        name, value = choice
-                        checked = value == getattr(self.model, col) or value == default
-                        radiofields.append("\n" + h.radio_button(col, value, checked=checked) + name)
-                    # ... or just a string.
-                    elif isinstance(choices, dict):
-                        if not isinstance(choices[choice], basestring):
-                            raise ValueError, "Invalid radio button choice for '%s': %s. Paired sequence needed: (name, value)" % (col, repr(choice))
-                    else:
-                        checked = choice == getattr(self.model, col) or choice == default
-                        radiofields.append("\n" + h.radio_button(col, choice, checked=checked) + choice)
-                field += "<br/>".join(radiofields)
+            elif col in passwords:
+                field += "\n" + str(PasswordField(self.model, col, readonly=col in readonlys))
 
-            elif col in booleans:
+            elif col in self.col_types[String]:
+                field += "\n" + str(TextField(self.model, col))
+
+            elif col in self.col_types[Integer]:
+                field += "\n" + str(IntegerField(self.model, col))
+
+            elif col in self.col_types[Boolean]:
                 field += "\n" + str(BooleanField(self.model, col))
 
-            elif col in strings:
-                if col in passwords:
-                    field += "\n" + str(PasswordField(self.model, col, readonly=col in readonlys))
-                else:
-                    field += "\n" + str(TextField(self.model, col))
-
-            elif col in datetimes:
+            elif col in self.col_types[DateTime]:
                 field += "\n" + str(DateTimeField(self.model, col))
 
-            elif col in dates:
+            elif col in self.col_types[Date]:
                 field += "\n" + str(DateField(self.model, col))
 
-            elif col in times:
+            elif col in self.col_types[Time]:
                 field += "\n" + str(TimeField(self.model, col))
 
-            elif col in integers:
-                field += "\n" + str(IntegerField(self.model, col))
+            elif col in self.col_types[Binary]:
+                field += "\n" + str(FileField(self.model, col))
 
             else:
                 field += "\n" + str(Field(self.model, col))
@@ -431,63 +437,64 @@ class FieldMaker(object):
 class Label(object):
     """The `Label` class."""
 
-    name = None
     cls = None
-    alias = None
 
-    def __init__(self, model, col):
+    def __init__(self, model, col, **kwargs):
         self.name = col
-
-    def set_class(self, cls):
-        self.cls = cls
-
-    def set_prettify(self, func):
-        self.prettify = func
+        self.alias = kwargs.pop('alias', self.name)
+        prettify = kwargs.pop('prettify', None)
+        if callable(prettify):
+            self.prettify = prettify
 
     def set_alias(self, alias):
         self.alias = alias
 
-    def prettify(self, text):
+    def get_display(self):
+        return self.prettify(self.alias)
+
+    def prettify(text):
         return text.replace("_", " ").capitalize()
 
-    def get_display(self):
-        if callable(self.prettify):
-            return self.prettify(self.alias or self.name)
-        return self.alias or self.name
+    prettify = staticmethod(prettify)
 
     def __str__(self):
         return h.content_tag("label", content=self.get_display(), for_=self.name, class_=self.cls)
 
-class Field(object):
-    """The `Field` class. This is the base class for all fields objects."""
+class BaseField(object):
+    """The `BaseField` class.
 
-    name = None
-    value = None
-    default = None
-    cls = None
-    readonly = None
+    This is the class that fits to all HTML <input> structure.
 
-    def __init__(self, model, col, readonly=False):
-        self.set_name(col)
-        self.set_value(getattr(model, col))
-        if model.c[col].default:
-            self.set_default(model.c[col].default.arg)
-        self.set_readonly(readonly)
+    """
 
-    def set_name(self, name):
+    def __init__(self, name, value):
         self.name = name
-
-    def set_value(self, value):
         self.value = value
 
-    def set_default(self, default_value):
-        self.default = default_value
+#    def __str__(self):
+#        return h.text_field(self.name, value=self.value)
 
-    def set_class(self, cls):
-        self.cls = cls
+class Field(BaseField):
+    """The `Field` class.
 
-    def set_readonly(self, value):
-        self.readonly = value
+    This class takes a SQLAlchemy mapped class as first argument and the column
+    name to process as second argument. It maps the column name to the field
+    name and the column's value as the field's value.
+
+    Method `get_value` will return either the current value (if not None) or
+    the default value if available.
+
+    All xField classes inherit of this `Field` class.
+
+    """
+
+    def __init__(self, model, col, **kwargs):
+        super(Field, self).__init__(col, getattr(model, col))
+        if model.c[col].default:
+            self.default = model.c[col].default.arg
+        else:
+            self.default = model.c[col].default
+        self.attribs = kwargs
 
     def get_value(self):
         if self.value is not None:
@@ -495,90 +502,114 @@ class Field(object):
         else:
             return self.default
 
-#    def __str__(self):
-#        return h.text_field(self.name, value=self.get_value(), readonly=self.readonly)
+    def __str__(self):
+        return h.text_field(self.name, value=self.value)
 
 class TextField(Field):
     """The `TextField` class."""
 
-    length = None
-
-    def __init__(self, model, col, readonly=None):
-        super(TextField, self).__init__(model, col, readonly=readonly)
-        self.set_length(model.c[col].type.length)
-
-    def set_length(self, length):
-        self.length = length
+    def __init__(self, model, col, **kwargs):
+        super(TextField, self).__init__(model, col, **kwargs)
+        self.length = model.c[col].type.length
 
     def __str__(self):
-        return h.text_field(self.name, value=self.get_value(), maxlength=self.length, readonly=self.readonly)
+        return h.text_field(self.name, value=self.get_value(), maxlength=self.length, **self.attribs)
 
 class PasswordField(TextField):
     """The `PasswordField` class."""
 
-    def __init__(self, model, col, readonly=None):
-        super(PasswordField, self).__init__(model, col, readonly=readonly)
-
     def __str__(self):
-        return h.password_field(self.name, value=self.get_value(), maxlength=self.length, readonly=self.readonly)
+        return h.password_field(self.name, value=self.get_value(), maxlength=self.length, **self.attribs)
 
 class HiddenField(Field):
     """The `HiddenField` class."""
 
-    def __init__(self, model, col):
-        super(HiddenField, self).__init__(model, col)
-
     def __str__(self):
-        return h.hidden_field(self.name, value=self.get_value())
+        return h.hidden_field(self.name, value=self.get_value(), **self.attribs)
 
 class BooleanField(Field):
     """The `BooleanField` class."""
 
-    def __init__(self, model, col):
-        super(BooleanField, self).__init__(model, col)
-
     def __str__(self):
-        return h.check_box(self.name, self.get_value(), checked=self.get_value(), readonly=self.readonly)
+        return h.check_box(self.name, self.get_value(), checked=self.get_value(), **self.attribs)
 
 class FileField(Field):
     """The `FileField` class."""
 
-    def __init__(self, model, col):
-        super(FileField, self).__init__(model, col)
-
     def __str__(self):
-        return h.file_field(self.name, self.get_value(), readonly=self.readonly)
+        return h.file_field(self.name, value="foo", **self.attribs)
 
 class IntegerField(Field):
     """The `IntegerField` class."""
 
     def __str__(self):
-        return h.text_field(self.name, value=self.get_value(), readonly=self.readonly)
+        return h.text_field(self.name, value=self.get_value(), **self.attribs)
 
 class DateTimeField(Field):
     """The `DateTimeField` class."""
 
     def __str__(self):
-        return h.text_field(self.name, value=self.get_value(), readonly=self.readonly)
+        return h.text_field(self.name, value=self.get_value(), **self.attribs)
 
 
 class DateField(Field):
     """The `DateField` class."""
 
     def __str__(self):
-        return h.text_field(self.name, value=self.get_value(), readonly=self.readonly)
+        return h.text_field(self.name, value=self.get_value(), **self.attribs)
 
 
 class TimeField(Field):
     """The `TimeField` class."""
 
     def __str__(self):
-        return h.text_field(self.name, value=self.get_value(), readonly=self.readonly)
+        return h.text_field(self.name, value=self.get_value(), **self.attribs)
 
-class SelectField(Field):
+class RadioField(BaseField):
     """The `SelectField` class."""
-    pass
+
+    def __init__(self, name, value, **kwargs):
+        super(RadioField, self).__init__(name, value)
+        self.attribs = kwargs
+
+    def __str__(self):
+        return h.radio_button(self.name, self.value, **self.attribs)
+
+class RadioSet(Field):
+    """The `SelectField` class."""
+
+    def __init__(self, model, col, choices, **kwargs):
+        super(RadioSet, self).__init__(model, col, **kwargs)
+
+        radios = []
+
+        if isinstance(choices, dict):
+            choices = choices.items()
+
+        for choice in choices:
+            # Choice is a list/tuple...
+            if isinstance(choice, (list, tuple)):
+                choice_name, choice_value = choice
+                radio = RadioField(self.name, choice_value, checked=self.get_value() == choice_value)
+                radios.append(str(radio) + choice_name)
+            # ... or just a string.
+            else:
+                checked = choice == getattr(self.model, col) or choice == default
+                radiofields.append("\n" + h.radio_button(col, choice, checked=checked) + choice)
+
+        self.radios = radios
+
+    def __str__(self):
+        return h.tag("br").join(self.radios)
 
 class DropDownField(Field):
     """The `DropDownField` class."""
-    pass
+
+    def __init__(self, model, col, options, **kwargs):
+        self.options = options
+        selected = kwargs.pop('selected', None)
+        super(DropDownField, self).__init__(model, col, **kwargs)
+        self.selected = selected or self.get_value()
+
+    def __str__(self):
+        return h.select(self.name, h.options_for_select(self.options, selected=self.selected), **self.attribs)
