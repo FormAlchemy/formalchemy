@@ -1,0 +1,9 @@
+FormAlchemy 0.2, r64:
+  * Removed NullType type column detection for now, as it seems to be a SA 0.4 only thing.
+  * FieldSet now returns fields embedded in <fieldset> HTML tags.
+  * Implemented the 'legend' option for FieldSet to provide an optional and customizable <legend> tag. FieldSet uses the SQLAlchemy mapped class' name as the legend by default. The legend can be customized by passing a string to the 'legend' option: `legend='My legend'`. The fieldset can be legend-less by passing `legend=False`.
+  * Big core changes. More classes, more flexibility. Plus, we're now using model-level and column-level rendering engines: 'ModelRenderer' and 'FieldRenderer'. See source code for more details.
+  * FieldSet now uses 'ModelRenderer'.
+
+FormAlchemy 0.1, r56:
+  * Initial release.

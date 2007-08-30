@@ -199,7 +199,7 @@ class Model(object):
 
     def get_unnullables(self):
         """Return a list of non-nullable column names."""
-        return [col for col in self.model.c.keys() if not self.model.c[col].nullable]
+        return [col for col in self.model.c.keys() if not self.is_nullable(col)]
 
     def get_pks(self):
         """Return a list of primary key column names."""
@@ -208,6 +208,10 @@ class Model(object):
     def get_fks(self):
         """Return a list of foreign key column names."""
         return [col for col in self.model.c.keys() if self.model.c[col].foreign_key]
+
+    def is_nullable(self, col):
+        """Return True if `col` is a nullable column, otherwise return False."""
+        return self.model.c[col].nullable
 
 class ModelRenderer(Model):
     """Return generated HTML fields from a SQLAlchemy mapped class."""
@@ -260,95 +264,13 @@ class ModelRenderer(Model):
 
         """
 
-        # Categorize columns
+        # Filter out unnecessary columns.
         columns = self.get_colnames(**options)
-        readonlys = self.get_readonlys(**options)
-        unnullables = self.get_unnullables()
-
-        passwords = options.get('password', [])
-        hiddens = options.get('hidden', [])
-        dropdowns = options.get('dropdown', {})
-        radios = options.get('radio', {})
-
-        pretty_func = options.get('prettify')
-        aliases = options.get('alias', {})
-
-        errors = options.get('error', {})
-        docs = options.get('doc', {})
-
-        # Setup HTML classes
-#        class_label = options.get('cls_lab', 'form_label')
-        class_required = options.get('cls_req', 'field_req')
-        class_optional = options.get('cls_opt', 'field_opt')
-        class_error = options.get('cls_err', 'field_err')
-        class_doc = options.get('cls_doc', 'field_doc')
 
         html = []
-
         # Generate fields.
         for col in columns:
-
-            # Process hidden fields first as they don't need a `Label`.
-            if col in hiddens:
-                html.append(str(HiddenField(self.model, col)))
-                continue
-
-            # Make the label
-            label = Label(self.model, col, alias=aliases.get(col, col))
-            if callable(pretty_func):
-                label.prettify = pretty_func # Apply staticmethod(pretty_func) ?
-            if col in unnullables:
-                label.cls = class_required
-            else:
-                label.cls = class_optional
-            field = str(label)
-
-            # Make the input
-            if col in radios:
-                radio = RadioSet(self.model, col, choices=radios[col])
-                field += "\n" + str(radio)
-
-            elif col in dropdowns:
-                dropdown = DropDownField(self.model, col, dropdowns[col].pop("opts"), **dropdowns[col])
-                field += "\n" + str(dropdown)
-
-            elif col in passwords:
-                field += "\n" + str(PasswordField(self.model, col, readonly=col in readonlys))
-
-            elif col in self.col_types[String]:
-                field += "\n" + str(TextField(self.model, col))
-
-            elif col in self.col_types[Integer]:
-                field += "\n" + str(IntegerField(self.model, col))
-
-            elif col in self.col_types[Boolean]:
-                field += "\n" + str(BooleanField(self.model, col))
-
-            elif col in self.col_types[DateTime]:
-                field += "\n" + str(DateTimeField(self.model, col))
-
-            elif col in self.col_types[Date]:
-                field += "\n" + str(DateField(self.model, col))
-
-            elif col in self.col_types[Time]:
-                field += "\n" + str(TimeField(self.model, col))
-
-            elif col in self.col_types[Binary]:
-                field += "\n" + str(FileField(self.model, col))
-
-            else:
-                field += "\n" + str(Field(self.model, col))
-
-            # Make the error
-            if col in errors:
-                field += "\n" + h.content_tag("span", content=errors[col], class_=class_error)
-            # Make the documentation
-            if col in docs:
-                field += "\n" + h.content_tag("span", content=docs[col], class_=class_doc)
-
-            # Wrap the whole thing into a div
-            field = wrap("<div>", field, "</div>")
-
+            field = FieldRenderer(self.model, col).render(**options)
             html.append(field)
 
         return "\n".join(html)
@@ -442,44 +364,111 @@ class FieldSet(Model):
         html = h.content_tag('legend', legend_txt) + "\n" + html
         return wrap("<fieldset>", html, "</fieldset>")
 
-class MakeField(object):
-    """The `MakeField` class.
+class FieldRenderer(Model):
+    """The `FieldRenderer` class.
 
-    The `MakeField` class is responsible for generating the appropriate HTML
-    code given a `xField` object.
-
-    The generated HTML returned contains <label> and <input> tag pairs.
+    The `FieldRenderer` class is used for generating a single HTML field.
+    Return generated <label> + <input> tags.
 
     """
 
-    html = ""
+    def __init__(self, model, col):
+        super(FieldRenderer, self).__init__(model)
+        self.col = col
 
-    def __init__(self, model, col, **kwargs):
-        label = Label(model, col, alias=aliases.get(col, col))
+    def render(self, **options):
+        # Categorize columns
+        readonlys = self.get_readonlys(**options)
 
-    def set_alias(self, alias):
-        self.alias = alias
+        passwords = options.get('password', [])
+        hiddens = options.get('hidden', [])
+        dropdowns = options.get('dropdown', {})
+        radios = options.get('radio', {})
 
-    def set_cls_req(self, cls_req):
-        self.cls_req = cls_req
+        pretty_func = options.get('prettify')
+        aliases = options.get('alias', {})
 
-    def set_cls_opt(self, cls_opt):
-        self.cls_opt = cls_opt
+        errors = options.get('error', {})
+        docs = options.get('doc', {})
 
-    def set_cls_err(self, cls_err):
-        self.cls_err = cls_err
+        # Setup HTML classes
+#        class_label = options.get('cls_lab', 'form_label')
+        class_required = options.get('cls_req', 'field_req')
+        class_optional = options.get('cls_opt', 'field_opt')
+        class_error = options.get('cls_err', 'field_err')
+        class_doc = options.get('cls_doc', 'field_doc')
 
-    def set_cls_doc(self, cls_doc):
-        self.cls_doc = cls_doc
+        # Process hidden fields first as they don't need a `Label`.
+        if self.col in hiddens:
+            return str(HiddenField(self.model, col))
+
+        # Make the label
+        label = Label(self.col, alias=aliases.get(self.col, self.col))
+        if callable(pretty_func):
+            label.prettify = pretty_func # Apply staticmethod(pretty_func) ?
+        if self.is_nullable(self.col):
+            label.cls = class_optional
+        else:
+            label.cls = class_required
+        field = str(label)
+
+        # Make the input
+        if self.col in radios:
+            radio = RadioSet(self.model, self.col, choices=radios[self.col])
+            field += "\n" + str(radio)
+
+        elif self.col in dropdowns:
+            dropdown = DropDownField(self.model, self.col, dropdowns[self.col].pop("opts"), **dropdowns[self.col])
+            field += "\n" + str(dropdown)
+
+        elif self.col in passwords:
+            field += "\n" + str(PasswordField(self.model, self.col, readonly=self.col in readonlys))
+
+        elif self.col in self.col_types[String]:
+            field += "\n" + str(TextField(self.model, self.col))
+
+        elif self.col in self.col_types[Integer]:
+            field += "\n" + str(IntegerField(self.model, self.col))
+
+        elif self.col in self.col_types[Boolean]:
+            field += "\n" + str(BooleanField(self.model, self.col))
+
+        elif self.col in self.col_types[DateTime]:
+            field += "\n" + str(DateTimeField(self.model, self.col))
+
+        elif self.col in self.col_types[Date]:
+            field += "\n" + str(DateField(self.model, self.col))
+
+        elif self.col in self.col_types[Time]:
+            field += "\n" + str(TimeField(self.model, self.col))
+
+        elif self.col in self.col_types[Binary]:
+            field += "\n" + str(FileField(self.model, self.col))
+
+        else:
+            field += "\n" + str(Field(self.model, self.col))
+
+        # Make the error
+        if self.col in errors:
+            field += "\n" + h.content_tag("span", content=errors[self.col], class_=class_error)
+        # Make the documentation
+        if self.col in docs:
+            field += "\n" + h.content_tag("span", content=docs[self.col], class_=class_doc)
+
+        # Wrap the whole thing into a div
+        field = wrap("<div>", field, "</div>")
+
+        return field
 
 class Label(object):
     """The `Label` class."""
 
     cls = None
 
-    def __init__(self, model, col, **kwargs):
+    def __init__(self, col, **kwargs):
         self.name = col
         self.alias = kwargs.pop('alias', self.name)
+        self.cls = kwargs.pop('cls', None)
         prettify = kwargs.pop('prettify', None)
         if callable(prettify):
             self.prettify = prettify
