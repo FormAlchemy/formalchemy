@@ -25,6 +25,43 @@ def wrap(start, text, end):
 def indent(text):
     return "\n".join([INDENTATION + line for line in text.splitlines()])
 
+class Options(dict):
+    """The `Options` class.
+
+    This is the class responsible for parsing and holding options.
+
+    """
+
+    def __init__(self, model):
+        # Configure class level options.
+        self.parse(model)
+
+    def parse(self, model):
+        """Parse options from `model`'s FormAlchemy subclass if defined."""
+        if hasattr(model, "FormAlchemy"):
+            [self.__setitem__(k, v) for k, v in model.FormAlchemy.__dict__.items() if not k.startswith('_')]
+
+    def configure(self, **options):
+        """Configure FormAlchemy's default behaviour.
+
+        This will update FormAlchemy's default behaviour with the given
+        keyword options. Any other previously set options will be kept intact.
+
+        """
+
+        self.update(options)
+
+    def reconfigure(self, **options):
+        """Reconfigure `Options` from scratch.
+
+        This will clear any previously set option and update FormAlchemy's
+        default behaviour with the given keyword options.
+
+        """
+
+        self.clear()
+        self.configure(**options)
+
 class FieldSet(object):
     """The `FieldSet` class.
 
@@ -403,6 +440,9 @@ class MakeField(object):
     """
 
     html = ""
+
+    def __init__(self, model, col, **kwargs):
+        label = Label(model, col, alias=aliases.get(col, col))
 
     def set_alias(self, alias):
         self.alias = alias
