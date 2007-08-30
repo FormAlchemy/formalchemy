@@ -7,14 +7,14 @@ import webhelpers as h
 #from sqlalchemy.types import Binary, Boolean, Date, DateTime, Integer, NullType, Numeric, String, Time
 from sqlalchemy.types import Binary, Boolean, Date, DateTime, Integer, Numeric, String, Time
 
-__all__ = ["FieldSet", "FieldMaker", "Label", "Field", "TextField",
+__all__ = ["FieldSet", "MakeField", "Label", "Field", "TextField",
     "PasswordField", "HiddenField", "BooleanField", "FileField",
     "IntegerField", "DateTimeField", "DateField", "TimeField",
     "SelectField", "DropDownField"]
 __version__ = "0.1"
 
 # FIXME
-# implement FieldMaker
+# implement MakeField
 # better NullType detection
 
 INDENTATION = "  "
@@ -148,10 +148,10 @@ class FieldSet(object):
     def get_colnames(self, **kwargs):
         """Return column names."""
         if kwargs:
-            return self.get_filtered_cols(**kwargs)
+            return self._get_filtered_cols(**kwargs)
         return self.model.c.keys()
 
-    def get_filtered_cols(self, **kwargs):
+    def _get_filtered_cols(self, **kwargs):
         """Return a list of filtered column names.
 
         Keyword arguments:
@@ -392,10 +392,10 @@ class FieldSet(object):
         return "\n".join(html)
 
 
-class FieldMaker(object):
-    """The `FieldMaker` class.
+class MakeField(object):
+    """The `MakeField` class.
 
-    The `FieldMaker` class is responsible for generating the appropriate HTML
+    The `MakeField` class is responsible for generating the appropriate HTML
     code given a `Field` object.
 
     The generated HTML returned contains <label> and <input> tags.
