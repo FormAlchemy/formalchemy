@@ -28,13 +28,10 @@ def indent(text):
 class FormAlchemyOptions(dict):
     """The `FormAlchemyOptions` class.
 
-    This is the class responsible for parsing and holding options.
+    This is the class responsible for parsing and holding FormAlchemy options.
+    It has the same API as `dict`.
 
     """
-
-    def __init__(self, model):
-        # Configure class level options.
-        self.parse(model)
 
     def parse(self, model):
         """Parse options from `model`'s FormAlchemy subclass if defined."""
@@ -62,105 +59,24 @@ class FormAlchemyOptions(dict):
         self.clear()
         self.configure(**options)
 
-class FieldSet(object):
-    """The `FieldSet` class.
+class Model(object):
+    """The `Model` class.
 
-    This is the class responsible for generating HTML form fields. It needs
-    to be instantiate with a SQLAlchemy mapped class as argument. The
-    SQLAlchemy mapped class is held as `model`.
+    Takes a model as argument and provides convenient model methods.
 
-    The one method to use is `render`. This is the method that returns
-    generated HTML code from the `model` object.
-
-    FormAlchemy has some default behaviour set. It is configured to generate
-    the most HTML possible that will reflect the `model` object. Although,
-    you can configure FormAlchemy to behave differently, thus altering the
-    generated HTML output by many ways:
-
-      * By passing keyword options to the `render` method:
-
-        render(pk=False, fk=False, exclude=["private_column"])
-
-      These options are NOT persistant. You'll need to pass these options
-      everytime you call `render` or FormAlchemy will fallback to it's
-      default behaviour. Passing keyword options is usually meant to alter
-      the HTML output on the fly.
-
-      * At the SQLAlchemy mapped class level, by creating a `FormAlchemy`
-      subclass, it is possible to setup attributes which names and values
-      correspond to the keyword options passed to `render`:
-
-        class MyClass(object):
-            class FormAlchemy:
-                pk = False
-                fk = False
-                exclude = ["private_column"]
-
-      These attributes are persistant and will be used as FormAlchemy's
-      default behaviour.
-
-      * By passing the keyword options to FormAlchemy's `configure` method.
-      These options are persistant. and will be used as FormAlchemy's default
-      behaviour.
-
-        configure(pk=False, fk=False, exclude=["private_column"])
-
-    Note: In any case, options set at the SQLAlchemy mapped class level or
-    via the `configure` method will be overridden if these same keyword
-    options are passed to `render`.
+    Methods:
+      get_colnames(self, **kwargs)
+      get_readonlys(self, **kwargs)
+      get_coltypes(self)
 
     """
 
     def __init__(self, model):
-        """Construct the `FieldSet` class.
-
-        Arguments are:
-
-          `model`
-            An SQLAlchemy mapped class. This is the reference class.
-
-        """
         self.model = model
         self.col_names = self.get_colnames()
         self.col_types = self.get_coltypes()
         self.pk_cols = self.get_pks()
         self.fk_cols = self.get_fks()
-
-        # Attach a FormAlchemyOptions class to handle model's options.
-        self.options = FormAlchemyOptions(self.model)
-
-        self.configure = self.options.configure
-        self.reconfigure = self.options.reconfigure
-        self.parse = self.options.parse
-
-    def get_coltypes(self):
-        """Categorize columns by type.
-
-        Return a 9 key dict. Each key is a direct subclass of TypeEngine:
-          * `Binary=[]` - a list of Binary column names.
-          * `Boolean=[]` - a list of Boolean column names.
-          * `Date=[]` - a list of Date column names.
-          * `DateTime=[]` - a list of DateTime column names.
-          * `Integer=[]` - a list of Integer column names.
-          * `NullType=[]` - a list of NullType column names. # NOT AVAILABLE RIGHT NOW
-          * `Numeric=[]` - a list of Numeric column names.
-          * `String=[]` - a list of String column names.
-          * `Time=[]` - a list of Time column names.
-
-        """
-
-        # FIXME: Is this the good way to handle field generation?
-        # What shall we do about non-standard SQLAlchemy types that were
-        # built directly off of a TypeEngine?
-        # Although, this should handle custum types built from one of those.
-
-#        col_types = dict.fromkeys([t for t in [Binary, Boolean, Date, DateTime, Integer, NullType, Numeric, String, Time]], [])
-        col_types = dict.fromkeys([t for t in [Binary, Boolean, Date, DateTime, Integer, Numeric, String, Time]], [])
-
-        for t in col_types:
-            col_types[t] = [col.name for col in self.model.c if isinstance(col.type, t)]
-
-        return col_types
 
     def get_colnames(self, **kwargs):
         """Return a list of filtered column names.
@@ -220,7 +136,36 @@ class FieldSet(object):
 
         return columns
 
-    def get_type(self, string):
+    def get_coltypes(self):
+        """Categorize columns by type.
+
+        Return a nine key dict. Each key is a direct subclass of TypeEngine:
+          * `Binary=[]` - a list of Binary column names.
+          * `Boolean=[]` - a list of Boolean column names.
+          * `Date=[]` - a list of Date column names.
+          * `DateTime=[]` - a list of DateTime column names.
+          * `Integer=[]` - a list of Integer column names.
+          * `NullType=[]` - a list of NullType column names. # NOT AVAILABLE RIGHT NOW
+          * `Numeric=[]` - a list of Numeric column names.
+          * `String=[]` - a list of String column names.
+          * `Time=[]` - a list of Time column names.
+
+        """
+
+        # FIXME: Is this the good way to handle field generation?
+        # What shall we do about non-standard SQLAlchemy types that were
+        # built directly off of a TypeEngine?
+        # Although, this should handle custum types built from one of those.
+
+#        col_types = dict.fromkeys([t for t in [Binary, Boolean, Date, DateTime, Integer, NullType, Numeric, String, Time]], [])
+        col_types = dict.fromkeys([t for t in [Binary, Boolean, Date, DateTime, Integer, Numeric, String, Time]], [])
+
+        for t in col_types:
+            col_types[t] = [col.name for col in self.model.c if isinstance(col.type, t)]
+
+        return col_types
+
+    def get_by_type(self, string):
         """Return a list of `string` type column names.
 
         `string` is case insensitive.
@@ -238,7 +183,7 @@ class FieldSet(object):
 
         """
 
-        d = {
+        keys = {
             "binary":Binary,
             "boolean":Boolean,
             "date":Date,
@@ -250,7 +195,7 @@ class FieldSet(object):
             "time":Time,
         }
 
-        return self.col_types.get(d[string.lower()], [])
+        return self.col_types.get(keys[string.lower()], [])
 
     def get_unnullables(self):
         """Return a list of non-nullable column names."""
@@ -263,6 +208,12 @@ class FieldSet(object):
     def get_fks(self):
         """Return a list of foreign key column names."""
         return [col for col in self.model.c.keys() if self.model.c[col].foreign_key]
+
+class ModelRenderer(Model):
+    """Return generated HTML fields from a SQLAlchemy mapped class."""
+
+    def __init__(self, model):
+        super(ModelRenderer, self).__init__(model)
 
     def render(self, **options):
         """Return HTML fields generated from the `model`.
@@ -309,11 +260,6 @@ class FieldSet(object):
 
         """
 
-        # Merge class level options with given argument options.
-        opts = FormAlchemyOptions(self.options.copy())
-        opts.configure(**options)
-        options = opts
-
         # Categorize columns
         columns = self.get_colnames(**options)
         readonlys = self.get_readonlys(**options)
@@ -330,7 +276,7 @@ class FieldSet(object):
         errors = options.get('error', {})
         docs = options.get('doc', {})
 
-        # Setup HTML class
+        # Setup HTML classes
 #        class_label = options.get('cls_lab', 'form_label')
         class_required = options.get('cls_req', 'field_req')
         class_optional = options.get('cls_opt', 'field_opt')
@@ -407,14 +353,88 @@ class FieldSet(object):
 
         return "\n".join(html)
 
+class FieldSet(Model):
+    """The `FieldSet` class.
+
+    This is the class responsible for generating HTML form fields. It needs
+    to be instantiate with a SQLAlchemy mapped class as argument. The
+    SQLAlchemy mapped class is held as `model`.
+
+    The one method to use is `render`. This is the method that returns
+    generated HTML code from the `model` object.
+
+    FormAlchemy has some default behaviour set. It is configured to generate
+    the most HTML possible that will reflect the `model` object. Although,
+    you can configure FormAlchemy to behave differently, thus altering the
+    generated HTML output by many ways:
+
+      * By passing keyword options to the `render` method:
+
+        render(pk=False, fk=False, exclude=["private_column"])
+
+      These options are NOT persistant. You'll need to pass these options
+      everytime you call `render` or FormAlchemy will fallback to it's
+      default behaviour. Passing keyword options is usually meant to alter
+      the HTML output on the fly.
+
+      * At the SQLAlchemy mapped class level, by creating a `FormAlchemy`
+      subclass, it is possible to setup attributes which names and values
+      correspond to the keyword options passed to `render`:
+
+        class MyClass(object):
+            class FormAlchemy:
+                pk = False
+                fk = False
+                exclude = ["private_column"]
+
+      These attributes are persistant and will be used as FormAlchemy's
+      default behaviour.
+
+      * By passing the keyword options to FormAlchemy's `configure` method.
+      These options are persistant. and will be used as FormAlchemy's default
+      behaviour.
+
+        configure(pk=False, fk=False, exclude=["private_column"])
+
+    Note: In any case, options set at the SQLAlchemy mapped class level or
+    via the `configure` method will be overridden if these same keyword
+    options are passed to `render`.
+
+    """
+
+    def __init__(self, model):
+        """Construct the `FieldSet` class.
+
+        Arguments are:
+
+          `model`
+            An SQLAlchemy mapped class. This is the reference class.
+
+        """
+
+        super(FieldSet, self).__init__(model)
+
+        # Attach a FormAlchemyOptions class to handle model's options.
+        self._options = FormAlchemyOptions()
+        self._options.parse(self.model)
+
+        self.configure = self._options.configure
+        self.reconfigure = self._options.reconfigure
+
+    def render(self, **options):
+        # Merge class level options with given argument options.
+        opts = FormAlchemyOptions(self._options.copy())
+        opts.configure(**options)
+
+        return ModelRenderer(self.model).render(**opts)
 
 class MakeField(object):
     """The `MakeField` class.
 
     The `MakeField` class is responsible for generating the appropriate HTML
-    code given a `Field` object.
+    code given a `xField` object.
 
-    The generated HTML returned contains <label> and <input> tags.
+    The generated HTML returned contains <label> and <input> tag pairs.
 
     """
 
@@ -425,12 +445,6 @@ class MakeField(object):
 
     def set_alias(self, alias):
         self.alias = alias
-
-    def set_error(self, error):
-        self.error = error
-
-    def set_doc(self, doc):
-        self.doc = doc
 
     def set_cls_req(self, cls_req):
         self.cls_req = cls_req
