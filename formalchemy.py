@@ -26,7 +26,7 @@ def indent(text):
     return "\n".join([INDENTATION + line for line in text.splitlines()])
 
 class FormAlchemyOptions(dict):
-    """The `Options` class.
+    """The `FormAlchemyOptions` class.
 
     This is the class responsible for parsing and holding options.
 
@@ -52,7 +52,7 @@ class FormAlchemyOptions(dict):
         self.update(options)
 
     def reconfigure(self, **options):
-        """Reconfigure `Options` from scratch.
+        """Reconfigure `FormAlchemyOptions` from scratch.
 
         This will clear any previously set option and update FormAlchemy's
         default behaviour with the given keyword options.
@@ -126,10 +126,8 @@ class FieldSet(object):
         self.pk_cols = self.get_pks()
         self.fk_cols = self.get_fks()
 
-        # Attach an FormAlchemyOptions class to handle options.
-        self.options = FormAlchemyOptions()
-        # Parse SQLAlchemy mapped class options.
-        self.options.parse(self.model)
+        # Attach a FormAlchemyOptions class to handle model's options.
+        self.options = FormAlchemyOptions(self.model)
 
         self.configure = self.options.configure
         self.reconfigure = self.options.reconfigure
@@ -165,12 +163,6 @@ class FieldSet(object):
         return col_types
 
     def get_colnames(self, **kwargs):
-        """Return column names."""
-        if kwargs:
-            return self._get_filtered_cols(**kwargs)
-        return self.model.c.keys()
-
-    def _get_filtered_cols(self, **kwargs):
         """Return a list of filtered column names.
 
         Keyword arguments:
@@ -180,6 +172,11 @@ class FieldSet(object):
 
         """
 
+        if kwargs:
+            return self._get_filtered_cols(**kwargs)
+        return self.model.c.keys()
+
+    def _get_filtered_cols(self, **kwargs):
         pk = kwargs.get("pk", True)
         fk = kwargs.get("fk", True)
         exclude = kwargs.get("exclude", [])
@@ -313,7 +310,9 @@ class FieldSet(object):
         """
 
         # Merge class level options with given argument options.
-        options = FormAlchemyOptions(self.options.copy()).configure(**options)
+        opts = FormAlchemyOptions(self.options.copy())
+        opts.configure(**options)
+        options = opts
 
         # Categorize columns
         columns = self.get_colnames(**options)
