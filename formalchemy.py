@@ -426,7 +426,21 @@ class FieldSet(Model):
         opts = FormAlchemyOptions(self._options.copy())
         opts.configure(**options)
 
-        return ModelRenderer(self.model).render(**opts)
+        html = ModelRenderer(self.model).render(**opts)
+
+        legend = opts.pop('legend', None)
+        # Setup class's name as default.
+        if legend is None:
+            legend_txt = self.model.__class__.__name__
+        # Don't render a legend field.
+        elif legend is False:
+            return wrap("<fieldset>", html, "</fieldset>")
+        # Use the user given string as the legend.
+        elif isinstance(legend, basestring):
+            legend_txt = legend
+
+        html = h.content_tag('legend', legend_txt) + "\n" + html
+        return wrap("<fieldset>", html, "</fieldset>")
 
 class MakeField(object):
     """The `MakeField` class.
