@@ -25,7 +25,7 @@ def wrap(start, text, end):
 def indent(text):
     return "\n".join([INDENTATION + line for line in text.splitlines()])
 
-class Options(dict):
+class FormAlchemyOptions(dict):
     """The `Options` class.
 
     This is the class responsible for parsing and holding options.
@@ -126,32 +126,14 @@ class FieldSet(object):
         self.pk_cols = self.get_pks()
         self.fk_cols = self.get_fks()
 
-        # Configure class level options.
-        if hasattr(self.model, "FormAlchemy"):
-            self.options = dict([(k, v) for k, v in self.model.FormAlchemy.__dict__.items() if not k.startswith('_')])
-        else:
-            self.options = {}
+        # Attach an FormAlchemyOptions class to handle options.
+        self.options = FormAlchemyOptions()
+        # Parse SQLAlchemy mapped class options.
+        self.options.parse(self.model)
 
-    def configure(self, **options):
-        """Configure FormAlchemy's default behaviour.
-
-        This will update FormAlchemy's default behaviour with the given
-        keyword options. Any other previously set options will be kept intact.
-
-        """
-
-        self.options.update(options)
-
-    def reconfigure(self, **options):
-        """Reconfigure FormAlchemy's default behaviour from scratch.
-
-        This will clear any previously set option and update FormAlchemy's
-        default behaviour with the given keyword options.
-
-        """
-
-        self.options.clear()
-        self.configure(**options)
+        self.configure = self.options.configure
+        self.reconfigure = self.options.reconfigure
+        self.parse = self.options.parse
 
     def get_coltypes(self):
         """Categorize columns by type.
@@ -169,7 +151,7 @@ class FieldSet(object):
 
         """
 
-        # FIXME: Is this the good way to handle form generation?
+        # FIXME: Is this the good way to handle field generation?
         # What shall we do about non-standard SQLAlchemy types that were
         # built directly off of a TypeEngine?
         # Although, this should handle custum types built from one of those.
@@ -330,10 +312,8 @@ class FieldSet(object):
 
         """
 
-        # Merge class level options with argument level options.
-        default_opts = self.options.copy()
-        default_opts.update(**options)
-        options = default_opts
+        # Merge class level options with given argument options.
+        options = FormAlchemyOptions(self.options.copy()).configure(**options)
 
         # Categorize columns
         columns = self.get_colnames(**options)
