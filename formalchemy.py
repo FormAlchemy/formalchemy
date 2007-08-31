@@ -6,11 +6,14 @@
 import webhelpers as h
 from sqlalchemy.types import Binary, Boolean, Date, DateTime, Integer, Numeric, String, Time
 
-__all__ = ["FormAlchemyOptions", "Model", "ModelRenderer", "FieldRenderer",
+__all__ = ["FormAlchemyOptions", "Model", "ModelRender", "FieldRender",
     "FieldSet", "Label", "BaseField", "Field", "TextField", "PasswordField",
     "HiddenField", "BooleanField", "FileField", "IntegerField",
     "DateTimeField", "DateField", "TimeField", "SelectField"]
 __version__ = "0.1"
+__doc__ = """
+
+"""
 
 INDENTATION = "  "
 
@@ -63,6 +66,9 @@ class FormAlchemyOptions(dict):
 
         self.clear()
         self.configure(**options)
+
+    def get_configuration(self):
+        return self
 
 class Model(object):
     """The `Model` class.
@@ -268,8 +274,9 @@ class Model(object):
 class BaseRenderer(object):
     """The `BaseRenderer` class.
 
-    This this is the base class for all objects needing rendering capabilities.
-    The render method should be overridden with appropriate render.
+    This this is the base class for all classes needing rendering capabilities.
+    The render method should be overridden with appropriate per class render
+    method.
 
     """
 
@@ -279,14 +286,23 @@ class BaseRenderer(object):
     def __str__(self):
         return self.render()
 
-class BaseModelRenderer(Model, BaseRenderer):
-    pass
+class BaseModelRender(Model, BaseRenderer, FormAlchemyOptions):
+    """The `BaseModelRender` class.
 
-class ModelRenderer(BaseModelRenderer):
+    This this is the base class for all classes needing to deal with `model`
+    access and support rendering capabilities. The render method should be
+    overridden with appropriate render.
+
+    `BaseModelRender` is a subclass of `FormAlchemyOptions`, providing option
+    parsing and configuration capabilities.
+
+    """
+
+class ModelRender(BaseModelRender):
     """Return generated HTML fields from a SQLAlchemy mapped class."""
 
     def __init__(self, model):
-        super(ModelRenderer, self).__init__(model)
+        super(ModelRender, self).__init__(model)
 
     def render(self, **options):
         """Return HTML fields generated from the `model`.
@@ -339,15 +355,15 @@ class ModelRenderer(BaseModelRenderer):
         html = []
         # Generate fields.
         for col in columns:
-            field = FieldRenderer(self.model, col).render(**options)
+            field = FieldRender(self.model, col).render(**options)
             html.append(field)
 
         return "\n".join(html)
 
-class FieldRenderer(BaseModelRenderer):
-    """The `FieldRenderer` class.
+class FieldRender(BaseModelRender):
+    """The `FieldRender` class.
 
-    The `FieldRenderer` class is used for generating a single HTML field.
+    The `FieldRender` class is used for generating a single HTML field.
 
     Return generated <label> + <input> tags. Takes a `model` and one of the
     `model` column's name as argument.
@@ -355,7 +371,7 @@ class FieldRenderer(BaseModelRenderer):
     """
 
     def __init__(self, model, col):
-        super(FieldRenderer, self).__init__(model)
+        super(FieldRender, self).__init__(model)
         self.col = col
 
     def render(self, **options):
@@ -382,7 +398,7 @@ class FieldRenderer(BaseModelRenderer):
 
         # Process hidden fields first as they don't need a `Label`.
         if self.col in hiddens:
-            return str(HiddenField(self.model, col))
+            return HiddenField(self.model, col).render()
 
         # Make the label
         label = Label(self.col, alias=aliases.get(self.col, self.col))
@@ -392,43 +408,43 @@ class FieldRenderer(BaseModelRenderer):
             label.cls = class_optional
         else:
             label.cls = class_required
-        field = str(label)
+        field = label.render()
 
         # Make the input
         if self.col in radios:
             radio = RadioSet(self.model, self.col, choices=radios[self.col])
-            field += "\n" + str(radio)
+            field += "\n" + radio.render()
 
         elif self.col in dropdowns:
             dropdown = SelectField(self.model, self.col, dropdowns[self.col].pop("opts"), **dropdowns[self.col])
-            field += "\n" + str(dropdown)
+            field += "\n" + dropdown.render()
 
         elif self.col in passwords:
-            field += "\n" + str(PasswordField(self.model, self.col, readonly=self.col in readonlys))
+            field += "\n" + PasswordField(self.model, self.col, readonly=self.col in readonlys).render()
 
         elif self.col in self.col_types[String]:
-            field += "\n" + str(TextField(self.model, self.col))
+            field += "\n" + TextField(self.model, self.col).render()
 
         elif self.col in self.col_types[Integer]:
-            field += "\n" + str(IntegerField(self.model, self.col))
+            field += "\n" + IntegerField(self.model, self.col).render()
 
         elif self.col in self.col_types[Boolean]:
-            field += "\n" + str(BooleanField(self.model, self.col))
+            field += "\n" + BooleanField(self.model, self.col).render()
 
         elif self.col in self.col_types[DateTime]:
-            field += "\n" + str(DateTimeField(self.model, self.col))
+            field += "\n" + DateTimeField(self.model, self.col).render()
 
         elif self.col in self.col_types[Date]:
-            field += "\n" + str(DateField(self.model, self.col))
+            field += "\n" + DateField(self.model, self.col).render()
 
         elif self.col in self.col_types[Time]:
-            field += "\n" + str(TimeField(self.model, self.col))
+            field += "\n" + TimeField(self.model, self.col).render()
 
         elif self.col in self.col_types[Binary]:
-            field += "\n" + str(FileField(self.model, self.col))
+            field += "\n" + FileField(self.model, self.col).render()
 
         else:
-            field += "\n" + str(Field(self.model, self.col))
+            field += "\n" + Field(self.model, self.col).render()
 
         # Make the error
         if self.col in errors:
@@ -442,12 +458,11 @@ class FieldRenderer(BaseModelRenderer):
 
         return field
 
-class FieldSet(BaseModelRenderer):
+class FieldSet(BaseModelRender):
     """The `FieldSet` class.
 
-    This is the class responsible for generating HTML form fields. It needs
-    to be instantiate with a SQLAlchemy mapped class as argument. The
-    SQLAlchemy mapped class is held as `model`.
+    This class is responsible for generating HTML fieldsets from a given
+    `model`.
 
     The one method to use is `render`. This is the method that returns
     generated HTML code from the `model` object.
@@ -503,7 +518,7 @@ class FieldSet(BaseModelRenderer):
 
         super(FieldSet, self).__init__(model)
 
-        # Attach a FormAlchemyOptions class to handle model's options.
+        # Attach a `FormAlchemyOptions` class to handle model's options.
         self._options = FormAlchemyOptions()
         self._options.parse(self.model)
 
@@ -515,7 +530,7 @@ class FieldSet(BaseModelRenderer):
         opts = FormAlchemyOptions(self._options.copy())
         opts.configure(**options)
 
-        html = ModelRenderer(self.model).render(**opts)
+        html = ModelRender(self.model).render(**opts)
 
         legend = opts.pop('legend', None)
         # Setup class's name as default.
@@ -636,7 +651,8 @@ class FileField(Field):
     """The `FileField` class."""
 
     def render(self):
-        return h.file_field(self.name, value="foo", **self.attribs)
+        # Do we need a value here ?
+        return h.file_field(self.name, **self.attribs)
 
 class IntegerField(Field):
     """The `IntegerField` class."""
@@ -690,7 +706,7 @@ class RadioSet(Field):
             if isinstance(choice, (list, tuple)):
                 choice_name, choice_value = choice
                 radio = RadioField(self.name, choice_value, checked=self.get_value() == choice_value)
-                radios.append(str(radio) + choice_name)
+                radios.append(radio.render() + choice_name)
             # ... or just a string.
             else:
                 checked = choice == getattr(self.model, col) or choice == default
