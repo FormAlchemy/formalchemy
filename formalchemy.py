@@ -279,7 +279,10 @@ class BaseRenderer(object):
     def __str__(self):
         return self.render()
 
-class ModelRenderer(Model):
+class BaseModelRenderer(Model, BaseRenderer):
+    pass
+
+class ModelRenderer(BaseModelRenderer):
     """Return generated HTML fields from a SQLAlchemy mapped class."""
 
     def __init__(self, model):
@@ -341,11 +344,13 @@ class ModelRenderer(Model):
 
         return "\n".join(html)
 
-class FieldRenderer(Model):
+class FieldRenderer(BaseModelRenderer):
     """The `FieldRenderer` class.
 
     The `FieldRenderer` class is used for generating a single HTML field.
-    Return generated <label> + <input> tags.
+
+    Return generated <label> + <input> tags. Takes a `model` and one of the
+    `model` column's name as argument.
 
     """
 
@@ -354,7 +359,7 @@ class FieldRenderer(Model):
         self.col = col
 
     def render(self, **options):
-        # Categorize columns
+        # Categorize options
         readonlys = self.get_readonlys(**options)
 
         passwords = options.get('password', [])
@@ -437,7 +442,7 @@ class FieldRenderer(Model):
 
         return field
 
-class FieldSet(Model):
+class FieldSet(BaseModelRenderer):
     """The `FieldSet` class.
 
     This is the class responsible for generating HTML form fields. It needs
@@ -526,7 +531,7 @@ class FieldSet(Model):
         html = h.content_tag('legend', legend_txt) + "\n" + html
         return wrap("<fieldset>", html, "</fieldset>")
 
-class Label(object):
+class Label(BaseRenderer):
     """The `Label` class."""
 
     cls = None
@@ -550,10 +555,10 @@ class Label(object):
 
     prettify = staticmethod(prettify)
 
-    def __str__(self):
+    def render(self):
         return h.content_tag("label", content=self.get_display(), for_=self.name, class_=self.cls)
 
-class BaseField(object):
+class BaseField(BaseRenderer):
     """The `BaseField` class.
 
     This is the class that fits to all HTML <input> structure.
@@ -598,9 +603,6 @@ class Field(BaseField):
 
     def render(self):
         return h.text_field(self.name, value=self.get_value())
-
-    def __str__(self):
-        return self.render()
 
 class TextField(Field):
     """The `TextField` class."""
