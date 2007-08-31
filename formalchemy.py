@@ -70,19 +70,37 @@ class Model(object):
     Takes a model as argument and provides convenient model methods.
 
     Methods:
+
+      * get_pks(self):
+        Return a list of primary key column names.
+
+      * get_fks(self):
+        Return a list of foreign key column names.
+
+      * is_nullable(self, col):
+        Return `True` if the column name `col` is nullable or `False`.
+
+      * get_unnullables(self):
+        Return a list of non-nullable column names.
+
       * get_colnames(self[, **kwargs]):
         Return a list of the `model` column names. `kwargs` are keywords that
         can be passed for column filtering.
 
       * get_readonlys(self[, **kwargs]):
-        Same as `get_colnames()`, but return readonly columns specified in
-        `kwargs`.
+        Same as `get_colnames()`, but return readonly columns specified by
+        `kwargs` keywords.
 
       * get_coltypes(self):
         Return a 8 key dict where keys are SQLAlchemy types which inherit
         directly from the SQLAlchemy `TypeEngine` class (except for NullType).
         Each key value is a list of column names which are subclasses of the
         key. Lists can be empty.
+
+      * get_by_type(self, string):
+        Return a list of column names that are of type `string`. `string`
+        should be a string representation of one of the 8 key types returned
+        by `get_coltypes()`.
 
     """
 
@@ -92,6 +110,30 @@ class Model(object):
         self.col_types = self.get_coltypes()
         self.pk_cols = self.get_pks()
         self.fk_cols = self.get_fks()
+
+    def is_pk(self, col):
+        """Return True if `col` is a primary key column, otherwise return False."""
+        return self.model.c[col].primary_key
+
+    def get_pks(self):
+        """Return a list of primary key column names."""
+        return [col for col in self.col_names if self.is_pk(col)]
+
+    def is_fk(self, col):
+        """Return True if `col` is a primary foreign column, otherwise return False."""
+        return self.model.c[col].foreign_key
+
+    def get_fks(self):
+        """Return a list of foreign key column names."""
+        return [col for col in self.col_names if self.is_fk(col)]
+
+    def is_nullable(self, col):
+        """Return True if `col` is a nullable column, otherwise return False."""
+        return self.model.c[col].nullable
+
+    def get_unnullables(self):
+        """Return a list of non-nullable column names."""
+        return [col for col in self.col_names if not self.is_nullable(col)]
 
     def get_colnames(self, **kwargs):
         """Return a list of filtered column names.
@@ -166,10 +208,9 @@ class Model(object):
 
         """
 
-        # FIXME: Is this the good way to handle field generation?
-        # What shall we do about non-standard SQLAlchemy types that were
-        # built directly off of a TypeEngine?
-        # Although, this should handle custum types built from one of those.
+        # FIXME: What shall we do about non-standard SQLAlchemy types that were
+        # built directly off of a TypeEngine type?
+        # Although, this should handle custum types built from one of those 8.
 
         col_types = dict.fromkeys([t for t in [Binary, Boolean, Date, DateTime, Integer, Numeric, String, Time]], [])
 
@@ -208,6 +249,10 @@ class Model(object):
 
         return self.col_types.get(keys[string.lower()], [])
 
+    def is_nullable(self, col):
+        """Return True if `col` is a nullable column, otherwise return False."""
+        return self.model.c[col].nullable
+
     def get_unnullables(self):
         """Return a list of non-nullable column names."""
         return [col for col in self.model.c.keys() if not self.is_nullable(col)]
@@ -219,10 +264,6 @@ class Model(object):
     def get_fks(self):
         """Return a list of foreign key column names."""
         return [col for col in self.model.c.keys() if self.model.c[col].foreign_key]
-
-    def is_nullable(self, col):
-        """Return True if `col` is a nullable column, otherwise return False."""
-        return self.model.c[col].nullable
 
 class BaseRenderer(object):
     """The `BaseRenderer` class.
