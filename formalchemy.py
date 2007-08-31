@@ -6,13 +6,11 @@
 import webhelpers as h
 from sqlalchemy.types import Binary, Boolean, Date, DateTime, Integer, Numeric, String, Time
 
-__all__ = ["FormAlchemyOptions", "Model", "ModelRender", "FieldRender",
-    "FieldSet", "Label", "BaseField", "Field", "TextField", "PasswordField",
-    "HiddenField", "BooleanField", "FileField", "IntegerField",
-    "DateTimeField", "DateField", "TimeField", "SelectField"]
-__version__ = "0.1"
+__all__ = ["ModelRender", "FieldRender", "FieldSet"]
+__version__ = "0.2"
 __doc__ = """
-
+=Terminology=
+The term "model" is 
 """
 
 INDENTATION = "  "
@@ -23,25 +21,42 @@ def wrap(start, text, end):
 def indent(text):
     return "\n".join([INDENTATION + line for line in text.splitlines()])
 
+class FormAlchemyError(Exception):
+    """Base FormAlchemy error class."""
+
+class RenderError(FormAlchemyError):
+    """Raised when an error occurs during rendering."""
+
+class UnboundModelError(RenderError):
+    """Raised when rendering is called but no model has been bound to it."""
+
+    def __str__(self):
+        return "No SQLAlchemy mapped class was bound to this class yet. Use the .bind() method."
+
 class FormAlchemyOptions(dict):
     """The `FormAlchemyOptions` dictionary class.
 
     This is the class responsible for parsing and holding FormAlchemy options.
     It has the same API as `dict`, plus three extra methods:
 
-        * parse(self, model):
-          Update options with the `model` FormAlchemy options.
+      * parse(self, model):
+        Reconfigure options from scratch parsing the `model`'s FormAlchemy
+        options.
 
-        * configure(self, **options):
-          Update options with the given option keywords.
+      * configure(self, **options):
+        Update options with the given option keywords.
 
-        * reconfigure(self[, **options]):
-          Reset the options and configure options given option keywords.
+      * reconfigure(self[, **options]):
+        Reset the options and configure options given option keywords.
+
+      * get_config(self):
+        Return the current configuration.
 
     """
 
     def parse(self, model):
         """Parse options from `model`'s FormAlchemy subclass if defined."""
+        self.clear()
         if hasattr(model, "FormAlchemy"):
             [self.__setitem__(k, v) for k, v in model.FormAlchemy.__dict__.items() if not k.startswith('_')]
 
@@ -67,55 +82,52 @@ class FormAlchemyOptions(dict):
         self.clear()
         self.configure(**options)
 
-    def get_configuration(self):
+    def get_config(self):
         return self
 
-class Model(object):
-    """The `Model` class.
+class BaseModel(object):
+    """The `BaseModel` class.
 
-    Takes a model as argument and provides convenient model methods.
+    Takes a `model` as argument and provides convenient model methods.
 
     Methods:
 
+      * bind(self, model)
+      * is_bound(self)
+      * is_pk(self, col):
       * get_pks(self):
-        Return a list of primary key column names.
-
       * get_fks(self):
-        Return a list of foreign key column names.
-
       * is_nullable(self, col):
-        Return `True` if the column name `col` is nullable or `False`.
-
       * get_unnullables(self):
-        Return a list of non-nullable column names.
-
       * get_colnames(self[, **kwargs]):
-        Return a list of the `model` column names. `kwargs` are keywords that
-        can be passed for column filtering.
-
       * get_readonlys(self[, **kwargs]):
-        Same as `get_colnames()`, but return readonly columns specified by
-        `kwargs` keywords.
-
       * get_coltypes(self):
-        Return a 8 key dict where keys are SQLAlchemy types which inherit
-        directly from the SQLAlchemy `TypeEngine` class (except for NullType).
-        Each key value is a list of column names which are subclasses of the
-        key. Lists can be empty.
 
-      * get_by_type(self, string):
-        Return a list of column names that are of type `string`. `string`
-        should be a string representation of one of the 8 key types returned
-        by `get_coltypes()`.
+    Inherits from FormAlchemyOptions methods as well.
 
     """
 
-    def __init__(self, model):
+    def __init__(self, bind=None):
+        self._options = FormAlchemyOptions()
+        self.parse = self._options.parse
+        self.configure = self._options.configure
+        self.reconfigure = self._options.reconfigure
+        self.get_config = self._options.get_config
+
+        if bind:
+            self.bind(bind)
+        else:
+            self.model = bind
+
+    def bind(self, model):
+        """Bind to the given `model` from which HTML field generation will be done."""
+
+        self.parse(model)
         self.model = model
-        self.col_names = self.get_colnames()
-        self.col_types = self.get_coltypes()
-        self.pk_cols = self.get_pks()
-        self.fk_cols = self.get_fks()
+
+    def is_bound(self):
+        """Return True if it was bound to a model. Otherwise, return False."""
+        return bool(self.model)
 
     def is_pk(self, col):
         """Return True if `col` is a primary key column, otherwise return False."""
@@ -123,7 +135,7 @@ class Model(object):
 
     def get_pks(self):
         """Return a list of primary key column names."""
-        return [col for col in self.col_names if self.is_pk(col)]
+        return [col for col in self.get_colnames() if self.is_pk(col)]
 
     def is_fk(self, col):
         """Return True if `col` is a primary foreign column, otherwise return False."""
@@ -131,7 +143,7 @@ class Model(object):
 
     def get_fks(self):
         """Return a list of foreign key column names."""
-        return [col for col in self.col_names if self.is_fk(col)]
+        return [col for col in self.get_colnames() if self.is_fk(col)]
 
     def is_nullable(self, col):
         """Return True if `col` is a nullable column, otherwise return False."""
@@ -139,7 +151,7 @@ class Model(object):
 
     def get_unnullables(self):
         """Return a list of non-nullable column names."""
-        return [col for col in self.col_names if not self.is_nullable(col)]
+        return [col for col in self.get_colnames() if not self.is_nullable(col)]
 
     def get_colnames(self, **kwargs):
         """Return a list of filtered column names.
@@ -151,6 +163,9 @@ class Model(object):
 
         """
 
+        if not self.is_bound():
+            raise UnboundModelError()
+
         if kwargs:
             return self._get_filtered_cols(**kwargs)
         return self.model.c.keys()
@@ -159,15 +174,17 @@ class Model(object):
         pk = kwargs.get("pk", True)
         fk = kwargs.get("fk", True)
         exclude = kwargs.get("exclude", [])
+
+        ignore = exclude[:]
         if not pk:
-            exclude += self.pk_cols
+            ignore.extend(self.get_pks())
         if not fk:
-            exclude += self.fk_cols
+            ignore.extend(self.get_fks())
 
         columns = []
 
-        for col in self.col_names:
-            if not col in exclude:
+        for col in self.get_colnames():
+            if not col in ignore:
                 columns.append(col)
 
         return columns
@@ -176,9 +193,9 @@ class Model(object):
         """Return a list of columns that should be readonly.
 
         Keywords arguments:
-        * `readonly_pk=False` - Will prohibit changes to primary key columns if set to `True`.
-        * `readonly_fk=False` - Will prohibit changes to foreign key columns if set to `True`.
-        * `readonly=[]` - An iterable containing column names to set as readonly.
+          * `readonly_pk=False` - Will prohibit changes to primary key columns if set to `True`.
+          * `readonly_fk=False` - Will prohibit changes to foreign key columns if set to `True`.
+          * `readonly=[]` - An iterable containing column names to set as readonly.
 
         """
 
@@ -187,13 +204,13 @@ class Model(object):
         readonlys = kwargs.get("readonly", [])
 
         if ro_pks:
-            readonlys += self.pk_cols
+            readonlys += self.get_pks()
         if ro_fks:
-            readonlys += self.fk_cols
+            readonlys += self.get_fks()
 
         columns = []
 
-        for col in self.col_names:
+        for col in self.get_colnames():
             if col in readonlys:
                 columns.append(col)
 
@@ -225,36 +242,6 @@ class Model(object):
 
         return col_types
 
-    def get_by_type(self, string):
-        """Return a list of `string` type column names.
-
-        `string` is case insensitive.
-
-        Valid `string` values:
-          * "binary"
-          * "boolean"
-          * "date"
-          * "datetime"
-          * "integer"
-          * "numeric"
-          * "string"
-          * "time"
-
-        """
-
-        keys = {
-            "binary":Binary,
-            "boolean":Boolean,
-            "date":Date,
-            "datetime":DateTime,
-            "integer":Integer,
-            "numeric":Numeric,
-            "string":String,
-            "time":Time,
-        }
-
-        return self.col_types.get(keys[string.lower()], [])
-
     def is_nullable(self, col):
         """Return True if `col` is a nullable column, otherwise return False."""
         return self.model.c[col].nullable
@@ -271,8 +258,12 @@ class Model(object):
         """Return a list of foreign key column names."""
         return [col for col in self.model.c.keys() if self.model.c[col].foreign_key]
 
-class BaseRenderer(object):
-    """The `BaseRenderer` class.
+#    def __repr__(self):
+#        repr = "%s bound to: %s" % (self.__class__.__name__, self.model)
+#        return "<" + repr + ">"
+
+class BaseRender(object):
+    """The `BaseRender` class.
 
     This this is the base class for all classes needing rendering capabilities.
     The render method should be overridden with appropriate per class render
@@ -281,28 +272,27 @@ class BaseRenderer(object):
     """
 
     def render(self):
-        raise NotImplementedError()
+        if self.__class__.__name__ == "BaseRender":
+            raise NotImplementedError()
+
+        if not self.is_bound():
+             raise UnboundModelError()
 
     def __str__(self):
         return self.render()
 
-class BaseModelRender(Model, BaseRenderer, FormAlchemyOptions):
+class BaseModelRender(BaseModel, BaseRender):
     """The `BaseModelRender` class.
 
     This this is the base class for all classes needing to deal with `model`
     access and support rendering capabilities. The render method should be
     overridden with appropriate render.
 
-    `BaseModelRender` is a subclass of `FormAlchemyOptions`, providing option
-    parsing and configuration capabilities.
-
     """
+    pass
 
 class ModelRender(BaseModelRender):
     """Return generated HTML fields from a SQLAlchemy mapped class."""
-
-    def __init__(self, model):
-        super(ModelRender, self).__init__(model)
 
     def render(self, **options):
         """Return HTML fields generated from the `model`.
@@ -349,13 +339,22 @@ class ModelRender(BaseModelRender):
 
         """
 
+        super(ModelRender, self).render()
+
+        # Merge class level options with given argument options.
+        opts = FormAlchemyOptions(self.get_config())
+        opts.configure(**options)
+
         # Filter out unnecessary columns.
-        columns = self.get_colnames(**options)
+        columns = self.get_colnames(**opts)
 
         html = []
         # Generate fields.
+        field_render = FieldRender(bind=self.model)
+        field_render.reconfigure()
         for col in columns:
-            field = FieldRender(self.model, col).render(**options)
+            field_render.set_column(col)
+            field = field_render.render(**opts)
             html.append(field)
 
         return "\n".join(html)
@@ -363,95 +362,119 @@ class ModelRender(BaseModelRender):
 class FieldRender(BaseModelRender):
     """The `FieldRender` class.
 
-    The `FieldRender` class is used for generating a single HTML field.
+    Return generated <label> + <input> tags for one single column.
 
-    Return generated <label> + <input> tags. Takes a `model` and one of the
-    `model` column's name as argument.
+    Methods:
+      * set_column(self, col_name):
+        Set the column to render.
+
+      * get_column(self):
+        Return current column set.
 
     """
 
-    def __init__(self, model, col):
-        super(FieldRender, self).__init__(model)
-        self.col = col
+    def __init__(self, column=None, bind=None):
+        super(FieldRender, self).__init__(bind=bind)
+        if column:
+            self.set_column(column)
+        else:
+            self._column = None
+
+    def set_column(self, column):
+        if not isinstance(column, basestring):
+            raise ValueError("Column name should be a string, found %s of type %s instead." % (repr(column), type(column)))
+        self._column = column
+
+    def get_column(self):
+        return self._column
 
     def render(self, **options):
+        super(FieldRender, self).render()
+
+        # Merge class level options with given argument options.
+        opts = FormAlchemyOptions(self.get_config())
+        opts.configure(**options)
+
         # Categorize options
-        readonlys = self.get_readonlys(**options)
+        readonlys = self.get_readonlys(**opts)
 
-        passwords = options.get('password', [])
-        hiddens = options.get('hidden', [])
-        dropdowns = options.get('dropdown', {})
-        radios = options.get('radio', {})
+        passwords = opts.get('password', [])
+        hiddens = opts.get('hidden', [])
+        dropdowns = opts.get('dropdown', {})
+        radios = opts.get('radio', {})
 
-        pretty_func = options.get('prettify')
-        aliases = options.get('alias', {})
+        pretty_func = opts.get('prettify')
+        aliases = opts.get('alias', {})
 
-        errors = options.get('error', {})
-        docs = options.get('doc', {})
+        errors = opts.get('error', {})
+        docs = opts.get('doc', {})
 
         # Setup HTML classes
-#        class_label = options.get('cls_lab', 'form_label')
-        class_required = options.get('cls_req', 'field_req')
-        class_optional = options.get('cls_opt', 'field_opt')
-        class_error = options.get('cls_err', 'field_err')
-        class_doc = options.get('cls_doc', 'field_doc')
+#        class_label = opts.get('cls_lab', 'form_label')
+        class_required = opts.get('cls_req', 'field_req')
+        class_optional = opts.get('cls_opt', 'field_opt')
+        class_error = opts.get('cls_err', 'field_err')
+        class_doc = opts.get('cls_doc', 'field_doc')
 
         # Process hidden fields first as they don't need a `Label`.
-        if self.col in hiddens:
+        if self._column in hiddens:
             return HiddenField(self.model, col).render()
 
         # Make the label
-        label = Label(self.col, alias=aliases.get(self.col, self.col))
+        label = Label(self._column, alias=aliases.get(self._column, self._column))
         if callable(pretty_func):
             label.prettify = pretty_func # Apply staticmethod(pretty_func) ?
-        if self.is_nullable(self.col):
+        if self.is_nullable(self._column):
             label.cls = class_optional
         else:
             label.cls = class_required
         field = label.render()
 
+        # Hold a list of column names by type.
+        col_types = self.get_coltypes()
+
         # Make the input
-        if self.col in radios:
-            radio = RadioSet(self.model, self.col, choices=radios[self.col])
+        if self._column in radios:
+            radio = RadioSet(self.model, self._column, choices=radios[self._column])
             field += "\n" + radio.render()
 
-        elif self.col in dropdowns:
-            dropdown = SelectField(self.model, self.col, dropdowns[self.col].pop("opts"), **dropdowns[self.col])
+        elif self._column in dropdowns:
+            dropdown = SelectField(self.model, self._column, dropdowns[self._column].pop("opts"), **dropdowns[self._column])
             field += "\n" + dropdown.render()
 
-        elif self.col in passwords:
-            field += "\n" + PasswordField(self.model, self.col, readonly=self.col in readonlys).render()
+        elif self._column in passwords:
+            field += "\n" + PasswordField(self.model, self._column, readonly=self._column in readonlys).render()
 
-        elif self.col in self.col_types[String]:
-            field += "\n" + TextField(self.model, self.col).render()
+        elif self._column in col_types[String]:
+            field += "\n" + TextField(self.model, self._column).render()
 
-        elif self.col in self.col_types[Integer]:
-            field += "\n" + IntegerField(self.model, self.col).render()
+        elif self._column in col_types[Integer]:
+            field += "\n" + IntegerField(self.model, self._column).render()
 
-        elif self.col in self.col_types[Boolean]:
-            field += "\n" + BooleanField(self.model, self.col).render()
+        elif self._column in col_types[Boolean]:
+            field += "\n" + BooleanField(self.model, self._column).render()
 
-        elif self.col in self.col_types[DateTime]:
-            field += "\n" + DateTimeField(self.model, self.col).render()
+        elif self._column in col_types[DateTime]:
+            field += "\n" + DateTimeField(self.model, self._column).render()
 
-        elif self.col in self.col_types[Date]:
-            field += "\n" + DateField(self.model, self.col).render()
+        elif self._column in col_types[Date]:
+            field += "\n" + DateField(self.model, self._column).render()
 
-        elif self.col in self.col_types[Time]:
-            field += "\n" + TimeField(self.model, self.col).render()
+        elif self._column in col_types[Time]:
+            field += "\n" + TimeField(self.model, self._column).render()
 
-        elif self.col in self.col_types[Binary]:
-            field += "\n" + FileField(self.model, self.col).render()
+        elif self._column in col_types[Binary]:
+            field += "\n" + FileField(self.model, self._column).render()
 
         else:
-            field += "\n" + Field(self.model, self.col).render()
+            field += "\n" + Field(self.model, self._column).render()
 
         # Make the error
-        if self.col in errors:
-            field += "\n" + h.content_tag("span", content=errors[self.col], class_=class_error)
+        if self._column in errors:
+            field += "\n" + h.content_tag("span", content=errors[self._column], class_=class_error)
         # Make the documentation
-        if self.col in docs:
-            field += "\n" + h.content_tag("span", content=docs[self.col], class_=class_doc)
+        if self._column in docs:
+            field += "\n" + h.content_tag("span", content=docs[self._column], class_=class_doc)
 
         # Wrap the whole thing into a div
         field = wrap("<div>", field, "</div>")
@@ -506,31 +529,17 @@ class FieldSet(BaseModelRender):
 
     """
 
-    def __init__(self, model):
-        """Construct the `FieldSet` class.
-
-        Arguments are:
-
-          `model`
-            An SQLAlchemy mapped class. This is the reference class.
-
-        """
-
-        super(FieldSet, self).__init__(model)
-
-        # Attach a `FormAlchemyOptions` class to handle model's options.
-        self._options = FormAlchemyOptions()
-        self._options.parse(self.model)
-
-        self.configure = self._options.configure
-        self.reconfigure = self._options.reconfigure
-
     def render(self, **options):
+        super(FieldSet, self).render()
+
         # Merge class level options with given argument options.
-        opts = FormAlchemyOptions(self._options.copy())
+        opts = FormAlchemyOptions(self.get_config())
         opts.configure(**options)
 
-        html = ModelRender(self.model).render(**opts)
+        model_render = ModelRender(self.model)
+        # Reset options and only render based given options
+        model_render.reconfigure()
+        html = model_render.render(**opts)
 
         legend = opts.pop('legend', None)
         # Setup class's name as default.
@@ -546,7 +555,7 @@ class FieldSet(BaseModelRender):
         html = h.content_tag('legend', legend_txt) + "\n" + html
         return wrap("<fieldset>", html, "</fieldset>")
 
-class Label(BaseRenderer):
+class Label(BaseRender):
     """The `Label` class."""
 
     cls = None
@@ -573,7 +582,7 @@ class Label(BaseRenderer):
     def render(self):
         return h.content_tag("label", content=self.get_display(), for_=self.name, class_=self.cls)
 
-class BaseField(BaseRenderer):
+class BaseField(BaseRender):
     """The `BaseField` class.
 
     This is the class that fits to all HTML <input> structure.
