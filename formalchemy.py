@@ -6,11 +6,11 @@
 import webhelpers as h
 from sqlalchemy.types import Binary, Boolean, Date, DateTime, Integer, Numeric, String, Time
 
-__all__ = ["ModelRender", "FieldRender", "FieldSet"]
+__all__ = ["ModelRender", "FieldRender", "FieldSet", "TableItem", "TableCollection"]
 __version__ = "0.2"
 __doc__ = """
 =Terminology=
-The term "model" is 
+  *model*: the SQLAlchemy mapped class.
 """
 
 INDENTATION = "  "
@@ -32,6 +32,12 @@ class UnboundModelError(RenderError):
 
     def __str__(self):
         return "No SQLAlchemy mapped class was bound to this class yet. Use the .bind() method."
+
+class InvalidColumnError(RenderError):
+    """Raised when column level rendering classes don't have a valid column set."""
+
+class InvalidCollectionError(RenderError):
+    """Raised when collection level rendering classes don't have a valid collection set."""
 
 class FormAlchemyOptions(dict):
     """The `FormAlchemyOptions` dictionary class.
@@ -117,21 +123,21 @@ class BaseModel(object):
         if bind:
             self.bind(bind)
         else:
-            self.model = bind
+            self._model = bind
 
     def bind(self, model):
         """Bind to the given `model` from which HTML field generation will be done."""
 
         self.parse(model)
-        self.model = model
+        self._model = model
 
     def is_bound(self):
         """Return True if it was bound to a model. Otherwise, return False."""
-        return bool(self.model)
+        return bool(self._model)
 
     def is_pk(self, col):
         """Return True if `col` is a primary key column, otherwise return False."""
-        return self.model.c[col].primary_key
+        return self._model.c[col].primary_key
 
     def get_pks(self):
         """Return a list of primary key column names."""
@@ -139,7 +145,7 @@ class BaseModel(object):
 
     def is_fk(self, col):
         """Return True if `col` is a primary foreign column, otherwise return False."""
-        return self.model.c[col].foreign_key
+        return self._model.c[col].foreign_key
 
     def get_fks(self):
         """Return a list of foreign key column names."""
@@ -147,7 +153,7 @@ class BaseModel(object):
 
     def is_nullable(self, col):
         """Return True if `col` is a nullable column, otherwise return False."""
-        return self.model.c[col].nullable
+        return self._model.c[col].nullable
 
     def get_unnullables(self):
         """Return a list of non-nullable column names."""
@@ -168,7 +174,7 @@ class BaseModel(object):
 
         if kwargs:
             return self._get_filtered_cols(**kwargs)
-        return self.model.c.keys()
+        return self._model.c.keys()
 
     def _get_filtered_cols(self, **kwargs):
         pk = kwargs.get("pk", True)
@@ -238,28 +244,42 @@ class BaseModel(object):
         col_types = dict.fromkeys([t for t in [Binary, Boolean, Date, DateTime, Integer, Numeric, String, Time]], [])
 
         for t in col_types:
-            col_types[t] = [col.name for col in self.model.c if isinstance(col.type, t)]
+            col_types[t] = [col.name for col in self._model.c if isinstance(col.type, t)]
 
         return col_types
 
     def is_nullable(self, col):
         """Return True if `col` is a nullable column, otherwise return False."""
-        return self.model.c[col].nullable
+        return self._model.c[col].nullable
 
     def get_unnullables(self):
         """Return a list of non-nullable column names."""
-        return [col for col in self.model.c.keys() if not self.is_nullable(col)]
+        return [col for col in self._model.c.keys() if not self.is_nullable(col)]
 
     def get_pks(self):
         """Return a list of primary key column names."""
-        return [col for col in self.model.c.keys() if self.model.c[col].primary_key]
+        return [col for col in self._model.c.keys() if self._model.c[col].primary_key]
 
     def get_fks(self):
         """Return a list of foreign key column names."""
-        return [col for col in self.model.c.keys() if self.model.c[col].foreign_key]
+        return [col for col in self._model.c.keys() if self._model.c[col].foreign_key]
+
+    def set_prettify(self, func):
+        if callable(func):
+            self.prettify = func # Apply staticmethod(func) ?
+
+    def prettify(text):
+        """Return `text` prettify-ed.
+
+        prettify("my_column_name") == "My column name"
+
+        """
+        return text.replace("_", " ").capitalize()
+
+    prettify = staticmethod(prettify)
 
 #    def __repr__(self):
-#        repr = "%s bound to: %s" % (self.__class__.__name__, self.model)
+#        repr = "%s bound to: %s" % (self.__class__.__name__, self._model)
 #        return "<" + repr + ">"
 
 class BaseRender(object):
@@ -350,7 +370,7 @@ class ModelRender(BaseModelRender):
 
         html = []
         # Generate fields.
-        field_render = FieldRender(bind=self.model)
+        field_render = FieldRender(bind=self._model)
         field_render.reconfigure()
         for col in columns:
             field_render.set_column(col)
@@ -359,10 +379,39 @@ class ModelRender(BaseModelRender):
 
         return "\n".join(html)
 
-class FieldRender(BaseModelRender):
-    """The `FieldRender` class.
+class BaseCollectionRender(BaseModelRender):
+    """The `BaseCollectionRender` class.
 
-    Return generated <label> + <input> tags for one single column.
+    This should be the superclass for all classes needing collection rendering.
+    Takes an extra `collection=[]` keyword argument as the collection list.
+
+    Methods:
+      * set_collection(self, collection):
+        Set the collection to render.
+
+      * get_collection(self):
+        Return current collection set.
+
+    """
+
+    def __init__(self, collection=[], bind=None):
+        super(BaseCollectionRender, self).__init__(bind=bind)
+        self._collection = collection
+
+    def set_collection(self, collection):
+        if not isinstance(collection, (list, tuple)):
+            raise InvalidCollectionError()
+        self._collection = collection
+
+    def get_collection(self):
+        return self._collection
+
+class BaseColumnRender(BaseModelRender):
+    """The `BaseColumnRender` class.
+
+    This should be the superclass for all classes that want column level
+    rendering. Takes an extra `column=None` keyword argument as the concerned
+    column name.
 
     Methods:
       * set_column(self, col_name):
@@ -374,7 +423,7 @@ class FieldRender(BaseModelRender):
     """
 
     def __init__(self, column=None, bind=None):
-        super(FieldRender, self).__init__(bind=bind)
+        super(BaseColumnRender, self).__init__(bind=bind)
         if column:
             self.set_column(column)
         else:
@@ -387,6 +436,18 @@ class FieldRender(BaseModelRender):
 
     def get_column(self):
         return self._column
+
+    def render(self):
+        super(BaseColumnRender, self).render()
+        if not isinstance(self._column, basestring):
+            raise InvalidColumnError("Invalid column '%s'. Please specify an existing column name using .set_column() before rendering." % (self._column))
+
+class FieldRender(BaseColumnRender):
+    """The `FieldRender` class.
+
+    Return generated <label> + <input> tags for one single column.
+
+    """
 
     def render(self, **options):
         super(FieldRender, self).render()
@@ -418,12 +479,11 @@ class FieldRender(BaseModelRender):
 
         # Process hidden fields first as they don't need a `Label`.
         if self._column in hiddens:
-            return HiddenField(self.model, col).render()
+            return HiddenField(self._model, col).render()
 
         # Make the label
         label = Label(self._column, alias=aliases.get(self._column, self._column))
-        if callable(pretty_func):
-            label.prettify = pretty_func # Apply staticmethod(pretty_func) ?
+        label.set_prettify(pretty_func)
         if self.is_nullable(self._column):
             label.cls = class_optional
         else:
@@ -435,39 +495,39 @@ class FieldRender(BaseModelRender):
 
         # Make the input
         if self._column in radios:
-            radio = RadioSet(self.model, self._column, choices=radios[self._column])
+            radio = RadioSet(self._model, self._column, choices=radios[self._column])
             field += "\n" + radio.render()
 
         elif self._column in dropdowns:
-            dropdown = SelectField(self.model, self._column, dropdowns[self._column].pop("opts"), **dropdowns[self._column])
+            dropdown = SelectField(self._model, self._column, dropdowns[self._column].pop("opts"), **dropdowns[self._column])
             field += "\n" + dropdown.render()
 
         elif self._column in passwords:
-            field += "\n" + PasswordField(self.model, self._column, readonly=self._column in readonlys).render()
+            field += "\n" + PasswordField(self._model, self._column, readonly=self._column in readonlys).render()
 
         elif self._column in col_types[String]:
-            field += "\n" + TextField(self.model, self._column).render()
+            field += "\n" + TextField(self._model, self._column).render()
 
         elif self._column in col_types[Integer]:
-            field += "\n" + IntegerField(self.model, self._column).render()
+            field += "\n" + IntegerField(self._model, self._column).render()
 
         elif self._column in col_types[Boolean]:
-            field += "\n" + BooleanField(self.model, self._column).render()
+            field += "\n" + BooleanField(self._model, self._column).render()
 
         elif self._column in col_types[DateTime]:
-            field += "\n" + DateTimeField(self.model, self._column).render()
+            field += "\n" + DateTimeField(self._model, self._column).render()
 
         elif self._column in col_types[Date]:
-            field += "\n" + DateField(self.model, self._column).render()
+            field += "\n" + DateField(self._model, self._column).render()
 
         elif self._column in col_types[Time]:
-            field += "\n" + TimeField(self.model, self._column).render()
+            field += "\n" + TimeField(self._model, self._column).render()
 
         elif self._column in col_types[Binary]:
-            field += "\n" + FileField(self.model, self._column).render()
+            field += "\n" + FileField(self._model, self._column).render()
 
         else:
-            field += "\n" + Field(self.model, self._column).render()
+            field += "\n" + Field(self._model, self._column).render()
 
         # Make the error
         if self._column in errors:
@@ -536,7 +596,7 @@ class FieldSet(BaseModelRender):
         opts = FormAlchemyOptions(self.get_config())
         opts.configure(**options)
 
-        model_render = ModelRender(self.model)
+        model_render = ModelRender(self._model)
         # Reset options and only render based given options
         model_render.reconfigure()
         html = model_render.render(**opts)
@@ -544,7 +604,7 @@ class FieldSet(BaseModelRender):
         legend = opts.pop('legend', None)
         # Setup class's name as default.
         if legend is None:
-            legend_txt = self.model.__class__.__name__
+            legend_txt = self._model.__class__.__name__
         # Don't render a legend field.
         elif legend is False:
             return wrap("<fieldset>", html, "</fieldset>")
@@ -564,20 +624,13 @@ class Label(BaseRender):
         self.name = col
         self.alias = kwargs.pop('alias', self.name)
         self.cls = kwargs.pop('cls', None)
-        prettify = kwargs.pop('prettify', None)
-        if callable(prettify):
-            self.prettify = prettify
+        self.set_prettify(kwargs.pop('prettify'))
 
     def set_alias(self, alias):
         self.alias = alias
 
     def get_display(self):
         return self.prettify(self.alias)
-
-    def prettify(text):
-        return text.replace("_", " ").capitalize()
-
-    prettify = staticmethod(prettify)
 
     def render(self):
         return h.content_tag("label", content=self.get_display(), for_=self.name, class_=self.cls)
@@ -718,7 +771,7 @@ class RadioSet(Field):
                 radios.append(radio.render() + choice_name)
             # ... or just a string.
             else:
-                checked = choice == getattr(self.model, col) or choice == default
+                checked = choice == getattr(self._model, col) or choice == default
                 radiofields.append("\n" + h.radio_button(col, choice, checked=checked) + choice)
 
         self.radios = radios
@@ -737,3 +790,145 @@ class SelectField(Field):
 
     def render(self):
         return h.select(self.name, h.options_for_select(self.options, selected=self.selected), **self.attribs)
+
+class TableHead(BaseColumnRender):
+    """The `TableHead` class.
+
+    This class is responsible for rendering a single table head cell '<th>'.
+
+    """
+
+    def render(self, **options):
+        super(TableHead, self).render()
+
+        # Merge class level options with given argument options.
+        opts = FormAlchemyOptions(self.get_config())
+        opts.configure(**options)
+
+        self.set_prettify(opts.get('prettify'))
+        alias = opts.get('alias', {}).get(self._column, self._column)
+
+        return wrap("<th>", self.prettify(alias), "</th>")
+
+class TableTHead(BaseModelRender):
+    """The `TableTHead` class.
+
+    This class is responsible for rendering a table's header row.
+
+    """
+
+    def render(self, **options):
+        super(TableTHead, self).render()
+
+        row = []
+        for col in self.get_colnames(**options):
+            th = TableHead(column=col, bind=self._model)
+            row.append(th.render(**options))
+        row = wrap("<tr>", "\n".join(row), "</tr>")
+
+        return wrap("<thead>", row, "</thead>")
+
+class TableData(BaseColumnRender):
+    """The `TableData` class.
+
+    This class is responsible for rendering a single table data cell '<td>'.
+
+    """
+
+    def render(self, **options):
+        super(TableData, self).render()
+
+        value = getattr(self._model, self._column)
+        if isinstance(value, bool):
+            value = h.content_tag("em", value)
+        elif value is None:
+            value = h.content_tag("em", self.prettify("not available."))
+        return wrap("<td>", str(value), "</td>")
+
+class TableRow(BaseModelRender):
+    """The `TableRow` class.
+
+    This class is responsible for rendering a table's single row from a
+    `model`.
+
+    """
+
+    def render(self, **options):
+        super(TableRow, self).render()
+
+        row = []
+        for col in self.get_colnames(**options):
+            td = TableData(bind=self._model, column=col)
+            td.reconfigure()
+            row.append(td.render(**options))
+        return wrap("<tr>", "\n".join(row), "</tr>")
+
+class TableBody(BaseCollectionRender):
+    """The `TableBody` class.
+
+    This class is responsible for rendering a table's body from a collection
+    of items.
+
+    """
+
+    def render(self, **options):
+        super(TableBody, self).render()
+
+        if not self._collection:
+            msg = self.prettify("no %s." % self._model.__class__.__name__)
+            td = wrap('<td colspan="%s">' % len(self.get_colnames(**options)), msg, "</td>")
+            return wrap("<tbody>", wrap("<tr>", td, "</tr>"), "</tbody>")
+
+        tbody = []
+        for item in self._collection:
+            tr = TableRow(bind=item)
+            tr.reconfigure()
+            tbody.append(tr.render(**options))
+        return wrap("<tbody>", "\n".join(tbody), "</tbody>")
+
+class TableItem(BaseModelRender):
+    """The `TableItem` class.
+
+    This class is responsible for rendering a table from a single item.
+
+    """
+
+    def render(self, **options):
+        super(TableItem, self).render()
+
+        tbody = []
+        for col in self.get_colnames(**options):
+            row = []
+            th = TableHead(bind=self._model, column=col)
+            th.reconfigure()
+            row.append(th.render(**options))
+
+            td = TableData(bind=self._model, column=col)
+            td.reconfigure()
+            row.append(td.render(**options))
+
+            tbody.append(wrap("<tr>", "\n".join(row), "</tr>"))
+
+        return wrap("<table>", wrap("<tbody>", "\n".join(tbody), "</tbody>"), "</table>")
+
+class TableCollection(BaseCollectionRender):
+    """The `TableCollection` class.
+
+    This class is responsible for rendering a table from a collection of items.
+
+    """
+
+    def render(self, **options):
+        super(TableCollection, self).render()
+
+        table = []
+
+        th = TableTHead(bind=self._model)
+        th.reconfigure()
+        table.append(th.render(**options))
+
+        tb = TableBody(bind=self._model, collection=self._collection)
+        tb.reconfigure()
+        table.append(tb.render(**options))
+
+        return wrap("<table>", "\n".join(table), "</table>")
