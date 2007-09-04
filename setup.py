@@ -6,5 +6,7 @@ setup(name='FormAlchemy',
       author='Alexandre Conrad',
       author_email='aconard(at@)go2france(dot.)com',
       url='http://formalchemy.googlecode.com',
-      py_modules=['formalchemy'],
+      download_url='http://code.google.com/p/formalchemy/downloads/list',
+      packages=['formalchemy'],
+      package_data={'formalchemy':['CHANGELOG', 'COPYRIGHT']}
       )
