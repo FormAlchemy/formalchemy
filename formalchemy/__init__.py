@@ -5,9 +5,9 @@
 
 #import webhelpers as h
 
-from tables import *
-from forms import *
-from validation import *
+from formalchemy.tables import *
+from formalchemy.forms import *
+from formalchemy.validation import *
 
 __all__ = ["FieldSet", "ModelRender", "FieldRender", "TableItem", "TableCollection", "Validate"]
 __version__ = "0.2"

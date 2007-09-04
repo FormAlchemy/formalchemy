@@ -3,8 +3,8 @@
 # This module is part of FormAlchemy and is released under
 # the MIT License: http://www.opensource.org/licenses/mit-license.php
 
-from sqlalchemy.types import Binary, Boolean, Date, DateTime, Integer, Numeric, String, Time
-from exceptions import *
+import sqlalchemy.types as types
+import formalchemy.exceptions as exceptions
 
 class FormAlchemyDict(dict):
     """The `FormAlchemyDict` dictionary class.
@@ -143,7 +143,7 @@ class BaseModel(object):
         """
 
         if not self.is_bound():
-            raise UnboundModelError()
+            raise exceptions.UnboundModelError()
 
         if kwargs:
             return self._get_filtered_cols(**kwargs)
@@ -214,28 +214,20 @@ class BaseModel(object):
         # built directly off of a TypeEngine type?
         # Although, this should handle custum types built from one of those 8.
 
-        col_types = dict.fromkeys([t for t in [Binary, Boolean, Date, DateTime, Integer, Numeric, String, Time]], [])
+        col_types = dict.fromkeys([t for t in [
+                                          types.Binary,
+                                          types.Boolean,
+                                          types.Date,
+                                          types.DateTime,
+                                          types.Integer,
+                                          types.Numeric,
+                                          types.String,
+                                          types.Time]], [])
 
         for t in col_types:
             col_types[t] = [col.name for col in self._model.c if isinstance(col.type, t)]
 
         return col_types
-
-    def set_prettify(self, func):
-        if callable(func):
-            self.prettify = func # Apply staticmethod(func) ?
-        else:
-            raise "Invalid callable"
-
-    def prettify(text):
-        """Return `text` prettify-ed.
-
-        prettify("my_column_name") == "My column name"
-
-        """
-        return text.replace("_", " ").capitalize()
-
-    prettify = staticmethod(prettify)
 
 #    def __repr__(self):
 #        repr = "%s bound to: %s" % (self.__class__.__name__, self._model)
@@ -250,13 +242,29 @@ class BaseRender(object):
 
     """
 
+    def set_prettify(self, func):
+        if callable(func):
+            self.prettify = func # Apply staticmethod(func) ?
+#        else:
+#            raise ValueError("Invalid callable %s" % repr(func))
+
+    def prettify(text):
+        """Return `text` prettify-ed.
+
+        prettify("my_column_name") == "My column name"
+
+        """
+        return text.replace("_", " ").capitalize()
+
+    prettify = staticmethod(prettify)
+
     def render(self):
         """This function must be overridden by any subclass of `BaseRender`."""
         if self.__class__.__name__ == "BaseRender":
-            raise NotImplementedError()
+            raise exceptions.NotImplementedError()
 
         if not self.is_bound():
-             raise UnboundModelError()
+             raise exceptions.UnboundModelError()
 
     def __str__(self):
         return self.render()
@@ -290,7 +298,7 @@ class BaseCollectionRender(BaseModelRender):
         """Set the collection to render."""
 
         if not isinstance(collection, (list, tuple)):
-            raise InvalidCollectionError()
+            raise exceptions.InvalidCollectionError()
         self._collection = collection
 
     def get_collection(self):
@@ -331,4 +339,4 @@ class BaseColumnRender(BaseModelRender):
     def render(self):
         super(BaseColumnRender, self).render()
         if not isinstance(self._column, basestring):
-            raise InvalidColumnError("Invalid column '%s'. Please specify an existing column name using .set_column() before rendering." % (self._column))
+            raise exceptions.InvalidColumnError("Invalid column '%s'. Please specify an existing column name using .set_column() before rendering." % (self._column))

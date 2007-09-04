@@ -3,11 +3,11 @@
 # This module is part of FormAlchemy and is released under
 # the MIT License: http://www.opensource.org/licenses/mit-license.php
 
-from base import BaseModelRender
+import formalchemy.base as base
 
 __all__ = ["Validate"]
 
-class Validate(BaseModelRender):
+class Validate(base.BaseModelRender):
     """The `Validate` class.
 
     This class is resposible for validating HTML forms and storing the values

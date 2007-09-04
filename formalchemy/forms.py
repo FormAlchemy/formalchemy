@@ -3,12 +3,16 @@
 # This module is part of FormAlchemy and is released under
 # the MIT License: http://www.opensource.org/licenses/mit-license.php
 
-from base import FormAlchemyDict, BaseModelRender, BaseColumnRender
-from fields import *
+import webhelpers as h
+import sqlalchemy.types as types
+
+import formalchemy.base as base
+import formalchemy.fields as fields
+import formalchemy.utils as utils
 
 __all__ = ["FieldSet", "ModelRender", "FieldRender"]
 
-class FieldSet(BaseModelRender):
+class FieldSet(base.BaseModelRender):
     """The `FieldSet` class.
 
     This class is responsible for generating HTML fieldsets from a given
@@ -60,7 +64,7 @@ class FieldSet(BaseModelRender):
         super(FieldSet, self).render()
 
         # Merge class level options with given argument options.
-        opts = FormAlchemyDict(self.get_config())
+        opts = base.FormAlchemyDict(self.get_config())
         opts.configure(**options)
 
         model_render = ModelRender(self._model)
@@ -74,15 +78,15 @@ class FieldSet(BaseModelRender):
             legend_txt = self._model.__class__.__name__
         # Don't render a legend field.
         elif legend is False:
-            return wrap("<fieldset>", html, "</fieldset>")
+            return utils.wrap("<fieldset>", html, "</fieldset>")
         # Use the user given string as the legend.
         elif isinstance(legend, basestring):
             legend_txt = legend
 
         html = h.content_tag('legend', legend_txt) + "\n" + html
-        return wrap("<fieldset>", html, "</fieldset>")
+        return utils.wrap("<fieldset>", html, "</fieldset>")
 
-class ModelRender(BaseModelRender):
+class ModelRender(base.BaseModelRender):
     """The `ModelRender` class.
 
     Return generated HTML fields from a SQLAlchemy mapped class.
@@ -95,7 +99,7 @@ class ModelRender(BaseModelRender):
         super(ModelRender, self).render()
 
         # Merge class level options with given argument options.
-        opts = FormAlchemyDict(self.get_config())
+        opts = base.FormAlchemyDict(self.get_config())
         opts.configure(**options)
 
         # Filter out unnecessary columns.
@@ -112,7 +116,7 @@ class ModelRender(BaseModelRender):
 
         return "\n".join(html)
 
-class FieldRender(BaseColumnRender):
+class FieldRender(base.BaseColumnRender):
     """The `FieldRender` class.
 
     Return generated HTML <label> and <input> tags for one single column.
@@ -123,7 +127,7 @@ class FieldRender(BaseColumnRender):
         super(FieldRender, self).render()
 
         # Merge class level options with given argument options.
-        opts = FormAlchemyDict(self.get_config())
+        opts = base.FormAlchemyDict(self.get_config())
         opts.configure(**options)
 
         # Categorize options
@@ -149,7 +153,7 @@ class FieldRender(BaseColumnRender):
 
         # Process hidden fields first as they don't need a `Label`.
         if self._column in hiddens:
-            return HiddenField(self._model, col).render()
+            return fields.HiddenField(self._model, col).render()
 
         # Make the label
         label = Label(self._column, alias=aliases.get(self._column, self._column))
@@ -169,35 +173,35 @@ class FieldRender(BaseColumnRender):
             field += "\n" + radio.render()
 
         elif self._column in dropdowns:
-            dropdown = SelectField(self._model, self._column, dropdowns[self._column].pop("opts"), **dropdowns[self._column])
+            dropdown = fields.SelectField(self._model, self._column, dropdowns[self._column].pop("opts"), **dropdowns[self._column])
             field += "\n" + dropdown.render()
 
         elif self._column in passwords:
-            field += "\n" + PasswordField(self._model, self._column, readonly=self._column in readonlys).render()
+            field += "\n" + fields.PasswordField(self._model, self._column, readonly=self._column in readonlys).render()
 
-        elif self._column in col_types[String]:
-            field += "\n" + TextField(self._model, self._column).render()
+        elif self._column in col_types[types.String]:
+            field += "\n" + fields.TextField(self._model, self._column).render()
 
-        elif self._column in col_types[Integer]:
-            field += "\n" + IntegerField(self._model, self._column).render()
+        elif self._column in col_types[types.Integer]:
+            field += "\n" + fields.IntegerField(self._model, self._column).render()
 
-        elif self._column in col_types[Boolean]:
-            field += "\n" + BooleanField(self._model, self._column).render()
+        elif self._column in col_types[types.Boolean]:
+            field += "\n" + fields.BooleanField(self._model, self._column).render()
 
-        elif self._column in col_types[DateTime]:
-            field += "\n" + DateTimeField(self._model, self._column).render()
+        elif self._column in col_types[types.DateTime]:
+            field += "\n" + fields.DateTimeField(self._model, self._column).render()
 
-        elif self._column in col_types[Date]:
-            field += "\n" + DateField(self._model, self._column).render()
+        elif self._column in col_types[types.Date]:
+            field += "\n" + fields.DateField(self._model, self._column).render()
 
-        elif self._column in col_types[Time]:
-            field += "\n" + TimeField(self._model, self._column).render()
+        elif self._column in col_types[types.Time]:
+            field += "\n" + fields.TimeField(self._model, self._column).render()
 
-        elif self._column in col_types[Binary]:
-            field += "\n" + FileField(self._model, self._column).render()
+        elif self._column in col_types[types.Binary]:
+            field += "\n" + fields.FileField(self._model, self._column).render()
 
         else:
-            field += "\n" + Field(self._model, self._column).render()
+            field += "\n" + fields.Field(self._model, self._column).render()
 
         # Make the error
         if self._column in errors:
@@ -207,6 +211,6 @@ class FieldRender(BaseColumnRender):
             field += "\n" + h.content_tag("span", content=docs[self._column], class_=class_doc)
 
         # Wrap the whole thing into a div
-        field = wrap("<div>", field, "</div>")
+        field = utils.wrap("<div>", field, "</div>")
 
         return field

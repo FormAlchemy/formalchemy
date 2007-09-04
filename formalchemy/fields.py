@@ -3,21 +3,23 @@
 # This module is part of FormAlchemy and is released under
 # the MIT License: http://www.opensource.org/licenses/mit-license.php
 
-from base import BaseRender
+import webhelpers as h
+import formalchemy.base as base
 
 __all__ = ["Label", "TextField", "PasswordField", "HiddenField", "BooleanField",
-    "FileField", "IntegerField", "DateTimeField", "DateField", "TimeField", "RadioSet"]
+    "FileField", "IntegerField", "DateTimeField", "DateField", "TimeField",
+    "RadioSet", "SelectField"]
 
-class Label(BaseRender):
+class Label(base.BaseRender):
     """The `Label` class."""
 
     cls = None
 
     def __init__(self, col, **kwargs):
         self.name = col
-        self.alias = kwargs.pop('alias', self.name)
-        self.cls = kwargs.pop('cls', None)
-        self.set_prettify(kwargs.pop('prettify'))
+        self.alias = kwargs.get('alias', self.name)
+        self.cls = kwargs.get('cls', None)
+        self.set_prettify(kwargs.get('prettify', self.prettify))
 
     def set_alias(self, alias):
         self.alias = alias
@@ -28,7 +30,7 @@ class Label(BaseRender):
     def render(self):
         return h.content_tag("label", content=self.get_display(), for_=self.name, class_=self.cls)
 
-class BaseField(BaseRender):
+class BaseField(base.BaseRender):
     """The `BaseField` class.
 
     This is the class that fits to all HTML <input> structure.

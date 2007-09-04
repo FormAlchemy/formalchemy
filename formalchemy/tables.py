@@ -3,11 +3,11 @@
 # This module is part of FormAlchemy and is released under
 # the MIT License: http://www.opensource.org/licenses/mit-license.php
 
-from base import BaseColumnRender, BaseModelRender, BaseCollectionRender
+import formalchemy.base as base
 
 __all__ = ["TableItem", "TableCollection"]
 
-class TableHead(BaseColumnRender):
+class TableHead(base.BaseColumnRender):
     """The `TableHead` class.
 
     This class is responsible for rendering a single table head cell '<th>'.
@@ -18,7 +18,7 @@ class TableHead(BaseColumnRender):
         super(TableHead, self).render()
 
         # Merge class level options with given argument options.
-        opts = FormAlchemyDict(self.get_config())
+        opts = base.FormAlchemyDict(self.get_config())
         opts.configure(**options)
 
         self.set_prettify(opts.get('prettify'))
@@ -26,7 +26,7 @@ class TableHead(BaseColumnRender):
 
         return wrap("<th>", self.prettify(alias), "</th>")
 
-class TableData(BaseColumnRender):
+class TableData(base.BaseColumnRender):
     """The `TableData` class.
 
     This class is responsible for rendering a single table data cell '<td>'.
@@ -43,7 +43,7 @@ class TableData(BaseColumnRender):
             value = h.content_tag("em", self.prettify("not available."))
         return wrap("<td>", str(value), "</td>")
 
-class TableTHead(BaseModelRender):
+class TableTHead(base.BaseModelRender):
     """The `TableTHead` class.
 
     This class is responsible for rendering a table's header row.
@@ -61,7 +61,7 @@ class TableTHead(BaseModelRender):
 
         return wrap("<thead>", row, "</thead>")
 
-class TableRow(BaseModelRender):
+class TableRow(base.BaseModelRender):
     """The `TableRow` class.
 
     This class is responsible for rendering a table's single row from a
@@ -79,7 +79,7 @@ class TableRow(BaseModelRender):
             row.append(td.render(**options))
         return wrap("<tr>", "\n".join(row), "</tr>")
 
-class TableBody(BaseCollectionRender):
+class TableBody(base.BaseCollectionRender):
     """The `TableBody` class.
 
     This class is responsible for rendering a table's body from a collection
@@ -102,7 +102,7 @@ class TableBody(BaseCollectionRender):
             tbody.append(tr.render(**options))
         return wrap("<tbody>", "\n".join(tbody), "</tbody>")
 
-class TableItem(BaseModelRender):
+class TableItem(base.BaseModelRender):
     """The `TableItem` class.
 
     This class is responsible for rendering a table from a single item.
@@ -127,7 +127,7 @@ class TableItem(BaseModelRender):
 
         return wrap("<table>", wrap("<tbody>", "\n".join(tbody), "</tbody>"), "</table>")
 
-class TableCollection(BaseCollectionRender):
+class TableCollection(base.BaseCollectionRender):
     """The `TableCollection` class.
 
     This class is responsible for rendering a table from a collection of items.
