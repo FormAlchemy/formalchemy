@@ -3,7 +3,7 @@
 # This module is part of FormAlchemy and is released under
 # the MIT License: http://www.opensource.org/licenses/mit-license.php
 
-from bases import BaseColumnRender, BaseModelRender, BaseCollectionRender
+from base import BaseColumnRender, BaseModelRender, BaseCollectionRender
 
 __all__ = ["TableItem", "TableCollection"]
 

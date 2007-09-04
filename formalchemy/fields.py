@@ -3,7 +3,7 @@
 # This module is part of FormAlchemy and is released under
 # the MIT License: http://www.opensource.org/licenses/mit-license.php
 
-from bases import BaseRender
+from base import BaseRender
 
 __all__ = ["Label", "TextField", "PasswordField", "HiddenField", "BooleanField",
     "FileField", "IntegerField", "DateTimeField", "DateField", "TimeField", "RadioSet"]

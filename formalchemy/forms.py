@@ -3,7 +3,7 @@
 # This module is part of FormAlchemy and is released under
 # the MIT License: http://www.opensource.org/licenses/mit-license.php
 
-from bases import FormAlchemyDict, BaseModelRender, BaseColumnRender
+from base import FormAlchemyDict, BaseModelRender, BaseColumnRender
 from fields import *
 
 __all__ = ["FieldSet", "ModelRender", "FieldRender"]
