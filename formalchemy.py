@@ -6,11 +6,176 @@
 import webhelpers as h
 from sqlalchemy.types import Binary, Boolean, Date, DateTime, Integer, Numeric, String, Time
 
-__all__ = ["ModelRender", "FieldRender", "FieldSet", "TableItem", "TableCollection"]
+__all__ = ["ModelRender", "FieldRender", "FieldSet", "TableItem", "TableCollection", "Validate"]
 __version__ = "0.2"
-__doc__ = """
+__doc__ = """FormAlchemy
+
 =Terminology=
-  *model*: the SQLAlchemy mapped class.
+
+*model*: a SQLAlchemy mapped class.
+
+=Concepts=
+
+FormAlchemy was designed to ease the developper's work when dealing with
+SQLAlchemy mapped classes (models) in a web environement where HTML forms are
+often used. The basic concept is to generate HTML input fields from a given
+model that will match the model's columns definition. FormAlchemy will try to
+figure out what kind of HTML code should be returned by introspecting the
+model's properties and generate ready-to-use HTML code that will fit with the
+developper's application. Of course, FormAlchemy can't figure out everything,
+i.e, the developper might want to display only a few columns from the given
+model. Thus, FormAlchemy was design to be hightly customizable as well.
+
+=FormAlchemy's current state=
+
+FormAlchemy is in alpha stage and the API is in constant evolution. So chances
+are that your code might break from a version to another, this until FormAlchemy
+1.0 is released.
+
+=Usage=
+
+In the following examples, we will make the use of a arbitrary `user` model.
+
+==Imports==
+All FormAlchemy's objects live under the `formalchemy` module.
+
+{{{
+from formalchemy import FieldSet
+}}}
+
+==Binding==
+Before you can render anything, you will have to bind FormAlchemy's classes to
+your models. All classes that needs a model for introspecting come with a
+`bind()` method:
+
+{{{
+fs = FieldSet()
+fs.bind(user)
+}}}
+
+You can also bind `user` while instantiating the class:
+{{{
+fs = FieldSet(bind=user)
+}}}
+
+==Rendering==
+All FormAlchemy objects meant for generating HTML output come with a `render`
+method. This is the method that will return the appropriate HTML.
+
+{{{
+html = fs.render()
+}}}
+
+`html` now holds a string representing the HTML code.
+
+That's about it for rendering. There's nothing more you need to do to generate
+HTML output from your mapped classes.
+
+=Available FormAlchemy classes=
+
+The available form related classes are:
+  * `FieldSet`: Used for rendering input form fields from a model, wrapping the fields in a <fieldset> and <legend> HTML tag.
+  * `ModelRender`: Like FieldSet, but without the <fieldset> and <legend> HTML tags.
+  * `FieldRender`: Used for rendering a column, returning a single HTML <label> and <input> pair.
+
+FormAlchemy has derived a little from it's original goal and other, non-form
+related classes have been extended to the module:
+  * `TableItem`: Used for rendering an HTML table from a model.
+  * `TableCollection`: Used for rendering a collection of models into a table.
+
+All classes require to be bound to a model to generate HTML code. Although,
+some class might require extra configuration to produce code:
+  * Column level classes need to have the column name to render. This can be set using the `set_column()` method or directly while instantiating the class, passing the column's name as keyword argument `column="my_column"`.
+  * Collection classes need to have a collection of models to render. This can be set using the `set_collection()` method or directly while instantiating the class, passing the collection as keyword argument `collection=my_collection_list`.
+
+=FormAlchemy Options=
+FormAlchemy has some default behaviour set. It is configured to render the most
+exhaustive HTML code possible to reflect from a bound model. Although, you can
+pass options to FormAlchemy to behave differently, thus altering the rendered
+HTML code. This can be done in many ways:
+
+  * By passing keyword options to the `render()` method:
+
+{{{
+fs.render(pk=False, fk=False, exclude=["private_column"])
+}}}
+
+  The options given at the render method are NOT persistant. You will need to
+  pass these options everytime you call `render` to reproduce the same output
+  or FormAlchemy will fallback to it's default behaviour. Passing keyword
+  options is usually meant to alter the HTML output on the fly.
+
+  * At the SQLAlchemy mapped class level, by creating a `FormAlchemy` subclass, it is possible to setup attributes which names and values correspond to the keyword options passed to `render`:
+
+{{{
+class User(object):
+    class FormAlchemy:
+        pk = False
+        fk = False
+        exclude = ["private_column"]
+}}}
+
+  These attributes are persistant and will be used as FormAlchemy's default
+  behaviour.
+
+  * By passing the keyword options to FormAlchemy's `configure()` method. These options are persistant and will be used as FormAlchemy's default behaviour.
+
+{{{
+fs.configure(pk=False, fk=False, exclude=["private_column"])
+}}}
+
+  Note: In any case, options set at the SQLAlchemy mapped class level or via
+  the `configure()` method will be overridden if these same keyword options are
+  passed to the `render()` method.
+
+Here are the available keyword options that can be passed to FormAlchemy:
+
+  * `pk=True` - Won't return primary key columns if set to `False`.
+  * `fk=True` - Won't return foreign key columns if set to `False`.
+  * `exclude=[]` - An iterable containing column names to exclude.
+  * `password=[]` - An iterable of column names that should be set as password fields.
+  * `hidden=[]` - An iterable of column names that should be set as hidden fields.
+  * `readonly_pk=False` - Will prohibit changes to primary key columns if set to `True`.
+  * `readonly_fk=False` - Will prohibit changes to foreign key columns if set to `True`.
+  * `readonly=[]` - An iterable containing column names to set as readonly.
+  * `dropdown={}` - Select menus. A dict holding column names as keys, dicts as values. These dicts have at least a `opts` key used for options. `opts` holds either:
+    * an iterable of option names: `["small", "medium", "large"]`. Options will have the same name and value.
+    * an iterable of paired option name/value: `[("small", "$0.99"), ("medium", "$1.29"), ("large", "$1.59")]`
+    * a dict where dict keys are option names and dict values are option values: `{"small":"$0.99", "medium":"$1.29", "large":"$1.59"}`
+    The keys that can also be set:
+    * `selected=value`: a string or a container of strings (when multiple values are selected) that will set the "selected" HTML tag to matching value options. It defaults to the model's current value, if not `None`, or the column's default.
+    * Other keys passed as standard HTML attributes, like `multiple=<bool>`, `size=<integer>` and so on.
+
+    Here is an example of how the `dropdown` option can be used:
+
+{{{
+{"meal":
+    {"opts":[("Hamburger", "HB"),
+             ("Cheeseburger", "CB"),
+             ("Bacon Burger", "BB"),
+             ("Roquefort Burger", "RB"),
+             ("Pasta Burger", "PB"),
+             ("Veggie Burger", "VB")],
+     "selected":["CB", "BB"],    ## Or just "CB"
+     "multiple":True,
+     "size":3,
+    }
+}
+}}}
+
+  * `radio={}` - Radio buttons. A dict holding column names as keys and an iterable as values. The iterable can hold:
+    * input names: `["small", "medium", "large"]`. Inputs will have the same name and value.
+    * paired name/value: `[("small", "$0.99"), ("medium", "$1.29"), ("large", "$1.59")]`
+    * a dict where dict keys are input names and dict values are input values: `{"small":"$0.99", "medium":"$1.29", "large":"$1.59"}`
+  * `prettify` - A function through which all label names will go. Defaults to: `"my_label".replace("_", " ").capitalize()`
+  * `alias={}` - A dict holding the field name as the key and the alias name as the value. Note that aliases are beeing `prettify`ed as well.
+  * `error={}` - A dict holding the field name as the key and the error message as the value.
+  * `doc={}` - A dict holding the field name as the key and the help message as the value.
+  * `cls_req="field_req"` - Sets the HTML class for fields that are not nullable (required).
+  * `cls_opt="field_opt"` - Sets the HTML class for fields that are nullable (optional).
+  * `cls_err=field_err` - Sets the HTML class for error messages.
+  * `cls_doc="field_doc"` - Sets the HTML class for help messages.
+
 """
 
 INDENTATION = "  "
@@ -39,31 +204,28 @@ class InvalidColumnError(RenderError):
 class InvalidCollectionError(RenderError):
     """Raised when collection level rendering classes don't have a valid collection set."""
 
-class FormAlchemyOptions(dict):
-    """The `FormAlchemyOptions` dictionary class.
+class FormAlchemyDict(dict):
+    """The `FormAlchemyDict` dictionary class.
 
     This is the class responsible for parsing and holding FormAlchemy options.
     It has the same API as `dict`, plus three extra methods:
 
-      * parse(self, model):
-        Reconfigure options from scratch parsing the `model`'s FormAlchemy
-        options.
-
-      * configure(self, **options):
-        Update options with the given option keywords.
-
-      * reconfigure(self[, **options]):
-        Reset the options and configure options given option keywords.
-
-      * get_config(self):
-        Return the current configuration.
+      * parse(self, model)
+      * configure(self, **options)
+      * reconfigure(self[, **options])
+      * get_config(self)
 
     """
 
     def parse(self, model):
-        """Parse options from `model`'s FormAlchemy subclass if defined."""
+        """Parse options set in the subclass `FormAlchemy` from the `model` if defined.
+
+        This will reset any previously set options.
+
+        """
+
         self.clear()
-        if hasattr(model, "FormAlchemy"):
+        if hasattr(model, "FormAlchemyOptions"):
             [self.__setitem__(k, v) for k, v in model.FormAlchemy.__dict__.items() if not k.startswith('_')]
 
     def configure(self, **options):
@@ -77,7 +239,7 @@ class FormAlchemyOptions(dict):
         self.update(options)
 
     def reconfigure(self, **options):
-        """Reconfigure `FormAlchemyOptions` from scratch.
+        """Reconfigure `FormAlchemyDict` from scratch.
 
         This will clear any previously set option and update FormAlchemy's
         default behaviour with the given keyword options. If no keyword option
@@ -89,6 +251,7 @@ class FormAlchemyOptions(dict):
         self.configure(**options)
 
     def get_config(self):
+        """Return the current configuration."""
         return self
 
 class BaseModel(object):
@@ -100,22 +263,22 @@ class BaseModel(object):
 
       * bind(self, model)
       * is_bound(self)
-      * is_pk(self, col):
-      * get_pks(self):
-      * get_fks(self):
-      * is_nullable(self, col):
-      * get_unnullables(self):
-      * get_colnames(self[, **kwargs]):
-      * get_readonlys(self[, **kwargs]):
-      * get_coltypes(self):
+      * is_pk(self, col)
+      * get_pks(self)
+      * get_fks(self)
+      * is_nullable(self, col)
+      * get_unnullables(self)
+      * get_colnames(self[, **kwargs])
+      * get_readonlys(self[, **kwargs])
+      * get_coltypes(self)
 
-    Inherits from FormAlchemyOptions methods as well.
+    Inherits from FormAlchemyDict methods as well.
 
     """
 
     def __init__(self, bind=None):
-        self._options = FormAlchemyOptions()
-        self.parse = self._options.parse
+        self._options = FormAlchemyDict()
+        self._parse = self._options.parse
         self.configure = self._options.configure
         self.reconfigure = self._options.reconfigure
         self.get_config = self._options.get_config
@@ -126,9 +289,9 @@ class BaseModel(object):
             self._model = bind
 
     def bind(self, model):
-        """Bind to the given `model` from which HTML field generation will be done."""
+        """Bind to the given `model` from which HTML generation will be done."""
 
-        self.parse(model)
+        self._parse(model)
         self._model = model
 
     def is_bound(self):
@@ -278,6 +441,9 @@ class BaseModel(object):
 
     prettify = staticmethod(prettify)
 
+    def get_model(self):
+        return self._model
+
 #    def __repr__(self):
 #        repr = "%s bound to: %s" % (self.__class__.__name__, self._model)
 #        return "<" + repr + ">"
@@ -285,13 +451,14 @@ class BaseModel(object):
 class BaseRender(object):
     """The `BaseRender` class.
 
-    This this is the base class for all classes needing rendering capabilities.
+    This this is the superclass for all classes needing rendering capabilities.
     The render method should be overridden with appropriate per class render
     method.
 
     """
 
     def render(self):
+        """This function must be overridden by any subclass of `BaseRender`."""
         if self.__class__.__name__ == "BaseRender":
             raise NotImplementedError()
 
@@ -304,15 +471,18 @@ class BaseRender(object):
 class BaseModelRender(BaseModel, BaseRender):
     """The `BaseModelRender` class.
 
-    This this is the base class for all classes needing to deal with `model`
-    access and support rendering capabilities. The render method should be
-    overridden with appropriate render.
+    This this is the superclass for all classes needing to deal with `model`
+    access and support rendering capabilities.
 
     """
     pass
 
 class ModelRender(BaseModelRender):
-    """Return generated HTML fields from a SQLAlchemy mapped class."""
+    """The `ModelRender` class.
+
+    Return generated HTML fields from a SQLAlchemy mapped class.
+
+    """
 
     def render(self, **options):
         """Return HTML fields generated from the `model`.
@@ -362,7 +532,7 @@ class ModelRender(BaseModelRender):
         super(ModelRender, self).render()
 
         # Merge class level options with given argument options.
-        opts = FormAlchemyOptions(self.get_config())
+        opts = FormAlchemyDict(self.get_config())
         opts.configure(**options)
 
         # Filter out unnecessary columns.
@@ -386,11 +556,8 @@ class BaseCollectionRender(BaseModelRender):
     Takes an extra `collection=[]` keyword argument as the collection list.
 
     Methods:
-      * set_collection(self, collection):
-        Set the collection to render.
-
-      * get_collection(self):
-        Return current collection set.
+      * set_collection(self, collection)
+      * get_collection(self)
 
     """
 
@@ -399,11 +566,14 @@ class BaseCollectionRender(BaseModelRender):
         self._collection = collection
 
     def set_collection(self, collection):
+        """Set the collection to render."""
+
         if not isinstance(collection, (list, tuple)):
             raise InvalidCollectionError()
         self._collection = collection
 
     def get_collection(self):
+        """Return current collection."""
         return self._collection
 
 class BaseColumnRender(BaseModelRender):
@@ -414,11 +584,8 @@ class BaseColumnRender(BaseModelRender):
     column name.
 
     Methods:
-      * set_column(self, col_name):
-        Set the column to render.
-
-      * get_column(self):
-        Return current column set.
+      * set_column(self, col_name)
+      * get_column(self)
 
     """
 
@@ -430,11 +597,14 @@ class BaseColumnRender(BaseModelRender):
             self._column = None
 
     def set_column(self, column):
+        """Set the column to render."""
+
         if not isinstance(column, basestring):
             raise ValueError("Column name should be a string, found %s of type %s instead." % (repr(column), type(column)))
         self._column = column
 
     def get_column(self):
+        """Return current column."""
         return self._column
 
     def render(self):
@@ -445,7 +615,7 @@ class BaseColumnRender(BaseModelRender):
 class FieldRender(BaseColumnRender):
     """The `FieldRender` class.
 
-    Return generated <label> + <input> tags for one single column.
+    Return generated HTML <label> and <input> tags for one single column.
 
     """
 
@@ -453,7 +623,7 @@ class FieldRender(BaseColumnRender):
         super(FieldRender, self).render()
 
         # Merge class level options with given argument options.
-        opts = FormAlchemyOptions(self.get_config())
+        opts = FormAlchemyDict(self.get_config())
         opts.configure(**options)
 
         # Categorize options
@@ -593,7 +763,7 @@ class FieldSet(BaseModelRender):
         super(FieldSet, self).render()
 
         # Merge class level options with given argument options.
-        opts = FormAlchemyOptions(self.get_config())
+        opts = FormAlchemyDict(self.get_config())
         opts.configure(**options)
 
         model_render = ModelRender(self._model)
@@ -654,10 +824,10 @@ class Field(BaseField):
     name and the column's value as the field's value.
 
     Methods:
-      * `get_value(self)`:
+      * `get_value(self)`
         Return the column's current value if not None, otherwise
         return the default column value if available.
-      * `render(self)`:
+      * `render(self)`
         Return generated HTML.
 
     All xField classes inherit of this `Field` class.
@@ -802,7 +972,7 @@ class TableHead(BaseColumnRender):
         super(TableHead, self).render()
 
         # Merge class level options with given argument options.
-        opts = FormAlchemyOptions(self.get_config())
+        opts = FormAlchemyDict(self.get_config())
         opts.configure(**options)
 
         self.set_prettify(opts.get('prettify'))
@@ -932,3 +1102,86 @@ class TableCollection(BaseCollectionRender):
         table.append(tb.render(**options))
 
         return wrap("<table>", "\n".join(table), "</table>")
+
+class Validate(BaseModelRender):
+    """The `Validate` class.
+
+    This class is resposible for validating HTML forms and storing the values
+    back in the bound model.
+
+    Methods:
+      * bind(self, model)
+      * set_post(self, post)
+      * validate(self)
+      * store(self)
+
+    """
+
+    def __init__(self, bind=None, post=None):
+        super(Validate, self).__init__(bind=bind)
+
+        self._validators = FormAlchemyDict()
+        if post:
+            self._post = post
+        else:
+            self._post = None
+
+    def bind(self, model):
+        """Bind to the given `model` from which HTML field generation will be done."""
+        super(Validate, self).bind(model)
+
+        self._validators.clear()
+        if hasattr(model, "FormAlchemyValidate"):
+            [self._validators.__setitem__(col, model.FormAlchemyValidate.__dict__.get(col)) for col in self.get_colnames()]
+
+    def set_post(self, post):
+        self._post = post
+
+    def get_post(self):
+        return self._post
+
+    def _test_func_value(func, value):
+        if callable(func):
+            return func(value)
+        return True
+
+    _test_func_value = staticmethod(_test_func_value)
+
+    def validate(self):
+        """Validate the model against the POST request `post`."""
+        for col in self.get_colnames():
+
+            # Skip columns that were not sent in POST.
+            if not col in post:
+                continue
+
+            func = self._validators.get(col)
+            value = post[col]
+            if not _test_func_value(func, value):
+                return False
+
+        return True
+
+    def store(self):
+        # Hold a list of column names by type.
+        col_types = self.get_coltypes()
+
+        for col in self.get_colnames():
+
+            # Columns not in POST will be kept intact.
+            if not col in post:
+                continue
+
+            if col in col_types[Boolean]:
+                setattr(self._model, col, post[col]=="True")
+            else:
+                setattr(self._model, col, post[col])
+
+    def render(self, **options):
+        """Return a HTML fields filled with POST params.
+
+        This should be called whenever `validate()` fails and a form needs to be sent back to the user.
+
+        """
+        for col in get_colnames(**options):
+            col
