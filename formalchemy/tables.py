@@ -79,8 +79,8 @@ class TableRow(base.BaseModelRender):
         row = []
         for col in self.get_colnames(**options):
             td = TableData(bind=self._model, column=col)
-            td.reconfigure()
-            row.append(td.render(**options))
+            td.reconfigure(**options)
+            row.append(td.render())
         return utils.wrap("<tr>", "\n".join(row), "</tr>")
 
 class TableBody(base.BaseCollectionRender):
@@ -106,8 +106,8 @@ class TableBody(base.BaseCollectionRender):
         tbody = []
         for item in self._collection:
             tr = TableRow(bind=item)
-            tr.reconfigure()
-            tbody.append(tr.render(**options))
+            tr.reconfigure(**options)
+            tbody.append(tr.render())
         return utils.wrap("<tbody>", "\n".join(tbody), "</tbody>")
 
 class TableItem(base.BaseModelRender):
@@ -124,12 +124,12 @@ class TableItem(base.BaseModelRender):
         for col in self.get_colnames(**options):
             row = []
             th = TableHead(bind=self._model, column=col)
-            th.reconfigure()
-            row.append(th.render(**options))
+            th.reconfigure(**options)
+            row.append(th.render())
 
             td = TableData(bind=self._model, column=col)
-            td.reconfigure()
-            row.append(td.render(**options))
+            td.reconfigure(**options)
+            row.append(td.render())
 
             tbody.append(utils.wrap("<tr>", "\n".join(row), "</tr>"))
 
@@ -148,11 +148,11 @@ class TableCollection(base.BaseCollectionRender):
         table = []
 
         th = TableTHead(bind=self._model)
-        th.reconfigure()
-        table.append(th.render(**options))
+        th.reconfigure(**options)
+        table.append(th.render())
 
         tb = TableBody(bind=self._model, collection=self._collection)
-        tb.reconfigure()
-        table.append(tb.render(**options))
+        tb.reconfigure(**options)
+        table.append(tb.render())
 
         return utils.wrap("<table>", "\n".join(table), "</table>")

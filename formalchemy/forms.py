@@ -69,8 +69,8 @@ class FieldSet(base.BaseModelRender):
 
         model_render = ModelRender(self._model)
         # Reset options and only render based given options
-        model_render.reconfigure()
-        html = model_render.render(**opts)
+        model_render.reconfigure(**opts)
+        html = model_render.render()
 
         legend = opts.pop('legend', None)
         # Setup class's name as default.
@@ -108,10 +108,10 @@ class ModelRender(base.BaseModelRender):
         html = []
         # Generate fields.
         field_render = FieldRender(bind=self._model)
-        field_render.reconfigure()
+        field_render.reconfigure(**opts)
         for col in columns:
             field_render.set_column(col)
-            field = field_render.render(**opts)
+            field = field_render.render()
             html.append(field)
 
         return "\n".join(html)
