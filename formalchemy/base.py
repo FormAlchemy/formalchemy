@@ -6,6 +6,8 @@
 import sqlalchemy.types as types
 import formalchemy.exceptions as exceptions
 
+import warnings
+
 class FormAlchemyDict(dict):
     """The `FormAlchemyDict` dictionary class.
 
@@ -28,6 +30,9 @@ class FormAlchemyDict(dict):
 
         self.clear()
         if hasattr(model, "FormAlchemyOptions"):
+            [self.__setitem__(k, v) for k, v in model.FormAlchemyOptions.__dict__.items() if not k.startswith('_')]
+        elif hasattr(model, "FormAlchemy"):
+            warnings.warn("Set options in a 'FormAlchemyOptions' subclass of %s." % model.__module__, DeprecationWarning)
             [self.__setitem__(k, v) for k, v in model.FormAlchemy.__dict__.items() if not k.startswith('_')]
 
     def configure(self, **options):
@@ -76,8 +81,6 @@ class BaseModel(object):
       * get_colnames(self[, **kwargs])
       * get_readonlys(self[, **kwargs])
       * get_coltypes(self)
-      * set_prettify(self, func)
-      * prettify(text) (staticmethod, i.e., doesn't pass 'self')
 
     Inherits from FormAlchemyDict methods as well.
 
@@ -239,6 +242,11 @@ class BaseRender(object):
     This this is the superclass for all classes needing rendering capabilities.
     The render method should be overridden with appropriate per class render
     method.
+
+    Methods:
+      * set_prettify(self, func)
+      * prettify(text) (staticmethod, i.e., doesn't pass 'self')
+      * render(self)
 
     """
 
