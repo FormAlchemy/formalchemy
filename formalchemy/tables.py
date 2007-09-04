@@ -95,8 +95,12 @@ class TableBody(base.BaseCollectionRender):
         super(TableBody, self).render()
 
         if not self._collection:
-            msg = self.prettify("no %s." % self._model.__class__.__name__)
-            td = utils.wrap('<td colspan="%s">' % len(self.get_colnames(**options)), msg, "</td>")
+            if isinstance(self._model, type): # Not instantiated
+                msg = "no %s." % (self._model.__name__)
+            else:
+                msg = "no %s." % (self._model.__class__.__name__)
+            colspan_size = len(self.get_colnames(**options))
+            td = utils.wrap('<td colspan="%s">' % colspan_size, self.prettify(msg), "</td>")
             return utils.wrap("<tbody>", utils.wrap("<tr>", td, "</tr>"), "</tbody>")
 
         tbody = []
