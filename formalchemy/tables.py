@@ -3,7 +3,10 @@
 # This module is part of FormAlchemy and is released under
 # the MIT License: http://www.opensource.org/licenses/mit-license.php
 
+import webhelpers as h
+
 import formalchemy.base as base
+import formalchemy.utils as utils
 
 __all__ = ["TableItem", "TableCollection"]
 
@@ -24,7 +27,7 @@ class TableHead(base.BaseColumnRender):
         self.set_prettify(opts.get('prettify'))
         alias = opts.get('alias', {}).get(self._column, self._column)
 
-        return wrap("<th>", self.prettify(alias), "</th>")
+        return utils.wrap("<th>", self.prettify(alias), "</th>")
 
 class TableData(base.BaseColumnRender):
     """The `TableData` class.
@@ -41,7 +44,8 @@ class TableData(base.BaseColumnRender):
             value = h.content_tag("em", value)
         elif value is None:
             value = h.content_tag("em", self.prettify("not available."))
-        return wrap("<td>", str(value), "</td>")
+#        return utils.wrap("<td>", str(value), "</td>")
+        return h.content_tag("td", value)
 
 class TableTHead(base.BaseModelRender):
     """The `TableTHead` class.
@@ -57,9 +61,9 @@ class TableTHead(base.BaseModelRender):
         for col in self.get_colnames(**options):
             th = TableHead(column=col, bind=self._model)
             row.append(th.render(**options))
-        row = wrap("<tr>", "\n".join(row), "</tr>")
+        row = utils.wrap("<tr>", "\n".join(row), "</tr>")
 
-        return wrap("<thead>", row, "</thead>")
+        return utils.wrap("<thead>", row, "</thead>")
 
 class TableRow(base.BaseModelRender):
     """The `TableRow` class.
@@ -77,7 +81,7 @@ class TableRow(base.BaseModelRender):
             td = TableData(bind=self._model, column=col)
             td.reconfigure()
             row.append(td.render(**options))
-        return wrap("<tr>", "\n".join(row), "</tr>")
+        return utils.wrap("<tr>", "\n".join(row), "</tr>")
 
 class TableBody(base.BaseCollectionRender):
     """The `TableBody` class.
@@ -92,15 +96,15 @@ class TableBody(base.BaseCollectionRender):
 
         if not self._collection:
             msg = self.prettify("no %s." % self._model.__class__.__name__)
-            td = wrap('<td colspan="%s">' % len(self.get_colnames(**options)), msg, "</td>")
-            return wrap("<tbody>", wrap("<tr>", td, "</tr>"), "</tbody>")
+            td = utils.wrap('<td colspan="%s">' % len(self.get_colnames(**options)), msg, "</td>")
+            return utils.wrap("<tbody>", utils.wrap("<tr>", td, "</tr>"), "</tbody>")
 
         tbody = []
         for item in self._collection:
             tr = TableRow(bind=item)
             tr.reconfigure()
             tbody.append(tr.render(**options))
-        return wrap("<tbody>", "\n".join(tbody), "</tbody>")
+        return utils.wrap("<tbody>", "\n".join(tbody), "</tbody>")
 
 class TableItem(base.BaseModelRender):
     """The `TableItem` class.
@@ -123,9 +127,9 @@ class TableItem(base.BaseModelRender):
             td.reconfigure()
             row.append(td.render(**options))
 
-            tbody.append(wrap("<tr>", "\n".join(row), "</tr>"))
+            tbody.append(utils.wrap("<tr>", "\n".join(row), "</tr>"))
 
-        return wrap("<table>", wrap("<tbody>", "\n".join(tbody), "</tbody>"), "</table>")
+        return utils.wrap("<table>", utils.wrap("<tbody>", "\n".join(tbody), "</tbody>"), "</table>")
 
 class TableCollection(base.BaseCollectionRender):
     """The `TableCollection` class.
@@ -147,4 +151,4 @@ class TableCollection(base.BaseCollectionRender):
         tb.reconfigure()
         table.append(tb.render(**options))
 
-        return wrap("<table>", "\n".join(table), "</table>")
+        return utils.wrap("<table>", "\n".join(table), "</table>")

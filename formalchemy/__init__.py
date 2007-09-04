@@ -3,8 +3,6 @@
 # This module is part of FormAlchemy and is released under
 # the MIT License: http://www.opensource.org/licenses/mit-license.php
 
-#import webhelpers as h
-
 from formalchemy.tables import *
 from formalchemy.forms import *
 from formalchemy.validation import *

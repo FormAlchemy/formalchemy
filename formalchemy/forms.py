@@ -156,7 +156,7 @@ class FieldRender(base.BaseColumnRender):
             return fields.HiddenField(self._model, col).render()
 
         # Make the label
-        label = Label(self._column, alias=aliases.get(self._column, self._column))
+        label = fields.Label(self._column, alias=aliases.get(self._column, self._column))
         label.set_prettify(pretty_func)
         if self.is_nullable(self._column):
             label.cls = class_optional
