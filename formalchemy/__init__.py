@@ -169,13 +169,14 @@ Here are the available keyword options that can be passed to FormAlchemy:
     * input names: `["small", "medium", "large"]`. Inputs will have the same name and value.
     * paired name/value: `[("small", "$0.99"), ("medium", "$1.29"), ("large", "$1.59")]`
     * a dict where dict keys are input names and dict values are input values: `{"small":"$0.99", "medium":"$1.29", "large":"$1.59"}`
-  * `prettify` - A function through which all label names will go. Defaults to: `"my_label".replace("_", " ").capitalize()`
+  * `prettify` - A function through which all text meant to be displayed to the user will go. Defaults to: `"my_label".replace("_", " ").capitalize()`
   * `alias={}` - A dict holding the field name as the key and the alias name as the value. Note that aliases are beeing `prettify`ed as well.
   * `error={}` - A dict holding the field name as the key and the error message as the value.
   * `doc={}` - A dict holding the field name as the key and the help message as the value.
   * `cls_req="field_req"` - Sets the HTML class for fields that are not nullable (required).
   * `cls_opt="field_opt"` - Sets the HTML class for fields that are nullable (optional).
-  * `cls_err=field_err` - Sets the HTML class for error messages.
-  * `cls_doc="field_doc"` - Sets the HTML class for help messages.
+  * `cls_err="field_err"` - Sets the HTML class for fields that are errornous (Not implemented).
+  * `span_err="span_err"` - Sets the HTML class for <span> error messages. (Not implemented)
+  * `span_doc="span_doc"` - Sets the HTML class for <span> help messages. (Not implemented)
 
 """

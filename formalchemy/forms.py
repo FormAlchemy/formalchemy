@@ -83,7 +83,7 @@ class FieldSet(base.BaseModelRender):
         elif isinstance(legend, basestring):
             legend_txt = legend
 
-        html = h.content_tag('legend', legend_txt) + "\n" + html
+        html = "\n".join([h.content_tag('legend', legend_txt), html])
         return utils.wrap("<fieldset>", html, "</fieldset>")
 
 class ModelRender(base.BaseModelRender):
@@ -145,23 +145,24 @@ class FieldRender(base.BaseColumnRender):
         docs = opts.get('doc', {})
 
         # Setup HTML classes
-#        class_label = opts.get('cls_lab', 'form_label')
-        class_required = opts.get('cls_req', 'field_req')
-        class_optional = opts.get('cls_opt', 'field_opt')
-        class_error = opts.get('cls_err', 'field_err')
-        class_doc = opts.get('cls_doc', 'field_doc')
+        cls_fld_req = opts.get('cls_req', 'field_req')
+        cls_fld_opt = opts.get('cls_opt', 'field_opt')
+        cls_fld_err = opts.get('cls_err', 'field_err')
+
+        cls_span_doc = opts.get('span_doc', 'span_doc')
+        cls_span_err = opts.get('span_err', 'span_err')
 
         # Process hidden fields first as they don't need a `Label`.
         if self._column in hiddens:
-            return fields.HiddenField(self._model, col).render()
+            return fields.HiddenField(self._model, self._column).render()
 
         # Make the label
         label = fields.Label(self._column, alias=aliases.get(self._column, self._column))
         label.set_prettify(pretty_func)
         if self.is_nullable(self._column):
-            label.cls = class_optional
+            label.cls = cls_fld_opt
         else:
-            label.cls = class_required
+            label.cls = cls_fld_req
         field = label.render()
 
         # Hold a list of column names by type.
@@ -169,7 +170,7 @@ class FieldRender(base.BaseColumnRender):
 
         # Make the input
         if self._column in radios:
-            radio = RadioSet(self._model, self._column, choices=radios[self._column])
+            radio = fields.RadioSet(self._model, self._column, choices=radios[self._column])
             field += "\n" + radio.render()
 
         elif self._column in dropdowns:
@@ -205,10 +206,10 @@ class FieldRender(base.BaseColumnRender):
 
         # Make the error
         if self._column in errors:
-            field += "\n" + h.content_tag("span", content=errors[self._column], class_=class_error)
+            field += "\n" + h.content_tag("span", errors[self._column], class_=cls_span_err)
         # Make the documentation
         if self._column in docs:
-            field += "\n" + h.content_tag("span", content=docs[self._column], class_=class_doc)
+            field += "\n" + h.content_tag("span", docs[self._column], class_=cls_span_doc)
 
         # Wrap the whole thing into a div
         field = utils.wrap("<div>", field, "</div>")

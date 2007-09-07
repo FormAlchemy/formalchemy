@@ -29,11 +29,21 @@ class FormAlchemyDict(dict):
         """
 
         self.clear()
+
+        # Parse option settings.
         if hasattr(model, "FormAlchemyOptions"):
             [self.__setitem__(k, v) for k, v in model.FormAlchemyOptions.__dict__.items() if not k.startswith('_')]
         elif hasattr(model, "FormAlchemy"):
             warnings.warn("Set options in a 'FormAlchemyOptions' subclass of %s." % model.__module__, DeprecationWarning)
             [self.__setitem__(k, v) for k, v in model.FormAlchemy.__dict__.items() if not k.startswith('_')]
+
+        # Parse display settings.
+        if hasattr(model, "FormAlchemyDisplay"):
+            [self.__setitem__(k, v) for k, v in model.FormAlchemyDisplay.__dict__.items() if not k.startswith('_')]
+
+        # Parse validation settings.
+        if hasattr(model, "FormAlchemyValidate"):
+            [self.__setitem__(k, v) for k, v in model.FormAlchemyValidate.__dict__.items() if not k.startswith('_')]
 
     def configure(self, **options):
         """Configure FormAlchemy's default behaviour.
@@ -59,7 +69,7 @@ class FormAlchemyDict(dict):
 
     def get_config(self):
         """Return the current configuration."""
-        return self
+        return self.copy()
 
 class BaseModel(object):
     """The `BaseModel` class.
@@ -81,6 +91,7 @@ class BaseModel(object):
       * get_colnames(self[, **kwargs])
       * get_readonlys(self[, **kwargs])
       * get_coltypes(self)
+      * get_bytype(self, string)
 
     Inherits from FormAlchemyDict methods as well.
 
@@ -146,7 +157,7 @@ class BaseModel(object):
         """
 
         if not self.is_bound():
-            raise exceptions.UnboundModelError()
+            raise exceptions.UnboundModelError(self.__class__)
 
         if kwargs:
             return self._get_filtered_cols(**kwargs)
@@ -232,6 +243,37 @@ class BaseModel(object):
 
         return col_types
 
+    def get_type(self, string):
+        """Return a list of `string` type column names.
+
+        `string` is case insensitive.
+
+        Valid `string` values:
+          * "binary"
+          * "boolean"
+          * "date"
+          * "datetime"
+          * "integer"
+          * "nulltype"
+          * "numeric"
+          * "string"
+          * "time"
+
+        """
+
+        d = {
+            "binary":types.Binary,
+            "boolean":types.Boolean,
+            "date":types.Date,
+            "datetime":types.DateTime,
+            "integer":types.Integer,
+            "numeric":types.Numeric,
+            "string":types.String,
+            "time":types.Time,
+        }
+
+        return self.get_coltypes().get(d[string.lower()], [])
+
 #    def __repr__(self):
 #        repr = "%s bound to: %s" % (self.__class__.__name__, self._model)
 #        return "<" + repr + ">"
@@ -271,9 +313,6 @@ class BaseRender(object):
         if self.__class__.__name__ == "BaseRender":
             raise exceptions.NotImplementedError()
 
-        if not self.is_bound():
-             raise exceptions.UnboundModelError()
-
     def __str__(self):
         return self.render()
 
@@ -284,7 +323,13 @@ class BaseModelRender(BaseModel, BaseRender):
     access and support rendering capabilities.
 
     """
-    pass
+    def render(self):
+        """This function must be overridden by any subclass of `BaseModelRender`."""
+        if self.__class__.__name__ == "BaseModelRender":
+            raise exceptions.NotImplementedError()
+
+        if not self.is_bound():
+             raise exceptions.UnboundModelError(self.__class__)
 
 class BaseCollectionRender(BaseModelRender):
     """The `BaseCollectionRender` class.
@@ -298,7 +343,7 @@ class BaseCollectionRender(BaseModelRender):
 
     """
 
-    def __init__(self, collection=[], bind=None):
+    def __init__(self, bind=None, collection=[]):
         super(BaseCollectionRender, self).__init__(bind=bind)
         self._collection = collection
 

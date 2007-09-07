@@ -20,8 +20,11 @@ class RenderError(FormAlchemyError):
 class UnboundModelError(RenderError):
     """Raised when rendering is called but no model has been bound to it."""
 
+    def __init__(self, cls):
+        self.cls = cls
+
     def __str__(self):
-        return "No SQLAlchemy mapped class was bound to this class yet. Use the .bind() method."
+        return "No model is bound to %s. Use the .bind() method." % (repr(self.cls))
 
 class InvalidColumnError(RenderError):
     """Raised when column level rendering classes don't have a valid column set."""
