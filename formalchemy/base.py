@@ -152,7 +152,7 @@ class BaseModel(object):
         Keyword arguments:
           * `pk=True` - Won't return primary key columns if set to `False`.
           * `fk=True` - Won't return foreign key columns if set to `False`.
-          * `exclude=[]` - An iterable containing column names to exclude.
+          * `exclude=[]` - An string or an iterable containing column names to exclude.
 
         """
 
@@ -167,6 +167,9 @@ class BaseModel(object):
         pk = kwargs.get("pk", True)
         fk = kwargs.get("fk", True)
         exclude = kwargs.get("exclude", [])
+
+        if isinstance(exclude, basestring):
+            exclude = [exclude]
 
         ignore = exclude[:]
         if not pk:
@@ -188,13 +191,16 @@ class BaseModel(object):
         Keywords arguments:
           * `readonly_pk=False` - Will prohibit changes to primary key columns if set to `True`.
           * `readonly_fk=False` - Will prohibit changes to foreign key columns if set to `True`.
-          * `readonly=[]` - An iterable containing column names to set as readonly.
+          * `readonly=[]` - A string or an iterable containing column names to set as readonly.
 
         """
 
         ro_pks = kwargs.get("readonly_pk", False)
         ro_fks = kwargs.get("readonly_fk", False)
         readonlys = kwargs.get("readonly", [])
+
+        if isinstance(readonlys, basestring):
+            readonlys = [readonlys]
 
         if ro_pks:
             readonlys += self.get_pks()
@@ -371,7 +377,7 @@ class BaseColumnRender(BaseModelRender):
 
     """
 
-    def __init__(self, column=None, bind=None):
+    def __init__(self, bind=None, column=None):
         super(BaseColumnRender, self).__init__(bind=bind)
         if column:
             self.set_column(column)

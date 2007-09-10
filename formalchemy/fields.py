@@ -30,10 +30,11 @@ class Label(base.BaseRender):
     def render(self):
         return h.content_tag("label", content=self.get_display(), for_=self.name, class_=self.cls)
 
-class BaseField(base.BaseRender):
-    """The `BaseField` class.
+class BaseFieldRender(base.BaseRender):
+    """The `BaseFieldRender` class.
 
-    This is the class that fits to all HTML <input> structure.
+    This is the class that fits to all HTML <input> structure. It takes a
+    field name and field value as argument.
 
     """
 
@@ -41,8 +42,10 @@ class BaseField(base.BaseRender):
         self.name = name
         self.value = value
 
-class Field(BaseField):
-    """The `Field` class.
+class ModelFieldRender(BaseFieldRender):
+    """The `ModelFieldRender` class.
+
+    This should be the super class of all xField classes.
 
     This class takes a SQLAlchemy mapped class as first argument and the column
     name to process as second argument. It maps the column name as the field
@@ -55,12 +58,10 @@ class Field(BaseField):
       * `render(self)`
         Return generated HTML.
 
-    All xField classes inherit of this `Field` class.
-
     """
 
     def __init__(self, model, col, **kwargs):
-        super(Field, self).__init__(col, getattr(model, col))
+        super(ModelFieldRender, self).__init__(col, getattr(model, col))
         if model.c[col].default:
             self.default = model.c[col].default.arg
         else:
@@ -76,7 +77,7 @@ class Field(BaseField):
     def render(self):
         return h.text_field(self.name, value=self.get_value())
 
-class TextField(Field):
+class TextField(ModelFieldRender):
     """The `TextField` class."""
 
     def __init__(self, model, col, **kwargs):
@@ -92,52 +93,52 @@ class PasswordField(TextField):
     def render(self):
         return h.password_field(self.name, value=self.get_value(), maxlength=self.length, **self.attribs)
 
-class HiddenField(Field):
+class HiddenField(ModelFieldRender):
     """The `HiddenField` class."""
 
     def render(self):
         return h.hidden_field(self.name, value=self.get_value(), **self.attribs)
 
-class BooleanField(Field):
+class BooleanField(ModelFieldRender):
     """The `BooleanField` class."""
 
     def render(self):
         return h.check_box(self.name, self.get_value(), checked=self.get_value(), **self.attribs)
 
-class FileField(Field):
+class FileField(ModelFieldRender):
     """The `FileField` class."""
 
     def render(self):
         # Do we need a value here ?
         return h.file_field(self.name, **self.attribs)
 
-class IntegerField(Field):
+class IntegerField(ModelFieldRender):
     """The `IntegerField` class."""
 
     def render(self):
         return h.text_field(self.name, value=self.get_value(), **self.attribs)
 
-class DateTimeField(Field):
+class DateTimeField(ModelFieldRender):
     """The `DateTimeField` class."""
 
     def render(self):
         return h.text_field(self.name, value=self.get_value(), **self.attribs)
 
 
-class DateField(Field):
+class DateField(ModelFieldRender):
     """The `DateField` class."""
 
     def render(self):
         return h.text_field(self.name, value=self.get_value(), **self.attribs)
 
 
-class TimeField(Field):
+class TimeField(ModelFieldRender):
     """The `TimeField` class."""
 
     def render(self):
         return h.text_field(self.name, value=self.get_value(), **self.attribs)
 
-class RadioField(BaseField):
+class RadioField(BaseFieldRender):
     """The `RadioField` class."""
 
     def __init__(self, name, value, **kwargs):
@@ -147,7 +148,7 @@ class RadioField(BaseField):
     def render(self):
         return h.radio_button(self.name, self.value, **self.attribs)
 
-class RadioSet(Field):
+class RadioSet(ModelFieldRender):
     """The `RadioSet` class."""
 
     def __init__(self, model, col, choices, **kwargs):
@@ -174,7 +175,7 @@ class RadioSet(Field):
     def render(self):
         return h.tag("br").join(self.radios)
 
-class SelectField(Field):
+class SelectField(ModelFieldRender):
     """The `SelectField` class."""
 
     def __init__(self, model, col, options, **kwargs):

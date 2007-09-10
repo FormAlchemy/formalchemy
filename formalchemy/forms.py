@@ -10,7 +10,7 @@ import formalchemy.base as base
 import formalchemy.fields as fields
 import formalchemy.utils as utils
 
-__all__ = ["FieldSet", "ModelRender", "FieldRender"]
+__all__ = ["FieldSet", "MultiFields", "Field"]
 
 class FieldSet(base.BaseModelRender):
     """The `FieldSet` class.
@@ -67,7 +67,7 @@ class FieldSet(base.BaseModelRender):
         opts = base.FormAlchemyDict(self.get_config())
         opts.configure(**options)
 
-        model_render = ModelRender(self._model)
+        model_render = MultiFields(self._model)
         # Reset options and only render based given options
         model_render.reconfigure(**opts)
         html = model_render.render()
@@ -86,8 +86,8 @@ class FieldSet(base.BaseModelRender):
         html = "\n".join([h.content_tag('legend', legend_txt), html])
         return utils.wrap("<fieldset>", html, "</fieldset>")
 
-class ModelRender(base.BaseModelRender):
-    """The `ModelRender` class.
+class MultiFields(base.BaseModelRender):
+    """The `MultiFields` class.
 
     Return generated HTML fields from a SQLAlchemy mapped class.
 
@@ -96,7 +96,7 @@ class ModelRender(base.BaseModelRender):
     def render(self, **options):
         """Return HTML fields generated from the `model`."""
 
-        super(ModelRender, self).render()
+        super(MultiFields, self).render()
 
         # Merge class level options with given argument options.
         opts = base.FormAlchemyDict(self.get_config())
@@ -107,7 +107,7 @@ class ModelRender(base.BaseModelRender):
 
         html = []
         # Generate fields.
-        field_render = FieldRender(bind=self._model)
+        field_render = Field(bind=self._model)
         field_render.reconfigure(**opts)
         for col in columns:
             field_render.set_column(col)
@@ -116,15 +116,15 @@ class ModelRender(base.BaseModelRender):
 
         return "\n".join(html)
 
-class FieldRender(base.BaseColumnRender):
-    """The `FieldRender` class.
+class Field(base.BaseColumnRender):
+    """The `Field` class.
 
     Return generated HTML <label> and <input> tags for one single column.
 
     """
 
     def render(self, **options):
-        super(FieldRender, self).render()
+        super(Field, self).render()
 
         # Merge class level options with given argument options.
         opts = base.FormAlchemyDict(self.get_config())
@@ -134,7 +134,11 @@ class FieldRender(base.BaseColumnRender):
         readonlys = self.get_readonlys(**opts)
 
         passwords = opts.get('password', [])
+        if isinstance(passwords, basestring):
+            passwords = [passwords]
         hiddens = opts.get('hidden', [])
+        if isinstance(hiddens, basestring):
+            hiddens = [hiddens]
         dropdowns = opts.get('dropdown', {})
         radios = opts.get('radio', {})
 

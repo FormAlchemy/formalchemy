@@ -7,7 +7,7 @@ from formalchemy.tables import *
 from formalchemy.forms import *
 from formalchemy.validation import *
 
-__all__ = ["FieldSet", "ModelRender", "FieldRender", "TableItem", "TableCollection", "Validate"]
+__all__ = ["FieldSet", "MultiFields", "Field", "TableItem", "TableItemConcat", "TableCollection"]
 __version__ = "0.2"
 
 __doc__ = """FormAlchemy
@@ -18,14 +18,14 @@ __doc__ = """FormAlchemy
 
 =Concepts=
 
-FormAlchemy was designed to ease the developper's work when dealing with
+FormAlchemy was designed to ease the developer's work when dealing with
 SQLAlchemy mapped classes (models) in a web environement where HTML forms are
 often used. The basic concept is to generate HTML input fields from a given
 model that will match the model's columns definition. FormAlchemy will try to
 figure out what kind of HTML code should be returned by introspecting the
 model's properties and generate ready-to-use HTML code that will fit with the
-developper's application. Of course, FormAlchemy can't figure out everything,
-i.e, the developper might want to display only a few columns from the given
+developer's application. Of course, FormAlchemy can't figure out everything,
+i.e, the developer might want to display only a few columns from the given
 model. Thus, FormAlchemy was design to be hightly customizable as well.
 
 =FormAlchemy's current state=
@@ -77,8 +77,8 @@ HTML output from your mapped classes.
 
 The available form related classes are:
   * `FieldSet`: Used for rendering input form fields from a model, wrapping the fields in a <fieldset> and <legend> HTML tag.
-  * `ModelRender`: Like FieldSet, but without the <fieldset> and <legend> HTML tags.
-  * `FieldRender`: Used for rendering a column, returning a single HTML <label> and <input> pair.
+  * `MultiFields`: Like FieldSet, but without the <fieldset> and <legend> HTML tags.
+  * `Field`: Used for rendering a single column from a model, returning a single HTML <label> and <input> pair.
 
 FormAlchemy has derived a little from it's original goal and other, non-form
 related classes have been extended to the module:
