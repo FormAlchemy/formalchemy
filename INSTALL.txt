@@ -9,8 +9,8 @@ Download FormAlchemy's latest version from the download page.
 
 Then run:
 
-  $ tar -xvzf formalchemy-0.1.tar.gz
-  $ cd formalchemy-0.1
+  $ tar -xvzf FormAlchemy-0.2.tar.gz
+  $ cd FormAlchemy-0.2
   $ python setup.py install
 
 You can now use FormAlchemy in your project:
