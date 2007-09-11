@@ -63,7 +63,7 @@ class FieldSet(base.BaseModelRender):
     def render(self, **options):
         super(FieldSet, self).render()
 
-        # Merge class level options with given argument options.
+        # Merge class level options with given options.
         opts = self.new_options(**options)
 
         model_render = MultiFields(self._model)
@@ -97,7 +97,7 @@ class MultiFields(base.BaseModelRender):
 
         super(MultiFields, self).render()
 
-        # Merge class level options with given argument options.
+        # Merge class level options with given options.
         opts = self.new_options(**options)
 
         # Filter out unnecessary columns.
@@ -124,7 +124,7 @@ class Field(base.BaseColumnRender):
     def render(self, **options):
         super(Field, self).render()
 
-        # Merge class level options with given argument options.
+        # Merge class level options with given options.
         opts = self.new_options(**options)
 
         # Categorize options

@@ -20,7 +20,7 @@ class TableCaption(base.BaseModelRender):
     def render(self, **options):
         super(TableCaption, self).render()
 
-        # Merge class level options with given argument options.
+        # Merge class level options with given options.
         opts = self.new_options(**options)
 
         caption = opts.pop('caption', None)
@@ -42,7 +42,7 @@ class TableHead(base.BaseColumnRender):
     def render(self, **options):
         super(TableHead, self).render()
 
-        # Merge class level options with given argument options.
+        # Merge class level options with given options.
         opts = self.new_options(**options)
 
         self.set_prettify(opts.get('prettify'))
@@ -60,7 +60,7 @@ class TableData(base.BaseColumnRender):
     def render(self, **options):
         super(TableData, self).render()
 
-        # Merge class level options with given argument options.
+        # Merge class level options with given options.
         opts = self.new_options(**options)
 
         value = getattr(self._model, self._column)
@@ -92,7 +92,7 @@ class TableTHead(base.BaseModelRender):
     def render(self, **options):
         super(TableTHead, self).render()
 
-        # Merge class level options with given argument options.
+        # Merge class level options with given options.
         opts = self.new_options(**options)
 
         row = []
@@ -119,7 +119,7 @@ class TableRowColumn(base.BaseColumnRender):
     def render(self, **options):
         super(TableRowColumn, self).render()
 
-        # Merge class level options with given argument options.
+        # Merge class level options with given options.
         opts = self.new_options(**options)
 
         th = TableHead(bind=self._model, column=self._column)
@@ -148,7 +148,7 @@ class TableRowItem(base.BaseModelRender):
     def render(self, **options):
         super(TableRowItem, self).render()
 
-        # Merge class level options with given argument options.
+        # Merge class level options with given options.
         opts = self.new_options(**options)
 
         row = []
@@ -169,7 +169,7 @@ class TableBodyCollection(base.BaseCollectionRender):
     def render(self, **options):
         super(TableBodyCollection, self).render()
 
-        # Merge class level options with given argument options.
+        # Merge class level options with given options.
         opts = self.new_options(**options)
 
         if not self._collection:
@@ -198,7 +198,7 @@ class TableBodyItem(base.BaseModelRender):
     def render(self, **options):
         super(TableBodyItem, self).render()
 
-        # Merge class level options with given argument options.
+        # Merge class level options with given options.
         opts = self.new_options(**options)
 
         # Build the table's body.
@@ -225,7 +225,7 @@ class TableItem(base.BaseModelRender):
     def render(self, **options):
         super(TableItem, self).render()
 
-        # Merge class level options with given argument options.
+        # Merge class level options with given options.
         opts = self.new_options(**options)
 
         table = []
@@ -253,7 +253,7 @@ class TableCollection(base.BaseCollectionRender):
     def render(self, **options):
         super(TableCollection, self).render()
 
-        # Merge class level options with given argument options.
+        # Merge class level options with given options.
         opts = self.new_options(**options)
 
         table = []
