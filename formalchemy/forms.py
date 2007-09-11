@@ -10,7 +10,7 @@ import formalchemy.base as base
 import formalchemy.fields as fields
 import formalchemy.utils as utils
 
-__all__ = ["FieldSet", "MultiFields", "Field"]
+__all__ = ["FieldSet", "MultiFields", "LabelField"]
 
 class FieldSet(base.BaseModelRender):
     """The `FieldSet` class.
@@ -105,7 +105,7 @@ class MultiFields(base.BaseModelRender):
 
         html = []
         # Generate fields.
-        field_render = Field(bind=self._model)
+        field_render = LabelField(bind=self._model)
         field_render.reconfigure(**opts)
         for col in columns:
             field_render.set_column(col)
@@ -114,15 +114,15 @@ class MultiFields(base.BaseModelRender):
 
         return "\n".join(html)
 
-class Field(base.BaseColumnRender):
-    """The `Field` class.
+class LabelField(base.BaseColumnRender):
+    """The `LabelField` class.
 
     Return generated HTML <label> and <input> tags for one single column.
 
     """
 
     def render(self, **options):
-        super(Field, self).render()
+        super(LabelField, self).render()
 
         # Merge class level options with given options.
         opts = self.new_options(**options)
