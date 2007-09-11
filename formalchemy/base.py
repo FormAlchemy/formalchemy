@@ -6,8 +6,6 @@
 import sqlalchemy.types as types
 import formalchemy.exceptions as exceptions
 
-import warnings
-
 class FormAlchemyDict(dict):
     """The `FormAlchemyDict` dictionary class.
 
