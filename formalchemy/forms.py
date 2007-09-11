@@ -205,7 +205,7 @@ class LabelField(base.BaseColumnRender):
             field += "\n" + fields.FileField(self._model, self._column).render()
 
         else:
-            field += "\n" + fields.Field(self._model, self._column).render()
+            field += "\n" + fields.ModelFieldRender(self._model, self._column).render()
 
         # Make the error
         if self._column in errors:
