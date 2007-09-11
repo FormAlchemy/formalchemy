@@ -10,7 +10,7 @@ import formalchemy.base as base
 import formalchemy.fields as fields
 import formalchemy.utils as utils
 
-__all__ = ["FieldSet", "MultiFields", "LabelField"]
+__all__ = ["FieldSet", "MultiFields", "Field"]
 
 class FieldSet(base.BaseModelRender):
     """The `FieldSet` class.
@@ -105,7 +105,7 @@ class MultiFields(base.BaseModelRender):
 
         html = []
         # Generate fields.
-        field_render = LabelField(bind=self._model)
+        field_render = Field(bind=self._model)
         field_render.reconfigure(**opts)
         for col in columns:
             field_render.set_column(col)
@@ -114,15 +114,26 @@ class MultiFields(base.BaseModelRender):
 
         return "\n".join(html)
 
-class LabelField(base.BaseColumnRender):
-    """The `LabelField` class.
+class Field(base.BaseColumnRender):
+    """The `Field` class.
 
     Return generated HTML <label> and <input> tags for one single column.
 
     """
 
+    def __init__(self, bind=None, column=None, make_label=True):
+        super(Field, self).__init__(bind=bind, column=column)
+
+        self.set_make_label(make_label)
+
+    def set_make_label(self, value):
+        self._make_label = bool(value)
+
+    def get_make_label(self):
+        return self._make_label
+
     def render(self, **options):
-        super(LabelField, self).render()
+        super(Field, self).render()
 
         # Merge class level options with given options.
         opts = self.new_options(**options)
@@ -138,6 +149,8 @@ class LabelField(base.BaseColumnRender):
             hiddens = [hiddens]
         dropdowns = opts.get('dropdown', {})
         radios = opts.get('radio', {})
+
+        make_label = opts.get('make_label', self.get_make_label())
 
         pretty_func = opts.get('prettify')
         aliases = opts.get('alias', {})
@@ -155,18 +168,19 @@ class LabelField(base.BaseColumnRender):
 
         # Process hidden fields first as they don't need a `Label`.
         if self._column in hiddens:
-            print hiddens, "#" * 100
-            print fields.HiddenField(self._model, self._column).render()
             return fields.HiddenField(self._model, self._column).render()
 
         # Make the label
-        label = fields.Label(self._column, alias=aliases.get(self._column, self._column))
-        label.set_prettify(pretty_func)
-        if self.is_nullable(self._column):
-            label.cls = cls_fld_opt
-        else:
-            label.cls = cls_fld_req
-        field = label.render()
+        field = ""
+
+        if make_label:
+            label = fields.Label(self._column, alias=aliases.get(self._column, self._column))
+            label.set_prettify(pretty_func)
+            if self.is_nullable(self._column):
+                label.cls = cls_fld_opt
+            else:
+                label.cls = cls_fld_req
+            field += label.render()
 
         # Hold a list of column names by type.
         col_types = self.get_coltypes()
@@ -214,7 +228,11 @@ class LabelField(base.BaseColumnRender):
         if self._column in docs:
             field += "\n" + h.content_tag("span", docs[self._column], class_=cls_span_doc)
 
+        if field.startswith("\n"):
+            field = field[1:]
+
         # Wrap the whole thing into a div
-        field = utils.wrap("<div>", field, "</div>")
+        if self.get_make_label():
+            field = utils.wrap("<div>", field, "</div>")
 
         return field
