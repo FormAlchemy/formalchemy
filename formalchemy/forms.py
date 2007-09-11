@@ -64,8 +64,7 @@ class FieldSet(base.BaseModelRender):
         super(FieldSet, self).render()
 
         # Merge class level options with given argument options.
-        opts = base.FormAlchemyDict(self.get_config())
-        opts.configure(**options)
+        opts = self.new_options(**options)
 
         model_render = MultiFields(self._model)
         # Reset options and only render based given options
@@ -99,8 +98,7 @@ class MultiFields(base.BaseModelRender):
         super(MultiFields, self).render()
 
         # Merge class level options with given argument options.
-        opts = base.FormAlchemyDict(self.get_config())
-        opts.configure(**options)
+        opts = self.new_options(**options)
 
         # Filter out unnecessary columns.
         columns = self.get_colnames(**opts)
@@ -127,8 +125,7 @@ class Field(base.BaseColumnRender):
         super(Field, self).render()
 
         # Merge class level options with given argument options.
-        opts = base.FormAlchemyDict(self.get_config())
-        opts.configure(**options)
+        opts = self.new_options(**options)
 
         # Categorize options
         readonlys = self.get_readonlys(**opts)
@@ -158,6 +155,8 @@ class Field(base.BaseColumnRender):
 
         # Process hidden fields first as they don't need a `Label`.
         if self._column in hiddens:
+            print hiddens, "#" * 100
+            print fields.HiddenField(self._model, self._column).render()
             return fields.HiddenField(self._model, self._column).render()
 
         # Make the label

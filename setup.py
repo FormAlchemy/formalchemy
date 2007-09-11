@@ -8,5 +8,4 @@ setup(name='FormAlchemy',
       url='http://formalchemy.googlecode.com',
       download_url='http://code.google.com/p/formalchemy/downloads/list',
       packages=['formalchemy'],
-      package_data={'formalchemy':['CHANGELOG', 'COPYRIGHT']}
       )

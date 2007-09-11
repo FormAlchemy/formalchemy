@@ -8,7 +8,7 @@ import webhelpers as h
 import formalchemy.base as base
 import formalchemy.utils as utils
 
-__all__ = ["TableItem", "TableCollection", "TableItemConcat"]
+__all__ = ["TableItem", "TableItemConcat", "TableCollection"]
 
 class TableCaption(base.BaseModelRender):
     """The `TableCaption` class.
@@ -21,14 +21,13 @@ class TableCaption(base.BaseModelRender):
         super(TableCaption, self).render()
 
         # Merge class level options with given argument options.
-        opts = base.FormAlchemyDict(self.get_config())
-        opts.configure(**options)
+        opts = self.new_options(**options)
 
-        caption = opts.pop('caption_item', None)
+        caption = opts.pop('caption', None)
         if isinstance(caption, basestring):
             caption_txt = h.content_tag('caption', self.prettify(caption))
         elif caption is None:
-            caption_txt = "%s details" % self._model.__class__.__name__
+            caption_txt = "%s" % self._model.__class__.__name__
             caption_txt = h.content_tag('caption', self.prettify(caption_txt))
 
         return caption_txt
@@ -44,8 +43,7 @@ class TableHead(base.BaseColumnRender):
         super(TableHead, self).render()
 
         # Merge class level options with given argument options.
-        opts = base.FormAlchemyDict(self.get_config())
-        opts.configure(**options)
+        opts = self.new_options(**options)
 
         self.set_prettify(opts.get('prettify'))
         alias = opts.get('alias', {}).get(self._column, self._column)
@@ -63,8 +61,7 @@ class TableData(base.BaseColumnRender):
         super(TableData, self).render()
 
         # Merge class level options with given argument options.
-        opts = base.FormAlchemyDict(self.get_config())
-        opts.configure(**options)
+        opts = self.new_options(**options)
 
         value = getattr(self._model, self._column)
 
@@ -96,8 +93,7 @@ class TableTHead(base.BaseModelRender):
         super(TableTHead, self).render()
 
         # Merge class level options with given argument options.
-        opts = base.FormAlchemyDict(self.get_config())
-        opts.configure(**options)
+        opts = self.new_options(**options)
 
         row = []
         for col in self.get_colnames(**opts):
@@ -124,8 +120,7 @@ class TableRowColumn(base.BaseColumnRender):
         super(TableRowColumn, self).render()
 
         # Merge class level options with given argument options.
-        opts = base.FormAlchemyDict(self.get_config())
-        opts.configure(**options)
+        opts = self.new_options(**options)
 
         th = TableHead(bind=self._model, column=self._column)
         th.reconfigure(**opts)
@@ -154,8 +149,7 @@ class TableRowItem(base.BaseModelRender):
         super(TableRowItem, self).render()
 
         # Merge class level options with given argument options.
-        opts = base.FormAlchemyDict(self.get_config())
-        opts.configure(**options)
+        opts = self.new_options(**options)
 
         row = []
         for col in self.get_colnames(**opts):
@@ -176,8 +170,7 @@ class TableBodyCollection(base.BaseCollectionRender):
         super(TableBodyCollection, self).render()
 
         # Merge class level options with given argument options.
-        opts = base.FormAlchemyDict(self.get_config())
-        opts.configure(**options)
+        opts = self.new_options(**options)
 
         if not self._collection:
             if isinstance(self._model, type): # Not instantiated
@@ -206,8 +199,7 @@ class TableBodyItem(base.BaseModelRender):
         super(TableBodyItem, self).render()
 
         # Merge class level options with given argument options.
-        opts = base.FormAlchemyDict(self.get_config())
-        opts.configure(**options)
+        opts = self.new_options(**options)
 
         # Build the table's body.
         # <tr>
@@ -234,13 +226,12 @@ class TableItem(base.BaseModelRender):
         super(TableItem, self).render()
 
         # Merge class level options with given argument options.
-        opts = base.FormAlchemyDict(self.get_config())
-        opts.configure(**options)
+        opts = self.new_options(**options)
 
         table = []
 
         # Check for caption
-        caption = opts.get('caption_item', True)
+        caption = opts.get('caption', True)
         if caption:
             tc = TableCaption(bind=self._model)
             tc.reconfigure(**opts)
@@ -263,8 +254,7 @@ class TableCollection(base.BaseCollectionRender):
         super(TableCollection, self).render()
 
         # Merge class level options with given argument options.
-        opts = base.FormAlchemyDict(self.get_config())
-        opts.configure(**options)
+        opts = self.new_options(**options)
 
         table = []
 
@@ -313,15 +303,16 @@ class TableItemConcat(base.BaseRender):
 
     """
 
-    def __init__(self, bind=[]):
+    def __init__(self, bind=[], caption=None):
         self._bind = bind
+        self._caption = caption
 
     def render(self, caption=None, **options):
 
         table = []
 
-        if isinstance(caption, basestring):
-            caption_txt = h.content_tag('caption', self.prettify(caption))
+        if isinstance(self._caption, basestring):
+            caption_txt = h.content_tag('caption', self.prettify(self._caption))
             table.append(caption_txt)
         elif caption in self._bind:
             tc = TableCaption(bind=caption)

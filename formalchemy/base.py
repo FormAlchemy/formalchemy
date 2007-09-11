@@ -17,7 +17,7 @@ class FormAlchemyDict(dict):
       * parse(self, model)
       * configure(self, **options)
       * reconfigure(self[, **options])
-      * get_config(self)
+      * get_options(self)
 
     """
 
@@ -31,10 +31,7 @@ class FormAlchemyDict(dict):
         self.clear()
 
         # Parse option settings.
-        if hasattr(model, "FormAlchemyOptions"):
-            [self.__setitem__(k, v) for k, v in model.FormAlchemyOptions.__dict__.items() if not k.startswith('_')]
-        elif hasattr(model, "FormAlchemy"):
-            warnings.warn("Set options in a 'FormAlchemyOptions' subclass of %s." % model.__module__, DeprecationWarning)
+        if hasattr(model, "FormAlchemy"):
             [self.__setitem__(k, v) for k, v in model.FormAlchemy.__dict__.items() if not k.startswith('_')]
 
         # Parse display settings.
@@ -67,9 +64,15 @@ class FormAlchemyDict(dict):
         self.clear()
         self.configure(**options)
 
-    def get_config(self):
+    def get_options(self):
         """Return the current configuration."""
         return self.copy()
+
+    def new_options(self, **options):
+        """Return a new FormAlchemyDict holding class level options merged with `options`."""
+        opts = FormAlchemyDict(self.get_options())
+        opts.configure(**options)
+        return opts
 
 class BaseModel(object):
     """The `BaseModel` class.
@@ -101,7 +104,8 @@ class BaseModel(object):
         self._options = FormAlchemyDict()
         self.configure = self._options.configure
         self.reconfigure = self._options.reconfigure
-        self.get_config = self._options.get_config
+        self.get_options = self._options.get_options
+        self.new_options = self._options.new_options
 
         if bind:
             self.bind(bind)
@@ -183,6 +187,7 @@ class BaseModel(object):
             if not col in ignore:
                 columns.append(col)
 
+#        print columns, "#" * 10
         return columns
 
     def get_readonlys(self, **kwargs):

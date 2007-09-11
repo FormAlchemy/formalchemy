@@ -6,7 +6,39 @@
 import formalchemy.base as base
 
 __all__ = ["Validate"]
+__doc__ = """
 
+from sqlalchemy import *
+from sqlalchemy.orm import *
+
+meta = MetaData()
+
+user_table = Table('users', meta,
+    Column('id', Integer, primary_key=True),
+    Column('email', Unicode(40), unique=True, nullable=False),
+    Column('password', Unicode(20), nullable=False),
+    Column('first_name', Unicode(20)),
+    Column('last_name', Unicode(20)),
+    Column('description', Unicode),
+    Column('active', Boolean, default=True),
+)
+
+class User(object):
+    pass
+
+mapper(User, user_table)
+
+user = User()
+
+class User(object):
+    class FormAlchemy:
+        class Validate:
+            email = 
+            messages = {
+                "email":
+            }
+
+"""
 class Validate(base.BaseModelRender):
     """The `Validate` class.
 
