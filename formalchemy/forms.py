@@ -153,7 +153,7 @@ class Field(base.BaseColumnRender):
         make_label = opts.get('make_label', self.get_make_label())
 
         pretty_func = opts.get('prettify')
-        aliases = opts.get('alias', {})
+        alias = opts.get('alias', {})
 
         errors = opts.get('error', {})
         docs = opts.get('doc', {})
@@ -174,7 +174,7 @@ class Field(base.BaseColumnRender):
         field = ""
 
         if make_label:
-            label = fields.Label(self._column, alias=aliases.get(self._column, self._column))
+            label = fields.Label(self._column, alias=alias.get(self._column, self._column))
             label.set_prettify(pretty_func)
             if self.is_nullable(self._column):
                 label.cls = cls_fld_opt

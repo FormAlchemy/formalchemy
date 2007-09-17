@@ -7,7 +7,7 @@ from formalchemy.tables import *
 from formalchemy.forms import *
 from formalchemy.validation import *
 
-__all__ = ["FieldSet", "MultiFields", "Field", "TableItem", "TableItemConcat", "TableCollection"]
+__all__ = ["FieldSet", "MultiFields", "Field", "Table", "TableConcat", "TableCollection"]
 __version__ = "0.2"
 
 __doc__ = """FormAlchemy
@@ -82,7 +82,7 @@ The available form related classes are:
 
 FormAlchemy has derived a little from it's original goal and other, non-form
 related classes have been extended to the module:
-  * `TableItem`: Used for rendering an HTML table from a model.
+  * `Table`: Used for rendering an HTML table from a model.
   * `TableCollection`: Used for rendering a collection of models into a table.
 
 All classes require to be bound to a model to generate HTML code. Although,

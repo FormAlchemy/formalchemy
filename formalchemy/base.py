@@ -5,72 +5,7 @@
 
 import sqlalchemy.types as types
 import formalchemy.exceptions as exceptions
-
-class FormAlchemyDict(dict):
-    """The `FormAlchemyDict` dictionary class.
-
-    This is the class responsible for parsing and holding FormAlchemy options.
-    It has the same API as `dict`, plus three extra methods:
-
-      * parse(self, model)
-      * configure(self, **options)
-      * reconfigure(self[, **options])
-      * get_options(self)
-
-    """
-
-    def parse(self, model):
-        """Parse options set in the subclass `FormAlchemy` from the `model` if defined.
-
-        This will reset any previously set options.
-
-        """
-
-        self.clear()
-
-        # Parse option settings.
-        if hasattr(model, "FormAlchemy"):
-            [self.__setitem__(k, v) for k, v in model.FormAlchemy.__dict__.items() if not k.startswith('_')]
-
-        # Parse display settings.
-        if hasattr(model, "FormAlchemyDisplay"):
-            [self.__setitem__(k, v) for k, v in model.FormAlchemyDisplay.__dict__.items() if not k.startswith('_')]
-
-        # Parse validation settings.
-        if hasattr(model, "FormAlchemyValidate"):
-            [self.__setitem__(k, v) for k, v in model.FormAlchemyValidate.__dict__.items() if not k.startswith('_')]
-
-    def configure(self, **options):
-        """Configure FormAlchemy's default behaviour.
-
-        This will update FormAlchemy's default behaviour with the given
-        keyword options. Any other previously set options will be kept intact.
-
-        """
-
-        self.update(options)
-
-    def reconfigure(self, **options):
-        """Reconfigure `FormAlchemyDict` from scratch.
-
-        This will clear any previously set option and update FormAlchemy's
-        default behaviour with the given keyword options. If no keyword option
-        is passed, this will just reset all option.
-
-        """
-
-        self.clear()
-        self.configure(**options)
-
-    def get_options(self):
-        """Return the current configuration."""
-        return self.copy()
-
-    def new_options(self, **options):
-        """Return a new FormAlchemyDict holding class level options merged with `options`."""
-        opts = FormAlchemyDict(self.get_options())
-        opts.configure(**options)
-        return opts
+from formalchemy.options import Options
 
 class BaseModel(object):
     """The `BaseModel` class.
@@ -94,27 +29,27 @@ class BaseModel(object):
       * get_coltypes(self)
       * get_bytype(self, string)
 
-    Inherits from FormAlchemyDict methods as well.
-
     """
 
     def __init__(self, bind=None):
-        self._options = FormAlchemyDict()
-        self.configure = self._options.configure
-        self.reconfigure = self._options.reconfigure
-        self.get_options = self._options.get_options
-        self.new_options = self._options.new_options
+        self.options = Options()
+        self.configure = self.options.configure
+        self.reconfigure = self.options.reconfigure
+        self.get_options = self.options.get_options
+        self.new_options = self.options.new_options
 
         if bind:
             self.bind(bind)
         else:
             self._model = bind
+            self._current_model = bind
 
     def bind(self, model):
         """Bind to the given `model` from which HTML generation will be done."""
 
-        self._options.parse(model)
+        self.options.parse(model)
         self._model = model
+        self._current_model = model
 
     def is_bound(self):
         """Return True if bound to a model. Otherwise, return False."""
@@ -185,7 +120,6 @@ class BaseModel(object):
             if not col in ignore:
                 columns.append(col)
 
-#        print columns, "#" * 10
         return columns
 
     def get_readonlys(self, **kwargs):
@@ -332,6 +266,7 @@ class BaseModelRender(BaseModel, BaseRender):
     access and support rendering capabilities.
 
     """
+
     def render(self):
         """This function must be overridden by any subclass of `BaseModelRender`."""
         if self.__class__.__name__ == "BaseModelRender":
@@ -354,18 +289,18 @@ class BaseCollectionRender(BaseModelRender):
 
     def __init__(self, bind=None, collection=[]):
         super(BaseCollectionRender, self).__init__(bind=bind)
-        self._collection = collection
+        self.collection = collection
 
     def set_collection(self, collection):
         """Set the collection to render."""
 
         if not isinstance(collection, (list, tuple)):
             raise exceptions.InvalidCollectionError()
-        self._collection = collection
+        self.collection = collection
 
     def get_collection(self):
         """Return current collection."""
-        return self._collection
+        return self.collection
 
 class BaseColumnRender(BaseModelRender):
     """The `BaseColumnRender` class.

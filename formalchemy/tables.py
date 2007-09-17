@@ -7,285 +7,149 @@ import webhelpers as h
 
 import formalchemy.base as base
 import formalchemy.utils as utils
+from formalchemy.options import Options
 
-__all__ = ["TableItem", "TableItemConcat", "TableCollection"]
+__all__ = ["Table", "TableConcat", "TableCollection"]
 
-class TableCaption(base.BaseModelRender):
-    """The `TableCaption` class.
+class Th(object):
+    """The `Th` class.
 
-    This class is responsible for rendering a caption for a table.
-
-    """
-
-    def render(self, **options):
-        super(TableCaption, self).render()
-
-        # Merge class level options with given options.
-        opts = self.new_options(**options)
-
-        caption = opts.pop('caption', None)
-        if isinstance(caption, basestring):
-            caption_txt = h.content_tag('caption', self.prettify(caption))
-        elif caption is None:
-            caption_txt = "%s" % self._model.__class__.__name__
-            caption_txt = h.content_tag('caption', self.prettify(caption_txt))
-
-        return caption_txt
-
-class TableHead(base.BaseColumnRender):
-    """The `TableHead` class.
-
-    This class is responsible for rendering a single table head cell '<th>'.
+    This class is responsible for rendering a '<th></th>' tag.
 
     """
 
-    def render(self, **options):
-        super(TableHead, self).render()
-
-        # Merge class level options with given options.
-        opts = self.new_options(**options)
-
-        self.set_prettify(opts.get('prettify'))
-        alias = opts.get('alias', {}).get(self._column, self._column)
-
+    def th(self, column):
+        alias = self._render_options.get('alias', {}).get(column, column)
         return h.content_tag("th", self.prettify(alias))
 
-class TableData(base.BaseColumnRender):
-    """The `TableData` class.
+class Td(object):
+    """The `Td` class.
 
-    This class is responsible for rendering a single table data cell '<td>'.
+    This class is responsible for rendering a '<td></td>' tag.
 
     """
+    def td(self, column):
+        value = getattr(self._current_model, column)
 
-    def render(self, **options):
-        super(TableData, self).render()
-
-        # Merge class level options with given options.
-        opts = self.new_options(**options)
-
-        value = getattr(self._model, self._column)
-
-        display = opts.get("display", {}).get(self._column)
+        display = self._render_options.get("display", {}).get(column)
         if callable(display):
-            return h.content_tag("td", display(self._model))
+            return h.content_tag("td", display(self._current_model))
 
-        value = getattr(self._model, self._column)
         if isinstance(value, bool):
             value = h.content_tag("em", value)
         elif value is None:
             value = h.content_tag("em", self.prettify("not available."))
         return h.content_tag("td", value)
 
-class TableTHead(base.BaseModelRender):
-    """The `TableTHead` class.
+class Caption(object):
+    """The `Caption` class.
 
-    This class is responsible for rendering a table's header row:
-
-    <tr>
-      <th>Name</th>
-      <th>Email</th>
-      <th>Phone</th>
-    </tr>
+    This class is responsible for rendering a caption for a table.
 
     """
+    def caption(self):
+        caption = self._render_options.get('caption', True)
+        numbering = self._render_options.get('collection_size', True)
 
-    def render(self, **options):
-        super(TableTHead, self).render()
-
-        # Merge class level options with given options.
-        opts = self.new_options(**options)
-
-        row = []
-        for col in self.get_colnames(**opts):
-            th = TableHead(column=col, bind=self._model)
-            th.reconfigure(**opts)
-            row.append(th.render())
-        row = utils.wrap("<tr>", "\n".join(row), "</tr>")
-
-        return utils.wrap("<thead>", row, "</thead>")
-
-class TableRowColumn(base.BaseColumnRender):
-    """The `TableRowColumn` class.
-
-    This class is responsible for rendering a table row from a model's column:
-
-    <tr>
-      <th>Name</th>
-      <td>Mr Foo</td>
-    </tr>
-
-    """
-
-    def render(self, **options):
-        super(TableRowColumn, self).render()
-
-        # Merge class level options with given options.
-        opts = self.new_options(**options)
-
-        th = TableHead(bind=self._model, column=self._column)
-        th.reconfigure(**opts)
-        row = th.render()
-
-        td = TableData(bind=self._model, column=self._column)
-        td.reconfigure(**opts)
-        row += td.render()
-
-        return h.content_tag("tr", row)
-
-class TableRowItem(base.BaseModelRender):
-    """The `TableRowItem` class.
-
-    This class is responsible for rendering a table row from a model:
-
-    <tr>
-      <td>Mr Foo</td>
-      <td>foo@bar.com</td>
-      <td>555-1234</td>
-    </tr>
-
-    """
-
-    def render(self, **options):
-        super(TableRowItem, self).render()
-
-        # Merge class level options with given options.
-        opts = self.new_options(**options)
-
-        row = []
-        for col in self.get_colnames(**opts):
-            td = TableData(bind=self._model, column=col)
-            td.reconfigure(**opts)
-            row.append(td.render())
-        return h.content_tag("tr", "\n".join(row))
-
-class TableBodyCollection(base.BaseCollectionRender):
-    """The `TableBodyCollection` class.
-
-    This class is responsible for rendering a table's body from a collection
-    of items.
-
-    """
-
-    def render(self, **options):
-        super(TableBodyCollection, self).render()
-
-        # Merge class level options with given options.
-        opts = self.new_options(**options)
-
-        if not self._collection:
-            if isinstance(self._model, type): # Not instantiated
-                msg = "no %s." % (self._model.__name__)
+        if caption:
+            if isinstance(caption, basestring):
+                caption_txt = caption
             else:
-                msg = "no %s." % (self._model.__class__.__name__)
-            colspan_size = len(self.get_colnames(**opts))
-            td = utils.wrap('<td colspan="%s">' % colspan_size, self.prettify(msg), "</td>")
-            return utils.wrap("<tbody>", utils.wrap("<tr>", td, "</tr>"), "</tbody>")
+                caption_txt = "%s" % self._current_model.__class__.__name__
 
-        tbody = []
-        for item in self._collection:
-            tr = TableRowItem(bind=item)
-            tr.reconfigure(**opts)
-            tbody.append(tr.render())
-        return utils.wrap("<tbody>", "\n".join(tbody), "</tbody>")
+        if numbering and hasattr(self, "collection"):
+            caption_txt += " (%s)" % len(self.collection)
 
-class TableBodyItem(base.BaseModelRender):
-    """The `TableBodyItem` class.
+        return h.content_tag('caption', self.prettify(caption_txt))
 
-    This class is responsible for rendering a table's body from a single item.
+class Table(base.BaseModelRender, Caption, Th, Td):
+    """The `Table` class.
+
+    This class is responsible for rendering a table from a single model.
 
     """
 
-    def render(self, **options):
-        super(TableBodyItem, self).render()
-
-        # Merge class level options with given options.
-        opts = self.new_options(**options)
-
-        # Build the table's body.
-        # <tr>
-        #   <th>column</th><td>value</td>
-        # </tr>
-        # ...
+    def tbody(self):
+        # Make the table's body.
         tbody = []
-        for col in self.get_colnames(**opts):
-            tr = TableRowColumn(bind=self._model, column=col)
-            tr.reconfigure(**opts)
-            tbody.append(tr.render())
-
-        # Wrap in a tbody.
-        return utils.wrap("<tbody>", "\n".join(tbody), "</tbody>")
-
-class TableItem(base.BaseModelRender):
-    """The `TableItem` class.
-
-    This class is responsible for rendering a table from a single item.
-
-    """
+        for column in self.get_colnames(**self._render_options):
+            tr = []
+            tr.append(self.th(column))
+            tr.append(self.td(column))
+            tr = utils.wrap("<tr>", "\n".join(tr), "</tr>")
+            tbody.append(tr)
+        tbody = utils.wrap("<tbody>", "\n".join(tbody), "</tbody>")
+        return tbody
 
     def render(self, **options):
-        super(TableItem, self).render()
-
-        # Merge class level options with given options.
-        opts = self.new_options(**options)
+        # Merge class level options with `options`.
+        self._render_options = self.new_options(**options)
 
         table = []
 
-        # Check for caption
-        caption = opts.get('caption', True)
+        # Make the table's caption.
+        caption = self._render_options.get('caption', True)
         if caption:
-            tc = TableCaption(bind=self._model)
-            tc.reconfigure(**opts)
-            table.append(tc.render())
+            table.append(self.caption())
 
-        tb = TableBodyItem(bind=self._model)
-        tb.reconfigure(**opts)
-        table.append(tb.render())
+        # Make the table's body.
+        tbody = self.tbody()
+        table.append(tbody)
 
         return utils.wrap("<table>", "\n".join(table), "</table>")
 
-class TableCollection(base.BaseCollectionRender):
+class TableCollection(base.BaseCollectionRender, Caption, Th, Td):
     """The `TableCollection` class.
 
-    This class is responsible for rendering a table from a collection of items.
+    This class is responsible for rendering a table from a collection of models.
 
     """
-
     def render(self, **options):
-        super(TableCollection, self).render()
-
-        # Merge class level options with given options.
-        opts = self.new_options(**options)
+        # Merge class level options with `options`.
+        self._render_options = self.new_options(**options)
 
         table = []
 
-        # Check for caption
-        caption = opts.get('caption_collection', True)
+        # Make the table's caption.
+        caption = self._render_options.get('caption', True)
         if caption:
-            tc = TableCaption(bind=self._model)
-            tc.reconfigure(**opts)
-            table.append(tc.render())
+            table.append(self.caption())
 
-        # Build the table's head.
-        th = TableTHead(bind=self._model)
-        th.reconfigure(**opts)
-        table.append(th.render())
+        # Make the table's head.
+        thead = []
+        tr = []
+        for column in self.get_colnames(**self._render_options):
+            tr.append(self.th(column))
+        tr = utils.wrap("<tr>", "\n".join(tr), "</tr>")
+        thead.append(tr)
 
-        # Build the table's body.
-        tb = TableBodyCollection(bind=self._model, collection=self._collection)
-        tb.reconfigure(**opts)
-        table.append(tb.render())
+        thead = utils.wrap("<thead>", "\n".join(thead), "</thead>")
+        table.append(thead)
+
+        # Make the table's body.
+        tbody = []
+        for model in self.collection:
+            self._current_model = model
+            tr = []
+            for column in self.get_colnames(**self._render_options):
+                tr.append(self.td(column))
+            tr = utils.wrap("<tr>", "\n".join(tr), "</tr>")
+            tbody.append(tr)
+        tbody = utils.wrap("<tbody>", "\n".join(tbody), "</tbody>")
+        table.append(tbody)
 
         return utils.wrap("<table>", "\n".join(table), "</table>")
 
-class TableItemConcat(base.BaseRender):
-    """The `TableItemConcat` class.
+class TableConcat(base.BaseRender, Caption):
+    """The `TableConcat` class.
 
-    This class is responsible for concatenating table items from multiple
-    models. Takes a optional `caption` keyword argument for the table's
+    This class is responsible for concatenating different kinds of models in a
+    single table. Takes an optional `caption` keyword argument for the table's
     caption. This could be a given string or a model from which the caption
     should be generated from.
 
-    Given a list of multiple models `[client, address]` would generate:
+    Keyword arguments:
+      * `models=[]` - A list of models to render or a paired (model, keyword options): `[client, (address, {'pk':False, 'fk':True})]`.
 
     <table>
       <caption>Optional caption</caption>
@@ -303,25 +167,42 @@ class TableItemConcat(base.BaseRender):
 
     """
 
-    def __init__(self, bind=[], caption=None):
-        self._bind = bind
-        self._caption = caption
+    def __init__(self, models=[]):
+        self.options = Options()
+        self.models = models
 
-    def render(self, caption=None, **options):
+    def render(self, caption=False):
+        """ Return a rendered table from the given models.
+
+        `caption=False` - A string or one of the models in the model list to render from which caption will be generated from.
+
+        """
 
         table = []
 
-        if isinstance(self._caption, basestring):
-            caption_txt = h.content_tag('caption', self.prettify(self._caption))
-            table.append(caption_txt)
-        elif caption in self._bind:
-            tc = TableCaption(bind=caption)
-            tc.configure(**options)
-            table.append(tc.render())
+        # Make the table's body.
+        caption_txt = ""
+        tbody = []
+        for i in self.models:
+            if isinstance(i, (list, tuple)):
+                model = i[0]
+                opts = i[1]
+            else:
+                model = i
+                opts = {}
+            t = Table(bind=model)
+            t.configure(**opts)
+            t._render_options = t.new_options(caption=caption)
 
-        for model in self._bind:
-            tb = TableBodyItem(bind=model)
-            tb.configure(**options)
-            table.append(tb.render())
+            # Do caption rendering
+            if caption and not caption_txt:
+                if isinstance(caption, basestring) or caption is model:
+                    caption_txt = t.caption()
+                    table.append(caption_txt)
+
+            # Render the body
+            html = t.tbody()
+            tbody.append(html)
+        table.append("\n".join(tbody))
 
         return utils.wrap("<table>", "\n".join(table), "</table>")
