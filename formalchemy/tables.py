@@ -37,7 +37,7 @@ class Td(object):
 
         if isinstance(value, bool):
             value = h.content_tag("em", value)
-        elif value is None:
+        elif value is None or callable(value):
             value = h.content_tag("em", self.prettify("not available."))
         return h.content_tag("td", value)
 

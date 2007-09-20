@@ -72,7 +72,8 @@ class ModelFieldRender(BaseFieldRender):
         if self.value is not None:
             return self.value
         else:
-            return self.default
+            if not callable(self.default):
+                return self.default
 
     def render(self):
         return h.text_field(self.name, value=self.get_value())
