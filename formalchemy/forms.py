@@ -103,6 +103,13 @@ class MultiFields(base.BaseModelRender):
         # Filter out unnecessary columns.
         columns = self.get_colnames(**opts)
 
+        # Add hidden fields.
+        hiddens = opts.get('hidden', [])
+        if isinstance(hiddens, basestring):
+            hiddens = [hiddens]
+
+        columns += hiddens
+
         html = []
         # Generate fields.
         field_render = Field(bind=self._model)
