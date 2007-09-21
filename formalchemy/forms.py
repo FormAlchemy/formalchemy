@@ -132,6 +132,7 @@ class Field(base.BaseColumnRender):
         super(Field, self).__init__(bind=bind, column=column)
 
         self.set_make_label(make_label)
+        self._focus_rendered = False
 
     def set_make_label(self, value):
         self._make_label = bool(value)
@@ -161,6 +162,7 @@ class Field(base.BaseColumnRender):
 
         pretty_func = opts.get('prettify')
         alias = opts.get('alias', {})
+        focus = opts.get('focus', True)
 
         errors = opts.get('error', {})
         docs = opts.get('doc', {})
@@ -241,5 +243,10 @@ class Field(base.BaseColumnRender):
         # Wrap the whole thing into a div
         if self.get_make_label():
             field = utils.wrap("<div>", field, "</div>")
+
+        # Do the field focusing
+        if (focus == self._column or focus is True) and not self._focus_rendered:
+            field += "\n" + h.javascript_tag('document.getElementById("%s").focus();' % self._column)
+            self._focus_rendered = True
 
         return field
