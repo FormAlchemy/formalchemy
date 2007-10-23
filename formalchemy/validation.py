@@ -4,8 +4,9 @@
 # the MIT License: http://www.opensource.org/licenses/mit-license.php
 
 import formalchemy.base as base
+import sqlalchemy.types as types
 
-__all__ = ["Validate"]
+__all__ = ["Validate", "Populate"]
 __doc__ = """
 
 from sqlalchemy import *
@@ -39,15 +40,49 @@ class User(object):
             }
 
 """
+
+class Populate(base.BaseModelRender):
+    """The `Populate` class.
+
+    This class is responsible for populating a model from a given POST.
+
+    """
+
+    def __init__(self, bind=None, post=None):
+        super(Populate, self).__init__(bind=bind)
+        self.post = post
+
+    def populate(self):
+        # Hold a list of column names by type.
+        col_types = self.get_coltypes()
+
+        print "ALL PARAM KEYS:", self.post, "#" * 20
+#        for param in self.post:
+#            if param in self.get_colnames():
+#                print "Parsing", param, repr(self.post[param]), "#" * 30
+#                if param in col_types[types.Boolean]:
+#                    print self.post[param] == "True", "BOOL", "#" * 10
+#                    setattr(self.model, param, self.post[param] == "True")
+#                else:
+#                    setattr(self.model, param, self.post[param] or None)
+
+        for column in self.get_colnames():
+            print "Parsing column", column, "#" * 15
+            if column in self.post:
+                print "  ", column, repr(self.post.get(column))
+                if column in col_types[types.Boolean]:
+                    setattr(self.model, column, self.post.get(column) == "True")
+                else:
+                    setattr(self.model, column, self.post.get(column) or None)
+
 class Validate(base.BaseModelRender):
     """The `Validate` class.
 
-    This class is resposible for validating HTML forms and storing the values
+    This class is responsible for validating HTML forms and storing the values
     back in the bound model.
 
     Methods:
       * bind(self, model)
-      * set_post(self, post)
       * validate(self)
       * store(self)
 
@@ -57,10 +92,7 @@ class Validate(base.BaseModelRender):
         super(Validate, self).__init__(bind=bind)
 
         self._validators = FormAlchemyDict()
-        if post:
-            self._post = post
-        else:
-            self._post = None
+        self.post = None
 
     def bind(self, model):
         """Bind to the given `model` from which HTML field generation will be done."""
@@ -69,12 +101,6 @@ class Validate(base.BaseModelRender):
         self._validators.clear()
         if hasattr(model, "FormAlchemyValidate"):
             [self._validators.__setitem__(col, model.FormAlchemyValidate.__dict__.get(col)) for col in self.get_colnames()]
-
-    def set_post(self, post):
-        self._post = post
-
-    def get_post(self):
-        return self._post
 
     def _test_func_value(func, value):
         if callable(func):
@@ -109,9 +135,9 @@ class Validate(base.BaseModelRender):
                 continue
 
             if col in col_types[Boolean]:
-                setattr(self._model, col, post[col]=="True")
+                setattr(self.model, col, post[col]=="True")
             else:
-                setattr(self._model, col, post[col])
+                setattr(self.model, col, post[col])
 
     def render(self, **options):
         """Return a HTML fields filled with POST params.

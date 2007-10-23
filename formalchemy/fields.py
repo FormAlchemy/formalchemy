@@ -13,16 +13,11 @@ __all__ = ["Label", "TextField", "PasswordField", "HiddenField", "BooleanField",
 class Label(base.BaseRender):
     """The `Label` class."""
 
-    cls = None
-
     def __init__(self, col, **kwargs):
         self.name = col
         self.alias = kwargs.get('alias', self.name)
         self.cls = kwargs.get('cls', None)
         self.set_prettify(kwargs.get('prettify', self.prettify))
-
-    def set_alias(self, alias):
-        self.alias = alias
 
     def get_display(self):
         return self.prettify(self.alias)
@@ -93,6 +88,16 @@ class PasswordField(TextField):
 
     def render(self):
         return h.password_field(self.name, value=self.get_value(), maxlength=self.length, **self.attribs)
+
+class TextAreaField(ModelFieldRender):
+    """The `TextAreaField` class."""
+
+    def __init__(self, model, col, size, **kwargs):
+        super(TextAreaField, self).__init__(model, col, **kwargs)
+        self.size = size
+
+    def render(self):
+        return h.text_area(self.name, content=self.get_value(), size=self.size)
 
 class HiddenField(ModelFieldRender):
     """The `HiddenField` class."""
@@ -168,7 +173,7 @@ class RadioSet(ModelFieldRender):
                 radios.append(radio.render() + choice_name)
             # ... or just a string.
             else:
-                checked = choice == getattr(self._model, col) or choice == default
+                checked = choice == getattr(self.model, col) or choice == default
                 radiofields.append("\n" + h.radio_button(col, choice, checked=checked) + choice)
 
         self.radios = radios

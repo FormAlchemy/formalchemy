@@ -41,47 +41,47 @@ class BaseModel(object):
         if bind:
             self.bind(bind)
         else:
-            self._model = bind
+            self.model = bind
             self._current_model = bind
 
     def bind(self, model):
         """Bind to the given `model` from which HTML generation will be done."""
 
         self.options.parse(model)
-        self._model = model
+        self.model = model
         self._current_model = model
 
     def is_bound(self):
         """Return True if bound to a model. Otherwise, return False."""
-        return bool(self._model)
+        return bool(self.model)
 
     def get_model(self):
         """Return the current bound model."""
-        return self._model
+        return self.model
 
     def is_pk(self, col):
         """Return True if `col` is a primary key column, otherwise return False."""
-        return self._model.c[col].primary_key
+        return self.model.c[col].primary_key
 
     def get_pks(self):
         """Return a list of primary key column names."""
-        return [col for col in self._model.c.keys() if self._model.c[col].primary_key]
+        return [col for col in self.model.c.keys() if self.model.c[col].primary_key]
 
     def is_fk(self, col):
         """Return True if `col` is a primary foreign column, otherwise return False."""
-        return self._model.c[col].foreign_key
+        return self.model.c[col].foreign_key
 
     def get_fks(self):
         """Return a list of foreign key column names."""
-        return [col for col in self._model.c.keys() if self._model.c[col].foreign_key]
+        return [col for col in self.model.c.keys() if self.model.c[col].foreign_key]
 
     def is_nullable(self, col):
         """Return True if `col` is a nullable column, otherwise return False."""
-        return self._model.c[col].nullable
+        return self.model.c[col].nullable
 
     def get_unnullables(self):
         """Return a list of non-nullable column names."""
-        return [col for col in self._model.c.keys() if not self._model.c[col].nullable]
+        return [col for col in self.model.c.keys() if not self.model.c[col].nullable]
 
     def get_colnames(self, **kwargs):
         """Return a list of filtered column names.
@@ -98,7 +98,7 @@ class BaseModel(object):
 
         if kwargs:
             return self._get_filtered_cols(**kwargs)
-        return self._model.c.keys()
+        return self.model.c.keys()
 
     def _get_filtered_cols(self, **kwargs):
         pk = kwargs.get("pk", True)
@@ -182,7 +182,7 @@ class BaseModel(object):
                                           types.Time]], [])
 
         for t in col_types:
-            col_types[t] = [col.name for col in self._model.c if isinstance(col.type, t)]
+            col_types[t] = [col.name for col in self.model.c if isinstance(col.type, t)]
 
         return col_types
 
@@ -218,7 +218,7 @@ class BaseModel(object):
         return self.get_coltypes().get(d[string.lower()], [])
 
 #    def __repr__(self):
-#        repr = "%s bound to: %s" % (self.__class__.__name__, self._model)
+#        repr = "%s bound to: %s" % (self.__class__.__name__, self.model)
 #        return "<" + repr + ">"
 
 class BaseRender(object):

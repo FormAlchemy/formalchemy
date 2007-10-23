@@ -66,7 +66,7 @@ class FieldSet(base.BaseModelRender):
         # Merge class level options with given options.
         opts = self.new_options(**options)
 
-        model_render = MultiFields(self._model)
+        model_render = MultiFields(self.model)
         # Reset options and only render based given options
         model_render.reconfigure(**opts)
         html = model_render.render()
@@ -74,7 +74,7 @@ class FieldSet(base.BaseModelRender):
         legend = opts.pop('legend', None)
         # Setup class's name as default.
         if legend is None:
-            legend_txt = self._model.__class__.__name__
+            legend_txt = self.model.__class__.__name__
         # Don't render a legend field.
         elif legend is False:
             return utils.wrap("<fieldset>", html, "</fieldset>")
@@ -112,7 +112,7 @@ class MultiFields(base.BaseModelRender):
 
         html = []
         # Generate fields.
-        field_render = Field(bind=self._model)
+        field_render = Field(bind=self.model)
         field_render.reconfigure(**opts)
         for col in columns:
             field_render.set_column(col)
@@ -150,6 +150,7 @@ class Field(base.BaseColumnRender):
         readonlys = self.get_readonlys(**opts)
 
         passwords = opts.get('password', [])
+        textareas = opts.get('textarea', {})
         if isinstance(passwords, basestring):
             passwords = [passwords]
         hiddens = opts.get('hidden', [])
@@ -177,7 +178,7 @@ class Field(base.BaseColumnRender):
 
         # Process hidden fields first as they don't need a `Label`.
         if self._column in hiddens:
-            return fields.HiddenField(self._model, self._column).render()
+            return fields.HiddenField(self.model, self._column).render()
 
         # Make the label
         field = ""
@@ -196,39 +197,42 @@ class Field(base.BaseColumnRender):
 
         # Make the input
         if self._column in radios:
-            radio = fields.RadioSet(self._model, self._column, choices=radios[self._column])
+            radio = fields.RadioSet(self.model, self._column, choices=radios[self._column])
             field += "\n" + radio.render()
 
         elif self._column in dropdowns:
-            dropdown = fields.SelectField(self._model, self._column, dropdowns[self._column].pop("opts"), **dropdowns[self._column])
+            dropdown = fields.SelectField(self.model, self._column, dropdowns[self._column].pop("opts"), **dropdowns[self._column])
             field += "\n" + dropdown.render()
 
         elif self._column in passwords:
-            field += "\n" + fields.PasswordField(self._model, self._column, readonly=self._column in readonlys).render()
+            field += "\n" + fields.PasswordField(self.model, self._column, readonly=self._column in readonlys).render()
 
         elif self._column in col_types[types.String]:
-            field += "\n" + fields.TextField(self._model, self._column).render()
+            if self._column in textareas:
+                field += "\n" + fields.TextAreaField(self.model, self._column, size=textareas[self._column]).render()
+            else:
+                field += "\n" + fields.TextField(self.model, self._column).render()
 
         elif self._column in col_types[types.Integer]:
-            field += "\n" + fields.IntegerField(self._model, self._column).render()
+            field += "\n" + fields.IntegerField(self.model, self._column).render()
 
         elif self._column in col_types[types.Boolean]:
-            field += "\n" + fields.BooleanField(self._model, self._column).render()
+            field += "\n" + fields.BooleanField(self.model, self._column).render()
 
         elif self._column in col_types[types.DateTime]:
-            field += "\n" + fields.DateTimeField(self._model, self._column).render()
+            field += "\n" + fields.DateTimeField(self.model, self._column).render()
 
         elif self._column in col_types[types.Date]:
-            field += "\n" + fields.DateField(self._model, self._column).render()
+            field += "\n" + fields.DateField(self.model, self._column).render()
 
         elif self._column in col_types[types.Time]:
-            field += "\n" + fields.TimeField(self._model, self._column).render()
+            field += "\n" + fields.TimeField(self.model, self._column).render()
 
         elif self._column in col_types[types.Binary]:
-            field += "\n" + fields.FileField(self._model, self._column).render()
+            field += "\n" + fields.FileField(self.model, self._column).render()
 
         else:
-            field += "\n" + fields.ModelFieldRender(self._model, self._column).render()
+            field += "\n" + fields.ModelFieldRender(self.model, self._column).render()
 
         # Make the error
         if self._column in errors:
