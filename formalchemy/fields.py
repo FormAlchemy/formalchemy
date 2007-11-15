@@ -97,7 +97,12 @@ class TextAreaField(ModelFieldRender):
         self.size = size
 
     def render(self):
-        return h.text_area(self.name, content=self.get_value(), size=self.size)
+        if isinstance(self.size, basestring):
+            return h.text_area(self.name, content=self.get_value(), size=self.size)
+        else:
+            # Will fail if not a 2-item list or tuple. 
+            cols, rows = self.size
+            return h.text_area(self.name, content=self.get_value(), cols=cols, rows=rows)
 
 class HiddenField(ModelFieldRender):
     """The `HiddenField` class."""
