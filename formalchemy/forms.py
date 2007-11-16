@@ -10,7 +10,8 @@ import formalchemy.base as base
 import formalchemy.fields as fields
 import formalchemy.utils as utils
 
-__all__ = ["FieldSet", "MultiFields", "Field"]
+#__all__ = ["FieldSet", "MultiFields", "Field"]
+__all__ = ["FieldSet", "Field"]
 
 class FieldSet(base.BaseModelRender):
     """The `FieldSet` class.
@@ -66,12 +67,17 @@ class FieldSet(base.BaseModelRender):
         # Merge class level options with given options.
         opts = self.new_options(**options)
 
+        legend = opts.pop('legend', None)
+        fieldset = opts.pop('fieldset', True)
+
         model_render = MultiFields(self.model)
         # Reset options and only render based given options
         model_render.reconfigure(**opts)
         html = model_render.render()
 
-        legend = opts.pop('legend', None)
+        if not fieldset:
+            return html
+
         # Setup class's name as default.
         if legend is None:
             legend_txt = self.model.__class__.__name__

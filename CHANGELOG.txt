@@ -1,4 +1,7 @@
-FormAlchemy 0.2, r79:
+FormAlchemy 0.2:
+  * Added 'fieldset' option.
+  * Added 'include' option. Patch from Adam Gomaa.
+  * Added 'textarea' option. Additionnal patch provided by Adam Gomaa for passing native tuple of intergers as `size` argument value.
   * Added new experimental, little customizable, 'TableItem' and 'TableCollection'. TableItem renders a table from a bound model. TableCollection renders a table from a collection of items that are of the same class than the bound model: TableCollection(bind=client, collection=client_list). The bound model can be a non-instantiated mapped class.
   * Removed NullType type column detection for now, as it seems to be a SA 0.4 only thing. What would a NullType HTML field represent anyway?
   * FieldSet now returns fields embedded in <fieldset> HTML tags.
