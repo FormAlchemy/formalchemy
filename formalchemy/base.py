@@ -89,7 +89,11 @@ class BaseModel(object):
         Keyword arguments:
           * `pk=True` - Won't return primary key columns if set to `False`.
           * `fk=True` - Won't return foreign key columns if set to `False`.
-          * `exclude=[]` - An string or an iterable containing column names to exclude.
+          * `exclude=[]` - A string or an iterable containing column names to exclude.
+          * `include=[]` - A string or an iterable containing column names to include.
+
+        Note that, when `include` is set and evaluates to `True`, it will
+        take precedence over the other options.
 
         """
 
@@ -104,6 +108,15 @@ class BaseModel(object):
         pk = kwargs.get("pk", True)
         fk = kwargs.get("fk", True)
         exclude = kwargs.get("exclude", [])
+        include = kwargs.get("include", [])
+
+        # Make sure that we don't accidentally turn a '' (False) into
+        # a [''] (True) by checking both for type and value.
+        if isinstance(include, basestring) and include:
+            include = [include]
+
+        if include:
+            return [col for col in self.get_colnames() if col in include]
 
         if isinstance(exclude, basestring):
             exclude = [exclude]
@@ -114,13 +127,7 @@ class BaseModel(object):
         if not fk:
             ignore.extend(self.get_fks())
 
-        columns = []
-
-        for col in self.get_colnames():
-            if not col in ignore:
-                columns.append(col)
-
-        return columns
+        return [col for col in self.get_colnames() if not col in ignore]
 
     def get_readonlys(self, **kwargs):
         """Return a list of columns that should be readonly.
