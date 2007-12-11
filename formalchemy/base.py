@@ -3,6 +3,7 @@
 # This module is part of FormAlchemy and is released under
 # the MIT License: http://www.opensource.org/licenses/mit-license.php
 
+from sqlalchemy import __version__
 import sqlalchemy.types as types
 import formalchemy.exceptions as exceptions
 from formalchemy.options import Options
@@ -69,10 +70,14 @@ class BaseModel(object):
 
     def is_fk(self, col):
         """Return True if `col` is a primary foreign column, otherwise return False."""
+        if __version__ >= '0.4.1':
+            return bool(self.model.c[col].foreign_keys)
         return self.model.c[col].foreign_key
 
     def get_fks(self):
         """Return a list of foreign key column names."""
+        if __version__ >= '0.4.1':
+            return [col for col in self.model.c.keys() if self.model.c[col].foreign_keys]
         return [col for col in self.model.c.keys() if self.model.c[col].foreign_key]
 
     def is_nullable(self, col):

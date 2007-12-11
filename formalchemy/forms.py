@@ -67,8 +67,8 @@ class FieldSet(base.BaseModelRender):
         # Merge class level options with given options.
         opts = self.new_options(**options)
 
-        legend = opts.pop('legend', None)
-        fieldset = opts.pop('fieldset', True)
+        legend = opts.get('legend', None)
+        fieldset = opts.get('fieldset', True)
 
         model_render = MultiFields(self.model)
         # Reset options and only render based given options
@@ -109,12 +109,19 @@ class MultiFields(base.BaseModelRender):
         # Filter out unnecessary columns.
         columns = self.get_colnames(**opts)
 
+        # Should we keep track of rendered columns ?
+        track_cols = opts.get('track_cols', False)
+
         # Add hidden fields.
         hiddens = opts.get('hidden', [])
         if isinstance(hiddens, basestring):
             hiddens = [hiddens]
 
         columns += hiddens
+
+        # Store rendered columns in a hidden field.
+#        if track_cols:
+#            .append(col)
 
         html = []
         # Generate fields.
@@ -207,7 +214,7 @@ class Field(base.BaseColumnRender):
             field += "\n" + radio.render()
 
         elif self._column in dropdowns:
-            dropdown = fields.SelectField(self.model, self._column, dropdowns[self._column].pop("opts"), **dropdowns[self._column])
+            dropdown = fields.SelectField(self.model, self._column, dropdowns[self._column]["opts"], **dropdowns[self._column])
             field += "\n" + dropdown.render()
 
         elif self._column in passwords:
@@ -223,7 +230,9 @@ class Field(base.BaseColumnRender):
             field += "\n" + fields.IntegerField(self.model, self._column).render()
 
         elif self._column in col_types[types.Boolean]:
-            field += "\n" + fields.BooleanField(self.model, self._column).render()
+#            field += "\n" + fields.BooleanField(self.model, self._column).render()
+            radio = fields.RadioSet(self.model, self._column, choices=[True, False])
+            field += "\n" + radio.render()
 
         elif self._column in col_types[types.DateTime]:
             field += "\n" + fields.DateTimeField(self.model, self._column).render()

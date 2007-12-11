@@ -56,7 +56,6 @@ class Populate(base.BaseModelRender):
         # Hold a list of column names by type.
         col_types = self.get_coltypes()
 
-        print "ALL PARAM KEYS:", self.post, "#" * 20
 #        for param in self.post:
 #            if param in self.get_colnames():
 #                print "Parsing", param, repr(self.post[param]), "#" * 30
@@ -71,8 +70,10 @@ class Populate(base.BaseModelRender):
             if column in self.post:
                 print "  ", column, repr(self.post.get(column))
                 if column in col_types[types.Boolean]:
+                    print "    ", "setting boolean column", column, "to", repr(self.post.get(column) == "True")
                     setattr(self.model, column, self.post.get(column) == "True")
                 else:
+                    print "    ", "setting column", column, "to", repr(self.post.get(column) or None)
                     setattr(self.model, column, self.post.get(column) or None)
 
 class Validate(base.BaseModelRender):

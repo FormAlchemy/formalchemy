@@ -57,6 +57,7 @@ class ModelFieldRender(BaseFieldRender):
 
     def __init__(self, model, col, **kwargs):
         super(ModelFieldRender, self).__init__(col, getattr(model, col))
+        self.model = model
         if model.c[col].default:
             self.default = model.c[col].default.arg
         else:
@@ -114,7 +115,9 @@ class BooleanField(ModelFieldRender):
     """The `BooleanField` class."""
 
     def render(self):
-        return h.check_box(self.name, self.get_value(), checked=self.get_value(), **self.attribs)
+        # FIXME: Should checkboxes always be evaluated as True ? I guess so.
+#        return h.check_box(self.name, self.get_value(), checked=self.get_value(), **self.attribs)
+        return h.check_box(self.name, True, checked=self.get_value(), **self.attribs)
 
 class FileField(ModelFieldRender):
     """The `FileField` class."""
@@ -176,10 +179,15 @@ class RadioSet(ModelFieldRender):
                 choice_name, choice_value = choice
                 radio = RadioField(self.name, choice_value, checked=self.get_value() == choice_value)
                 radios.append(radio.render() + choice_name)
+            # ... a boolean...
+            elif isinstance(choice, bool):
+                radio = RadioField(self.name, choice, checked=self.get_value() == choice)
+                radios.append(radio.render() + str(choice))
+#                radios.append("\n" + h.radio_button(self.name, choice, checked=self.get_value() == choice) + str(choice))
             # ... or just a string.
             else:
-                checked = choice == getattr(self.model, col) or choice == default
-                radiofields.append("\n" + h.radio_button(col, choice, checked=checked) + choice)
+                checked = choice == getattr(self.model, col) or choice == self.default
+                radios.append("\n" + h.radio_button(col, choice, checked=checked) + choice)
 
         self.radios = radios
 
@@ -191,7 +199,7 @@ class SelectField(ModelFieldRender):
 
     def __init__(self, model, col, options, **kwargs):
         self.options = options
-        selected = kwargs.pop('selected', None)
+        selected = kwargs.get('selected', None)
         super(SelectField, self).__init__(model, col, **kwargs)
         self.selected = selected or self.get_value()
 

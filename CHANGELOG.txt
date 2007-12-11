@@ -1,4 +1,5 @@
 FormAlchemy 0.2:
+  * Fixed a compatibility issue with SQLAlchemy 0.4.1. The 'foreign_key' Column attribute is now 'foreign_keys'.
   * Added 'fieldset' option.
   * Added 'include' option. Patch from Adam Gomaa.
   * Added 'textarea' option. Additionnal patch provided by Adam Gomaa for passing native tuple of intergers as `size` argument value.
