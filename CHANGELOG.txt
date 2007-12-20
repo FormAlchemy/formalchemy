@@ -1,4 +1,5 @@
 FormAlchemy 0.2:
+  * Fixed a bug where 'opts' from the 'dropdown' option is no longer rendered as an attribute of the <select> tag.
   * Fixed a compatibility issue with SQLAlchemy 0.4.1. The 'foreign_key' Column attribute is now 'foreign_keys'.
   * Added 'fieldset' option.
   * Added 'include' option. Patch from Adam Gomaa.
