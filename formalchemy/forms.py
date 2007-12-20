@@ -214,7 +214,9 @@ class Field(base.BaseColumnRender):
             field += "\n" + radio.render()
 
         elif self._column in dropdowns:
-            dropdown = fields.SelectField(self.model, self._column, dropdowns[self._column]["opts"], **dropdowns[self._column])
+            # FIXME: Keeping 'opts' in dropdowns will send opts as attributes to the <select> tag.
+            # But should we loose that info during rendering ?
+            dropdown = fields.SelectField(self.model, self._column, dropdowns[self._column].pop("opts"), **dropdowns[self._column])
             field += "\n" + dropdown.render()
 
         elif self._column in passwords:
