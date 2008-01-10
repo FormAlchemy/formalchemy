@@ -115,9 +115,9 @@ class BooleanField(ModelFieldRender):
     """The `BooleanField` class."""
 
     def render(self):
-        # FIXME: Should checkboxes always be evaluated as True ? I guess so.
-#        return h.check_box(self.name, self.get_value(), checked=self.get_value(), **self.attribs)
-        return h.check_box(self.name, True, checked=self.get_value(), **self.attribs)
+        # This is a browser hack to have a checkbox POSTed as False even if it wasn't
+        # checked, as unchecked boxes are not POSTed. The hidden field should be *after* the checkbox.
+        return h.check_box(self.name, True, checked=self.get_value(), **self.attribs) + h.hidden_field(self.name, value=False)
 
 class FileField(ModelFieldRender):
     """The `FileField` class."""

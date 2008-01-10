@@ -171,6 +171,9 @@ class Field(base.BaseColumnRender):
             hiddens = [hiddens]
         dropdowns = opts.get('dropdown', {})
         radios = opts.get('radio', {})
+        bool_as_radio = opts.get('bool_as_radio', {})
+        if isinstance(bool_as_radio, basestring):
+            bool_as_radio = [bool_as_radio]
 
         make_label = opts.get('make_label', self.get_make_label())
 
@@ -232,9 +235,14 @@ class Field(base.BaseColumnRender):
             field += "\n" + fields.IntegerField(self.model, self._column).render()
 
         elif self._column in col_types[types.Boolean]:
-#            field += "\n" + fields.BooleanField(self.model, self._column).render()
-            radio = fields.RadioSet(self.model, self._column, choices=[True, False])
-            field += "\n" + radio.render()
+            if self._column in bool_as_radio:
+                radio = fields.RadioSet(self.model, self._column, choices=[True, False])
+                field += "\n" + radio.render()
+            else:
+                field += "\n" + fields.BooleanField(self.model, self._column).render()
+#            # This is for radio style True/False rendering.
+#            radio = fields.RadioSet(self.model, self._column, choices=[True, False])
+#            field += "\n" + radio.render()
 
         elif self._column in col_types[types.DateTime]:
             field += "\n" + fields.DateTimeField(self.model, self._column).render()
