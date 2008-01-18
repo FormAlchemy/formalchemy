@@ -224,7 +224,16 @@ class Field(base.BaseColumnRender):
         elif self._column in dropdowns:
             # FIXME: Keeping 'opts' in dropdowns will send opts as attributes to the <select> tag.
             # But should we loose that info during rendering ?
-            dropdown = fields.SelectField(self.model, self._column, dropdowns[self._column].pop("opts"), **dropdowns[self._column])
+#            dropdown = fields.SelectField(self.model, self._column, dropdowns[self._column].pop("opts"), **dropdowns[self._column])
+
+            # As uncommented above, we can't just .pop("opts") out of dropdowns as these are the actual FormAlchemy class's options.
+            # If we pop it out, we will be missing this options on the next class usage as manipulating uninstantiated class makes changes
+            # persistant.
+            # We should not be playing with classes. We should think of passing FA's options as dict directly rather than playing around
+            # with `class FormAlchemy`. FormAlchemy needs serious rewrite and internal core philosophy changes. API is good though. Keep
+            # it simple.
+            dd_opts = dropdowns[self._column].copy()
+            dropdown = fields.SelectField(self.model, self._column, dd_opts.pop("opts"), **dd_opts)
             field += "\n" + dropdown.render()
 
         elif self._column in passwords:
