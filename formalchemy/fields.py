@@ -132,25 +132,38 @@ class IntegerField(ModelFieldRender):
     def render(self):
         return h.text_field(self.name, value=self.get_value(), **self.attribs)
 
-class DateTimeField(ModelFieldRender):
+class ModelDateTimeRender(ModelFieldRender):
+    """The `ModelDateTimeRender` class.
+
+    This should be the super class for (Date|Time|DateTime)Field.
+
+    """
+
+    def __init__(self, model, col, format, **kwargs):
+        super(ModelDateTimeRender, self).__init__(model, col)
+        self.format = format
+
+    def get_value(self):
+        if self.value is not None:
+            return self.value.strftime(self.format)
+        else:
+            if not callable(self.default):
+                return self.default
+
+    def render(self):
+        return h.text_field(self.name, value=self.get_value(), **self.attribs)
+
+class DateTimeField(ModelDateTimeRender):
     """The `DateTimeField` class."""
+    pass
 
-    def render(self):
-        return h.text_field(self.name, value=self.get_value(), **self.attribs)
-
-
-class DateField(ModelFieldRender):
+class DateField(ModelDateTimeRender):
     """The `DateField` class."""
+    pass
 
-    def render(self):
-        return h.text_field(self.name, value=self.get_value(), **self.attribs)
-
-
-class TimeField(ModelFieldRender):
+class TimeField(ModelDateTimeRender):
     """The `TimeField` class."""
-
-    def render(self):
-        return h.text_field(self.name, value=self.get_value(), **self.attribs)
+    pass
 
 class RadioField(BaseFieldRender):
     """The `RadioField` class."""

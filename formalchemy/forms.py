@@ -171,9 +171,14 @@ class Field(base.BaseColumnRender):
             hiddens = [hiddens]
         dropdowns = opts.get('dropdown', {})
         radios = opts.get('radio', {})
-        bool_as_radio = opts.get('bool_as_radio', {})
+        bool_as_radio = opts.get('bool_as_radio', [])
         if isinstance(bool_as_radio, basestring):
             bool_as_radio = [bool_as_radio]
+
+        # DateTime, Date, Time string formaters
+        date_f = opts.get('date', "%Y-%m-%d")
+        time_f = opts.get('time', "%H:%M:%S")
+        datetime_f = opts.get('datetime', "%s %s" % (date_f, time_f))
 
         make_label = opts.get('make_label', self.get_make_label())
 
@@ -245,13 +250,13 @@ class Field(base.BaseColumnRender):
 #            field += "\n" + radio.render()
 
         elif self._column in col_types[types.DateTime]:
-            field += "\n" + fields.DateTimeField(self.model, self._column).render()
+            field += "\n" + fields.DateTimeField(self.model, self._column, format=datetime_f).render()
 
         elif self._column in col_types[types.Date]:
-            field += "\n" + fields.DateField(self.model, self._column).render()
+            field += "\n" + fields.DateField(self.model, self._column, format=date_f).render()
 
         elif self._column in col_types[types.Time]:
-            field += "\n" + fields.TimeField(self.model, self._column).render()
+            field += "\n" + fields.TimeField(self.model, self._column, format=time_f).render()
 
         elif self._column in col_types[types.Binary]:
             field += "\n" + fields.FileField(self.model, self._column).render()

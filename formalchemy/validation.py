@@ -52,7 +52,7 @@ class Populate(base.BaseModelRender):
         super(Populate, self).__init__(bind=bind)
         self.post = post
 
-    def populate(self):
+    def populate(self, **kwargs):
         # Hold a list of column names by type.
         col_types = self.get_coltypes()
 
@@ -65,7 +65,7 @@ class Populate(base.BaseModelRender):
 #                else:
 #                    setattr(self.model, param, self.post[param] or None)
 
-        for column in self.get_colnames():
+        for column in self.get_colnames(**kwargs):
             print "Parsing column", column, "#" * 15
             if column in self.post:
                 print "  ", column, repr(self.post.get(column))

@@ -1,4 +1,5 @@
 FormAlchemy 0.2:
+  * Added 'date', 'time' and 'datetime' options for date/time fields formatting.
   * Added 'bool_as_radio' option.
   * Added a hack to force browsers to POST unckecked checkboxes.
   * Fixed a bug where 'opts' from the 'dropdown' option is no longer rendered as an attribute of the <select> tag.
