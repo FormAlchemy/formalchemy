@@ -1,4 +1,6 @@
 FormAlchemy 0.2:
+  * Added 'disable', 'disable_pk', 'disable_fk' options.
+  * Fixed a bug where 'readonly*' options only worked for 'password' fields.
   * Added 'date', 'time' and 'datetime' options for date/time fields formatting.
   * Added 'bool_as_radio' option.
   * Added a hack to force browsers to POST unckecked checkboxes.

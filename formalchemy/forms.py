@@ -161,6 +161,7 @@ class Field(base.BaseColumnRender):
 
         # Categorize options
         readonlys = self.get_readonlys(**opts)
+        disabled = self.get_disabled(**opts)
 
         passwords = opts.get('password', [])
         textareas = opts.get('textarea', {})
@@ -232,46 +233,50 @@ class Field(base.BaseColumnRender):
             # We should not be playing with classes. We should think of passing FA's options as dict directly rather than playing around
             # with `class FormAlchemy`. FormAlchemy needs serious rewrite and internal core philosophy changes. API is good though. Keep
             # it simple.
+            # `readonly` is not available for select lists, only `disabled` is.
             dd_opts = dropdowns[self._column].copy()
-            dropdown = fields.SelectField(self.model, self._column, dd_opts.pop("opts"), **dd_opts)
+            dropdown = fields.SelectField(self.model, self._column, dd_opts.pop("opts"), disabled=self._column in disabled, **dd_opts)
             field += "\n" + dropdown.render()
 
         elif self._column in passwords:
-            field += "\n" + fields.PasswordField(self.model, self._column, readonly=self._column in readonlys).render()
+            field += "\n" + fields.PasswordField(self.model, self._column, readonly=self._column in readonlys, disabled=self._column in disabled).render()
 
         elif self._column in col_types[types.String]:
             if self._column in textareas:
-                field += "\n" + fields.TextAreaField(self.model, self._column, size=textareas[self._column]).render()
+                field += "\n" + fields.TextAreaField(self.model, self._column, size=textareas[self._column], readonly=self._column in readonlys, disabled=self._column in disabled).render()
             else:
-                field += "\n" + fields.TextField(self.model, self._column).render()
+                field += "\n" + fields.TextField(self.model, self._column, readonly=self._column in readonlys, disabled=self._column in disabled).render()
 
         elif self._column in col_types[types.Integer]:
-            field += "\n" + fields.IntegerField(self.model, self._column).render()
+            field += "\n" + fields.IntegerField(self.model, self._column, readonly=self._column in readonlys, disabled=self._column in disabled).render()
 
         elif self._column in col_types[types.Boolean]:
             if self._column in bool_as_radio:
-                radio = fields.RadioSet(self.model, self._column, choices=[True, False])
+                # `readonly` is not available for radios, only `disabled` is.
+                radio = fields.RadioSet(self.model, self._column, choices=[True, False], disabled=self._column in disabled)
                 field += "\n" + radio.render()
             else:
-                field += "\n" + fields.BooleanField(self.model, self._column).render()
+                # `readonly` is not available for checkboxes, only `disabled` is.
+                field += "\n" + fields.BooleanField(self.model, self._column, disabled=self._column in disabled).render()
 #            # This is for radio style True/False rendering.
 #            radio = fields.RadioSet(self.model, self._column, choices=[True, False])
 #            field += "\n" + radio.render()
 
         elif self._column in col_types[types.DateTime]:
-            field += "\n" + fields.DateTimeField(self.model, self._column, format=datetime_f).render()
+            field += "\n" + fields.DateTimeField(self.model, self._column, format=datetime_f, readonly=self._column in readonlys, disabled=self._column in disabled).render()
 
         elif self._column in col_types[types.Date]:
-            field += "\n" + fields.DateField(self.model, self._column, format=date_f).render()
+            field += "\n" + fields.DateField(self.model, self._column, format=date_f, readonly=self._column in readonlys, disabled=self._column in disabled).render()
 
         elif self._column in col_types[types.Time]:
-            field += "\n" + fields.TimeField(self.model, self._column, format=time_f).render()
+            field += "\n" + fields.TimeField(self.model, self._column, format=time_f, readonly=self._column in readonlys, disabled=self._column in disabled).render()
 
         elif self._column in col_types[types.Binary]:
-            field += "\n" + fields.FileField(self.model, self._column).render()
+            # `readonly` is not available for file fields, only `disabled` is.
+            field += "\n" + fields.FileField(self.model, self._column, disabled=self._column in disabled).render()
 
         else:
-            field += "\n" + fields.ModelFieldRender(self.model, self._column).render()
+            field += "\n" + fields.ModelFieldRender(self.model, self._column, readonly=self._column in readonlys, disabled=self._column in disabled).render()
 
         # Make the error
         if self._column in errors:

@@ -164,6 +164,36 @@ class BaseModel(object):
 
         return columns
 
+    def get_disabled(self, **kwargs):
+        """Return a list of columns that should be disabled.
+
+        Keywords arguments:
+          * `disable_pk=False` - Will prohibit changes to primary key columns if set to `True`.
+          * `disable_fk=False` - Will prohibit changes to foreign key columns if set to `True`.
+          * `disable=[]` - A string or an iterable containing column names to set as disabled.
+
+        """
+
+        dis_pks = kwargs.get("disable_pk", False)
+        dis_fks = kwargs.get("disable_fk", False)
+        disabled = kwargs.get("disable", [])
+
+        if isinstance(disabled, basestring):
+            disabled = [disabled]
+
+        if dis_pks:
+            disabled += self.get_pks()
+        if dis_fks:
+            disabled += self.get_fks()
+
+        columns = []
+
+        for col in self.get_colnames():
+            if col in disabled:
+                columns.append(col)
+
+        return columns
+
     def get_coltypes(self):
         """Categorize columns by type.
 

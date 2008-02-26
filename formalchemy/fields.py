@@ -99,11 +99,11 @@ class TextAreaField(ModelFieldRender):
 
     def render(self):
         if isinstance(self.size, basestring):
-            return h.text_area(self.name, content=self.get_value(), size=self.size)
+            return h.text_area(self.name, content=self.get_value(), size=self.size, **self.attribs)
         else:
             # Will fail if not a 2-item list or tuple. 
             cols, rows = self.size
-            return h.text_area(self.name, content=self.get_value(), cols=cols, rows=rows)
+            return h.text_area(self.name, content=self.get_value(), cols=cols, rows=rows, **self.attribs)
 
 class HiddenField(ModelFieldRender):
     """The `HiddenField` class."""
@@ -140,7 +140,7 @@ class ModelDateTimeRender(ModelFieldRender):
     """
 
     def __init__(self, model, col, format, **kwargs):
-        super(ModelDateTimeRender, self).__init__(model, col)
+        super(ModelDateTimeRender, self).__init__(model, col, **kwargs)
         self.format = format
 
     def get_value(self):
@@ -179,7 +179,7 @@ class RadioSet(ModelFieldRender):
     """The `RadioSet` class."""
 
     def __init__(self, model, col, choices, **kwargs):
-        super(RadioSet, self).__init__(model, col, **kwargs)
+        super(RadioSet, self).__init__(model, col)
 
         radios = []
 
@@ -190,17 +190,17 @@ class RadioSet(ModelFieldRender):
             # Choice is a list/tuple...
             if isinstance(choice, (list, tuple)):
                 choice_name, choice_value = choice
-                radio = RadioField(self.name, choice_value, checked=self.get_value() == choice_value)
+                radio = RadioField(self.name, choice_value, checked=self.get_value() == choice_value, **kwargs)
                 radios.append(radio.render() + choice_name)
             # ... a boolean...
             elif isinstance(choice, bool):
-                radio = RadioField(self.name, choice, checked=self.get_value() == choice)
+                radio = RadioField(self.name, choice, checked=self.get_value() == choice, **kwargs)
                 radios.append(radio.render() + str(choice))
 #                radios.append("\n" + h.radio_button(self.name, choice, checked=self.get_value() == choice) + str(choice))
             # ... or just a string.
             else:
                 checked = choice == getattr(self.model, col) or choice == self.default
-                radios.append("\n" + h.radio_button(col, choice, checked=checked) + choice)
+                radios.append("\n" + h.radio_button(col, choice, checked=checked, **kwargs) + choice)
 
         self.radios = radios
 
