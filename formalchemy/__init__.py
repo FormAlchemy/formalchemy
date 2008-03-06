@@ -80,7 +80,7 @@ The available form related classes are:
   * `MultiFields`: Like FieldSet, but without the <fieldset> and <legend> HTML tags.
   * `Field`: Used for rendering a single column from a model, returning a single HTML <label> and <input> pair.
 
-FormAlchemy has derived a little from it's original goal and other, non-form
+FormAlchemy has derived a little from its original goal and other, non-form
 related classes have been extended to the module:
   * `Table`: Used for rendering an HTML table from a model.
   * `TableCollection`: Used for rendering a collection of models into a table.
@@ -104,7 +104,7 @@ fs.render(pk=False, fk=False, exclude=["private_column"])
 
   The options given at the render method are NOT persistant. You will need to
   pass these options everytime you call `render` to reproduce the same output
-  or FormAlchemy will fallback to it's default behaviour. Passing keyword
+  or FormAlchemy will fallback to its default behaviour. Passing keyword
   options is usually meant to alter the HTML output on the fly.
 
   * At the SQLAlchemy mapped class level, by creating a `FormAlchemy` subclass, it is possible to setup attributes which names and values correspond to the keyword options passed to `render`:

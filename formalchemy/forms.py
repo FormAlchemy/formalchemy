@@ -32,7 +32,7 @@ class FieldSet(base.BaseModelRender):
         render(pk=False, fk=False, exclude=["private_column"])
 
       These options are NOT persistant. You'll need to pass these options
-      everytime you call `render` or FormAlchemy will fallback to it's
+      everytime you call `render` or FormAlchemy will fallback to its
       default behaviour. Passing keyword options is usually meant to alter
       the HTML output on the fly.
 
