@@ -17,9 +17,6 @@ from options import Options
 
 compile_mappers() # initializes InstrumentedAttributes
 
-# todo test with collections (skip by default)
-# todo rename col[umn] to attr
-
 class BaseRender(object):
     """The `BaseRender` class.
 
