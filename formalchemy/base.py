@@ -4,19 +4,67 @@
 # the MIT License: http://www.opensource.org/licenses/mit-license.php
 
 from sqlalchemy import __version__
-import sqlalchemy.types as types
+if __version__.split('.') < [0, 4, 1]:
+    raise ImportError('Version 0.4.1 or later of SQLAlchemy required')
 
-import exceptions
+from sqlalchemy.orm.attributes \
+    import InstrumentedAttribute, _managed_attributes, ScalarAttributeImpl
+import sqlalchemy.types as types
+from sqlalchemy.orm import compile_mappers
+
+import exceptions, utils
 from options import Options
 
-class BaseModel(object):
-    """The `BaseModel` class.
+compile_mappers() # initializes InstrumentedAttributes
 
-    This is the superclass for all classes needing to deal with a model.
-    Takes a `model` as argument and provides convenient model methods.
+# todo test with collections (skip by default)
+# todo rename col[umn] to attr
+
+class BaseRender(object):
+    """The `BaseRender` class.
+
+    This this is the superclass for all classes needing rendering capabilities.
+    The render method should be overridden with appropriate per class render
+    method.
 
     Methods:
+      * set_prettify(self, func)
+      * prettify(text) (staticmethod, i.e., doesn't pass 'self')
+      * render(self)
 
+    """
+
+    def set_prettify(self, func):
+        if func is None:
+            func = self.default_prettify
+        if not callable(func):
+            raise ValueError("Invalid callable %r" % func)
+        self.prettify = func # Apply staticmethod(func) ?
+
+    def prettify(text):
+        """Return `text` prettify-ed.
+
+        prettify("my_column_name") == "My column name"
+
+        """
+        return text.replace("_", " ").capitalize()
+    default_prettify = prettify = staticmethod(prettify)
+
+    def render(self):
+        """This function must be overridden by any subclass of `BaseRender`."""
+        if self.__class__.__name__ == "BaseRender":
+            raise exceptions.NotImplementedError()
+
+    def __str__(self):
+        return self.render()
+
+class BaseModelRender(BaseRender):
+    """The `BaseModelRender` class.
+
+    This this is the superclass for all classes needing to deal with `model`
+    access and support rendering capabilities.
+
+    Methods:
       * bind(self, model)
       * is_bound(self)
       * get_model(self)
@@ -26,11 +74,9 @@ class BaseModel(object):
       * get_fks(self)
       * is_nullable(self, col)
       * get_unnullables(self)
-      * get_colnames(self[, **kwargs])
+      * get_columns(self[, **kwargs])
       * get_readonlys(self[, **kwargs])
-      * get_coltypes(self)
       * get_bytype(self, string)
-
     """
 
     def __init__(self, bind=None):
@@ -61,44 +107,28 @@ class BaseModel(object):
         """Return the current bound model."""
         return self.model
 
-    def is_pk(self, col):
-        """Return True if `col` is a primary key column, otherwise return False."""
-        return self.model.c[col].primary_key
-
     def get_pks(self):
-        """Return a list of primary key column names."""
-        return [col for col in self.model.c.keys() if self.model.c[col].primary_key]
-
-    def is_fk(self, col):
-        """Return True if `col` is a primary foreign column, otherwise return False."""
-        if __version__ >= '0.4.1':
-            return bool(self.model.c[col].foreign_keys)
-        return self.model.c[col].foreign_key
+        """Return a list of primary key attributes."""
+        return [col for col in self.get_columns() if col.property.columns[0].primary_key]
 
     def get_fks(self):
-        """Return a list of foreign key column names."""
-        if __version__ >= '0.4.1':
-            return [col for col in self.model.c.keys() if self.model.c[col].foreign_keys]
-        return [col for col in self.model.c.keys() if self.model.c[col].foreign_key]
-
-    def is_nullable(self, col):
-        """Return True if `col` is a nullable column, otherwise return False."""
-        return self.model.c[col].nullable
+        """Return a list of foreign key attributes."""
+        return [col for col in self.get_columns() if col.property.columns[0].foreign_key]
 
     def get_unnullables(self):
-        """Return a list of non-nullable column names."""
-        return [col for col in self.model.c.keys() if not self.model.c[col].nullable]
+        """Return a list of non-nullable attributes."""
+        return [col for col in self.get_columns() if col.property.columns[0].nullable]
 
-    def get_colnames(self, **kwargs):
-        """Return a list of filtered column names.
+    def get_columns(self, **kwargs):
+        """Return a list of filtered attributes.
 
         Keyword arguments:
           * `pk=True` - Won't return primary key columns if set to `False`.
           * `fk=True` - Won't return foreign key columns if set to `False`.
-          * `exclude=[]` - A string or an iterable containing column names to exclude.
-          * `include=[]` - A string or an iterable containing column names to include.
+          * `exclude=[]` - An iterable containing columns to exclude.
+          * `include=[]` - An iterable containing columns to include.
 
-        Note that, when `include` is set and evaluates to `True`, it will
+        Note that, when `include` is non-empty, it will
         take precedence over the other options.
 
         """
@@ -107,8 +137,13 @@ class BaseModel(object):
             raise exceptions.UnboundModelError(self.__class__)
 
         if kwargs:
-            return self._get_filtered_cols(**kwargs)
-        return self.model.c.keys()
+            attrs = list(self._get_filtered_cols(**kwargs))
+        else:
+            attrs = list(attr for attr in _managed_attributes(self.model.__class__)
+                         if isinstance(attr.impl, ScalarAttributeImpl))
+            # sort by name for reproducibility
+            attrs.sort(key=lambda attr: attr.impl.key)
+        return attrs
 
     def _get_filtered_cols(self, **kwargs):
         pk = kwargs.get("pk", True)
@@ -116,24 +151,30 @@ class BaseModel(object):
         exclude = kwargs.get("exclude", [])
         include = kwargs.get("include", [])
 
-        # Make sure that we don't accidentally turn a '' (False) into
-        # a [''] (True) by checking both for type and value.
-        if isinstance(include, basestring) and include:
-            include = [include]
+        for lst in ['include', 'exclude']:
+            try:
+                utils.validate_columns(eval(lst))
+            except:
+                raise ValueError('%s parameter should be an iterable of column objects; was %s' % (lst, eval(lst)))
 
         if include:
-            return [col for col in self.get_colnames() if col in include]
+            for col in include:
+                yield col
+            return
 
-        if isinstance(exclude, basestring):
-            exclude = [exclude]
-
-        ignore = exclude[:]
+        ignore = list(exclude)
         if not pk:
             ignore.extend(self.get_pks())
         if not fk:
             ignore.extend(self.get_fks())
 
-        return [col for col in self.get_colnames() if not col in ignore]
+        # == is overridden for IAttr objects, so we can't use "in"
+        for col in self.get_columns():
+            for item in ignore:
+                if col is item:
+                    break
+            else:
+                yield col
 
     def get_readonlys(self, **kwargs):
         """Return a list of columns that should be readonly.
@@ -141,7 +182,7 @@ class BaseModel(object):
         Keywords arguments:
           * `readonly_pk=False` - Will prohibit changes to primary key columns if set to `True`.
           * `readonly_fk=False` - Will prohibit changes to foreign key columns if set to `True`.
-          * `readonly=[]` - A string or an iterable containing column names to set as readonly.
+          * `readonly=[]` - An iterable containing columns to set as readonly.
 
         """
 
@@ -149,21 +190,17 @@ class BaseModel(object):
         ro_fks = kwargs.get("readonly_fk", False)
         readonlys = kwargs.get("readonly", [])
 
-        if isinstance(readonlys, basestring):
-            readonlys = [readonlys]
+        try:
+            utils.validate_columns(readonlys)
+        except:
+            raise ValueError('readonlys parameter should be an iterable of column objects; was %s' % (readonlys,))
 
         if ro_pks:
-            readonlys += self.get_pks()
+            readonlys.extend(self.get_pks())
         if ro_fks:
-            readonlys += self.get_fks()
+            readonlys.extend(self.get_fks())
 
-        columns = []
-
-        for col in self.get_colnames():
-            if col in readonlys:
-                columns.append(col)
-
-        return columns
+        return readonlys
 
     def get_disabled(self, **kwargs):
         """Return a list of columns that should be disabled.
@@ -171,7 +208,7 @@ class BaseModel(object):
         Keywords arguments:
           * `disable_pk=False` - Will prohibit changes to primary key columns if set to `True`.
           * `disable_fk=False` - Will prohibit changes to foreign key columns if set to `True`.
-          * `disable=[]` - A string or an iterable containing column names to set as disabled.
+          * `disable=[]` - An iterable containing columns to set as disabled.
 
         """
 
@@ -179,136 +216,17 @@ class BaseModel(object):
         dis_fks = kwargs.get("disable_fk", False)
         disabled = kwargs.get("disable", [])
 
-        if isinstance(disabled, basestring):
-            disabled = [disabled]
+        try:
+            utils.validate_columns(disabled)
+        except:
+            raise ValueError('disabled parameter should be an iterable of column objects; was %s' % (disabled,))
 
         if dis_pks:
-            disabled += self.get_pks()
+            disabled.extend(self.get_pks())
         if dis_fks:
-            disabled += self.get_fks()
+            disabled.extend(self.get_fks())
 
-        columns = []
-
-        for col in self.get_colnames():
-            if col in disabled:
-                columns.append(col)
-
-        return columns
-
-    def get_coltypes(self):
-        """Categorize columns by type.
-
-        Return a eight key dict. Each key is a direct subclass of TypeEngine:
-          * `Binary=[]` - a list of Binary column names.
-          * `Boolean=[]` - a list of Boolean column names.
-          * `Date=[]` - a list of Date column names.
-          * `DateTime=[]` - a list of DateTime column names.
-          * `Integer=[]` - a list of Integer column names.
-          * `Numeric=[]` - a list of Numeric column names.
-          * `String=[]` - a list of String column names.
-          * `Time=[]` - a list of Time column names.
-
-        """
-
-        # FIXME: What shall we do about non-standard SQLAlchemy types that were
-        # built directly off of a TypeEngine type?
-        # Although, this should handle custum types built from one of those 8.
-
-        col_types = dict.fromkeys([t for t in [
-                                          types.Binary,
-                                          types.Boolean,
-                                          types.Date,
-                                          types.DateTime,
-                                          types.Integer,
-                                          types.Numeric,
-                                          types.String,
-                                          types.Time]], [])
-
-        for t in col_types:
-            col_types[t] = [col.name for col in self.model.c if isinstance(col.type, t)]
-
-        return col_types
-
-    def get_type(self, string):
-        """Return a list of `string` type column names.
-
-        `string` is case insensitive.
-
-        Valid `string` values:
-          * "binary"
-          * "boolean"
-          * "date"
-          * "datetime"
-          * "integer"
-          * "nulltype"
-          * "numeric"
-          * "string"
-          * "time"
-
-        """
-
-        d = {
-            "binary":types.Binary,
-            "boolean":types.Boolean,
-            "date":types.Date,
-            "datetime":types.DateTime,
-            "integer":types.Integer,
-            "numeric":types.Numeric,
-            "string":types.String,
-            "time":types.Time,
-        }
-
-        return self.get_coltypes().get(d[string.lower()], [])
-
-#    def __repr__(self):
-#        repr = "%s bound to: %s" % (self.__class__.__name__, self.model)
-#        return "<" + repr + ">"
-
-class BaseRender(object):
-    """The `BaseRender` class.
-
-    This this is the superclass for all classes needing rendering capabilities.
-    The render method should be overridden with appropriate per class render
-    method.
-
-    Methods:
-      * set_prettify(self, func)
-      * prettify(text) (staticmethod, i.e., doesn't pass 'self')
-      * render(self)
-
-    """
-
-    def set_prettify(self, func):
-        if callable(func):
-            self.prettify = func # Apply staticmethod(func) ?
-#        else:
-#            raise ValueError("Invalid callable %s" % repr(func))
-
-    def prettify(text):
-        """Return `text` prettify-ed.
-
-        prettify("my_column_name") == "My column name"
-
-        """
-        return text.replace("_", " ").capitalize()
-
-    prettify = staticmethod(prettify)
-
-    def render(self):
-        """This function must be overridden by any subclass of `BaseRender`."""
-        if self.__class__.__name__ == "BaseRender":
-            raise exceptions.NotImplementedError()
-
-    def __str__(self):
-        return self.render()
-
-class BaseModelRender(BaseModel, BaseRender):
-    """The `BaseModelRender` class.
-
-    This this is the superclass for all classes needing to deal with `model`
-    access and support rendering capabilities.
-
-    """
+        return disabled
 
     def render(self):
         """This function must be overridden by any subclass of `BaseModelRender`."""
@@ -358,25 +276,23 @@ class BaseColumnRender(BaseModelRender):
 
     """
 
-    def __init__(self, bind=None, column=None):
+    def __init__(self, bind=None, attr=None):
         super(BaseColumnRender, self).__init__(bind=bind)
-        if column:
-            self.set_column(column)
+        if attr:
+            self.set_column(attr)
         else:
             self._column = None
 
-    def set_column(self, column):
+    def set_column(self, attr):
         """Set the column to render."""
 
-        if not isinstance(column, basestring):
-            raise ValueError("Column name should be a string, found %s of type %s instead." % (repr(column), type(column)))
-        self._column = column
+        if not isinstance(attr, InstrumentedAttribute):
+            raise ValueError("InstrumentedAttribute object expected; found %s of type %s instead." % (repr(attr), type(attr)))
+        if len(attr.property.columns) != 1:
+            raise ValueError("Only single-column attributes are currently supported; %s is mapped from columns %s" % (attr.impl.key, attr.property.columns))
+
+        self._column = attr.property.columns[0]
 
     def get_column(self):
         """Return current column."""
         return self._column
-
-    def render(self):
-        super(BaseColumnRender, self).render()
-        if not isinstance(self._column, basestring):
-            raise exceptions.InvalidColumnError("Invalid column '%s'. Please specify an existing column name using .set_column() before rendering." % (self._column))

@@ -14,7 +14,7 @@ class Label(base.BaseRender):
     """The `Label` class."""
 
     def __init__(self, col, **kwargs):
-        self.name = col
+        self.name = col.name
         self.alias = kwargs.get('alias', self.name)
         self.cls = kwargs.get('cls', None)
         self.set_prettify(kwargs.get('prettify', self.prettify))
@@ -34,6 +34,7 @@ class BaseFieldRender(base.BaseRender):
     """
 
     def __init__(self, name, value):
+        assert isinstance(name, basestring)
         self.name = name
         self.value = value
 
@@ -55,13 +56,13 @@ class ModelFieldRender(BaseFieldRender):
 
     """
 
-    def __init__(self, model, col, **kwargs):
-        super(ModelFieldRender, self).__init__(col, getattr(model, col))
+    def __init__(self, model, colname, **kwargs):
+        super(ModelFieldRender, self).__init__(colname, getattr(model, colname))
         self.model = model
-        if model.c[col].default:
-            self.default = model.c[col].default.arg
+        if model.c[colname].default:
+            self.default = model.c[colname].default.arg
         else:
-            self.default = model.c[col].default
+            self.default = model.c[colname].default
         self.attribs = kwargs
 
     def get_value(self):
@@ -77,9 +78,9 @@ class ModelFieldRender(BaseFieldRender):
 class TextField(ModelFieldRender):
     """The `TextField` class."""
 
-    def __init__(self, model, col, **kwargs):
-        super(TextField, self).__init__(model, col, **kwargs)
-        self.length = model.c[col].type.length
+    def __init__(self, model, colname, **kwargs):
+        super(TextField, self).__init__(model, colname, **kwargs)
+        self.length = model.c[colname].type.length
 
     def render(self):
         return h.text_field(self.name, value=self.get_value(), maxlength=self.length, **self.attribs)
@@ -93,8 +94,8 @@ class PasswordField(TextField):
 class TextAreaField(ModelFieldRender):
     """The `TextAreaField` class."""
 
-    def __init__(self, model, col, size, **kwargs):
-        super(TextAreaField, self).__init__(model, col, **kwargs)
+    def __init__(self, model, colname, size, **kwargs):
+        super(TextAreaField, self).__init__(model, colname, **kwargs)
         self.size = size
 
     def render(self):
@@ -139,8 +140,8 @@ class ModelDateTimeRender(ModelFieldRender):
 
     """
 
-    def __init__(self, model, col, format, **kwargs):
-        super(ModelDateTimeRender, self).__init__(model, col, **kwargs)
+    def __init__(self, model, colname, format, **kwargs):
+        super(ModelDateTimeRender, self).__init__(model, colname, **kwargs)
         self.format = format
 
     def get_value(self):
@@ -178,8 +179,8 @@ class RadioField(BaseFieldRender):
 class RadioSet(ModelFieldRender):
     """The `RadioSet` class."""
 
-    def __init__(self, model, col, choices, **kwargs):
-        super(RadioSet, self).__init__(model, col)
+    def __init__(self, model, colname, choices, **kwargs):
+        super(RadioSet, self).__init__(model, colname)
 
         radios = []
 
@@ -199,8 +200,8 @@ class RadioSet(ModelFieldRender):
 #                radios.append("\n" + h.radio_button(self.name, choice, checked=self.get_value() == choice) + str(choice))
             # ... or just a string.
             else:
-                checked = choice == getattr(self.model, col) or choice == self.default
-                radios.append("\n" + h.radio_button(col, choice, checked=checked, **kwargs) + choice)
+                checked = choice == getattr(self.model, colname) or choice == self.default
+                radios.append("\n" + h.radio_button(colname, choice, checked=checked, **kwargs) + choice)
 
         self.radios = radios
 
@@ -210,10 +211,10 @@ class RadioSet(ModelFieldRender):
 class SelectField(ModelFieldRender):
     """The `SelectField` class."""
 
-    def __init__(self, model, col, options, **kwargs):
+    def __init__(self, model, colname, options, **kwargs):
         self.options = options
         selected = kwargs.get('selected', None)
-        super(SelectField, self).__init__(model, col, **kwargs)
+        super(SelectField, self).__init__(model, colname, **kwargs)
         self.selected = selected or self.get_value()
 
     def render(self):

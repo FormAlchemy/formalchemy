@@ -105,21 +105,20 @@ class MultiFields(base.BaseModelRender):
         opts = self.new_options(**options)
 
         # Filter out unnecessary columns.
-        columns = self.get_colnames(**opts)
+        columns = self.get_columns(**opts)
 
         # Should we keep track of rendered columns ?
         track_cols = opts.get('track_cols', False)
 
         # Add hidden fields.
+        # todo these should not be separate, you can add columns twice this way
         hiddens = opts.get('hidden', [])
-        if isinstance(hiddens, basestring):
-            hiddens = [hiddens]
+        try:
+            utils.validate_columns(hiddens)
+        except:
+            raise ValueError('hiddens parameter should be an iterable of column objects; was %s' % (hiddens))
 
-        columns += hiddens
-
-        # Store rendered columns in a hidden field.
-#        if track_cols:
-#            .append(col)
+        columns.extend(hiddens)
 
         html = []
         # Generate fields.
@@ -140,7 +139,7 @@ class Field(base.BaseColumnRender):
     """
 
     def __init__(self, bind=None, column=None, make_label=True):
-        super(Field, self).__init__(bind=bind, column=column)
+        super(Field, self).__init__(bind=bind, attr=column)
 
         self.set_make_label(make_label)
         self._focus_rendered = False
@@ -204,20 +203,17 @@ class Field(base.BaseColumnRender):
         field = ""
 
         if make_label:
-            label = fields.Label(self._column, alias=alias.get(self._column, self._column))
+            label = fields.Label(self._column, alias=alias.get(self._column.name, self._column.name))
             label.set_prettify(pretty_func)
-            if self.is_nullable(self._column):
+            if self._column.nullable:
                 label.cls = cls_fld_opt
             else:
                 label.cls = cls_fld_req
             field += label.render()
 
-        # Hold a list of column names by type.
-        col_types = self.get_coltypes()
-
         # Make the input
         if self._column in radios:
-            radio = fields.RadioSet(self.model, self._column, choices=radios[self._column])
+            radio = fields.RadioSet(self.model, self._column.name, choices=radios[self._column])
             field += "\n" + radio.render()
 
         elif self._column in dropdowns:
@@ -233,48 +229,48 @@ class Field(base.BaseColumnRender):
             # it simple.
             # `readonly` is not available for select lists, only `disabled` is.
             dd_opts = dropdowns[self._column].copy()
-            dropdown = fields.SelectField(self.model, self._column, dd_opts.pop("opts"), disabled=self._column in disabled, **dd_opts)
+            dropdown = fields.SelectField(self.model, self._column.name, dd_opts.pop("opts"), disabled=self._column in disabled, **dd_opts)
             field += "\n" + dropdown.render()
 
         elif self._column in passwords:
-            field += "\n" + fields.PasswordField(self.model, self._column, readonly=self._column in readonlys, disabled=self._column in disabled).render()
+            field += "\n" + fields.PasswordField(self.model, self._column.name, readonly=self._column in readonlys, disabled=self._column in disabled).render()
 
-        elif self._column in col_types[types.String]:
+        elif isinstance(self._column.type, types.String):
             if self._column in textareas:
-                field += "\n" + fields.TextAreaField(self.model, self._column, size=textareas[self._column], readonly=self._column in readonlys, disabled=self._column in disabled).render()
+                field += "\n" + fields.TextAreaField(self.model, self._column.name, size=textareas[self._column], readonly=self._column in readonlys, disabled=self._column in disabled).render()
             else:
-                field += "\n" + fields.TextField(self.model, self._column, readonly=self._column in readonlys, disabled=self._column in disabled).render()
+                field += "\n" + fields.TextField(self.model, self._column.name, readonly=self._column in readonlys, disabled=self._column in disabled).render()
 
-        elif self._column in col_types[types.Integer]:
-            field += "\n" + fields.IntegerField(self.model, self._column, readonly=self._column in readonlys, disabled=self._column in disabled).render()
+        elif isinstance(self._column.type, types.Integer):
+            field += "\n" + fields.IntegerField(self.model, self._column.name, readonly=self._column in readonlys, disabled=self._column in disabled).render()
 
-        elif self._column in col_types[types.Boolean]:
+        elif isinstance(self._column.type, types.Boolean):
             if self._column in bool_as_radio:
                 # `readonly` is not available for radios, only `disabled` is.
-                radio = fields.RadioSet(self.model, self._column, choices=[True, False], disabled=self._column in disabled)
+                radio = fields.RadioSet(self.model, self._column.name, choices=[True, False], disabled=self._column in disabled)
                 field += "\n" + radio.render()
             else:
                 # `readonly` is not available for checkboxes, only `disabled` is.
-                field += "\n" + fields.BooleanField(self.model, self._column, disabled=self._column in disabled).render()
+                field += "\n" + fields.BooleanField(self.model, self._column.name, disabled=self._column in disabled).render()
 #            # This is for radio style True/False rendering.
 #            radio = fields.RadioSet(self.model, self._column, choices=[True, False])
 #            field += "\n" + radio.render()
 
-        elif self._column in col_types[types.DateTime]:
-            field += "\n" + fields.DateTimeField(self.model, self._column, format=datetime_f, readonly=self._column in readonlys, disabled=self._column in disabled).render()
+        elif isinstance(self._column.type, types.DateTime):
+            field += "\n" + fields.DateTimeField(self.model, self._column.name, format=datetime_f, readonly=self._column in readonlys, disabled=self._column in disabled).render()
 
-        elif self._column in col_types[types.Date]:
-            field += "\n" + fields.DateField(self.model, self._column, format=date_f, readonly=self._column in readonlys, disabled=self._column in disabled).render()
+        elif isinstance(self._column.type, types.Date):
+            field += "\n" + fields.DateField(self.model, self._column.name, format=date_f, readonly=self._column in readonlys, disabled=self._column in disabled).render()
 
-        elif self._column in col_types[types.Time]:
-            field += "\n" + fields.TimeField(self.model, self._column, format=time_f, readonly=self._column in readonlys, disabled=self._column in disabled).render()
+        elif isinstance(self._column.type, types.Time):
+            field += "\n" + fields.TimeField(self.model, self._column.name, format=time_f, readonly=self._column in readonlys, disabled=self._column in disabled).render()
 
-        elif self._column in col_types[types.Binary]:
+        elif isinstance(self._column.type, types.Binary):
             # `readonly` is not available for file fields, only `disabled` is.
-            field += "\n" + fields.FileField(self.model, self._column, disabled=self._column in disabled).render()
+            field += "\n" + fields.FileField(self.model, self._column.name, disabled=self._column in disabled).render()
 
         else:
-            field += "\n" + fields.ModelFieldRender(self.model, self._column, readonly=self._column in readonlys, disabled=self._column in disabled).render()
+            field += "\n" + fields.ModelFieldRender(self.model, self._column.name, readonly=self._column in readonlys, disabled=self._column in disabled).render()
 
         # Make the error
         if self._column in errors:
@@ -292,7 +288,7 @@ class Field(base.BaseColumnRender):
 
         # Do the field focusing
         if (focus == self._column or focus is True) and not self._focus_rendered:
-            field += "\n" + h.javascript_tag('document.getElementById("%s").focus();' % self._column)
+            field += "\n" + h.javascript_tag('document.getElementById("%s").focus();' % self._column.name)
             self._focus_rendered = True
 
         return field
