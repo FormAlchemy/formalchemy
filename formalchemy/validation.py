@@ -3,8 +3,8 @@
 # This module is part of FormAlchemy and is released under
 # the MIT License: http://www.opensource.org/licenses/mit-license.php
 
-import formalchemy.base as base
 import sqlalchemy.types as types
+import base
 
 __all__ = ["Validate", "Populate"]
 __doc__ = """

@@ -5,8 +5,9 @@
 
 from sqlalchemy import __version__
 import sqlalchemy.types as types
-import formalchemy.exceptions as exceptions
-from formalchemy.options import Options
+
+import exceptions
+from options import Options
 
 class BaseModel(object):
     """The `BaseModel` class.

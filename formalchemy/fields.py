@@ -4,7 +4,7 @@
 # the MIT License: http://www.opensource.org/licenses/mit-license.php
 
 import webhelpers as h
-import formalchemy.base as base
+import base
 
 __all__ = ["Label", "TextField", "PasswordField", "HiddenField", "BooleanField",
     "FileField", "IntegerField", "DateTimeField", "DateField", "TimeField",

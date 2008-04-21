@@ -6,9 +6,7 @@
 import webhelpers as h
 import sqlalchemy.types as types
 
-import formalchemy.base as base
-import formalchemy.fields as fields
-import formalchemy.utils as utils
+import base, fields, utils
 
 #__all__ = ["FieldSet", "MultiFields", "Field"]
 __all__ = ["FieldSet", "Field"]

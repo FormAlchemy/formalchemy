@@ -5,9 +5,8 @@
 
 import webhelpers as h
 
-import formalchemy.base as base
-import formalchemy.utils as utils
-from formalchemy.options import Options
+import base, utils
+from options import Options
 
 __all__ = ["Table", "TableConcat", "TableCollection"]
 
