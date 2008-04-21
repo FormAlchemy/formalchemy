@@ -23,8 +23,6 @@ class Options(dict):
 
         """
 
-#        self.clear()
-
         # Parse model's options.
         d = {}
         if hasattr(model, "FormAlchemy"):

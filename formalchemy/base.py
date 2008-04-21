@@ -74,7 +74,7 @@ class BaseModelRender(BaseRender):
       * get_fks(self)
       * is_nullable(self, col)
       * get_unnullables(self)
-      * get_columns(self[, **kwargs])
+      * get_attrs(self[, **kwargs])
       * get_readonlys(self[, **kwargs])
       * get_bytype(self, string)
     """
@@ -109,24 +109,24 @@ class BaseModelRender(BaseRender):
 
     def get_pks(self):
         """Return a list of primary key attributes."""
-        return [col for col in self.get_columns() if col.property.columns[0].primary_key]
+        return [attr for attr in self.get_attrs() if attr.property.columns[0].primary_key]
 
     def get_fks(self):
         """Return a list of foreign key attributes."""
-        return [col for col in self.get_columns() if col.property.columns[0].foreign_key]
+        return [attr for attr in self.get_attrs() if attr.property.columns[0].foreign_key]
 
     def get_unnullables(self):
         """Return a list of non-nullable attributes."""
-        return [col for col in self.get_columns() if col.property.columns[0].nullable]
+        return [attr for attr in self.get_attrs() if attr.property.columns[0].nullable]
 
-    def get_columns(self, **kwargs):
+    def get_attrs(self, **kwargs):
         """Return a list of filtered attributes.
 
         Keyword arguments:
-          * `pk=True` - Won't return primary key columns if set to `False`.
-          * `fk=True` - Won't return foreign key columns if set to `False`.
-          * `exclude=[]` - An iterable containing columns to exclude.
-          * `include=[]` - An iterable containing columns to include.
+          * `pk=True` - Won't return primary key attributes if set to `False`.
+          * `fk=True` - Won't return foreign key attributes if set to `False`.
+          * `exclude=[]` - An iterable containing attributes to exclude.
+          * `include=[]` - An iterable containing attributes to include.
 
         Note that, when `include` is non-empty, it will
         take precedence over the other options.
@@ -137,7 +137,7 @@ class BaseModelRender(BaseRender):
             raise exceptions.UnboundModelError(self.__class__)
 
         if kwargs:
-            attrs = list(self._get_filtered_cols(**kwargs))
+            attrs = list(self._get_filtered_attrs(**kwargs))
         else:
             attrs = list(attr for attr in _managed_attributes(self.model.__class__)
                          if isinstance(attr.impl, ScalarAttributeImpl))
@@ -145,7 +145,7 @@ class BaseModelRender(BaseRender):
             attrs.sort(key=lambda attr: attr.impl.key)
         return attrs
 
-    def _get_filtered_cols(self, **kwargs):
+    def _get_filtered_attrs(self, **kwargs):
         pk = kwargs.get("pk", True)
         fk = kwargs.get("fk", True)
         exclude = kwargs.get("exclude", [])
@@ -155,11 +155,11 @@ class BaseModelRender(BaseRender):
             try:
                 utils.validate_columns(eval(lst))
             except:
-                raise ValueError('%s parameter should be an iterable of column objects; was %s' % (lst, eval(lst)))
+                raise ValueError('%s parameter should be an iterable of InstrumentedAttribute objects; was %s' % (lst, eval(lst)))
 
         if include:
-            for col in include:
-                yield col
+            for attr in include:
+                yield attr
             return
 
         ignore = list(exclude)
@@ -169,20 +169,20 @@ class BaseModelRender(BaseRender):
             ignore.extend(self.get_fks())
 
         # == is overridden for IAttr objects, so we can't use "in"
-        for col in self.get_columns():
+        for attr in self.get_attrs():
             for item in ignore:
-                if col is item:
+                if attr is item:
                     break
             else:
-                yield col
+                yield attr
 
     def get_readonlys(self, **kwargs):
-        """Return a list of columns that should be readonly.
+        """Return a list of attributes that should be readonly.
 
         Keywords arguments:
-          * `readonly_pk=False` - Will prohibit changes to primary key columns if set to `True`.
-          * `readonly_fk=False` - Will prohibit changes to foreign key columns if set to `True`.
-          * `readonly=[]` - An iterable containing columns to set as readonly.
+          * `readonly_pk=False` - Will prohibit changes to primary key attributes if set to `True`.
+          * `readonly_fk=False` - Will prohibit changes to foreign key attributes if set to `True`.
+          * `readonly=[]` - An iterable containing attributes to set as readonly.
 
         """
 
@@ -193,7 +193,7 @@ class BaseModelRender(BaseRender):
         try:
             utils.validate_columns(readonlys)
         except:
-            raise ValueError('readonlys parameter should be an iterable of column objects; was %s' % (readonlys,))
+            raise ValueError('readonlys parameter should be an iterable of InstrumentedAttribute objects; was %s' % (readonlys,))
 
         if ro_pks:
             readonlys.extend(self.get_pks())
@@ -203,12 +203,12 @@ class BaseModelRender(BaseRender):
         return readonlys
 
     def get_disabled(self, **kwargs):
-        """Return a list of columns that should be disabled.
+        """Return a list of attributes that should be disabled.
 
         Keywords arguments:
-          * `disable_pk=False` - Will prohibit changes to primary key columns if set to `True`.
-          * `disable_fk=False` - Will prohibit changes to foreign key columns if set to `True`.
-          * `disable=[]` - An iterable containing columns to set as disabled.
+          * `disable_pk=False` - Will prohibit changes to primary key attributes if set to `True`.
+          * `disable_fk=False` - Will prohibit changes to foreign key attributes if set to `True`.
+          * `disable=[]` - An iterable containing attributes to set as disabled.
 
         """
 
@@ -219,7 +219,7 @@ class BaseModelRender(BaseRender):
         try:
             utils.validate_columns(disabled)
         except:
-            raise ValueError('disabled parameter should be an iterable of column objects; was %s' % (disabled,))
+            raise ValueError('disabled parameter should be an iterable of InstrumentedAttribute objects; was %s' % (disabled,))
 
         if dis_pks:
             disabled.extend(self.get_pks())

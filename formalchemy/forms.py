@@ -105,7 +105,7 @@ class MultiFields(base.BaseModelRender):
         opts = self.new_options(**options)
 
         # Filter out unnecessary columns.
-        columns = self.get_columns(**opts)
+        columns = self.get_attrs(**opts)
 
         # Should we keep track of rendered columns ?
         track_cols = opts.get('track_cols', False)
