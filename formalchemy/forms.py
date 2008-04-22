@@ -197,7 +197,7 @@ class Field(base.BaseColumnRender):
 
         # Process hidden fields first as they don't need a `Label`.
         if self._column in hiddens:
-            return fields.HiddenField(self.model, self._column).render()
+            return fields.HiddenField(self.model, self._column.name).render()
 
         # Make the label
         field = ""

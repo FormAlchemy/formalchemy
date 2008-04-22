@@ -98,6 +98,12 @@ __doc__ = r"""
 >>> assert fs.render(pk=False) == fs.render(include=[Two.foo])
 >>> assert fs.render(pk=False) == fs.render(exclude=[Two.id])
 
+>>> fs = FieldSet(two) 
+>>> print fs.render(pk=False, hidden=[Two.foo]) # todo fix this
+
+>>> fs = FieldSet(two)
+>>> print fs.render(pk=False, dropdowns={Two.foo: [('option1', 'value1'), ('option2', 'value2')]})
+
 >>> fs = FieldSet(checkbox)
 >>> print fs.render(pk=False)
 <fieldset>
