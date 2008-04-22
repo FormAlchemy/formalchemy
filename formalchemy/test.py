@@ -3,24 +3,22 @@ from sqlalchemy.orm import *
 from sqlalchemy.ext.declarative import declarative_base, declared_synonym
 
 engine = create_engine('sqlite://')
+Session = scoped_session(sessionmaker(transactional=True, autoflush=False, bind=engine))
 Base = declarative_base(engine)
 
 class One(Base):
     __tablename__ = 'ones'
     id = Column('id', Integer, primary_key=True)
-one = One()
 
 class Two(Base):
     __tablename__ = 'twos'
     id = Column('id', Integer, primary_key=True)
-    foo = Column('foo', Unicode, nullable=False)
-two = Two()
+    foo = Column('foo', Text, nullable=False)
 
 class Checkbox(Base):
     __tablename__ = 'checkboxes'
     id = Column('id', Integer, primary_key=True)
     field = Column('field', Boolean, nullable=False)
-checkbox = Checkbox()
 
 class Order(Base):
     __tablename__ = 'orders'
@@ -35,17 +33,29 @@ class User(Base):
     password = Column('password', Unicode(20), nullable=False)
     first_name = Column('first_name', Unicode(20))
     last_name = Column('last_name', Unicode(20))
-    description = Column('description', Unicode)
+    description = Column('description', Text)
     active = Column('active', Boolean, default=True)
     orders = relation(Order, backref='user')
+    
+Base.metadata.create_all()
+session = Session()
 
-user = User()
+bill = User(email='bill@example.com', 
+            password='1234',
+            first_name='Bill',
+            last_name='Jones',
+            description='boring description')
+session.save(bill)
+order1 = Order(user_id=bill.id, quantity=10)
+session.save(order1)
+
+session.commit()
 
 
 from forms import FieldSet, Field
 
 __doc__ = r"""
->>> fs = FieldSet(one)
+>>> fs = FieldSet(One())
 >>> print fs.render()
 <fieldset>
   <legend>One</legend>
@@ -60,7 +70,7 @@ __doc__ = r"""
   </script>
 </fieldset>
 
->>> fs = FieldSet(two)
+>>> fs = FieldSet(Two())
 >>> print fs.render()
 <fieldset>
   <legend>Two</legend>
@@ -79,7 +89,7 @@ __doc__ = r"""
   </div>
 </fieldset>
 
->>> fs = FieldSet(two)
+>>> fs = FieldSet(Two())
 >>> print fs.render(pk=False)
 <fieldset>
   <legend>Two</legend>
@@ -94,17 +104,37 @@ __doc__ = r"""
   </script>
 </fieldset>
 
->>> fs = FieldSet(two)
->>> assert fs.render(pk=False) == fs.render(include=[Two.foo])
->>> assert fs.render(pk=False) == fs.render(exclude=[Two.id])
+>>> fs = FieldSet(Two())
+>>> assert fs.render(pk=False) == fs.render(include=[fs.foo])
+>>> assert fs.render(pk=False) == fs.render(exclude=[fs.id])
 
->>> fs = FieldSet(two) 
->>> print fs.render(pk=False, hidden=[Two.foo]) # todo fix this
+>>> fs = FieldSet(Two()) 
+>>> print fs.render(include=[fs.foo.hidden()])
+<fieldset>
+  <legend>Two</legend>
+  <input id="foo" name="foo" type="hidden" />
+</fieldset>
 
->>> fs = FieldSet(two)
->>> print fs.render(pk=False, dropdowns={Two.foo: [('option1', 'value1'), ('option2', 'value2')]})
+>>> fs = FieldSet(Two())
+>>> print fs.render(include=[fs.foo.dropdown([('option1', 'value1'), ('option2', 'value2')])])
+<fieldset>
+  <legend>Two</legend>
+  <div>
+    <label class="field_req" for="foo">Foo</label>
+    <select id="foo" name="foo"><option value="value1">option1</option>
+    <option value="value2">option2</option></select>
+  </div>
+  <script type="text/javascript">
+  //<![CDATA[
+  document.getElementById("foo").focus();
+  //]]>
+  </script>
+</fieldset>
 
->>> fs = FieldSet(checkbox)
+>>> fs = FieldSet(Two())
+>>> assert fs.render(include=[fs.foo.dropdown([('option1', 'value1'), ('option2', 'value2')])]) == fs.render(pk=False, options=[fs.foo.dropdown([('option1', 'value1'), ('option2', 'value2')])]) 
+
+>>> fs = FieldSet(Checkbox())
 >>> print fs.render(pk=False)
 <fieldset>
   <legend>Checkbox</legend>
@@ -119,7 +149,7 @@ __doc__ = r"""
   </script>
 </fieldset>
 
->>> fs = FieldSet(user)
+>>> fs = FieldSet(User())
 >>> print fs.render()
 <fieldset>
   <legend>User</legend>
@@ -157,6 +187,7 @@ __doc__ = r"""
     <input id="password" maxlength="20" name="password" type="text" />
   </div>
 </fieldset>
+
 """
 
 if __name__ == '__main__':

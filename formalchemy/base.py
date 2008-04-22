@@ -15,6 +15,7 @@ from sqlalchemy.orm import compile_mappers
 import exceptions, utils
 from options import Options
 
+
 compile_mappers() # initializes InstrumentedAttributes
 
 class BaseRender(object):
@@ -106,15 +107,15 @@ class BaseModelRender(BaseRender):
 
     def get_pks(self):
         """Return a list of primary key attributes."""
-        return [attr for attr in self.get_attrs() if attr.property.columns[0].primary_key]
+        return [wrapper for wrapper in self.get_attrs() if wrapper.column.primary_key]
 
     def get_fks(self):
         """Return a list of foreign key attributes."""
-        return [attr for attr in self.get_attrs() if attr.property.columns[0].foreign_key]
+        return [wrapper for wrapper in self.get_attrs() if wrapper.column.foreign_key]
 
     def get_unnullables(self):
         """Return a list of non-nullable attributes."""
-        return [attr for attr in self.get_attrs() if attr.property.columns[0].nullable]
+        return [wrapper for wrapper in self.get_attrs() if wrapper.column.nullable]
 
     def get_attrs(self, **kwargs):
         """Return a list of filtered attributes.
@@ -124,54 +125,62 @@ class BaseModelRender(BaseRender):
           * `fk=True` - Won't return foreign key attributes if set to `False`.
           * `exclude=[]` - An iterable containing attributes to exclude.
           * `include=[]` - An iterable containing attributes to include.
+          * `options=[]` - An iterable containing options to apply to attributes.
 
         Note that, when `include` is non-empty, it will
         take precedence over the other options.
 
         """
-
+        from fields import AttributeWrapper
         if not self.is_bound():
             raise exceptions.UnboundModelError(self.__class__)
 
         if kwargs:
-            attrs = list(self._get_filtered_attrs(**kwargs))
+            wrappers = self._get_filtered_attrs(**kwargs)
         else:
-            attrs = list(attr for attr in _managed_attributes(self.model.__class__)
-                         if isinstance(attr.impl, ScalarAttributeImpl))
+            wrappers = [AttributeWrapper(attr) for attr in _managed_attributes(self.model.__class__)
+                     if isinstance(attr.impl, ScalarAttributeImpl)
+                     and hasattr(attr.property, 'columns')
+                     and len(attr.property.columns) == 1]
             # sort by name for reproducibility
-            attrs.sort(key=lambda attr: attr.impl.key)
-        return attrs
+            wrappers.sort(key=lambda wrapper: wrapper.name)
+        return wrappers
 
     def _get_filtered_attrs(self, **kwargs):
         pk = kwargs.get("pk", True)
         fk = kwargs.get("fk", True)
         exclude = kwargs.get("exclude", [])
         include = kwargs.get("include", [])
+        options = kwargs.get("options", [])
+        
+        if include and exclude:
+            raise Exception('Specify at most one of include, exclude')
 
-        for lst in ['include', 'exclude']:
+        for lst in ['include', 'exclude', 'options']:
             try:
                 utils.validate_columns(eval(lst))
             except:
-                raise ValueError('%s parameter should be an iterable of InstrumentedAttribute objects; was %s' % (lst, eval(lst)))
+                raise ValueError('%s parameter should be an iterable of AttributeWrapper objects; was %s' % (lst, eval(lst)))
 
-        if include:
-            for attr in include:
-                yield attr
-            return
-
-        ignore = list(exclude)
-        if not pk:
-            ignore.extend(self.get_pks())
-        if not fk:
-            ignore.extend(self.get_fks())
-
-        # == is overridden for IAttr objects, so we can't use "in"
-        for attr in self.get_attrs():
-            for item in ignore:
-                if attr is item:
-                    break
+        if not include:
+            ignore = list(exclude)
+            if not pk:
+                ignore.extend(self.get_pks())
+            if not fk:
+                ignore.extend(self.get_fks())
+    
+            include = [attr for attr in self.get_attrs() if attr not in ignore]
+            
+        # this feels overcomplicated
+        options_dict = {}
+        options_dict.update([(wrapper, wrapper) for wrapper in options])
+        L = []
+        for wrapper in include:
+            if wrapper in options_dict:
+                L.append(options_dict[wrapper])
             else:
-                yield attr
+                L.append(wrapper)
+        return L
 
     def get_readonlys(self, **kwargs):
         """Return a list of attributes that should be readonly.
@@ -190,7 +199,7 @@ class BaseModelRender(BaseRender):
         try:
             utils.validate_columns(readonlys)
         except:
-            raise ValueError('readonlys parameter should be an iterable of InstrumentedAttribute objects; was %s' % (readonlys,))
+            raise ValueError('readonlys parameter should be an iterable of AttributeWrapper objects; was %s' % (readonlys,))
 
         if ro_pks:
             readonlys.extend(self.get_pks())
@@ -216,7 +225,7 @@ class BaseModelRender(BaseRender):
         try:
             utils.validate_columns(disabled)
         except:
-            raise ValueError('disabled parameter should be an iterable of InstrumentedAttribute objects; was %s' % (disabled,))
+            raise ValueError('disabled parameter should be an iterable of AttributeWrapper objects; was %s' % (disabled,))
 
         if dis_pks:
             disabled.extend(self.get_pks())
@@ -260,36 +269,29 @@ class BaseCollectionRender(BaseModelRender):
         """Return current collection."""
         return self.collection
 
+
 class BaseColumnRender(BaseModelRender):
     """The `BaseColumnRender` class.
 
-    This should be the superclass for all classes that want column level
-    rendering. Takes an extra `column=None` keyword argument as the concerned
-    column name.
+    This should be the superclass for all classes that want attribute-level
+    rendering. Takes an extra `attr=None` keyword argument as the concerned
+    attribute.
 
     Methods:
-      * set_column(self, col_name)
-      * get_column(self)
+      * set_column(self, attr)
 
     """
 
     def __init__(self, bind=None, attr=None):
         super(BaseColumnRender, self).__init__(bind=bind)
         if attr:
-            self.set_column(attr)
+            self.set_attr(attr)
         else:
-            self._column = None
+            self.wrapper = None
 
-    def set_column(self, attr):
+    def set_attr(self, wrapper):
         """Set the column to render."""
-
-        if not isinstance(attr, InstrumentedAttribute):
-            raise ValueError("InstrumentedAttribute object expected; found %s of type %s instead." % (repr(attr), type(attr)))
-        if len(attr.property.columns) != 1:
-            raise ValueError("Only single-column attributes are currently supported; %s is mapped from columns %s" % (attr.impl.key, attr.property.columns))
-
-        self._column = attr.property.columns[0]
-
-    def get_column(self):
-        """Return current column."""
-        return self._column
+        from fields import AttributeWrapper
+        if not isinstance(wrapper, AttributeWrapper):
+            raise ValueError("AttributeWrapper object expected; found %s of type %s instead." % (repr(wrapper), type(wrapper)))
+        self.wrapper = wrapper

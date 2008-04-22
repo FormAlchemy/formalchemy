@@ -3,8 +3,6 @@
 # This module is part of FormAlchemy and is released under
 # the MIT License: http://www.opensource.org/licenses/mit-license.php
 
-from sqlalchemy.orm.attributes import InstrumentedAttribute
-
 INDENTATION = "  "
 
 def wrap(start, text, end):
@@ -18,6 +16,6 @@ def validate_columns(iterable):
         L = list(iterable)
     except:
         raise ValueError()
-    if L and not isinstance(L[0], InstrumentedAttribute):
+    from fields import AttributeWrapper
+    if L and not isinstance(L[0], AttributeWrapper):
         raise ValueError()
-    

@@ -3,9 +3,9 @@
 # This module is part of FormAlchemy and is released under
 # the MIT License: http://www.opensource.org/licenses/mit-license.php
 
+import logging
+from sqlalchemy.orm.attributes import InstrumentedAttribute
 import webhelpers as h
-import sqlalchemy.types as types
-
 import base, fields, utils
 
 #__all__ = ["FieldSet", "MultiFields", "Field"]
@@ -58,6 +58,12 @@ class FieldSet(base.BaseModelRender):
     options are passed to `render`.
 
     """
+    
+    def __init__(self, *args, **kwargs):
+        super(FieldSet, self).__init__(*args, **kwargs)
+        self.__dict__.update([(attrname, fields.AttributeWrapper(attr)) 
+                              for attrname, attr in self.model.__class__.__dict__.iteritems()
+                              if isinstance(attr, InstrumentedAttribute)])
 
     def render(self, **options):
         super(FieldSet, self).render()
@@ -105,27 +111,17 @@ class MultiFields(base.BaseModelRender):
         opts = self.new_options(**options)
 
         # Filter out unnecessary columns.
-        columns = self.get_attrs(**opts)
+        attrs = self.get_attrs(**opts)
 
         # Should we keep track of rendered columns ?
         track_cols = opts.get('track_cols', False)
-
-        # Add hidden fields.
-        # todo these should not be separate, you can add columns twice this way
-        hiddens = opts.get('hidden', [])
-        try:
-            utils.validate_columns(hiddens)
-        except:
-            raise ValueError('hiddens parameter should be an iterable of column objects; was %s' % (hiddens))
-
-        columns.extend(hiddens)
 
         html = []
         # Generate fields.
         field_render = Field(bind=self.model)
         field_render.reconfigure(**opts)
-        for col in columns:
-            field_render.set_column(col)
+        for attr in attrs:
+            field_render.set_attr(attr)
             field = field_render.render()
             html.append(field)
 
@@ -138,8 +134,8 @@ class Field(base.BaseColumnRender):
 
     """
 
-    def __init__(self, bind=None, column=None, make_label=True):
-        super(Field, self).__init__(bind=bind, attr=column)
+    def __init__(self, bind=None, attr=None, make_label=True):
+        super(Field, self).__init__(bind=bind, attr=attr)
 
         self.set_make_label(make_label)
         self._focus_rendered = False
@@ -155,23 +151,6 @@ class Field(base.BaseColumnRender):
 
         # Merge class level options with given options.
         opts = self.new_options(**options)
-
-        # Categorize options
-        readonlys = self.get_readonlys(**opts)
-        disabled = self.get_disabled(**opts)
-
-        passwords = opts.get('password', [])
-        textareas = opts.get('textarea', {})
-        if isinstance(passwords, basestring):
-            passwords = [passwords]
-        hiddens = opts.get('hidden', [])
-        if isinstance(hiddens, basestring):
-            hiddens = [hiddens]
-        dropdowns = opts.get('dropdown', {})
-        radios = opts.get('radio', {})
-        bool_as_radio = opts.get('bool_as_radio', [])
-        if isinstance(bool_as_radio, basestring):
-            bool_as_radio = [bool_as_radio]
 
         # DateTime, Date, Time string formaters
         date_f = opts.get('date', "%Y-%m-%d")
@@ -196,88 +175,31 @@ class Field(base.BaseColumnRender):
         cls_span_err = opts.get('span_err', 'span_err')
 
         # Process hidden fields first as they don't need a `Label`.
-        if self._column in hiddens:
-            return fields.HiddenField(self.model, self._column.name).render()
+        if self.wrapper.render_as == fields.HiddenField:
+            return self.wrapper.render(self.model)
 
         # Make the label
         field = ""
 
         if make_label:
-            label = fields.Label(self._column, alias=alias.get(self._column.name, self._column.name))
+            label = fields.Label(self.wrapper.column, alias=alias.get(self.wrapper.name, self.wrapper.name))
             label.set_prettify(pretty_func)
-            if self._column.nullable:
+            if self.wrapper.nullable:
                 label.cls = cls_fld_opt
             else:
                 label.cls = cls_fld_req
             field += label.render()
 
         # Make the input
-        if self._column in radios:
-            radio = fields.RadioSet(self.model, self._column.name, choices=radios[self._column])
-            field += "\n" + radio.render()
-
-        elif self._column in dropdowns:
-            # FIXME: Keeping 'opts' in dropdowns will send opts as attributes to the <select> tag.
-            # But should we loose that info during rendering ?
-#            dropdown = fields.SelectField(self.model, self._column, dropdowns[self._column].pop("opts"), **dropdowns[self._column])
-
-            # As uncommented above, we can't just .pop("opts") out of dropdowns as these are the actual FormAlchemy class's options.
-            # If we pop it out, we will be missing this options on the next class usage as manipulating uninstantiated class makes changes
-            # persistant.
-            # We should not be playing with classes. We should think of passing FA's options as dict directly rather than playing around
-            # with `class FormAlchemy`. FormAlchemy needs serious rewrite and internal core philosophy changes. API is good though. Keep
-            # it simple.
-            # `readonly` is not available for select lists, only `disabled` is.
-            dd_opts = dropdowns[self._column].copy()
-            dropdown = fields.SelectField(self.model, self._column.name, dd_opts.pop("opts"), disabled=self._column in disabled, **dd_opts)
-            field += "\n" + dropdown.render()
-
-        elif self._column in passwords:
-            field += "\n" + fields.PasswordField(self.model, self._column.name, readonly=self._column in readonlys, disabled=self._column in disabled).render()
-
-        elif isinstance(self._column.type, types.String):
-            if self._column in textareas:
-                field += "\n" + fields.TextAreaField(self.model, self._column.name, size=textareas[self._column], readonly=self._column in readonlys, disabled=self._column in disabled).render()
-            else:
-                field += "\n" + fields.TextField(self.model, self._column.name, readonly=self._column in readonlys, disabled=self._column in disabled).render()
-
-        elif isinstance(self._column.type, types.Integer):
-            field += "\n" + fields.IntegerField(self.model, self._column.name, readonly=self._column in readonlys, disabled=self._column in disabled).render()
-
-        elif isinstance(self._column.type, types.Boolean):
-            if self._column in bool_as_radio:
-                # `readonly` is not available for radios, only `disabled` is.
-                radio = fields.RadioSet(self.model, self._column.name, choices=[True, False], disabled=self._column in disabled)
-                field += "\n" + radio.render()
-            else:
-                # `readonly` is not available for checkboxes, only `disabled` is.
-                field += "\n" + fields.BooleanField(self.model, self._column.name, disabled=self._column in disabled).render()
-#            # This is for radio style True/False rendering.
-#            radio = fields.RadioSet(self.model, self._column, choices=[True, False])
-#            field += "\n" + radio.render()
-
-        elif isinstance(self._column.type, types.DateTime):
-            field += "\n" + fields.DateTimeField(self.model, self._column.name, format=datetime_f, readonly=self._column in readonlys, disabled=self._column in disabled).render()
-
-        elif isinstance(self._column.type, types.Date):
-            field += "\n" + fields.DateField(self.model, self._column.name, format=date_f, readonly=self._column in readonlys, disabled=self._column in disabled).render()
-
-        elif isinstance(self._column.type, types.Time):
-            field += "\n" + fields.TimeField(self.model, self._column.name, format=time_f, readonly=self._column in readonlys, disabled=self._column in disabled).render()
-
-        elif isinstance(self._column.type, types.Binary):
-            # `readonly` is not available for file fields, only `disabled` is.
-            field += "\n" + fields.FileField(self.model, self._column.name, disabled=self._column in disabled).render()
-
-        else:
-            field += "\n" + fields.ModelFieldRender(self.model, self._column.name, readonly=self._column in readonlys, disabled=self._column in disabled).render()
+        
+        field += '\n' + self.wrapper.render(self.model)
 
         # Make the error
-        if self._column in errors:
-            field += "\n" + h.content_tag("span", errors[self._column], class_=cls_span_err)
+        if self.wrapper.column in errors:
+            field += "\n" + h.content_tag("span", errors[self.wrapper.column], class_=cls_span_err)
         # Make the documentation
-        if self._column in docs:
-            field += "\n" + h.content_tag("span", docs[self._column], class_=cls_span_doc)
+        if self.wrapper.column in docs:
+            field += "\n" + h.content_tag("span", docs[self.wrapper.column], class_=cls_span_doc)
 
         if field.startswith("\n"):
             field = field[1:]
@@ -287,8 +209,8 @@ class Field(base.BaseColumnRender):
             field = utils.wrap("<div>", field, "</div>")
 
         # Do the field focusing
-        if (focus == self._column or focus is True) and not self._focus_rendered:
-            field += "\n" + h.javascript_tag('document.getElementById("%s").focus();' % self._column.name)
+        if (focus == self.wrapper.column or focus is True) and not self._focus_rendered:
+            field += "\n" + h.javascript_tag('document.getElementById("%s").focus();' % self.wrapper.name)
             self._focus_rendered = True
 
         return field
