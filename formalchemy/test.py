@@ -188,6 +188,15 @@ __doc__ = r"""
   </div>
 </fieldset>
 
+>>> fs = FieldSet(Two())
+>>> print fs.foo.render()
+<input id="foo" name="foo" type="text" />
+
+>>> fs = FieldSet(Two())
+>>> print fs.foo.dropdown([('option1', 'value1'), ('option2', 'value2')]).render()
+<select id="foo" name="foo"><option value="value1">option1</option>
+<option value="value2">option2</option></select>
+
 """
 
 if __name__ == '__main__':

@@ -138,7 +138,7 @@ class BaseModelRender(BaseRender):
         if kwargs:
             wrappers = self._get_filtered_attrs(**kwargs)
         else:
-            wrappers = [AttributeWrapper(attr) for attr in _managed_attributes(self.model.__class__)
+            wrappers = [AttributeWrapper((attr, self.model)) for attr in _managed_attributes(self.model.__class__)
                      if isinstance(attr.impl, ScalarAttributeImpl)
                      and hasattr(attr.property, 'columns')
                      and len(attr.property.columns) == 1]

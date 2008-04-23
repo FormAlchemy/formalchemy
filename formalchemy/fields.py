@@ -222,16 +222,17 @@ class SelectField(ModelFieldRender):
         return h.select(self.name, h.options_for_select(self.options, selected=self.selected), **self.attribs)
 
 class AttributeWrapper:
-    def __init__(self, instrumented_attribute=None, wrapper=None):
-        assert (instrumented_attribute is None) ^ (wrapper is None)
-        if instrumented_attribute:
+    def __init__(self, data):
+        if isinstance(data, AttributeWrapper):
+            self.__dict__.update(data.__dict__)
+        else:
+            instrumented_attribute, model = data
+            self.model = model
             self.impl = instrumented_attribute.impl
             self._property = instrumented_attribute.property
             self.render_as = None
             self.render_opts = {}
             self.modifier = None
-        else:
-            self.__dict__.update(wrapper.__dict__)
 
     def column(self):
         return self._property.columns[0]
@@ -257,44 +258,44 @@ class AttributeWrapper:
         return 'AttributeWrapper(%s)' % self.name
 
     def disabled(self):
-        attr = AttributeWrapper(wrapper=self)
+        attr = AttributeWrapper(self)
         attr.modifier = 'disabled'
         return attr
     def readonly(self):
-        attr = AttributeWrapper(wrapper=self)
+        attr = AttributeWrapper(self)
         attr.modifier = 'readonly'
         return attr
     def hidden(self):
-        attr = AttributeWrapper(wrapper=self)
+        attr = AttributeWrapper(self)
         attr.render_as = HiddenField
         attr.render_opts = {}
         return attr
     def password(self):
-        attr = AttributeWrapper(wrapper=self)
+        attr = AttributeWrapper(self)
         attr.render_as = PasswordField
         attr.render_opts = {}
         return attr
     def textarea(self, size=None):
-        attr = AttributeWrapper(wrapper=self)
+        attr = AttributeWrapper(self)
         attr.render_as = TextAreaField
         attr.render_opts = {'size': size}
         return attr
     def radio(self, choices=[]):
         if isinstance(self.column.type, types.Boolean) and not choices:
             choices = [True, False]
-        attr = AttributeWrapper(wrapper=self)
+        attr = AttributeWrapper(self)
         attr.render_as = RadioSet
         attr.render_opts = {'choices': choices}
         return attr
     def dropdown(self, options=[], multiple=False):
-        attr = AttributeWrapper(wrapper=self)
+        attr = AttributeWrapper(self)
         attr.render_as = SelectField
         attr.render_opts = {'multiple': multiple, 'options': options}
         return attr
-    def render(self, model):
+    def render(self):
         if not self.render_as:
             self.render_as = self._get_render_as()
-        return self.render_as(model, self.name, readonly=self.modifier=='readonly', disabled=self.modifier=='disabled', **self.render_opts).render()
+        return self.render_as(self.model, self.name, readonly=self.modifier=='readonly', disabled=self.modifier=='disabled', **self.render_opts).render()
     def _get_render_as(self):
         if isinstance(self.column.type, types.String):
             return TextField

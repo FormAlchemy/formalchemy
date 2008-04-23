@@ -61,7 +61,7 @@ class FieldSet(base.BaseModelRender):
     
     def __init__(self, *args, **kwargs):
         super(FieldSet, self).__init__(*args, **kwargs)
-        self.__dict__.update([(attrname, fields.AttributeWrapper(attr)) 
+        self.__dict__.update([(attrname, fields.AttributeWrapper((attr, self.model))) 
                               for attrname, attr in self.model.__class__.__dict__.iteritems()
                               if isinstance(attr, InstrumentedAttribute)])
 
@@ -176,7 +176,7 @@ class Field(base.BaseColumnRender):
 
         # Process hidden fields first as they don't need a `Label`.
         if self.wrapper.render_as == fields.HiddenField:
-            return self.wrapper.render(self.model)
+            return self.wrapper.render()
 
         # Make the label
         field = ""
@@ -192,7 +192,7 @@ class Field(base.BaseColumnRender):
 
         # Make the input
         
-        field += '\n' + self.wrapper.render(self.model)
+        field += '\n' + self.wrapper.render()
 
         # Make the error
         if self.wrapper.column in errors:
