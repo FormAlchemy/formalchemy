@@ -15,7 +15,7 @@ from sqlalchemy.orm.attributes \
     import InstrumentedAttribute, _managed_attributes, ScalarAttributeImpl
 from sqlalchemy.orm import compile_mappers, object_session
 
-import exceptions, utils
+import utils
 from options import Options
 
 
@@ -53,7 +53,7 @@ class BaseRender(object):
 
     def render(self):
         """This function must be overridden by any subclass of `BaseRender`."""
-        raise exceptions.NotImplementedError()
+        raise NotImplementedError()
 
     def __str__(self):
         return self.render()
@@ -148,34 +148,7 @@ class BaseModelRender(BaseRender):
 
     def render(self):
         """This function must be overridden by any subclass of `BaseModelRender`."""
-        raise exceptions.NotImplementedError()
-
-class BaseCollectionRender(BaseModelRender):
-    """The `BaseCollectionRender` class.
-
-    This is the superclass for all classes needing collection rendering. Takes
-    an extra `collection=[]` keyword argument as the collection list.
-
-    Methods:
-      * set_collection(self, collection)
-      * get_collection(self)
-
-    """
-
-    def __init__(self, model, collection=[]):
-        super(BaseCollectionRender, self).__init__(model)
-        self.collection = collection
-
-    def set_collection(self, collection):
-        """Set the collection to render."""
-
-        if not isinstance(collection, (list, tuple)):
-            raise exceptions.InvalidCollectionError()
-        self.collection = collection
-
-    def get_collection(self):
-        """Return current collection."""
-        return self.collection
+        raise NotImplementedError()
 
 
 class BaseColumnRender(BaseModelRender):

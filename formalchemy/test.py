@@ -261,6 +261,34 @@ document.getElementById("id").focus();
     </tr>
   </tbody>
 </table>
+
+>>> t = TableCollection([bill])
+>>> print t.render()
+<table>
+  <caption>Nonetype (1)</caption>
+  <thead>
+    <tr>
+      <th>Active</th>
+      <th>Description</th>
+      <th>Email</th>
+      <th>First name</th>
+      <th>Id</th>
+      <th>Last name</th>
+      <th>Password</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><em>True</em></td>
+      <td>boring description</td>
+      <td>bill@example.com</td>
+      <td>Bill</td>
+      <td>1</td>
+      <td>Jones</td>
+      <td>1234</td>
+    </tr>
+  </tbody>
+</table>
 """
 
 if __name__ == '__main__':

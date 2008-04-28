@@ -98,16 +98,21 @@ class Table(base.BaseModelRender, Caption, Th, Td):
 
         return utils.wrap("<table>", "\n".join(table), "</table>")
 
-class TableCollection(base.BaseCollectionRender, Caption, Th, Td):
+class TableCollection(base.BaseRender, Caption, Th, Td):
     """The `TableCollection` class.
 
     This class is responsible for rendering a table from a collection of models.
 
     """
-    def render(self, **options):
-        # Merge class level options with `options`.
-        self._render_options = self.new_options(**options)
+    def __init__(self, collection):
+        if not isinstance(collection, (list, tuple)):
+            raise Exception('invalid collection %r' % (collection,))
+        self.collection = collection
+        self.options = Options()
+        self._current_model = None
 
+    def render(self, **options):
+        self._render_options = self.options.new_options(**options)
         table = []
 
         # Make the table's caption.
@@ -118,7 +123,9 @@ class TableCollection(base.BaseCollectionRender, Caption, Th, Td):
         # Make the table's head.
         thead = []
         tr = []
-        for column in self.get_colnames(**self._render_options):
+        colnames = [attr.name
+                    for attr in base.BaseModelRender(self.collection[0]).get_attrs(**self._render_options)]
+        for column in colnames:
             tr.append(self.th(column))
         tr = utils.wrap("<tr>", "\n".join(tr), "</tr>")
         thead.append(tr)
@@ -131,7 +138,7 @@ class TableCollection(base.BaseCollectionRender, Caption, Th, Td):
         for model in self.collection:
             self._current_model = model
             tr = []
-            for column in self.get_colnames(**self._render_options):
+            for column in colnames:
                 tr.append(self.td(column))
             tr = utils.wrap("<tr>", "\n".join(tr), "</tr>")
             tbody.append(tr)
