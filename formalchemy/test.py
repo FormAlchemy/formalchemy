@@ -66,52 +66,43 @@ from forms import FieldSet, Field
 __doc__ = r"""
 >>> fs = FieldSet(One())
 >>> print fs.render()
-<fieldset>
-  <legend>One</legend>
-  <div>
-    <label class="field_req" for="id">Id</label>
-    <input id="id" name="id" type="text" />
-  </div>
-  <script type="text/javascript">
-  //<![CDATA[
-  document.getElementById("id").focus();
-  //]]>
-  </script>
-</fieldset>
+<div>
+  <label class="field_req" for="id">Id</label>
+  <input id="id" name="id" type="text" />
+</div>
+<script type="text/javascript">
+//<![CDATA[
+document.getElementById("id").focus();
+//]]>
+</script>
 
 >>> fs = FieldSet(Two())
 >>> print fs.render()
-<fieldset>
-  <legend>Two</legend>
-  <div>
-    <label class="field_req" for="foo">Foo</label>
-    <input id="foo" name="foo" type="text" />
-  </div>
-  <script type="text/javascript">
-  //<![CDATA[
-  document.getElementById("foo").focus();
-  //]]>
-  </script>
-  <div>
-    <label class="field_req" for="id">Id</label>
-    <input id="id" name="id" type="text" />
-  </div>
-</fieldset>
+<div>
+  <label class="field_req" for="foo">Foo</label>
+  <input id="foo" name="foo" type="text" />
+</div>
+<script type="text/javascript">
+//<![CDATA[
+document.getElementById("foo").focus();
+//]]>
+</script>
+<div>
+  <label class="field_req" for="id">Id</label>
+  <input id="id" name="id" type="text" />
+</div>
 
 >>> fs = FieldSet(Two())
 >>> print fs.render(pk=False)
-<fieldset>
-  <legend>Two</legend>
-  <div>
-    <label class="field_req" for="foo">Foo</label>
-    <input id="foo" name="foo" type="text" />
-  </div>
-  <script type="text/javascript">
-  //<![CDATA[
-  document.getElementById("foo").focus();
-  //]]>
-  </script>
-</fieldset>
+<div>
+  <label class="field_req" for="foo">Foo</label>
+  <input id="foo" name="foo" type="text" />
+</div>
+<script type="text/javascript">
+//<![CDATA[
+document.getElementById("foo").focus();
+//]]>
+</script>
 
 >>> fs = FieldSet(Two())
 >>> assert fs.render(pk=False) == fs.render(include=[fs.foo])
@@ -119,83 +110,71 @@ __doc__ = r"""
 
 >>> fs = FieldSet(Two()) 
 >>> print fs.render(include=[fs.foo.hidden()])
-<fieldset>
-  <legend>Two</legend>
-  <input id="foo" name="foo" type="hidden" />
-</fieldset>
+<input id="foo" name="foo" type="hidden" />
 
 >>> fs = FieldSet(Two())
 >>> print fs.render(include=[fs.foo.dropdown([('option1', 'value1'), ('option2', 'value2')])])
-<fieldset>
-  <legend>Two</legend>
-  <div>
-    <label class="field_req" for="foo">Foo</label>
-    <select id="foo" name="foo"><option value="value1">option1</option>
-    <option value="value2">option2</option></select>
-  </div>
-  <script type="text/javascript">
-  //<![CDATA[
-  document.getElementById("foo").focus();
-  //]]>
-  </script>
-</fieldset>
+<div>
+  <label class="field_req" for="foo">Foo</label>
+  <select id="foo" name="foo"><option value="value1">option1</option>
+  <option value="value2">option2</option></select>
+</div>
+<script type="text/javascript">
+//<![CDATA[
+document.getElementById("foo").focus();
+//]]>
+</script>
 
 >>> fs = FieldSet(Two())
 >>> assert fs.render(include=[fs.foo.dropdown([('option1', 'value1'), ('option2', 'value2')])]) == fs.render(pk=False, options=[fs.foo.dropdown([('option1', 'value1'), ('option2', 'value2')])]) 
 
 >>> fs = FieldSet(Checkbox())
 >>> print fs.render(pk=False)
-<fieldset>
-  <legend>Checkbox</legend>
-  <div>
-    <label class="field_req" for="field">Field</label>
-    <input id="field" name="field" type="checkbox" value="True" /><input id="field" name="field" type="hidden" value="False" />
-  </div>
-  <script type="text/javascript">
-  //<![CDATA[
-  document.getElementById("field").focus();
-  //]]>
-  </script>
-</fieldset>
+<div>
+  <label class="field_req" for="field">Field</label>
+  <input id="field" name="field" type="checkbox" value="True" /><input id="field" name="field" type="hidden" value="False" />
+</div>
+<script type="text/javascript">
+//<![CDATA[
+document.getElementById("field").focus();
+//]]>
+</script>
 
 >>> fs = FieldSet(User())
 >>> print fs.render()
-<fieldset>
-  <legend>User</legend>
-  <div>
-    <label class="field_opt" for="active">Active</label>
-    <input checked="checked" id="active" name="active" type="checkbox" value="True" /><input id="active" name="active" type="hidden" value="False" />
-  </div>
-  <script type="text/javascript">
-  //<![CDATA[
-  document.getElementById("active").focus();
-  //]]>
-  </script>
-  <div>
-    <label class="field_opt" for="description">Description</label>
-    <input id="description" name="description" type="text" />
-  </div>
-  <div>
-    <label class="field_req" for="email">Email</label>
-    <input id="email" maxlength="40" name="email" type="text" />
-  </div>
-  <div>
-    <label class="field_opt" for="first_name">First name</label>
-    <input id="first_name" maxlength="20" name="first_name" type="text" />
-  </div>
-  <div>
-    <label class="field_req" for="id">Id</label>
-    <input id="id" name="id" type="text" />
-  </div>
-  <div>
-    <label class="field_opt" for="last_name">Last name</label>
-    <input id="last_name" maxlength="20" name="last_name" type="text" />
-  </div>
-  <div>
-    <label class="field_req" for="password">Password</label>
-    <input id="password" maxlength="20" name="password" type="text" />
-  </div>
-</fieldset>
+<div>
+  <label class="field_opt" for="active">Active</label>
+  <input checked="checked" id="active" name="active" type="checkbox" value="True" /><input id="active" name="active" type="hidden" value="False" />
+</div>
+<script type="text/javascript">
+//<![CDATA[
+document.getElementById("active").focus();
+//]]>
+</script>
+<div>
+  <label class="field_opt" for="description">Description</label>
+  <input id="description" name="description" type="text" />
+</div>
+<div>
+  <label class="field_req" for="email">Email</label>
+  <input id="email" maxlength="40" name="email" type="text" />
+</div>
+<div>
+  <label class="field_opt" for="first_name">First name</label>
+  <input id="first_name" maxlength="20" name="first_name" type="text" />
+</div>
+<div>
+  <label class="field_req" for="id">Id</label>
+  <input id="id" name="id" type="text" />
+</div>
+<div>
+  <label class="field_opt" for="last_name">Last name</label>
+  <input id="last_name" maxlength="20" name="last_name" type="text" />
+</div>
+<div>
+  <label class="field_req" for="password">Password</label>
+  <input id="password" maxlength="20" name="password" type="text" />
+</div>
 
 >>> fs = FieldSet(Two())
 >>> print fs.foo.render()
@@ -208,26 +187,23 @@ __doc__ = r"""
 
 >>> fs2 = FieldSet(Order(), session)
 >>> print fs2.render()
-<fieldset>
-  <legend>Order</legend>
-  <div>
-    <label class="field_req" for="id">Id</label>
-    <input id="id" name="id" type="text" />
-  </div>
-  <script type="text/javascript">
-  //<![CDATA[
-  document.getElementById("id").focus();
-  //]]>
-  </script>
-  <div>
-    <label class="field_req" for="quantity">Quantity</label>
-    <input id="quantity" name="quantity" type="text" />
-  </div>
-  <div>
-    <label class="field_req" for="user_id">User id</label>
-    <select id="user_id" name="user_id"><option value="Bill Jones">1</option></select>
-  </div>
-</fieldset>
+<div>
+  <label class="field_req" for="id">Id</label>
+  <input id="id" name="id" type="text" />
+</div>
+<script type="text/javascript">
+//<![CDATA[
+document.getElementById("id").focus();
+//]]>
+</script>
+<div>
+  <label class="field_req" for="quantity">Quantity</label>
+  <input id="quantity" name="quantity" type="text" />
+</div>
+<div>
+  <label class="field_req" for="user_id">User id</label>
+  <select id="user_id" name="user_id"><option value="Bill Jones">1</option></select>
+</div>
 """
 
 if __name__ == '__main__':

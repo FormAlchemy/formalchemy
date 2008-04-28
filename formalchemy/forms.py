@@ -14,7 +14,7 @@ __all__ = ["FieldSet", "Field"]
 class FieldSet(base.BaseModelRender):
     """The `FieldSet` class.
 
-    This class is responsible for generating HTML fieldsets from a given
+    This class is responsible for generating HTML fields from a given
     `model`.
 
     The one method to use is `render`. This is the method that returns
@@ -69,29 +69,11 @@ class FieldSet(base.BaseModelRender):
         # Merge class level options with given options.
         opts = self.new_options(**options)
 
-        legend = opts.get('legend', None)
-        fieldset = opts.get('fieldset', True)
-
         model_render = MultiFields(self.model, self.session)
         # Reset options and only render based given options
         model_render.reconfigure(**opts)
-        html = model_render.render()
+        return model_render.render()
 
-        if not fieldset:
-            return html
-
-        # Setup class's name as default.
-        if legend is None:
-            legend_txt = self.model.__class__.__name__
-        # Don't render a legend field.
-        elif legend is False:
-            return utils.wrap("<fieldset>", html, "</fieldset>")
-        # Use the user given string as the legend.
-        elif isinstance(legend, basestring):
-            legend_txt = legend
-
-        html = "\n".join([h.content_tag('legend', legend_txt), html])
-        return utils.wrap("<fieldset>", html, "</fieldset>")
 
 class MultiFields(base.BaseModelRender):
     """The `MultiFields` class.

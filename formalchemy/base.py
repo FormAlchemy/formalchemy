@@ -53,8 +53,7 @@ class BaseRender(object):
 
     def render(self):
         """This function must be overridden by any subclass of `BaseRender`."""
-        if self.__class__.__name__ == "BaseRender":
-            raise exceptions.NotImplementedError()
+        raise exceptions.NotImplementedError()
 
     def __str__(self):
         return self.render()

@@ -266,7 +266,7 @@ class AttributeWrapper:
         return hash(self.column)
     
     def __repr__(self):
-        return 'AttributeWrapper(%s)' % self.name
+        return 'AttributeWrapper(%s)' % self._impl.key
 
     def disabled(self):
         attr = AttributeWrapper(self)
