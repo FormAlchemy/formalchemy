@@ -75,9 +75,6 @@ class FieldSet(base.BaseModelRender):
         # Filter out unnecessary columns.
         attrs = self.get_attrs(**opts)
 
-        # Should we keep track of rendered columns ?
-        track_cols = opts.get('track_cols', False)
-
         html = []
         # Generate fields.
         field_render = Field(self.model, self.session)
