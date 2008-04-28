@@ -83,7 +83,7 @@ class BaseModelRender(BaseRender):
                                if isinstance(attr.impl, ScalarAttributeImpl)]) # todo support collections (i.e., any InstrumentedAttribute)
             
     def bind(self, model, session=None):
-        self.model = self._current_model = model
+        self.model = model
         if session:
             self.session = session
         else:

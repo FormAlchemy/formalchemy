@@ -29,11 +29,11 @@ class Td(object):
 
     """
     def td(self, colname):
-        value = getattr(self._current_model, colname)
+        value = getattr(self.model, colname)
 
         display = self._render_options.get("display", {}).get(colname)
         if callable(display):
-            return h.content_tag("td", display(self._current_model))
+            return h.content_tag("td", display(self.model))
 
         if isinstance(value, bool):
             value = h.content_tag("em", value)
@@ -55,7 +55,7 @@ class Caption(object):
             if isinstance(caption, basestring):
                 caption_txt = caption
             else:
-                caption_txt = "%s" % self._current_model.__class__.__name__
+                caption_txt = "%s" % self.model.__class__.__name__
 
         if numbering and hasattr(self, "collection"):
             caption_txt += " (%s)" % len(self.collection)
@@ -109,7 +109,7 @@ class TableCollection(base.BaseRender, Caption, Th, Td):
             raise Exception('invalid collection %r' % (collection,))
         self.collection = collection
         self.options = Options()
-        self._current_model = None
+        self.model = None
 
     def render(self, **options):
         self._render_options = self.options.new_options(**options)
@@ -136,7 +136,7 @@ class TableCollection(base.BaseRender, Caption, Th, Td):
         # Make the table's body.
         tbody = []
         for model in self.collection:
-            self._current_model = model
+            self.model = model
             tr = []
             for column in colnames:
                 tr.append(self.td(column))
