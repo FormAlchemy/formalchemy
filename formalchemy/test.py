@@ -55,7 +55,7 @@ bill = User(email='bill@example.com',
 session.save(bill)
 session.flush() # will update bill w/ id
 
-order1 = Order(user_id=bill.id, quantity=10)
+order1 = Order(user=bill, quantity=10)
 session.save(order1)
 
 session.commit()
@@ -185,8 +185,8 @@ document.getElementById("active").focus();
 <select id="foo" name="foo"><option value="value1">option1</option>
 <option value="value2">option2</option></select>
 
->>> fs2 = FieldSet(Order(), session)
->>> print fs2.render()
+>>> fs = FieldSet(Order(), session)
+>>> print fs.render()
 <div>
   <label class="field_req" for="id">Id</label>
   <input id="id" name="id" type="text" />
@@ -202,7 +202,29 @@ document.getElementById("id").focus();
 </div>
 <div>
   <label class="field_req" for="user_id">User id</label>
-  <select id="user_id" name="user_id"><option value="Bill Jones">1</option></select>
+  <select id="user_id" name="user_id"><option value="1">Bill Jones</option></select>
+</div>
+
+# test re-binding
+>>> fs = FieldSet(Order(), session)
+>>> fs.bind(order1)
+>>> print fs.render() # should render w/ current selection the default.
+<div>
+  <label class="field_req" for="id">Id</label>
+  <input id="id" name="id" type="text" value="1" />
+</div>
+<script type="text/javascript">
+//<![CDATA[
+document.getElementById("id").focus();
+//]]>
+</script>
+<div>
+  <label class="field_req" for="quantity">Quantity</label>
+  <input id="quantity" name="quantity" type="text" value="10" />
+</div>
+<div>
+  <label class="field_req" for="user_id">User id</label>
+  <select id="user_id" name="user_id"><option value="1" selected="selected">Bill Jones</option></select>
 </div>
 """
 

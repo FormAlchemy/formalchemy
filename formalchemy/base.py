@@ -66,6 +66,7 @@ class BaseModelRender(BaseRender):
 
     Methods:
       * get_pks(self)
+      * bind(self)
       * get_required(self)
       * get_attrs(self[, **kwargs])
     """
@@ -78,8 +79,10 @@ class BaseModelRender(BaseRender):
         self.new_options = self.options.new_options
 
         self.options.parse(model)
-        self.model = model
-        self._current_model = model
+        self.bind(model, session)
+            
+    def bind(self, model, session=None):
+        self.model = self._current_model = model
         if session:
             self.session = session
         else:

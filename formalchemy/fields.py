@@ -65,9 +65,12 @@ class ModelFieldRender(BaseFieldRender):
         super(ModelFieldRender, self).__init__(colname, getattr(model, colname))
         self.model = model
         if model.c[colname].default:
-            self.default = model.c[colname].default.arg
+            if callable(model.c[colname].default.arg):
+                logger.info('Ignoring callable default value for %s' % model)
+            else:
+                self.default = model.c[colname].default.arg
         else:
-            self.default = model.c[colname].default
+            self.default = None
         self.attribs = kwargs
 
     def get_value(self):
@@ -312,13 +315,14 @@ class AttributeWrapper:
         if hasattr(self._property, 'foreign_keys'):
             if 'options' not in self.render_opts:
                 logger.debug('loading options for ' + self.name)
-                cls = self._property.mapper.class_
-                columns = list(cls.__mapper__.primary_key)
-                columns.sort()
-                items = self.session.query(cls).order_by(*columns).all()
+                fk_cls = self._property.mapper.class_
+                if len(fk_cls.__mapper__.primary_key) != 1:
+                    raise Exception('Only single-column keys are currently supported; unable to handle %s' % self._property.foreign_keys)
+                fk_pk = fk_cls.__mapper__.primary_key[0]
                 def pk(item):
-                    return ','.join([str(getattr(item, c.key)) for c in columns])
-                self.render_opts['options'] = [(pk(item), str(item)) for item in items]
+                    return getattr(item, fk_pk.key)
+                items = self.session.query(fk_cls).order_by(fk_pk).all()
+                self.render_opts['options'] = [(str(item), pk(item)) for item in items]
             return SelectField
         if isinstance(self.column.type, types.String):
             return TextField

@@ -66,6 +66,12 @@ class FieldSet(base.BaseModelRender):
         self.__dict__.update([(attrname, fields.AttributeWrapper((attr, self.model, self.session))) 
                               for attrname, attr in self.model.__class__.__dict__.iteritems()
                               if isinstance(attr, InstrumentedAttribute)])
+        
+    def bind(self, model, session=None):
+        super(FieldSet, self).bind(model, session)
+        for attrname, attr in self.__dict__.iteritems():
+            if isinstance(attr, fields.AttributeWrapper):
+                attr.model = model
 
     def render(self, **options):
         # Merge class level options with given options.
