@@ -65,6 +65,15 @@ from forms import FieldSet, Field
 from tables import Table, TableCollection
 
 __doc__ = r"""
+# some low-level testing first
+>>> fs = FieldSet(order1)
+>>> list(sorted(fs._raw_attrs(), key=lambda attr:attr.name))
+[AttributeWrapper(id), AttributeWrapper(quantity), AttributeWrapper(user_id), AttributeWrapper(user)]
+
+>>> fs = FieldSet(bill)
+>>> list(sorted(fs._raw_attrs(), key=lambda attr:attr.name))
+[AttributeWrapper(active), AttributeWrapper(description), AttributeWrapper(email), AttributeWrapper(first_name), AttributeWrapper(id), AttributeWrapper(last_name), AttributeWrapper(password), AttributeWrapper(orders)]
+
 >>> fs = FieldSet(One())
 >>> print fs.render()
 <div>
