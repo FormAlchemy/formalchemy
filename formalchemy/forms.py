@@ -61,7 +61,7 @@ class FieldSet(base.BaseModelRender):
     
     def __init__(self, *args, **kwargs):
         super(FieldSet, self).__init__(*args, **kwargs)
-        self.__dict__.update([(attrname, fields.AttributeWrapper((attr, self.model))) 
+        self.__dict__.update([(attrname, fields.AttributeWrapper((attr, self.model, self.session))) 
                               for attrname, attr in self.model.__class__.__dict__.iteritems()
                               if isinstance(attr, InstrumentedAttribute)])
 
@@ -74,7 +74,7 @@ class FieldSet(base.BaseModelRender):
         legend = opts.get('legend', None)
         fieldset = opts.get('fieldset', True)
 
-        model_render = MultiFields(self.model)
+        model_render = MultiFields(self.model, self.session)
         # Reset options and only render based given options
         model_render.reconfigure(**opts)
         html = model_render.render()
@@ -118,7 +118,7 @@ class MultiFields(base.BaseModelRender):
 
         html = []
         # Generate fields.
-        field_render = Field(bind=self.model)
+        field_render = Field(self.model, self.session)
         field_render.reconfigure(**opts)
         for attr in attrs:
             field_render.set_attr(attr)
@@ -134,8 +134,8 @@ class Field(base.BaseColumnRender):
 
     """
 
-    def __init__(self, bind=None, attr=None, make_label=True):
-        super(Field, self).__init__(bind=bind, attr=attr)
+    def __init__(self, model, session=None, attr=None, make_label=True):
+        super(Field, self).__init__(model, session, attr=attr)
 
         self.set_make_label(make_label)
         self._focus_rendered = False

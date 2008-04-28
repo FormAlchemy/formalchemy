@@ -1,9 +1,13 @@
+import logging
+logging.basicConfig(level=logging.DEBUG)
+
 from sqlalchemy import *
 from sqlalchemy.orm import *
 from sqlalchemy.ext.declarative import declarative_base, declared_synonym
+logging.getLogger('sqlalchemy').setLevel(logging.ERROR)
 
 engine = create_engine('sqlite://')
-Session = scoped_session(sessionmaker(transactional=True, autoflush=False, bind=engine))
+Session = scoped_session(sessionmaker(autoflush=True, bind=engine))
 Base = declarative_base(engine)
 
 class One(Base):
@@ -23,7 +27,7 @@ class Checkbox(Base):
 class Order(Base):
     __tablename__ = 'orders'
     id = Column('id', Integer, primary_key=True)
-    user_id = Column('user_id', Integer, ForeignKey('users.id'))
+    user_id = Column('user_id', Integer, ForeignKey('users.id'), nullable=False)
     quantity = Column('quantity', Integer, nullable=False)
 
 class User(Base):
@@ -36,8 +40,11 @@ class User(Base):
     description = Column('description', Text)
     active = Column('active', Boolean, default=True)
     orders = relation(Order, backref='user')
+    def __str__(self):
+        return self.first_name + ' ' + self.last_name
     
 Base.metadata.create_all()
+# test w/ explicit session to avoid cluttering up implicit one w/ throwaway object creations
 session = Session()
 
 bill = User(email='bill@example.com', 
@@ -46,6 +53,8 @@ bill = User(email='bill@example.com',
             last_name='Jones',
             description='boring description')
 session.save(bill)
+session.flush() # will update bill w/ id
+
 order1 = Order(user_id=bill.id, quantity=10)
 session.save(order1)
 
@@ -197,6 +206,32 @@ __doc__ = r"""
 <select id="foo" name="foo"><option value="value1">option1</option>
 <option value="value2">option2</option></select>
 
+>>> fs2 = FieldSet(Order(), session)
+>>> print fs2.render()
+<fieldset>
+  <legend>Order</legend>
+  <div>
+    <label class="field_req" for="id">Id</label>
+    <input id="id" name="id" type="text" />
+  </div>
+  <script type="text/javascript">
+  //<![CDATA[
+  document.getElementById("id").focus();
+  //]]>
+  </script>
+  <div>
+    <label class="field_req" for="quantity">Quantity</label>
+    <input id="quantity" name="quantity" type="text" />
+  </div>
+  <div>
+    <label class="field_req" for="user_id">User id</label>
+    <input id="user_id" name="user_id" type="text" />
+  </div>
+  <div>
+    <label class="field_req" for="user_id">User id</label>
+    <select id="user_id" name="user_id"><option value="Bill Jones">1</option></select>
+  </div>
+</fieldset>
 """
 
 if __name__ == '__main__':

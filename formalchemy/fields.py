@@ -3,8 +3,11 @@
 # This module is part of FormAlchemy and is released under
 # the MIT License: http://www.opensource.org/licenses/mit-license.php
 
+import logging
+logger = logging.getLogger('formalchemy.' + __name__)
 import webhelpers as h
 import sqlalchemy.types as types
+from sqlalchemy.orm.attributes import ScalarObjectAttributeImpl
 import base
 
 __all__ = ["Label", "TextField", "PasswordField", "HiddenField", "BooleanField",
@@ -226,16 +229,18 @@ class AttributeWrapper:
         if isinstance(data, AttributeWrapper):
             self.__dict__.update(data.__dict__)
         else:
-            instrumented_attribute, model = data
-            self.model = model
-            self.impl = instrumented_attribute.impl
+            instrumented_attribute, self.model, self.session = data
+            self._impl = instrumented_attribute.impl
             self._property = instrumented_attribute.property
             self.render_as = None
             self.render_opts = {}
             self.modifier = None
 
     def column(self):
-        return self._property.columns[0]
+        try:
+            return self._property.columns[0]
+        except AttributeError:
+            return self._property.foreign_keys[0]
     column = property(column)
 
     def name(self):
@@ -297,6 +302,17 @@ class AttributeWrapper:
             self.render_as = self._get_render_as()
         return self.render_as(self.model, self.name, readonly=self.modifier=='readonly', disabled=self.modifier=='disabled', **self.render_opts).render()
     def _get_render_as(self):
+        if hasattr(self._property, 'foreign_keys'):
+            if 'options' not in self.render_opts:
+                logger.debug('loading options for ' + self.name)
+                cls = self._property.mapper.class_
+                columns = list(cls.__mapper__.primary_key)
+                columns.sort()
+                items = self.session.query(cls).order_by(*columns).all()
+                def pk(item):
+                    return ','.join([str(getattr(item, c.key)) for c in columns])
+                self.render_opts['options'] = [(pk(item), str(item)) for item in items]
+            return SelectField
         if isinstance(self.column.type, types.String):
             return TextField
         elif isinstance(self.column.type, types.Integer):

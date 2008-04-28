@@ -3,6 +3,9 @@
 # This module is part of FormAlchemy and is released under
 # the MIT License: http://www.opensource.org/licenses/mit-license.php
 
+import logging
+logger = logging.getLogger('formalchemy.' + __name__)
+
 from sqlalchemy import __version__
 if __version__.split('.') < [0, 4, 1]:
     raise ImportError('Version 0.4.1 or later of SQLAlchemy required')
@@ -10,7 +13,7 @@ if __version__.split('.') < [0, 4, 1]:
 from sqlalchemy.orm.attributes \
     import InstrumentedAttribute, _managed_attributes, ScalarAttributeImpl
 import sqlalchemy.types as types
-from sqlalchemy.orm import compile_mappers
+from sqlalchemy.orm import compile_mappers, object_session
 
 import exceptions, utils
 from options import Options
@@ -77,25 +80,20 @@ class BaseModelRender(BaseRender):
       * get_bytype(self, string)
     """
 
-    def __init__(self, bind=None):
+    def __init__(self, model, session=None):
         self.options = Options()
         self.configure = self.options.configure
         self.reconfigure = self.options.reconfigure
         self.get_options = self.options.get_options
         self.new_options = self.options.new_options
 
-        if bind:
-            self.bind(bind)
-        else:
-            self.model = bind
-            self._current_model = bind
-
-    def bind(self, model):
-        """Bind to the given `model` from which HTML generation will be done."""
-
         self.options.parse(model)
         self.model = model
         self._current_model = model
+        if session:
+            self.session = session
+        else:
+            self.session = object_session(self.model)
 
     def is_bound(self):
         """Return True if bound to a model. Otherwise, return False."""
@@ -138,10 +136,9 @@ class BaseModelRender(BaseRender):
         if kwargs:
             wrappers = self._get_filtered_attrs(**kwargs)
         else:
-            wrappers = [AttributeWrapper((attr, self.model)) for attr in _managed_attributes(self.model.__class__)
-                     if isinstance(attr.impl, ScalarAttributeImpl)
-                     and hasattr(attr.property, 'columns')
-                     and len(attr.property.columns) == 1]
+            wrappers = [AttributeWrapper((attr, self.model, self.session)) 
+                        for attr in _managed_attributes(self.model.__class__)
+                        if isinstance(attr.impl, ScalarAttributeImpl)]
             # sort by name for reproducibility
             wrappers.sort(key=lambda wrapper: wrapper.name)
         return wrappers
@@ -254,8 +251,8 @@ class BaseCollectionRender(BaseModelRender):
 
     """
 
-    def __init__(self, bind=None, collection=[]):
-        super(BaseCollectionRender, self).__init__(bind=bind)
+    def __init__(self, model, collection=[]):
+        super(BaseCollectionRender, self).__init__(model)
         self.collection = collection
 
     def set_collection(self, collection):
@@ -282,8 +279,8 @@ class BaseColumnRender(BaseModelRender):
 
     """
 
-    def __init__(self, bind=None, attr=None):
-        super(BaseColumnRender, self).__init__(bind=bind)
+    def __init__(self, model, session=None, attr=None):
+        super(BaseColumnRender, self).__init__(model, session)
         if attr:
             self.set_attr(attr)
         else:
