@@ -80,7 +80,7 @@ class FieldSet(base.ModelRender):
         field_render = Field(self.model, self.session)
         field_render.reconfigure(**opts)
         for attr in attrs:
-            field_render.set_attr(attr)
+            field_render.attr = attr
             field = field_render.render()
             html.append(field)
 
@@ -133,16 +133,16 @@ class Field(base.ColumnRender):
         cls_span_err = opts.get('span_err', 'span_err')
 
         # Process hidden fields first as they don't need a `Label`.
-        if self.wrapper.render_as == fields.HiddenField:
-            return self.wrapper.render()
+        if self.attr.render_as == fields.HiddenField:
+            return self.attr.render()
 
         # Make the label
         field = ""
 
         if make_label:
-            label = fields.Label(self.wrapper.column, alias=alias.get(self.wrapper.name, self.wrapper.name))
+            label = fields.Label(self.attr.column, alias=alias.get(self.attr.name, self.attr.name))
             label.set_prettify(pretty_func)
-            if self.wrapper.nullable:
+            if self.attr.nullable:
                 label.cls = cls_fld_opt
             else:
                 label.cls = cls_fld_req
@@ -150,14 +150,14 @@ class Field(base.ColumnRender):
 
         # Make the input
         
-        field += '\n' + self.wrapper.render()
+        field += '\n' + self.attr.render()
 
         # Make the error
-        if self.wrapper.column in errors:
-            field += "\n" + h.content_tag("span", errors[self.wrapper.column], class_=cls_span_err)
+        if self.attr.column in errors:
+            field += "\n" + h.content_tag("span", errors[self.attr.column], class_=cls_span_err)
         # Make the documentation
-        if self.wrapper.column in docs:
-            field += "\n" + h.content_tag("span", docs[self.wrapper.column], class_=cls_span_doc)
+        if self.attr.column in docs:
+            field += "\n" + h.content_tag("span", docs[self.attr.column], class_=cls_span_doc)
 
         if field.startswith("\n"):
             field = field[1:]
@@ -167,8 +167,8 @@ class Field(base.ColumnRender):
             field = utils.wrap("<div>", field, "</div>")
 
         # Do the field focusing
-        if (focus == self.wrapper.column or focus is True) and not self._focus_rendered:
-            field += "\n" + h.javascript_tag('document.getElementById("%s").focus();' % self.wrapper.name)
+        if (focus == self.attr.column or focus is True) and not self._focus_rendered:
+            field += "\n" + h.javascript_tag('document.getElementById("%s").focus();' % self.attr.name)
             self._focus_rendered = True
 
         return field

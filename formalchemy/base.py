@@ -159,20 +159,23 @@ class ColumnRender(ModelRender):
     attribute.
 
     Methods:
-      * set_column(self, attr)
+      * set_attr(self, attr)
 
     """
 
     def __init__(self, model, session=None, attr=None):
         super(ColumnRender, self).__init__(model, session)
         if attr:
-            self.set_attr(attr)
+            self.attr = attr
         else:
-            self.wrapper = None
+            self._wrapper = None
 
-    def set_attr(self, wrapper):
+    def _set_attr(self, wrapper):
         """Set the column to render."""
         from fields import AttributeWrapper
         if not isinstance(wrapper, AttributeWrapper):
             raise ValueError("AttributeWrapper object expected; found %s of type %s instead." % (repr(wrapper), type(wrapper)))
-        self.wrapper = wrapper
+        self._wrapper = wrapper
+    def _get_attr(self):
+        return self._wrapper
+    attr = property(_get_attr, _set_attr)
