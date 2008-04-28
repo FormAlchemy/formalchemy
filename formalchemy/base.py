@@ -67,7 +67,6 @@ class BaseModelRender(BaseRender):
 
     Methods:
       * bind(self, model)
-      * is_bound(self)
       * get_model(self)
       * is_pk(self, col)
       * get_pks(self)
@@ -115,9 +114,6 @@ class BaseModelRender(BaseRender):
         wrappers.sort(key=lambda wrapper: wrapper.name)
         return wrappers
     
-    def is_bound(self):
-        return True
-
     def get_attrs(self, **kwargs):
         """Return a list of filtered attributes.
 
@@ -219,11 +215,7 @@ class BaseModelRender(BaseRender):
 
     def render(self):
         """This function must be overridden by any subclass of `BaseModelRender`."""
-        if self.__class__.__name__ == "BaseModelRender":
-            raise exceptions.NotImplementedError()
-
-        if not self.is_bound():
-             raise exceptions.UnboundModelError(self.__class__)
+        raise exceptions.NotImplementedError()
 
 class BaseCollectionRender(BaseModelRender):
     """The `BaseCollectionRender` class.

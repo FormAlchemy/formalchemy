@@ -66,8 +66,6 @@ class FieldSet(base.BaseModelRender):
                               if isinstance(attr, InstrumentedAttribute)])
 
     def render(self, **options):
-        super(FieldSet, self).render()
-
         # Merge class level options with given options.
         opts = self.new_options(**options)
 
@@ -104,8 +102,6 @@ class MultiFields(base.BaseModelRender):
 
     def render(self, **options):
         """Return HTML fields generated from the `model`."""
-
-        super(MultiFields, self).render()
 
         # Merge class level options with given options.
         opts = self.new_options(**options)
@@ -147,8 +143,6 @@ class Field(base.BaseColumnRender):
         return self._make_label
 
     def render(self, **options):
-        super(Field, self).render()
-
         # Merge class level options with given options.
         opts = self.new_options(**options)
 
