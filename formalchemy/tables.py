@@ -6,6 +6,7 @@
 import webhelpers as h
 
 import base, utils
+from forms import FieldSet
 from options import Options
 
 __all__ = ["Table", "TableConcat", "TableCollection"]
@@ -17,8 +18,8 @@ class Th(object):
 
     """
 
-    def th(self, column):
-        alias = self._render_options.get('alias', {}).get(column, column)
+    def th(self, colname):
+        alias = self._render_options.get('alias', {}).get(colname, colname)
         return h.content_tag("th", self.prettify(alias))
 
 class Td(object):
@@ -27,10 +28,10 @@ class Td(object):
     This class is responsible for rendering a '<td></td>' tag.
 
     """
-    def td(self, column):
-        value = getattr(self._current_model, column)
+    def td(self, colname):
+        value = getattr(self._current_model, colname)
 
-        display = self._render_options.get("display", {}).get(column)
+        display = self._render_options.get("display", {}).get(colname)
         if callable(display):
             return h.content_tag("td", display(self._current_model))
 
@@ -67,14 +68,14 @@ class Table(base.BaseModelRender, Caption, Th, Td):
     This class is responsible for rendering a table from a single model.
 
     """
-
+    
     def tbody(self):
         # Make the table's body.
         tbody = []
-        for column in self.get_colnames(**self._render_options):
+        for attr in self.get_attrs(**self._render_options):
             tr = []
-            tr.append(self.th(column))
-            tr.append(self.td(column))
+            tr.append(self.th(attr.name))
+            tr.append(self.td(attr.name))
             tr = utils.wrap("<tr>", "\n".join(tr), "</tr>")
             tbody.append(tr)
         tbody = utils.wrap("<tbody>", "\n".join(tbody), "</tbody>")

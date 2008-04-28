@@ -62,6 +62,7 @@ session.commit()
 
 
 from forms import FieldSet, Field
+from tables import Table, TableCollection
 
 __doc__ = r"""
 >>> fs = FieldSet(One())
@@ -225,6 +226,41 @@ document.getElementById("id").focus();
   <select id="user_id" name="user_id"><option value="1" selected="selected">Bill Jones</option></select>
 </div>
 
+>>> t = Table(bill)
+>>> print t.render()
+<table>
+  <caption>User</caption>
+  <tbody>
+    <tr>
+      <th>Active</th>
+      <td><em>True</em></td>
+    </tr>
+    <tr>
+      <th>Description</th>
+      <td>boring description</td>
+    </tr>
+    <tr>
+      <th>Email</th>
+      <td>bill@example.com</td>
+    </tr>
+    <tr>
+      <th>First name</th>
+      <td>Bill</td>
+    </tr>
+    <tr>
+      <th>Id</th>
+      <td>1</td>
+    </tr>
+    <tr>
+      <th>Last name</th>
+      <td>Jones</td>
+    </tr>
+    <tr>
+      <th>Password</th>
+      <td>1234</td>
+    </tr>
+  </tbody>
+</table>
 """
 
 if __name__ == '__main__':

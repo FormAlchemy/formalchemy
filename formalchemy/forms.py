@@ -6,8 +6,6 @@
 import logging
 logger = logging.getLogger('formalchemy.' + __name__)
 
-from sqlalchemy.orm.attributes \
-    import InstrumentedAttribute, _managed_attributes, ScalarAttributeImpl
 import webhelpers as h
 import base, fields, utils
 
@@ -61,17 +59,6 @@ class FieldSet(base.BaseModelRender):
 
     """
     
-    def __init__(self, *args, **kwargs):
-        super(FieldSet, self).__init__(*args, **kwargs)
-        self.__dict__.update([(attr.impl.key, fields.AttributeWrapper((attr, self.model, self.session))) 
-                               for attr in _managed_attributes(self.model.__class__)
-                               if isinstance(attr.impl, ScalarAttributeImpl)]) # todo support collections (i.e., any InstrumentedAttribute)
-        
-    def bind(self, model, session=None):
-        super(FieldSet, self).bind(model, session)
-        for attr in self._raw_attrs():
-            attr.model = model
-
     def get_pks(self):
         """Return a list of primary key attributes."""
         return [wrapper for wrapper in self.get_attrs() if wrapper.column.primary_key]
@@ -79,60 +66,6 @@ class FieldSet(base.BaseModelRender):
     def get_required(self):
         """Return a list of non-nullable attributes."""
         return [wrapper for wrapper in self.get_attrs() if not wrapper.column.nullable]
-
-    def _raw_attrs(self):
-        wrappers = [attr for attr in self.__dict__.itervalues()
-                    if isinstance(attr, fields.AttributeWrapper)]
-        # sort by name for reproducibility
-        wrappers.sort(key=lambda wrapper: wrapper.name)
-        return wrappers
-    
-    def get_attrs(self, **kwargs):
-        """Return a list of filtered attributes.
-
-        Keyword arguments:
-          * `pk=True` - Won't return primary key attributes if set to `False`.
-          * `exclude=[]` - An iterable containing attributes to exclude.
-          * `include=[]` - An iterable containing attributes to include.
-          * `options=[]` - An iterable containing options to apply to attributes.
-
-        Note that, when `include` is non-empty, it will
-        take precedence over the other options.
-
-        """
-        pk = kwargs.get("pk", True)
-        exclude = kwargs.get("exclude", [])
-        include = kwargs.get("include", [])
-        options = kwargs.get("options", [])
-        
-        if include and exclude:
-            raise Exception('Specify at most one of include, exclude')
-
-        for lst in ['include', 'exclude', 'options']:
-            try:
-                utils.validate_columns(eval(lst))
-            except:
-                raise ValueError('%s parameter should be an iterable of AttributeWrapper objects; was %s' % (lst, eval(lst)))
-
-        if not include:
-            ignore = list(exclude)
-            if not pk:
-                ignore.extend(self.get_pks())
-            ignore.extend([wrapper for wrapper in self._raw_attrs() if wrapper.is_raw_foreign_key()])
-            logger.debug('ignoring %s' % ignore)
-    
-            include = [attr for attr in self._raw_attrs() if attr not in ignore]
-            
-        # this feels overcomplicated
-        options_dict = {}
-        options_dict.update([(wrapper, wrapper) for wrapper in options])
-        L = []
-        for wrapper in include:
-            if wrapper in options_dict:
-                L.append(options_dict[wrapper])
-            else:
-                L.append(wrapper)
-        return L
 
     def render(self, **options):
         # Merge class level options with given options.
