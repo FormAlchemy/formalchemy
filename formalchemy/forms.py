@@ -4,6 +4,8 @@
 # the MIT License: http://www.opensource.org/licenses/mit-license.php
 
 import logging
+logger = logging.getLogger('formalchemy.' + __name__)
+
 from sqlalchemy.orm.attributes import InstrumentedAttribute
 import webhelpers as h
 import base, fields, utils
@@ -68,25 +70,7 @@ class FieldSet(base.BaseModelRender):
     def render(self, **options):
         # Merge class level options with given options.
         opts = self.new_options(**options)
-
-        model_render = MultiFields(self.model, self.session)
-        # Reset options and only render based given options
-        model_render.reconfigure(**opts)
-        return model_render.render()
-
-
-class MultiFields(base.BaseModelRender):
-    """The `MultiFields` class.
-
-    Return generated HTML fields from a SQLAlchemy mapped class.
-
-    """
-
-    def render(self, **options):
-        """Return HTML fields generated from the `model`."""
-
-        # Merge class level options with given options.
-        opts = self.new_options(**options)
+        logger.debug(opts)
 
         # Filter out unnecessary columns.
         attrs = self.get_attrs(**opts)
@@ -104,6 +88,7 @@ class MultiFields(base.BaseModelRender):
             html.append(field)
 
         return "\n".join(html)
+
 
 class Field(base.BaseColumnRender):
     """The `Field` class.

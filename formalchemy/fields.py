@@ -5,6 +5,7 @@
 
 import logging
 logger = logging.getLogger('formalchemy.' + __name__)
+
 import webhelpers as h
 import sqlalchemy.types as types
 from sqlalchemy.orm.attributes import ScalarObjectAttributeImpl
