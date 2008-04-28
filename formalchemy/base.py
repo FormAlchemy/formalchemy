@@ -66,16 +66,9 @@ class BaseModelRender(BaseRender):
     access and support rendering capabilities.
 
     Methods:
-      * bind(self, model)
-      * get_model(self)
-      * is_pk(self, col)
       * get_pks(self)
-      * is_fk(self, col)
-      * is_nullable(self, col)
-      * get_unnullables(self)
+      * get_required(self)
       * get_attrs(self[, **kwargs])
-      * get_readonlys(self[, **kwargs])
-      * get_bytype(self, string)
     """
 
     def __init__(self, model, session=None):
@@ -93,17 +86,13 @@ class BaseModelRender(BaseRender):
         else:
             self.session = object_session(self.model)
 
-    def get_model(self):
-        """Return the current bound model."""
-        return self.model
-
     def get_pks(self):
         """Return a list of primary key attributes."""
         return [wrapper for wrapper in self.get_attrs() if wrapper.column.primary_key]
 
-    def get_unnullables(self):
+    def get_required(self):
         """Return a list of non-nullable attributes."""
-        return [wrapper for wrapper in self.get_attrs() if wrapper.column.nullable]
+        return [wrapper for wrapper in self.get_attrs() if not wrapper.column.nullable]
 
     def _raw_attrs(self):
         from fields import AttributeWrapper
@@ -160,58 +149,6 @@ class BaseModelRender(BaseRender):
             else:
                 L.append(wrapper)
         return L
-
-    def get_readonlys(self, **kwargs):
-        """Return a list of attributes that should be readonly.
-
-        Keywords arguments:
-          * `readonly_pk=False` - Will prohibit changes to primary key attributes if set to `True`.
-          * `readonly_fk=False` - Will prohibit changes to foreign key attributes if set to `True`.
-          * `readonly=[]` - An iterable containing attributes to set as readonly.
-
-        """
-
-        ro_pks = kwargs.get("readonly_pk", False)
-        ro_fks = kwargs.get("readonly_fk", False)
-        readonlys = kwargs.get("readonly", [])
-
-        try:
-            utils.validate_columns(readonlys)
-        except:
-            raise ValueError('readonlys parameter should be an iterable of AttributeWrapper objects; was %s' % (readonlys,))
-
-        if ro_pks:
-            readonlys.extend(self.get_pks())
-        if ro_fks:
-            readonlys.extend(self.get_fks())
-
-        return readonlys
-
-    def get_disabled(self, **kwargs):
-        """Return a list of attributes that should be disabled.
-
-        Keywords arguments:
-          * `disable_pk=False` - Will prohibit changes to primary key attributes if set to `True`.
-          * `disable_fk=False` - Will prohibit changes to foreign key attributes if set to `True`.
-          * `disable=[]` - An iterable containing attributes to set as disabled.
-
-        """
-
-        dis_pks = kwargs.get("disable_pk", False)
-        dis_fks = kwargs.get("disable_fk", False)
-        disabled = kwargs.get("disable", [])
-
-        try:
-            utils.validate_columns(disabled)
-        except:
-            raise ValueError('disabled parameter should be an iterable of AttributeWrapper objects; was %s' % (disabled,))
-
-        if dis_pks:
-            disabled.extend(self.get_pks())
-        if dis_fks:
-            disabled.extend(self.get_fks())
-
-        return disabled
 
     def render(self):
         """This function must be overridden by any subclass of `BaseModelRender`."""
