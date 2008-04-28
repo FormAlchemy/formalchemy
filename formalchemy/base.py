@@ -78,12 +78,9 @@ class ModelRender(Render):
 
         self.bind(model, session)
         from fields import AttributeWrapper
-        
-        for iattr in _managed_attributes(self.model.__class__):
-            if hasattr(iattr.property, 'mapper') and len(iattr.property.mapper.primary_key) != 1:
-                logger.warn('ignoring multi-column property %s' % iattr.impl.key)
-            else:
-                setattr(self, iattr.impl.key, AttributeWrapper((iattr, self.model, self.session)))
+        self.__dict__.update([(attr.impl.key, AttributeWrapper((attr, self.model, self.session))) 
+                               for attr in _managed_attributes(self.model.__class__)
+                               if isinstance(attr.impl, ScalarAttributeImpl)]) # todo support collections (i.e., any InstrumentedAttribute)
             
     def bind(self, model, session=None):
         self.model = model

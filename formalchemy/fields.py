@@ -66,7 +66,7 @@ class ModelFieldRender(BaseFieldRender):
         self.model = model
         if model.c[colname].default:
             if callable(model.c[colname].default.arg):
-                logger.warn('Ignoring callable default value for %s' % model)
+                logger.info('Ignoring callable default value for %s' % model)
             else:
                 self.default = model.c[colname].default.arg
         else:
@@ -312,10 +312,12 @@ class AttributeWrapper:
             self.render_as = self._get_render_as()
         return self.render_as(self.model, self.name, readonly=self.modifier=='readonly', disabled=self.modifier=='disabled', **self.render_opts).render()
     def _get_render_as(self):
-        if isinstance(self._impl, ScalarObjectAttributeImpl):
+        if hasattr(self._property, 'foreign_keys'):
             if 'options' not in self.render_opts:
                 logger.debug('loading options for ' + self.name)
                 fk_cls = self._property.mapper.class_
+                if len(fk_cls.__mapper__.primary_key) != 1:
+                    raise Exception('Only single-column keys are currently supported; unable to handle %s' % self._property.foreign_keys)
                 fk_pk = fk_cls.__mapper__.primary_key[0]
                 def pk(item):
                     return getattr(item, fk_pk.key)
