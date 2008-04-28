@@ -10,8 +10,6 @@ from sqlalchemy import __version__
 if __version__.split('.') < [0, 4, 1]:
     raise ImportError('Version 0.4.1 or later of SQLAlchemy required')
 
-from sqlalchemy.orm.attributes \
-    import InstrumentedAttribute, _managed_attributes, ScalarAttributeImpl
 import sqlalchemy.types as types
 from sqlalchemy.orm import compile_mappers, object_session
 
@@ -65,10 +63,7 @@ class BaseModelRender(BaseRender):
     access and support rendering capabilities.
 
     Methods:
-      * get_pks(self)
       * bind(self)
-      * get_required(self)
-      * get_attrs(self[, **kwargs])
     """
 
     def __init__(self, model, session=None):
@@ -79,7 +74,7 @@ class BaseModelRender(BaseRender):
         self.new_options = self.options.new_options
 
         self.options.parse(model)
-        self.bind(model, session)
+        BaseModelRender.bind(self, model, session) # hack to force subclass bind to not be called here
             
     def bind(self, model, session=None):
         self.model = self._current_model = model
@@ -87,70 +82,6 @@ class BaseModelRender(BaseRender):
             self.session = session
         else:
             self.session = object_session(self.model)
-
-    def get_pks(self):
-        """Return a list of primary key attributes."""
-        return [wrapper for wrapper in self.get_attrs() if wrapper.column.primary_key]
-
-    def get_required(self):
-        """Return a list of non-nullable attributes."""
-        return [wrapper for wrapper in self.get_attrs() if not wrapper.column.nullable]
-
-    def _raw_attrs(self):
-        from fields import AttributeWrapper
-        wrappers = [AttributeWrapper((attr, self.model, self.session)) 
-                    for attr in _managed_attributes(self.model.__class__)
-                    if isinstance(attr.impl, ScalarAttributeImpl)]
-        # sort by name for reproducibility
-        wrappers.sort(key=lambda wrapper: wrapper.name)
-        return wrappers
-    
-    def get_attrs(self, **kwargs):
-        """Return a list of filtered attributes.
-
-        Keyword arguments:
-          * `pk=True` - Won't return primary key attributes if set to `False`.
-          * `exclude=[]` - An iterable containing attributes to exclude.
-          * `include=[]` - An iterable containing attributes to include.
-          * `options=[]` - An iterable containing options to apply to attributes.
-
-        Note that, when `include` is non-empty, it will
-        take precedence over the other options.
-
-        """
-        pk = kwargs.get("pk", True)
-        exclude = kwargs.get("exclude", [])
-        include = kwargs.get("include", [])
-        options = kwargs.get("options", [])
-        
-        if include and exclude:
-            raise Exception('Specify at most one of include, exclude')
-
-        for lst in ['include', 'exclude', 'options']:
-            try:
-                utils.validate_columns(eval(lst))
-            except:
-                raise ValueError('%s parameter should be an iterable of AttributeWrapper objects; was %s' % (lst, eval(lst)))
-
-        if not include:
-            ignore = list(exclude)
-            if not pk:
-                ignore.extend(self.get_pks())
-            ignore.extend([wrapper for wrapper in self._raw_attrs() if wrapper.is_raw_foreign_key()])
-            logger.debug('ignoring %s' % ignore)
-    
-            include = [attr for attr in self._raw_attrs() if attr not in ignore]
-            
-        # this feels overcomplicated
-        options_dict = {}
-        options_dict.update([(wrapper, wrapper) for wrapper in options])
-        L = []
-        for wrapper in include:
-            if wrapper in options_dict:
-                L.append(options_dict[wrapper])
-            else:
-                L.append(wrapper)
-        return L
 
     def render(self):
         """This function must be overridden by any subclass of `BaseModelRender`."""

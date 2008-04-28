@@ -207,6 +207,7 @@ document.getElementById("id").focus();
 
 # test re-binding
 >>> fs = FieldSet(Order(), session)
+>>> fs.quantity = fs.quantity.hidden()
 >>> fs.bind(order1)
 >>> print fs.render() # should render w/ current selection the default.
 <div>
@@ -218,14 +219,12 @@ document.getElementById("id").focus();
 document.getElementById("id").focus();
 //]]>
 </script>
-<div>
-  <label class="field_req" for="quantity">Quantity</label>
-  <input id="quantity" name="quantity" type="text" value="10" />
-</div>
+<input id="quantity" name="quantity" type="hidden" value="10" />
 <div>
   <label class="field_req" for="user_id">User id</label>
   <select id="user_id" name="user_id"><option value="1" selected="selected">Bill Jones</option></select>
 </div>
+
 """
 
 if __name__ == '__main__':

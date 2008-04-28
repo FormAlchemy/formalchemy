@@ -267,7 +267,7 @@ class AttributeWrapper:
         except ValueError:
             return False
     def __hash__(self):
-        return hash(self.column)
+        return hash(self._impl)
     
     def __repr__(self):
         return 'AttributeWrapper(%s)' % self._impl.key
