@@ -15,7 +15,7 @@ __all__ = ["Label", "TextField", "PasswordField", "HiddenField", "BooleanField",
     "FileField", "IntegerField", "DateTimeField", "DateField", "TimeField",
     "RadioSet", "SelectField"]
 
-class Label(base.BaseRender):
+class Label(base.Render):
     """The `Label` class."""
 
     def __init__(self, col, **kwargs):
@@ -30,7 +30,7 @@ class Label(base.BaseRender):
     def render(self):
         return h.content_tag("label", content=self.get_display(), for_=self.name, class_=self.cls)
 
-class BaseFieldRender(base.BaseRender):
+class BaseFieldRender(base.Render):
     """The `BaseFieldRender` class.
 
     This is the class that fits to all HTML <input> structure. It takes a

@@ -11,7 +11,7 @@ import base, fields, utils
 
 __all__ = ["FieldSet", "Field"]
 
-class FieldSet(base.BaseModelRender):
+class FieldSet(base.ModelRender):
     """The `FieldSet` class.
 
     This class is responsible for generating HTML fields from a given
@@ -87,7 +87,7 @@ class FieldSet(base.BaseModelRender):
         return "\n".join(html)
 
 
-class Field(base.BaseColumnRender):
+class Field(base.ColumnRender):
     """The `Field` class.
 
     Return generated HTML <label> and <input> tags for one single column.

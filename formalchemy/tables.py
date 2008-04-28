@@ -62,7 +62,7 @@ class Caption(object):
 
         return h.content_tag('caption', self.prettify(caption_txt))
 
-class Table(base.BaseModelRender, Caption, Th, Td):
+class Table(base.ModelRender, Caption, Th, Td):
     """The `Table` class.
 
     This class is responsible for rendering a table from a single model.
@@ -98,7 +98,7 @@ class Table(base.BaseModelRender, Caption, Th, Td):
 
         return utils.wrap("<table>", "\n".join(table), "</table>")
 
-class TableCollection(base.BaseRender, Caption, Th, Td):
+class TableCollection(base.Render, Caption, Th, Td):
     """The `TableCollection` class.
 
     This class is responsible for rendering a table from a collection of models.
@@ -124,7 +124,7 @@ class TableCollection(base.BaseRender, Caption, Th, Td):
         thead = []
         tr = []
         colnames = [attr.name
-                    for attr in base.BaseModelRender(self.collection[0]).get_attrs(**self._render_options)]
+                    for attr in base.ModelRender(self.collection[0]).get_attrs(**self._render_options)]
         for column in colnames:
             tr.append(self.th(column))
         tr = utils.wrap("<tr>", "\n".join(tr), "</tr>")
@@ -147,7 +147,7 @@ class TableCollection(base.BaseRender, Caption, Th, Td):
 
         return utils.wrap("<table>", "\n".join(table), "</table>")
 
-class TableConcat(base.BaseRender, Caption):
+class TableConcat(base.Render, Caption):
     """The `TableConcat` class.
 
     This class is responsible for concatenating different kinds of models in a

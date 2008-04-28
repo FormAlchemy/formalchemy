@@ -21,8 +21,8 @@ from options import Options
 
 compile_mappers() # initializes InstrumentedAttributes
 
-class BaseRender(object):
-    """The `BaseRender` class.
+class Render(object):
+    """The `Render` class.
 
     This this is the superclass for all classes needing rendering capabilities.
     The render method should be overridden with appropriate per class render
@@ -52,14 +52,14 @@ class BaseRender(object):
     default_prettify = prettify = staticmethod(prettify)
 
     def render(self):
-        """This function must be overridden by any subclass of `BaseRender`."""
+        """This function must be overridden by any subclass of `Render`."""
         raise NotImplementedError()
 
     def __str__(self):
         return self.render()
 
-class BaseModelRender(BaseRender):
-    """The `BaseModelRender` class.
+class ModelRender(Render):
+    """The `ModelRender` class.
 
     This this is the superclass for all classes needing to deal with `model`
     access and support rendering capabilities.
@@ -147,12 +147,12 @@ class BaseModelRender(BaseRender):
         return L
 
     def render(self):
-        """This function must be overridden by any subclass of `BaseModelRender`."""
+        """This function must be overridden by any subclass of `ModelRender`."""
         raise NotImplementedError()
 
 
-class BaseColumnRender(BaseModelRender):
-    """The `BaseColumnRender` class.
+class ColumnRender(ModelRender):
+    """The `ColumnRender` class.
 
     This should be the superclass for all classes that want attribute-level
     rendering. Takes an extra `attr=None` keyword argument as the concerned
@@ -164,7 +164,7 @@ class BaseColumnRender(BaseModelRender):
     """
 
     def __init__(self, model, session=None, attr=None):
-        super(BaseColumnRender, self).__init__(model, session)
+        super(ColumnRender, self).__init__(model, session)
         if attr:
             self.set_attr(attr)
         else:

@@ -41,7 +41,7 @@ class User(object):
 
 """
 
-class Populate(base.BaseModelRender):
+class Populate(base.ModelRender):
     """The `Populate` class.
 
     This class is responsible for populating a model from a given POST.
@@ -76,7 +76,7 @@ class Populate(base.BaseModelRender):
                     print "    ", "setting column", column, "to", repr(self.post.get(column) or None)
                     setattr(self.model, column, self.post.get(column) or None)
 
-class Validate(base.BaseModelRender):
+class Validate(base.ModelRender):
     """The `Validate` class.
 
     This class is responsible for validating HTML forms and storing the values
