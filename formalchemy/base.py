@@ -72,7 +72,6 @@ class BaseModelRender(BaseRender):
       * is_pk(self, col)
       * get_pks(self)
       * is_fk(self, col)
-      * get_fks(self)
       * is_nullable(self, col)
       * get_unnullables(self)
       * get_attrs(self[, **kwargs])
@@ -95,10 +94,6 @@ class BaseModelRender(BaseRender):
         else:
             self.session = object_session(self.model)
 
-    def is_bound(self):
-        """Return True if bound to a model. Otherwise, return False."""
-        return bool(self.model)
-
     def get_model(self):
         """Return the current bound model."""
         return self.model
@@ -107,20 +102,27 @@ class BaseModelRender(BaseRender):
         """Return a list of primary key attributes."""
         return [wrapper for wrapper in self.get_attrs() if wrapper.column.primary_key]
 
-    def get_fks(self):
-        """Return a list of foreign key attributes."""
-        return [wrapper for wrapper in self.get_attrs() if wrapper.column.foreign_key]
-
     def get_unnullables(self):
         """Return a list of non-nullable attributes."""
         return [wrapper for wrapper in self.get_attrs() if wrapper.column.nullable]
+
+    def _raw_attrs(self):
+        from fields import AttributeWrapper
+        wrappers = [AttributeWrapper((attr, self.model, self.session)) 
+                    for attr in _managed_attributes(self.model.__class__)
+                    if isinstance(attr.impl, ScalarAttributeImpl)]
+        # sort by name for reproducibility
+        wrappers.sort(key=lambda wrapper: wrapper.name)
+        return wrappers
+    
+    def is_bound(self):
+        return True
 
     def get_attrs(self, **kwargs):
         """Return a list of filtered attributes.
 
         Keyword arguments:
           * `pk=True` - Won't return primary key attributes if set to `False`.
-          * `fk=True` - Won't return foreign key attributes if set to `False`.
           * `exclude=[]` - An iterable containing attributes to exclude.
           * `include=[]` - An iterable containing attributes to include.
           * `options=[]` - An iterable containing options to apply to attributes.
@@ -129,23 +131,7 @@ class BaseModelRender(BaseRender):
         take precedence over the other options.
 
         """
-        from fields import AttributeWrapper
-        if not self.is_bound():
-            raise exceptions.UnboundModelError(self.__class__)
-
-        if kwargs:
-            wrappers = self._get_filtered_attrs(**kwargs)
-        else:
-            wrappers = [AttributeWrapper((attr, self.model, self.session)) 
-                        for attr in _managed_attributes(self.model.__class__)
-                        if isinstance(attr.impl, ScalarAttributeImpl)]
-            # sort by name for reproducibility
-            wrappers.sort(key=lambda wrapper: wrapper.name)
-        return wrappers
-
-    def _get_filtered_attrs(self, **kwargs):
         pk = kwargs.get("pk", True)
-        fk = kwargs.get("fk", True)
         exclude = kwargs.get("exclude", [])
         include = kwargs.get("include", [])
         options = kwargs.get("options", [])
@@ -163,10 +149,10 @@ class BaseModelRender(BaseRender):
             ignore = list(exclude)
             if not pk:
                 ignore.extend(self.get_pks())
-            if not fk:
-                ignore.extend(self.get_fks())
+            ignore.extend([wrapper for wrapper in self._raw_attrs() if wrapper.is_raw_foreign_key()])
+            logger.debug('ignoring %s' % ignore)
     
-            include = [attr for attr in self.get_attrs() if attr not in ignore]
+            include = [attr for attr in self._raw_attrs() if attr not in ignore]
             
         # this feels overcomplicated
         options_dict = {}

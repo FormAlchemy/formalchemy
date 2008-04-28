@@ -235,6 +235,12 @@ class AttributeWrapper:
             self.render_as = None
             self.render_opts = {}
             self.modifier = None
+            
+    def is_raw_foreign_key(self):
+        try:
+            return self._property.columns[0].foreign_keys
+        except AttributeError:
+            return False
 
     def column(self):
         try:
@@ -253,7 +259,7 @@ class AttributeWrapper:
     
     def __eq__(self, other):
         try:
-            return self.column is other.column
+            return self._impl is other._impl
         except ValueError:
             return False
     def __hash__(self):

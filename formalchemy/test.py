@@ -225,10 +225,6 @@ __doc__ = r"""
   </div>
   <div>
     <label class="field_req" for="user_id">User id</label>
-    <input id="user_id" name="user_id" type="text" />
-  </div>
-  <div>
-    <label class="field_req" for="user_id">User id</label>
     <select id="user_id" name="user_id"><option value="Bill Jones">1</option></select>
   </div>
 </fieldset>
