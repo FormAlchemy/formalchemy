@@ -327,13 +327,14 @@ class AttributeWrapper:
             self.render_as = self._get_render_as()
         return self.render_as(self, readonly=self.modifier=='readonly', disabled=self.modifier=='disabled', **self.render_opts).render()
     def _get_render_as(self):
-        if isinstance(self._impl, ScalarObjectAttributeImpl):
+        if isinstance(self._impl, ScalarObjectAttributeImpl) or self.is_collection():
             if 'options' not in self.render_opts:
                 logger.debug('loading options for ' + self.name)
                 fk_cls = self._property.mapper.class_
                 fk_pk = fk_cls.__mapper__.primary_key[0]
                 items = self.session.query(fk_cls).order_by(fk_pk).all()
                 self.render_opts['options'] = [(str(item), _pk(item)) for item in items]
+            self.render_opts['multiple'] = self.is_collection()
             return SelectField
         if isinstance(self.column.type, types.String):
             return TextField

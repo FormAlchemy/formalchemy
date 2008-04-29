@@ -29,6 +29,8 @@ class Order(Base):
     id = Column('id', Integer, primary_key=True)
     user_id = Column('user_id', Integer, ForeignKey('users.id'), nullable=False)
     quantity = Column('quantity', Integer, nullable=False)
+    def __str__(self):
+        return 'Quantity: %s' % self.quantity
 
 class User(Base):
     __tablename__ = 'users'
@@ -51,12 +53,20 @@ bill = User(email='bill@example.com',
             password='1234',
             first_name='Bill',
             last_name='Jones',
-            description='boring description')
+            description='boring bill')
+john = User(email='john@example.com', 
+            password='5678',
+            first_name='John',
+            last_name='Kerry',
+            description='boring john')
 session.save(bill)
-session.flush() # will update bill w/ id
+session.save(john)
+session.flush() # will update users w/ id
 
 order1 = Order(user=bill, quantity=10)
+order2 = Order(user=john, quantity=5)
 session.save(order1)
+session.save(order2)
 
 session.commit()
 
@@ -150,7 +160,7 @@ document.getElementById("field").focus();
 //]]>
 </script>
 
->>> fs = FieldSet(User())
+>>> fs = FieldSet(User(), session)
 >>> print fs.render()
 <div>
   <label class="field_opt" for="active">Active</label>
@@ -182,9 +192,19 @@ document.getElementById("active").focus();
   <input id="last_name" maxlength="20" name="last_name" type="text" />
 </div>
 <div>
+  <label class="field_req" for="id">Orders</label>
+  <select id="orders" multiple="multiple" name="orders"><option value="1">Quantity: 10</option>
+  <option value="2">Quantity: 5</option></select>
+</div>
+<div>
   <label class="field_req" for="password">Password</label>
   <input id="password" maxlength="20" name="password" type="text" />
 </div>
+
+>>> fs = FieldSet(bill)
+>>> print fs.orders.render()
+<select id="orders" multiple="multiple" name="orders"><option value="1" selected="selected">Quantity: 10</option>
+<option value="2">Quantity: 5</option></select>
 
 >>> fs = FieldSet(Two())
 >>> print fs.foo.render()
@@ -212,7 +232,8 @@ document.getElementById("id").focus();
 </div>
 <div>
   <label class="field_req" for="user_id">User id</label>
-  <select id="user_id" name="user_id"><option value="1">Bill Jones</option></select>
+  <select id="user_id" name="user_id"><option value="1">Bill Jones</option>
+  <option value="2">John Kerry</option></select>
 </div>
 
 # this seems particularly prone to errors; break it out in its own test
@@ -239,7 +260,8 @@ document.getElementById("id").focus();
 <input id="quantity" name="quantity" type="hidden" value="10" />
 <div>
   <label class="field_req" for="user_id">User id</label>
-  <select id="user_id" name="user_id"><option value="1" selected="selected">Bill Jones</option></select>
+  <select id="user_id" name="user_id"><option value="1" selected="selected">Bill Jones</option>
+  <option value="2">John Kerry</option></select>
 </div>
 
 >>> t = Table(bill)
@@ -253,7 +275,7 @@ document.getElementById("id").focus();
     </tr>
     <tr>
       <th>Description</th>
-      <td>boring description</td>
+      <td>boring bill</td>
     </tr>
     <tr>
       <th>Email</th>
@@ -270,6 +292,10 @@ document.getElementById("id").focus();
     <tr>
       <th>Last name</th>
       <td>Jones</td>
+    </tr>
+    <tr>
+      <th>Orders</th>
+      <td>Quantity: 10</td>
     </tr>
     <tr>
       <th>Password</th>
@@ -290,17 +316,19 @@ document.getElementById("id").focus();
       <th>First name</th>
       <th>Id</th>
       <th>Last name</th>
+      <th>Orders</th>
       <th>Password</th>
     </tr>
   </thead>
   <tbody>
     <tr>
       <td>True</td>
-      <td>boring description</td>
+      <td>boring bill</td>
       <td>bill@example.com</td>
       <td>Bill</td>
       <td>1</td>
       <td>Jones</td>
+      <td>Quantity: 10</td>
       <td>1234</td>
     </tr>
   </tbody>

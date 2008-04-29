@@ -131,7 +131,7 @@ class ModelRender(Render):
                 raise ValueError('%s parameter should be an iterable of AttributeWrapper objects; was %s' % (lst, eval(lst)))
 
         if not include:
-            ignore = list(exclude) + [wrapper for wrapper in self._raw_attrs() if not isinstance(wrapper._impl, ScalarAttributeImpl)]
+            ignore = list(exclude)
             if not pk:
                 ignore.extend(self.get_pks())
             ignore.extend([wrapper for wrapper in self._raw_attrs() if wrapper.is_raw_foreign_key()])
