@@ -6,7 +6,10 @@
 import logging
 logger = logging.getLogger('formalchemy.' + __name__)
 
-import webhelpers as h
+try:
+    import webhelpers.rails as h
+except ImportError:
+    import webhelpers as h
 import sqlalchemy.types as types
 from sqlalchemy.orm.attributes import ScalarAttributeImpl, ScalarObjectAttributeImpl, CollectionAttributeImpl
 import base
