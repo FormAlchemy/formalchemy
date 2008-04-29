@@ -62,14 +62,6 @@ class FieldSet(base.ModelRender):
 
     """
     
-    def get_pks(self):
-        """Return a list of primary key attributes."""
-        return [wrapper for wrapper in self.get_attrs() if wrapper.column.primary_key]
-
-    def get_required(self):
-        """Return a list of non-nullable attributes."""
-        return [wrapper for wrapper in self.get_attrs() if not wrapper.column.nullable]
-
     def render(self, **options):
         # Merge class level options with given options.
         opts = self.new_options(**options)

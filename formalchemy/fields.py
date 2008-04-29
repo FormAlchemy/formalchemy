@@ -338,7 +338,7 @@ class AttributeWrapper:
                 fk_pk = class_mapper(fk_cls).primary_key[0]
                 items = self.session.query(fk_cls).order_by(fk_pk).all()
                 self.render_opts['options'] = [(str(item), _pk(item)) for item in items]
-            self.render_opts['multiple'] = self.is_collection()
+            self.render_opts['multiple'] = self.is_collection() # todo make default size bigger than 1
             return SelectField
         if isinstance(self.column.type, types.String):
             return TextField

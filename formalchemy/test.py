@@ -85,7 +85,7 @@ __doc__ = r"""
 [AttributeWrapper(active), AttributeWrapper(description), AttributeWrapper(email), AttributeWrapper(first_name), AttributeWrapper(id), AttributeWrapper(last_name), AttributeWrapper(orders), AttributeWrapper(password)]
 
 >>> fs = FieldSet(One())
->>> print fs.render()
+>>> print fs.render(pk=True)
 <div>
   <label class="field_req" for="id">Id</label>
   <input id="id" name="id" type="text" />
@@ -97,7 +97,7 @@ document.getElementById("id").focus();
 </script>
 
 >>> fs = FieldSet(Two())
->>> print fs.render()
+>>> print fs.render(pk=True)
 <div>
   <label class="field_req" for="foo">Foo</label>
   <input id="foo" name="foo" type="text" />
@@ -113,7 +113,7 @@ document.getElementById("foo").focus();
 </div>
 
 >>> fs = FieldSet(Two())
->>> print fs.render(pk=False)
+>>> print fs.render()
 <div>
   <label class="field_req" for="foo">Foo</label>
   <input id="foo" name="foo" type="text" />
@@ -149,7 +149,7 @@ document.getElementById("foo").focus();
 >>> assert fs.render(include=[fs.foo.dropdown([('option1', 'value1'), ('option2', 'value2')])]) == fs.render(pk=False, options=[fs.foo.dropdown([('option1', 'value1'), ('option2', 'value2')])]) 
 
 >>> fs = FieldSet(Checkbox())
->>> print fs.render(pk=False)
+>>> print fs.render()
 <div>
   <label class="field_req" for="field">Field</label>
   <input id="field" name="field" type="checkbox" value="True" /><input id="field" name="field" type="hidden" value="False" />
@@ -184,10 +184,6 @@ document.getElementById("active").focus();
   <input id="first_name" maxlength="20" name="first_name" type="text" />
 </div>
 <div>
-  <label class="field_req" for="id">Id</label>
-  <input id="id" name="id" type="text" />
-</div>
-<div>
   <label class="field_opt" for="last_name">Last name</label>
   <input id="last_name" maxlength="20" name="last_name" type="text" />
 </div>
@@ -218,18 +214,14 @@ document.getElementById("active").focus();
 >>> fs = FieldSet(Order(), session)
 >>> print fs.render()
 <div>
-  <label class="field_req" for="id">Id</label>
-  <input id="id" name="id" type="text" />
-</div>
-<script type="text/javascript">
-//<![CDATA[
-document.getElementById("id").focus();
-//]]>
-</script>
-<div>
   <label class="field_req" for="quantity">Quantity</label>
   <input id="quantity" name="quantity" type="text" />
 </div>
+<script type="text/javascript">
+//<![CDATA[
+document.getElementById("quantity").focus();
+//]]>
+</script>
 <div>
   <label class="field_req" for="user_id">User id</label>
   <select id="user_id" name="user_id"><option value="1">Bill Jones</option>
@@ -247,7 +239,7 @@ document.getElementById("id").focus();
 >>> fs.bind(order1)
 >>> fs.session == object_session(order1)
 True
->>> print fs.render() # should render w/ current selection the default.
+>>> print fs.render(pk=True) # should render w/ current selection the default.
 <div>
   <label class="field_req" for="id">Id</label>
   <input id="id" name="id" type="text" value="1" />
@@ -286,10 +278,6 @@ document.getElementById("id").focus();
       <td>Bill</td>
     </tr>
     <tr>
-      <th>Id</th>
-      <td>1</td>
-    </tr>
-    <tr>
       <th>Last name</th>
       <td>Jones</td>
     </tr>
@@ -314,7 +302,6 @@ document.getElementById("id").focus();
       <th>Description</th>
       <th>Email</th>
       <th>First name</th>
-      <th>Id</th>
       <th>Last name</th>
       <th>Orders</th>
       <th>Password</th>
@@ -326,7 +313,6 @@ document.getElementById("id").focus();
       <td>boring bill</td>
       <td>bill@example.com</td>
       <td>Bill</td>
-      <td>1</td>
       <td>Jones</td>
       <td>Quantity: 10</td>
       <td>1234</td>

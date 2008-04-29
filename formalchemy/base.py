@@ -95,6 +95,14 @@ class ModelRender(Render):
             attr.model = model
             attr.session = self.session
 
+    def get_pks(self):
+        """Return a list of primary key attributes."""
+        return [wrapper for wrapper in self._raw_attrs() if wrapper.column.primary_key and not wrapper.is_collection()]
+
+    def get_required(self):
+        """Return a list of non-nullable attributes."""
+        return [wrapper for wrapper in self._raw_attrs() if not wrapper.column.nullable]
+
     def _raw_attrs(self):
         from fields import AttributeWrapper
         wrappers = [attr for attr in self.__dict__.itervalues()
@@ -107,7 +115,7 @@ class ModelRender(Render):
         """Return a list of filtered attributes.
 
         Keyword arguments:
-          * `pk=True` - Won't return primary key attributes if set to `False`.
+          * `pk=False` - Include primary key attributes if set to `True`.
           * `exclude=[]` - An iterable containing attributes to exclude.
           * `include=[]` - An iterable containing attributes to include.
           * `options=[]` - An iterable containing options to apply to attributes.
@@ -116,7 +124,7 @@ class ModelRender(Render):
         take precedence over the other options.
 
         """
-        pk = kwargs.get("pk", True)
+        pk = kwargs.get("pk", False)
         exclude = kwargs.get("exclude", [])
         include = kwargs.get("include", [])
         options = kwargs.get("options", [])
