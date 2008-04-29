@@ -24,6 +24,17 @@ class Checkbox(Base):
     id = Column('id', Integer, primary_key=True)
     field = Column('field', Boolean, nullable=False)
 
+class OTOChild(Base):
+    __tablename__ = 'one_to_one_child'
+    id = Column('id', Integer, primary_key=True)
+    baz = Column('foo', Text, nullable=False)
+    
+class OTOParent(Base):
+    __tablename__ = 'one_to_one_parent'
+    id = Column('id', Integer, primary_key=True)
+    oto_child_id = Column('oto_child_id', Integer, ForeignKey('one_to_one_child.id'), nullable=False)
+    child = relation(OTOChild, uselist=False)
+
 class Order(Base):
     __tablename__ = 'orders'
     id = Column('id', Integer, primary_key=True)
@@ -31,7 +42,7 @@ class Order(Base):
     quantity = Column('quantity', Integer, nullable=False)
     def __str__(self):
         return 'Quantity: %s' % self.quantity
-
+    
 class User(Base):
     __tablename__ = 'users'
     id = Column('id', Integer, primary_key=True)
@@ -319,6 +330,18 @@ document.getElementById("id").focus();
     </tr>
   </tbody>
 </table>
+
+>>> fs = FieldSet(OTOParent(), session)
+>>> print fs.render()
+<div>
+  <label class="field_req" for="oto_child_id">Oto child id</label>
+  <select id="oto_child_id" name="oto_child_id"></select>
+</div>
+<script type="text/javascript">
+//<![CDATA[
+document.getElementById("oto_child_id").focus();
+//]]>
+</script>
 """
 
 if __name__ == '__main__':
