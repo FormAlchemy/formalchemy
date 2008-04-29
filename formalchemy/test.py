@@ -67,12 +67,12 @@ from tables import Table, TableCollection
 __doc__ = r"""
 # some low-level testing first
 >>> fs = FieldSet(order1)
->>> list(sorted(fs._raw_attrs(), key=lambda attr:attr.name))
-[AttributeWrapper(id), AttributeWrapper(quantity), AttributeWrapper(user_id), AttributeWrapper(user)]
+>>> list(sorted(fs._raw_attrs(), key=lambda attr: (attr.name, attr._impl.key)))
+[AttributeWrapper(id), AttributeWrapper(quantity), AttributeWrapper(user), AttributeWrapper(user_id)]
 
 >>> fs = FieldSet(bill)
->>> list(sorted(fs._raw_attrs(), key=lambda attr:attr.name))
-[AttributeWrapper(active), AttributeWrapper(description), AttributeWrapper(email), AttributeWrapper(first_name), AttributeWrapper(id), AttributeWrapper(last_name), AttributeWrapper(password), AttributeWrapper(orders)]
+>>> list(sorted(fs._raw_attrs(), key=lambda attr: (attr.name, attr._impl.key)))
+[AttributeWrapper(active), AttributeWrapper(description), AttributeWrapper(email), AttributeWrapper(first_name), AttributeWrapper(id), AttributeWrapper(last_name), AttributeWrapper(orders), AttributeWrapper(password)]
 
 >>> fs = FieldSet(One())
 >>> print fs.render()
@@ -215,10 +215,17 @@ document.getElementById("id").focus();
   <select id="user_id" name="user_id"><option value="1">Bill Jones</option></select>
 </div>
 
+# this seems particularly prone to errors; break it out in its own test
+>>> fs = FieldSet(order1)
+>>> fs.user.value
+1
+
 # test re-binding
->>> fs = FieldSet(Order(), session)
+>>> fs = FieldSet(Order())
 >>> fs.quantity = fs.quantity.hidden()
 >>> fs.bind(order1)
+>>> fs.session == object_session(order1)
+True
 >>> print fs.render() # should render w/ current selection the default.
 <div>
   <label class="field_req" for="id">Id</label>

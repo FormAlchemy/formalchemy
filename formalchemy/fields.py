@@ -8,7 +8,7 @@ logger = logging.getLogger('formalchemy.' + __name__)
 
 import webhelpers as h
 import sqlalchemy.types as types
-from sqlalchemy.orm.attributes import ScalarObjectAttributeImpl
+from sqlalchemy.orm.attributes import ScalarAttributeImpl, ScalarObjectAttributeImpl, CollectionAttributeImpl
 import base
 
 __all__ = ["Label", "TextField", "PasswordField", "HiddenField", "BooleanField",
@@ -61,24 +61,13 @@ class ModelFieldRender(BaseFieldRender):
 
     """
 
-    def __init__(self, model, colname, **kwargs):
-        super(ModelFieldRender, self).__init__(colname, getattr(model, colname))
-        self.model = model
-        if model.c[colname].default:
-            if callable(model.c[colname].default.arg):
-                logger.warn('Ignoring callable default value for %s' % model)
-            else:
-                self.default = model.c[colname].default.arg
-        else:
-            self.default = None
+    def __init__(self, attr, **kwargs):
+        super(ModelFieldRender, self).__init__(attr.name, attr.value)
+        self.attr = attr
         self.attribs = kwargs
 
     def get_value(self):
-        if self.value is not None:
-            return self.value
-        else:
-            if not callable(self.default):
-                return self.default
+        return self.attr.value
 
     def render(self):
         return h.text_field(self.name, value=self.get_value())
@@ -86,9 +75,9 @@ class ModelFieldRender(BaseFieldRender):
 class TextField(ModelFieldRender):
     """The `TextField` class."""
 
-    def __init__(self, model, colname, **kwargs):
-        super(TextField, self).__init__(model, colname, **kwargs)
-        self.length = model.c[colname].type.length
+    def __init__(self, attr, **kwargs):
+        super(TextField, self).__init__(attr, **kwargs)
+        self.length = attr.column.type.length
 
     def render(self):
         return h.text_field(self.name, value=self.get_value(), maxlength=self.length, **self.attribs)
@@ -102,8 +91,8 @@ class PasswordField(TextField):
 class TextAreaField(ModelFieldRender):
     """The `TextAreaField` class."""
 
-    def __init__(self, model, colname, size, **kwargs):
-        super(TextAreaField, self).__init__(model, colname, **kwargs)
+    def __init__(self, attr, size, **kwargs):
+        super(TextAreaField, self).__init__(attr, **kwargs)
         self.size = size
 
     def render(self):
@@ -148,13 +137,14 @@ class ModelDateTimeRender(ModelFieldRender):
 
     """
 
-    def __init__(self, model, colname, format, **kwargs):
-        super(ModelDateTimeRender, self).__init__(model, colname, **kwargs)
+    def __init__(self, attr, format, **kwargs):
+        super(ModelDateTimeRender, self).__init__(attr, **kwargs)
         self.format = format
 
     def get_value(self):
-        if self.value is not None:
-            return self.value.strftime(self.format)
+        value = super(ModelDateTimeRender, self).get_value()
+        if value is not None:
+            return value.strftime(self.format)
         else:
             if not callable(self.default):
                 return self.default
@@ -187,8 +177,8 @@ class RadioField(BaseFieldRender):
 class RadioSet(ModelFieldRender):
     """The `RadioSet` class."""
 
-    def __init__(self, model, colname, choices, **kwargs):
-        super(RadioSet, self).__init__(model, colname)
+    def __init__(self, attr, choices, **kwargs):
+        super(RadioSet, self).__init__(attr)
 
         radios = []
 
@@ -208,8 +198,8 @@ class RadioSet(ModelFieldRender):
 #                radios.append("\n" + h.radio_button(self.name, choice, checked=self.get_value() == choice) + str(choice))
             # ... or just a string.
             else:
-                checked = choice == getattr(self.model, colname) or choice == self.default
-                radios.append("\n" + h.radio_button(colname, choice, checked=checked, **kwargs) + choice)
+                checked = choice == attr.value or choice == self.default
+                radios.append("\n" + h.radio_button(attr.name, choice, checked=checked, **kwargs) + choice)
 
         self.radios = radios
 
@@ -219,10 +209,10 @@ class RadioSet(ModelFieldRender):
 class SelectField(ModelFieldRender):
     """The `SelectField` class."""
 
-    def __init__(self, model, colname, options, **kwargs):
+    def __init__(self, attr, options, **kwargs):
         self.options = options
         selected = kwargs.get('selected', None)
-        super(SelectField, self).__init__(model, colname, **kwargs)
+        super(SelectField, self).__init__(attr, **kwargs)
         self.selected = selected or self.get_value()
 
     def render(self):
@@ -247,15 +237,35 @@ class AttributeWrapper:
             return False
 
     def column(self):
-        try:
-            return self._property.columns[0]
-        except AttributeError:
+        if isinstance(self._impl, ScalarObjectAttributeImpl):
             return self._property.foreign_keys[0]
+        elif isinstance(self._impl, ScalarAttributeImpl):
+            return self._property.columns[0]
+        else:
+            assert isinstance(self._impl, CollectionAttributeImpl)
+            return self._property.mapper.primary_key[0]
     column = property(column)
 
     def name(self):
+        if self.is_collection():
+            return self._impl.key
         return self.column.name
     name = property(name)
+    
+    def is_collection(self):
+        return isinstance(self._impl, CollectionAttributeImpl)
+    
+    def value(self):
+        v = getattr(self.model, self.name)
+        if v is not None:
+            return v
+        if self.column.default:
+            if callable(self.column.default.arg):
+                logger.info('Ignoring callable default value for %s' % self)
+            else:
+                return self.column.default
+        return None
+    value = property(value)
 
     def nullable(self):
         return self.column.nullable
@@ -310,7 +320,7 @@ class AttributeWrapper:
     def render(self):
         if not self.render_as:
             self.render_as = self._get_render_as()
-        return self.render_as(self.model, self.name, readonly=self.modifier=='readonly', disabled=self.modifier=='disabled', **self.render_opts).render()
+        return self.render_as(self, readonly=self.modifier=='readonly', disabled=self.modifier=='disabled', **self.render_opts).render()
     def _get_render_as(self):
         if isinstance(self._impl, ScalarObjectAttributeImpl):
             if 'options' not in self.render_opts:

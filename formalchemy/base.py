@@ -93,6 +93,7 @@ class ModelRender(Render):
             self.session = object_session(self.model)
         for attr in self._raw_attrs():
             attr.model = model
+            attr.session = self.session
 
     def _raw_attrs(self):
         from fields import AttributeWrapper
