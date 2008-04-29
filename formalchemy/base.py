@@ -90,7 +90,7 @@ class ModelRender(Render):
         if session:
             self.session = session
         else:
-            self.session = object_session(self.model)
+            self.session = object_session(model)
         for attr in self._raw_attrs():
             attr.model = model
             attr.session = self.session

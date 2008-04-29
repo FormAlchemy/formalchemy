@@ -11,6 +11,7 @@ try:
 except ImportError:
     import webhelpers as h
 import sqlalchemy.types as types
+from sqlalchemy.orm import class_mapper
 from sqlalchemy.orm.attributes import ScalarAttributeImpl, ScalarObjectAttributeImpl, CollectionAttributeImpl
 import base
 
@@ -214,7 +215,7 @@ class SelectField(ModelFieldRender):
         return h.select(self.name, h.options_for_select(self.options, selected=self.selected), **self.attribs)
     
 def _pk(instance):
-    column = type(instance).__mapper__.primary_key[0]
+    column = class_mapper(type(instance)).primary_key[0]
     return getattr(instance, column.key)
 
 class AttributeWrapper:
@@ -334,7 +335,7 @@ class AttributeWrapper:
             if 'options' not in self.render_opts:
                 logger.debug('loading options for ' + self.name)
                 fk_cls = self._property.mapper.class_
-                fk_pk = fk_cls.__mapper__.primary_key[0]
+                fk_pk = class_mapper(fk_cls).primary_key[0]
                 items = self.session.query(fk_cls).order_by(fk_pk).all()
                 self.render_opts['options'] = [(str(item), _pk(item)) for item in items]
             self.render_opts['multiple'] = self.is_collection()
