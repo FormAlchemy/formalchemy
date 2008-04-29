@@ -50,7 +50,6 @@ class User(Base):
     password = Column('password', Unicode(20), nullable=False)
     first_name = Column('first_name', Unicode(20))
     last_name = Column('last_name', Unicode(20))
-    description = Column('description', Text)
     active = Column('active', Boolean, default=True)
     orders = relation(Order, backref='user')
     def __str__(self):
@@ -63,13 +62,11 @@ session = Session()
 bill = User(email='bill@example.com', 
             password='1234',
             first_name='Bill',
-            last_name='Jones',
-            description='boring bill')
+            last_name='Jones')
 john = User(email='john@example.com', 
             password='5678',
             first_name='John',
-            last_name='Kerry',
-            description='boring john')
+            last_name='Kerry')
 session.save(bill)
 session.save(john)
 session.flush() # will update users w/ id
@@ -93,7 +90,7 @@ __doc__ = r"""
 
 >>> fs = FieldSet(bill)
 >>> list(sorted(fs._raw_attrs(), key=lambda attr: (attr.name, attr._impl.key)))
-[AttributeWrapper(active), AttributeWrapper(description), AttributeWrapper(email), AttributeWrapper(first_name), AttributeWrapper(id), AttributeWrapper(last_name), AttributeWrapper(orders), AttributeWrapper(password)]
+[AttributeWrapper(active), AttributeWrapper(email), AttributeWrapper(first_name), AttributeWrapper(id), AttributeWrapper(last_name), AttributeWrapper(orders), AttributeWrapper(password)]
 
 >>> fs = FieldSet(One())
 >>> print fs.render(pk=True)
@@ -182,10 +179,6 @@ document.getElementById("field").focus();
 document.getElementById("active").focus();
 //]]>
 </script>
-<div>
-  <label class="field_opt" for="description">Description</label>
-  <input id="description" name="description" type="text" />
-</div>
 <div>
   <label class="field_req" for="email">Email</label>
   <input id="email" maxlength="40" name="email" type="text" />
@@ -277,10 +270,6 @@ document.getElementById("id").focus();
       <td>True</td>
     </tr>
     <tr>
-      <th>Description</th>
-      <td>boring bill</td>
-    </tr>
-    <tr>
       <th>Email</th>
       <td>bill@example.com</td>
     </tr>
@@ -310,7 +299,6 @@ document.getElementById("id").focus();
   <thead>
     <tr>
       <th>Active</th>
-      <th>Description</th>
       <th>Email</th>
       <th>First name</th>
       <th>Last name</th>
@@ -321,7 +309,6 @@ document.getElementById("id").focus();
   <tbody>
     <tr>
       <td>True</td>
-      <td>boring bill</td>
       <td>bill@example.com</td>
       <td>Bill</td>
       <td>Jones</td>
