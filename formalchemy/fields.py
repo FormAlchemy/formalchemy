@@ -52,11 +52,16 @@ class ModelFieldRender(object):
         self.attr = attr
         self.attribs = kwargs
         
-    def get_value(self):
+    def name(self):
+        return self.attr.name
+    name = property(name)
+        
+    def value(self):
         return self.attr.value
+    value = property(value)
 
     def render(self):
-        return h.text_field(self.attr.name, value=self.get_value())
+        return h.text_field(self.name, value=self.value)
 
 class TextField(ModelFieldRender):
     """The `TextField` class."""
@@ -66,13 +71,13 @@ class TextField(ModelFieldRender):
         self.length = attr.column.type.length
 
     def render(self):
-        return h.text_field(self.attr.name, value=self.get_value(), maxlength=self.length, **self.attribs)
+        return h.text_field(self.name, value=self.value, maxlength=self.length, **self.attribs)
 
 class PasswordField(TextField):
     """The `PasswordField` class."""
 
     def render(self):
-        return h.password_field(self.attr.name, value=self.get_value(), maxlength=self.length, **self.attribs)
+        return h.password_field(self.name, value=self.value, maxlength=self.length, **self.attribs)
 
 class TextAreaField(ModelFieldRender):
     """The `TextAreaField` class."""
@@ -83,17 +88,17 @@ class TextAreaField(ModelFieldRender):
 
     def render(self):
         if isinstance(self.size, basestring):
-            return h.text_area(self.attr.name, content=self.get_value(), size=self.size, **self.attribs)
+            return h.text_area(self.name, content=self.value, size=self.size, **self.attribs)
         else:
             # Will fail if not a 2-item list or tuple. 
             cols, rows = self.size
-            return h.text_area(self.attr.name, content=self.get_value(), cols=cols, rows=rows, **self.attribs)
+            return h.text_area(self.name, content=self.value, cols=cols, rows=rows, **self.attribs)
 
 class HiddenField(ModelFieldRender):
     """The `HiddenField` class."""
 
     def render(self):
-        return h.hidden_field(self.attr.name, value=self.get_value(), **self.attribs)
+        return h.hidden_field(self.name, value=self.value, **self.attribs)
 
 class BooleanField(ModelFieldRender):
     """The `BooleanField` class."""
@@ -101,20 +106,20 @@ class BooleanField(ModelFieldRender):
     def render(self):
         # This is a browser hack to have a checkbox POSTed as False even if it wasn't
         # checked, as unchecked boxes are not POSTed. The hidden field should be *after* the checkbox.
-        return h.check_box(self.attr.name, True, checked=self.get_value(), **self.attribs) + h.hidden_field(self.attr.name, value=False)
+        return h.check_box(self.name, True, checked=self.value, **self.attribs) + h.hidden_field(self.name, value=False)
 
 class FileField(ModelFieldRender):
     """The `FileField` class."""
 
     def render(self):
         # Do we need a value here ?
-        return h.file_field(self.attr.name, **self.attribs)
+        return h.file_field(self.name, **self.attribs)
 
 class IntegerField(ModelFieldRender):
     """The `IntegerField` class."""
 
     def render(self):
-        return h.text_field(self.attr.name, value=self.get_value(), **self.attribs)
+        return h.text_field(self.name, value=self.value, **self.attribs)
 
 class ModelDateTimeRender(ModelFieldRender):
     """The `ModelDateTimeRender` class.
@@ -136,7 +141,7 @@ class ModelDateTimeRender(ModelFieldRender):
                 return self.default
 
     def render(self):
-        return h.text_field(self.attr.name, value=self.get_value(), **self.attribs)
+        return h.text_field(self.name, value=self.value, **self.attribs)
 
 class DateTimeField(ModelDateTimeRender):
     """The `DateTimeField` class."""
@@ -176,13 +181,13 @@ class RadioSet(ModelFieldRender):
             # Choice is a list/tuple...
             if isinstance(choice, (list, tuple)):
                 choice_name, choice_value = choice
-                radio = RadioField(self.attr.name, choice_value, checked=self.get_value() == choice_value, **kwargs)
+                radio = RadioField(self.name, choice_value, checked=self.value == choice_value, **kwargs)
                 radios.append(radio.render() + choice_name)
             # ... a boolean...
             elif isinstance(choice, bool):
-                radio = RadioField(self.attr.name, choice, checked=self.get_value() == choice, **kwargs)
+                radio = RadioField(self.name, choice, checked=self.value == choice, **kwargs)
                 radios.append(radio.render() + str(choice))
-#                radios.append("\n" + h.radio_button(self.attr.name, choice, checked=self.get_value() == choice) + str(choice))
+#                radios.append("\n" + h.radio_button(self.name, choice, checked=self.value == choice) + str(choice))
             # ... or just a string.
             else:
                 checked = choice == attr.value or choice == self.default
@@ -200,10 +205,10 @@ class SelectField(ModelFieldRender):
         self.options = options
         selected = kwargs.get('selected', None)
         super(SelectField, self).__init__(attr, **kwargs)
-        self.selected = selected or self.get_value()
+        self.selected = selected or self.value
 
     def render(self):
-        return h.select(self.attr.name, h.options_for_select(self.options, selected=self.selected), **self.attribs)
+        return h.select(self.name, h.options_for_select(self.options, selected=self.selected), **self.attribs)
 
 class AttributeWrapper:
     def __init__(self, data):
