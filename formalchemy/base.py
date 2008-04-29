@@ -86,6 +86,15 @@ class ModelRender(Render):
                 setattr(self, iattr.impl.key, AttributeWrapper((iattr, self.model, self.session)))
             
     def bind(self, model, session=None):
+        if isinstance(model, type):
+            try:
+                model = model()
+                # take object out of session, if present
+                s = object_session(model)
+                if s:
+                    s.expunge(model)
+            except:
+                raise Exception('%s appears to be a class, not an instance, but FormAlchemy cannot instantiate it' % model)
         self.model = model
         if session:
             self.session = session

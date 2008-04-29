@@ -8,7 +8,7 @@ logging.getLogger('sqlalchemy').setLevel(logging.ERROR)
 
 engine = create_engine('sqlite://')
 Session = scoped_session(sessionmaker(autoflush=True, bind=engine))
-Base = declarative_base(engine)
+Base = declarative_base(engine, mapper=Session.mapper)
 
 class One(Base):
     __tablename__ = 'ones'
@@ -56,7 +56,7 @@ class User(Base):
         return self.first_name + ' ' + self.last_name
     
 Base.metadata.create_all()
-# test w/ explicit session to avoid cluttering up implicit one w/ throwaway object creations
+
 session = Session()
 
 bill = User(email='bill@example.com', 
@@ -67,14 +67,9 @@ john = User(email='john@example.com',
             password='5678',
             first_name='John',
             last_name='Kerry')
-session.save(bill)
-session.save(john)
-session.flush() # will update users w/ id
 
 order1 = Order(user=bill, quantity=10)
 order2 = Order(user=john, quantity=5)
-session.save(order1)
-session.save(order2)
 
 session.commit()
 
@@ -92,7 +87,7 @@ __doc__ = r"""
 >>> list(sorted(fs._raw_attrs(), key=lambda attr: (attr.name, attr._impl.key)))
 [AttributeWrapper(active), AttributeWrapper(email), AttributeWrapper(first_name), AttributeWrapper(id), AttributeWrapper(last_name), AttributeWrapper(orders), AttributeWrapper(password)]
 
->>> fs = FieldSet(One())
+>>> fs = FieldSet(One)
 >>> print fs.render(pk=True)
 <div>
   <label class="field_req" for="id">Id</label>
@@ -104,7 +99,7 @@ document.getElementById("id").focus();
 //]]>
 </script>
 
->>> fs = FieldSet(Two())
+>>> fs = FieldSet(Two)
 >>> print fs.render(pk=True)
 <div>
   <label class="field_req" for="foo">Foo</label>
@@ -120,7 +115,7 @@ document.getElementById("foo").focus();
   <input id="id" name="id" type="text" />
 </div>
 
->>> fs = FieldSet(Two())
+>>> fs = FieldSet(Two)
 >>> print fs.render()
 <div>
   <label class="field_req" for="foo">Foo</label>
@@ -132,15 +127,15 @@ document.getElementById("foo").focus();
 //]]>
 </script>
 
->>> fs = FieldSet(Two())
+>>> fs = FieldSet(Two)
 >>> assert fs.render(pk=False) == fs.render(include=[fs.foo])
 >>> assert fs.render(pk=False) == fs.render(exclude=[fs.id])
 
->>> fs = FieldSet(Two()) 
+>>> fs = FieldSet(Two) 
 >>> print fs.render(include=[fs.foo.hidden()])
 <input id="foo" name="foo" type="hidden" />
 
->>> fs = FieldSet(Two())
+>>> fs = FieldSet(Two)
 >>> print fs.render(include=[fs.foo.dropdown([('option1', 'value1'), ('option2', 'value2')])])
 <div>
   <label class="field_req" for="foo">Foo</label>
@@ -153,10 +148,10 @@ document.getElementById("foo").focus();
 //]]>
 </script>
 
->>> fs = FieldSet(Two())
->>> assert fs.render(include=[fs.foo.dropdown([('option1', 'value1'), ('option2', 'value2')])]) == fs.render(pk=False, options=[fs.foo.dropdown([('option1', 'value1'), ('option2', 'value2')])]) 
+>>> fs = FieldSet(Two)
+>>> assert fs.render(include=[fs.foo.dropdown([('option1', 'value1'), ('option2', 'value2')])]) == fs.render(options=[fs.foo.dropdown([('option1', 'value1'), ('option2', 'value2')])]) 
 
->>> fs = FieldSet(Checkbox())
+>>> fs = FieldSet(Checkbox)
 >>> print fs.render()
 <div>
   <label class="field_req" for="field">Field</label>
@@ -168,7 +163,7 @@ document.getElementById("field").focus();
 //]]>
 </script>
 
->>> fs = FieldSet(User(), session)
+>>> fs = FieldSet(User, session)
 >>> print fs.render()
 <div>
   <label class="field_opt" for="active">Active</label>
@@ -206,16 +201,16 @@ document.getElementById("active").focus();
 <select id="orders" multiple="multiple" name="orders"><option value="1" selected="selected">Quantity: 10</option>
 <option value="2">Quantity: 5</option></select>
 
->>> fs = FieldSet(Two())
+>>> fs = FieldSet(Two)
 >>> print fs.foo.render()
 <input id="foo" name="foo" type="text" />
 
->>> fs = FieldSet(Two())
+>>> fs = FieldSet(Two)
 >>> print fs.foo.dropdown([('option1', 'value1'), ('option2', 'value2')]).render()
 <select id="foo" name="foo"><option value="value1">option1</option>
 <option value="value2">option2</option></select>
 
->>> fs = FieldSet(Order(), session)
+>>> fs = FieldSet(Order, session)
 >>> print fs.render()
 <div>
   <label class="field_req" for="quantity">Quantity</label>
@@ -238,7 +233,7 @@ document.getElementById("quantity").focus();
 1
 
 # test re-binding
->>> fs = FieldSet(Order())
+>>> fs = FieldSet(Order, session)
 >>> fs.quantity = fs.quantity.hidden()
 >>> fs.bind(order1)
 >>> fs.session == object_session(order1)
@@ -318,7 +313,7 @@ document.getElementById("id").focus();
   </tbody>
 </table>
 
->>> fs = FieldSet(OTOParent(), session)
+>>> fs = FieldSet(OTOParent, session)
 >>> print fs.render()
 <div>
   <label class="field_req" for="oto_child_id">Oto child id</label>
