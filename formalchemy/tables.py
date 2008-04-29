@@ -3,10 +3,7 @@
 # This module is part of FormAlchemy and is released under
 # the MIT License: http://www.opensource.org/licenses/mit-license.php
 
-try:
-    import webhelpers.rails as h
-except ImportError:
-    import webhelpers as h
+import helpers as h
 
 import base, utils
 from forms import FieldSet

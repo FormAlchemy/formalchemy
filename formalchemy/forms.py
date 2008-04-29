@@ -6,10 +6,7 @@
 import logging
 logger = logging.getLogger('formalchemy.' + __name__)
 
-try:
-    import webhelpers.rails as h
-except ImportError:
-    import webhelpers as h
+import helpers as h
 import base, fields, utils
 
 __all__ = ["FieldSet", "Field"]
@@ -78,7 +75,6 @@ class FieldSet(base.ModelRender):
             field_render.attr = attr
             field = field_render.render()
             html.append(field)
-
         return "\n".join(html)
 
 
