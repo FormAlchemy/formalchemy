@@ -30,20 +30,7 @@ class Label(base.Render):
     def render(self):
         return h.content_tag("label", content=self.get_display(), for_=self.name, class_=self.cls)
 
-class BaseFieldRender(base.Render):
-    """The `BaseFieldRender` class.
-
-    This is the class that fits to all HTML <input> structure. It takes a
-    field name and field value as argument.
-
-    """
-
-    def __init__(self, name, value):
-        assert isinstance(name, basestring)
-        self.name = name
-        self.value = value
-
-class ModelFieldRender(BaseFieldRender):
+class ModelFieldRender(object):
     """The `ModelFieldRender` class.
 
     This should be the super class of all xField classes.
@@ -62,15 +49,14 @@ class ModelFieldRender(BaseFieldRender):
     """
 
     def __init__(self, attr, **kwargs):
-        super(ModelFieldRender, self).__init__(attr.name, attr.value)
         self.attr = attr
         self.attribs = kwargs
-
+        
     def get_value(self):
         return self.attr.value
 
     def render(self):
-        return h.text_field(self.name, value=self.get_value())
+        return h.text_field(self.attr.name, value=self.get_value())
 
 class TextField(ModelFieldRender):
     """The `TextField` class."""
@@ -80,13 +66,13 @@ class TextField(ModelFieldRender):
         self.length = attr.column.type.length
 
     def render(self):
-        return h.text_field(self.name, value=self.get_value(), maxlength=self.length, **self.attribs)
+        return h.text_field(self.attr.name, value=self.get_value(), maxlength=self.length, **self.attribs)
 
 class PasswordField(TextField):
     """The `PasswordField` class."""
 
     def render(self):
-        return h.password_field(self.name, value=self.get_value(), maxlength=self.length, **self.attribs)
+        return h.password_field(self.attr.name, value=self.get_value(), maxlength=self.length, **self.attribs)
 
 class TextAreaField(ModelFieldRender):
     """The `TextAreaField` class."""
@@ -97,17 +83,17 @@ class TextAreaField(ModelFieldRender):
 
     def render(self):
         if isinstance(self.size, basestring):
-            return h.text_area(self.name, content=self.get_value(), size=self.size, **self.attribs)
+            return h.text_area(self.attr.name, content=self.get_value(), size=self.size, **self.attribs)
         else:
             # Will fail if not a 2-item list or tuple. 
             cols, rows = self.size
-            return h.text_area(self.name, content=self.get_value(), cols=cols, rows=rows, **self.attribs)
+            return h.text_area(self.attr.name, content=self.get_value(), cols=cols, rows=rows, **self.attribs)
 
 class HiddenField(ModelFieldRender):
     """The `HiddenField` class."""
 
     def render(self):
-        return h.hidden_field(self.name, value=self.get_value(), **self.attribs)
+        return h.hidden_field(self.attr.name, value=self.get_value(), **self.attribs)
 
 class BooleanField(ModelFieldRender):
     """The `BooleanField` class."""
@@ -115,20 +101,20 @@ class BooleanField(ModelFieldRender):
     def render(self):
         # This is a browser hack to have a checkbox POSTed as False even if it wasn't
         # checked, as unchecked boxes are not POSTed. The hidden field should be *after* the checkbox.
-        return h.check_box(self.name, True, checked=self.get_value(), **self.attribs) + h.hidden_field(self.name, value=False)
+        return h.check_box(self.attr.name, True, checked=self.get_value(), **self.attribs) + h.hidden_field(self.attr.name, value=False)
 
 class FileField(ModelFieldRender):
     """The `FileField` class."""
 
     def render(self):
         # Do we need a value here ?
-        return h.file_field(self.name, **self.attribs)
+        return h.file_field(self.attr.name, **self.attribs)
 
 class IntegerField(ModelFieldRender):
     """The `IntegerField` class."""
 
     def render(self):
-        return h.text_field(self.name, value=self.get_value(), **self.attribs)
+        return h.text_field(self.attr.name, value=self.get_value(), **self.attribs)
 
 class ModelDateTimeRender(ModelFieldRender):
     """The `ModelDateTimeRender` class.
@@ -150,7 +136,7 @@ class ModelDateTimeRender(ModelFieldRender):
                 return self.default
 
     def render(self):
-        return h.text_field(self.name, value=self.get_value(), **self.attribs)
+        return h.text_field(self.attr.name, value=self.get_value(), **self.attribs)
 
 class DateTimeField(ModelDateTimeRender):
     """The `DateTimeField` class."""
@@ -164,11 +150,12 @@ class TimeField(ModelDateTimeRender):
     """The `TimeField` class."""
     pass
 
-class RadioField(BaseFieldRender):
+class RadioField:
     """The `RadioField` class."""
 
     def __init__(self, name, value, **kwargs):
-        super(RadioField, self).__init__(name, value)
+        self.name = name
+        self.value = value
         self.attribs = kwargs
 
     def render(self):
@@ -189,13 +176,13 @@ class RadioSet(ModelFieldRender):
             # Choice is a list/tuple...
             if isinstance(choice, (list, tuple)):
                 choice_name, choice_value = choice
-                radio = RadioField(self.name, choice_value, checked=self.get_value() == choice_value, **kwargs)
+                radio = RadioField(self.attr.name, choice_value, checked=self.get_value() == choice_value, **kwargs)
                 radios.append(radio.render() + choice_name)
             # ... a boolean...
             elif isinstance(choice, bool):
-                radio = RadioField(self.name, choice, checked=self.get_value() == choice, **kwargs)
+                radio = RadioField(self.attr.name, choice, checked=self.get_value() == choice, **kwargs)
                 radios.append(radio.render() + str(choice))
-#                radios.append("\n" + h.radio_button(self.name, choice, checked=self.get_value() == choice) + str(choice))
+#                radios.append("\n" + h.radio_button(self.attr.name, choice, checked=self.get_value() == choice) + str(choice))
             # ... or just a string.
             else:
                 checked = choice == attr.value or choice == self.default
@@ -216,7 +203,7 @@ class SelectField(ModelFieldRender):
         self.selected = selected or self.get_value()
 
     def render(self):
-        return h.select(self.name, h.options_for_select(self.options, selected=self.selected), **self.attribs)
+        return h.select(self.attr.name, h.options_for_select(self.options, selected=self.selected), **self.attribs)
 
 class AttributeWrapper:
     def __init__(self, data):
