@@ -28,16 +28,14 @@ class Td(object):
     This class is responsible for rendering a '<td></td>' tag.
 
     """
-    def td(self, colname):
-        value = getattr(self.model, colname)
+    def td(self, attr):
+        value = attr.value_str()
 
-        display = self._render_options.get("display", {}).get(colname)
+        display = self._render_options.get("display", {}).get(attr.name)
         if callable(display):
             return h.content_tag("td", display(self.model))
 
-        if isinstance(value, bool):
-            value = h.content_tag("em", value)
-        elif value is None or callable(value):
+        if value is None or callable(value):
             value = h.content_tag("em", self.prettify("not available."))
         return h.content_tag("td", value)
 
@@ -75,7 +73,7 @@ class Table(base.ModelRender, Caption, Th, Td):
         for attr in self.get_attrs(**self._render_options):
             tr = []
             tr.append(self.th(attr.name))
-            tr.append(self.td(attr.name))
+            tr.append(self.td(attr))
             tr = utils.wrap("<tr>", "\n".join(tr), "</tr>")
             tbody.append(tr)
         tbody = utils.wrap("<tbody>", "\n".join(tbody), "</tbody>")
@@ -123,10 +121,10 @@ class TableCollection(base.Render, Caption, Th, Td):
         # Make the table's head.
         thead = []
         tr = []
-        colnames = [attr.name
-                    for attr in base.ModelRender(self.collection[0]).get_attrs(**self._render_options)]
-        for column in colnames:
-            tr.append(self.th(column))
+        mr = base.ModelRender(self.collection[0])
+        attrs = mr.get_attrs(**self._render_options)
+        for attr in attrs:
+            tr.append(self.th(attr.name))
         tr = utils.wrap("<tr>", "\n".join(tr), "</tr>")
         thead.append(tr)
 
@@ -136,10 +134,11 @@ class TableCollection(base.Render, Caption, Th, Td):
         # Make the table's body.
         tbody = []
         for model in self.collection:
+            mr.bind(model)
             self.model = model
             tr = []
-            for column in colnames:
-                tr.append(self.td(column))
+            for attr in attrs:
+                tr.append(self.td(attr))
             tr = utils.wrap("<tr>", "\n".join(tr), "</tr>")
             tbody.append(tr)
         tbody = utils.wrap("<tbody>", "\n".join(tbody), "</tbody>")

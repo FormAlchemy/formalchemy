@@ -249,7 +249,7 @@ document.getElementById("id").focus();
   <tbody>
     <tr>
       <th>Active</th>
-      <td><em>True</em></td>
+      <td>True</td>
     </tr>
     <tr>
       <th>Description</th>
@@ -295,7 +295,7 @@ document.getElementById("id").focus();
   </thead>
   <tbody>
     <tr>
-      <td><em>True</em></td>
+      <td>True</td>
       <td>boring description</td>
       <td>bill@example.com</td>
       <td>Bill</td>

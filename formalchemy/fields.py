@@ -209,6 +209,10 @@ class SelectField(ModelFieldRender):
 
     def render(self):
         return h.select(self.name, h.options_for_select(self.options, selected=self.selected), **self.attribs)
+    
+def _pk(instance):
+    column = type(instance).__mapper__.primary_key[0]
+    return getattr(instance, column.key)
 
 class AttributeWrapper:
     def __init__(self, data):
@@ -249,6 +253,8 @@ class AttributeWrapper:
     
     def value(self):
         v = getattr(self.model, self.name)
+        if self.is_collection():
+            return [_pk(item) for item in v]
         if v is not None:
             return v
         if self.column.default:
@@ -258,6 +264,13 @@ class AttributeWrapper:
                 return self.column.default
         return None
     value = property(value)
+    
+    def value_str(self):
+        if self.is_collection():
+            L = getattr(self.model, self._impl.key)
+            return ','.join([str(item) for item in L])
+        else:
+            return str(getattr(self.model, self._impl.key))
 
     def nullable(self):
         return self.column.nullable
@@ -319,10 +332,8 @@ class AttributeWrapper:
                 logger.debug('loading options for ' + self.name)
                 fk_cls = self._property.mapper.class_
                 fk_pk = fk_cls.__mapper__.primary_key[0]
-                def pk(item):
-                    return getattr(item, fk_pk.key)
                 items = self.session.query(fk_cls).order_by(fk_pk).all()
-                self.render_opts['options'] = [(str(item), pk(item)) for item in items]
+                self.render_opts['options'] = [(str(item), _pk(item)) for item in items]
             return SelectField
         if isinstance(self.column.type, types.String):
             return TextField
