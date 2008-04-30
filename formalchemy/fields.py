@@ -19,17 +19,14 @@ __all__ = ["Label", "TextField", "PasswordField", "HiddenField", "BooleanField",
 class Label(base.Render):
     """The `Label` class."""
 
-    def __init__(self, col, **kwargs):
-        self.name = col.name
-        self.alias = kwargs.get('alias', self.name)
-        self.cls = kwargs.get('cls', None)
+    def __init__(self, name, text=None, **kwargs):
+        self.name = name
         self.set_prettify(kwargs.get('prettify', self.prettify))
-
-    def get_display(self):
-        return self.prettify(self.alias)
+        self.text = text or self.prettify(name)
+        self.cls = kwargs.get('cls')
 
     def render(self):
-        return h.content_tag("label", content=self.get_display(), for_=self.name, class_=self.cls)
+        return h.content_tag("label", content=self.text, for_=self.name, class_=self.cls)
 
 class ModelFieldRender(object):
     """The `ModelFieldRender` class.
@@ -226,6 +223,7 @@ class AttributeWrapper:
             self.render_as = None
             self.render_opts = {}
             self.modifier = None
+            self.label_text = None
             
     def is_raw_foreign_key(self):
         try:
@@ -288,6 +286,10 @@ class AttributeWrapper:
     def __repr__(self):
         return 'AttributeWrapper(%s)' % self._impl.key
 
+    def label(self, text):
+        attr = AttributeWrapper(self)
+        attr.label_text = text
+        return attr
     def disabled(self):
         attr = AttributeWrapper(self)
         attr.modifier = 'disabled'

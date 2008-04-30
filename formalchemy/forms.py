@@ -109,7 +109,6 @@ class Field(base.ColumnRender):
         make_label = opts.get('make_label', self.get_make_label())
 
         pretty_func = opts.get('prettify')
-        alias = opts.get('alias', {})
         focus = opts.get('focus', True)
 
         errors = opts.get('error', {})
@@ -131,12 +130,10 @@ class Field(base.ColumnRender):
         field = ""
 
         if make_label:
-            label = fields.Label(self.attr.column, alias=alias.get(self.attr.name, self.attr.name))
-            label.set_prettify(pretty_func)
-            if self.attr.nullable:
-                label.cls = cls_fld_opt
-            else:
-                label.cls = cls_fld_req
+            label_opts = {'cls': self.attr.nullable and cls_fld_opt or cls_fld_req}
+            if pretty_func:
+                label_opts['prettify'] = pretty_func
+            label = fields.Label(self.attr.name, self.attr.label_text, **label_opts)
             field += label.render()
 
         # Make the input

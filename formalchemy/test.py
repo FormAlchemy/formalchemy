@@ -128,6 +128,18 @@ document.getElementById("foo").focus();
 </script>
 
 >>> fs = FieldSet(Two)
+>>> print fs.render(options=[fs.foo.label('A custom label')])
+<div>
+  <label class="field_req" for="foo">A custom label</label>
+  <input id="foo" name="foo" type="text" />
+</div>
+<script type="text/javascript">
+//<![CDATA[
+document.getElementById("foo").focus();
+//]]>
+</script>
+
+>>> fs = FieldSet(Two)
 >>> assert fs.render(pk=False) == fs.render(include=[fs.foo])
 >>> assert fs.render(pk=False) == fs.render(exclude=[fs.id])
 
@@ -187,7 +199,7 @@ document.getElementById("active").focus();
   <input id="last_name" maxlength="20" name="last_name" type="text" />
 </div>
 <div>
-  <label class="field_req" for="id">Orders</label>
+  <label class="field_req" for="orders">Orders</label>
   <select id="orders" multiple="multiple" name="orders" size="5"><option value="1">Quantity: 10</option>
   <option value="2">Quantity: 5</option></select>
 </div>
