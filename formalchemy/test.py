@@ -80,11 +80,11 @@ from tables import Table, TableCollection
 __doc__ = r"""
 # some low-level testing first
 >>> fs = FieldSet(order1)
->>> list(sorted(fs._raw_attrs(), key=lambda attr: (attr.name, attr._impl.key)))
+>>> list(sorted(fs._raw_attrs(), key=lambda attr: attr.key))
 [AttributeWrapper(id), AttributeWrapper(quantity), AttributeWrapper(user), AttributeWrapper(user_id)]
 
 >>> fs = FieldSet(bill)
->>> list(sorted(fs._raw_attrs(), key=lambda attr: (attr.name, attr._impl.key)))
+>>> list(sorted(fs._raw_attrs(), key=lambda attr: attr.key))
 [AttributeWrapper(active), AttributeWrapper(email), AttributeWrapper(first_name), AttributeWrapper(id), AttributeWrapper(last_name), AttributeWrapper(orders), AttributeWrapper(password)]
 
 >>> fs = FieldSet(One)

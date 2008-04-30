@@ -241,12 +241,23 @@ class AttributeWrapper:
             return self._property.mapper.primary_key[0]
     column = property(column)
 
+    def key(self):
+        """The name of the attribute in the class"""
+        return self._impl.key
+    key = property(key)
+
     def name(self):
+        """ 
+        The name of the form input. usually the same as 'key', except for
+        single-valued SA relation properties. For example, for order.user,
+        name will be user_id (assuming that is indeed the name of the foreign
+        key to users) 
+        """
         if self.is_collection():
             return self._impl.key
         return self.column.name
     name = property(name)
-    
+
     def is_collection(self):
         return isinstance(self._impl, CollectionAttributeImpl)
     
