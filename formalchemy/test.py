@@ -188,7 +188,7 @@ document.getElementById("active").focus();
 </div>
 <div>
   <label class="field_req" for="id">Orders</label>
-  <select id="orders" multiple="multiple" name="orders"><option value="1">Quantity: 10</option>
+  <select id="orders" multiple="multiple" name="orders" size="5"><option value="1">Quantity: 10</option>
   <option value="2">Quantity: 5</option></select>
 </div>
 <div>
@@ -198,7 +198,7 @@ document.getElementById("active").focus();
 
 >>> fs = FieldSet(bill)
 >>> print fs.orders.render()
-<select id="orders" multiple="multiple" name="orders"><option value="1" selected="selected">Quantity: 10</option>
+<select id="orders" multiple="multiple" name="orders" size="5"><option value="1" selected="selected">Quantity: 10</option>
 <option value="2">Quantity: 5</option></select>
 
 >>> fs = FieldSet(Two)
