@@ -66,6 +66,9 @@ class Table(base.ModelRender, Caption, Th, Td):
 
     """
     
+    def prettify(self, text):
+        return self._render_options.get('prettify', base.prettify)(text)
+    
     def tbody(self):
         # Make the table's body.
         tbody = []
@@ -94,7 +97,7 @@ class Table(base.ModelRender, Caption, Th, Td):
 
         return utils.wrap("<table>", "\n".join(table), "</table>")
 
-class TableCollection(base.Render, Caption, Th, Td):
+class TableCollection(Caption, Th, Td):
     """The `TableCollection` class.
 
     This class is responsible for rendering a table from a collection of models.
@@ -106,6 +109,9 @@ class TableCollection(base.Render, Caption, Th, Td):
         self.collection = collection
         self.model = None
 
+    def prettify(self, text):
+        return self._render_options.get('prettify', base.prettify)(text)
+    
     def render(self, **options):
         self._render_options = options
         table = []
@@ -143,7 +149,7 @@ class TableCollection(base.Render, Caption, Th, Td):
 
         return utils.wrap("<table>", "\n".join(table), "</table>")
 
-class TableConcat(base.Render, Caption):
+class TableConcat(Caption):
     """The `TableConcat` class.
 
     This class is responsible for concatenating different kinds of models in a

@@ -239,7 +239,7 @@ document.getElementById("quantity").focus();
 //]]>
 </script>
 <div>
-  <label class="field_req" for="user_id">User id</label>
+  <label class="field_req" for="user_id">User</label>
   <select id="user_id" name="user_id"><option value="1">Bill Jones</option>
 <option value="2">John Kerry</option></select>
 </div>
@@ -267,7 +267,7 @@ document.getElementById("id").focus();
 </script>
 <input id="quantity" name="quantity" type="hidden" value="10" />
 <div>
-  <label class="field_req" for="user_id">User id</label>
+  <label class="field_req" for="user_id">User</label>
   <select id="user_id" name="user_id"><option value="1" selected="selected">Bill Jones</option>
 <option value="2">John Kerry</option></select>
 </div>
@@ -356,7 +356,7 @@ ValueError: You can only bind to another object of the same type you originally 
 >>> fs = FieldSet(OTOParent, session)
 >>> print _unwhitespace(fs.render())
 <div>
-  <label class="field_req" for="oto_child_id">Oto child id</label>
+  <label class="field_req" for="oto_child_id">Child</label>
   <select id="oto_child_id" name="oto_child_id"></select>
 </div>
 <script type="text/javascript">

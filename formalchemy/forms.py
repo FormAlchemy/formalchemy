@@ -12,6 +12,7 @@ from mako.template import Template
 
 __all__ = ["FieldSet"]
 
+
 template_text = """
 <% _focus_rendered = False %>
 % for attr in attrs:
@@ -19,11 +20,7 @@ template_text = """
 ${attr.render()}
   % else:
 <div>
-  <% 
-    label_opts = {'cls': attr.nullable and 'field_opt' or 'field_req'}
-    label_opts['prettify'] = prettify
-  %>
-  ${fields.Label(attr.name, attr.label_text, **label_opts).render()}
+  ${h.content_tag("label", content=attr.label_text or prettify(attr.key), for_=attr.name, class_=attr.nullable and 'field_opt' or 'field_req')}
   ${attr.render()}
 </div>
 % if (focus == attr or focus is True) and not _focus_rendered:
@@ -45,7 +42,7 @@ class FieldSet(base.ModelRender):
     generated HTML code from the `model` object.
     """
     
-    def render(self, prettify=base.Render.prettify, focus=True, **options):
+    def render(self, prettify=base.prettify, focus=True, **options):
         opts = dict(self.options)
         opts.update(options)
         return template.render(attrs=self.get_attrs(**opts), fields=fields, h=h, prettify=prettify, focus=focus)

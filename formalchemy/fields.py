@@ -12,21 +12,9 @@ from sqlalchemy.orm import class_mapper
 from sqlalchemy.orm.attributes import ScalarAttributeImpl, ScalarObjectAttributeImpl, CollectionAttributeImpl
 import base
 
-__all__ = ["Label", "TextField", "PasswordField", "HiddenField", "BooleanField",
+__all__ = ["TextField", "PasswordField", "HiddenField", "BooleanField",
     "FileField", "IntegerField", "DateTimeField", "DateField", "TimeField",
     "RadioSet", "SelectField"]
-
-class Label(base.Render):
-    """The `Label` class."""
-
-    def __init__(self, name, text=None, **kwargs):
-        self.name = name
-        self.set_prettify(kwargs.get('prettify', self.prettify))
-        self.text = text or self.prettify(name)
-        self.cls = kwargs.get('cls')
-
-    def render(self):
-        return h.content_tag("label", content=self.text, for_=self.name, class_=self.cls)
 
 class ModelFieldRender(object):
     """The `ModelFieldRender` class.

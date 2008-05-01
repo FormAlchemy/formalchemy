@@ -20,44 +20,15 @@ import utils
 
 compile_mappers() # initializes InstrumentedAttributes
 
-class Render(object):
-    """The `Render` class.
-
-    This this is the superclass for all classes needing rendering capabilities.
-    The render method should be overridden with appropriate per class render
-    method.
-
-    Methods:
-      * set_prettify(self, func)
-      * prettify(text) (staticmethod, i.e., doesn't pass 'self')
-      * render(self)
-
+def prettify(text):
     """
+    Return `text` prettify-ed.
+    >>> prettify("my_column_name")
+    "My column name"
+    """
+    return text.replace("_", " ").capitalize()
 
-    def set_prettify(self, func):
-        if func is None:
-            func = self.default_prettify
-        if not callable(func):
-            raise ValueError("Invalid callable %r" % func)
-        self.prettify = func # Apply staticmethod(func) ?
-
-    def prettify(text):
-        """Return `text` prettify-ed.
-
-        prettify("my_column_name") == "My column name"
-
-        """
-        return text.replace("_", " ").capitalize()
-    default_prettify = prettify = staticmethod(prettify)
-
-    def render(self):
-        """This function must be overridden by any subclass of `Render`."""
-        raise NotImplementedError()
-
-    def __str__(self):
-        return self.render()
-
-class ModelRender(Render):
+class ModelRender(object):
     """The `ModelRender` class.
 
     This this is the superclass for all classes needing to deal with `model`
