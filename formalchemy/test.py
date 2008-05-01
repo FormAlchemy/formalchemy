@@ -74,7 +74,12 @@ order2 = Order(user=john, quantity=5)
 session.commit()
 
 
-from forms import FieldSet, Field
+def _unwhitespace(st):
+    import re
+    return re.sub(r'''\n\s*\n''', '\n', st).strip()
+
+
+from forms import FieldSet
 from tables import Table, TableCollection
 
 __doc__ = r"""
@@ -88,7 +93,7 @@ __doc__ = r"""
 [AttributeWrapper(active), AttributeWrapper(email), AttributeWrapper(first_name), AttributeWrapper(id), AttributeWrapper(last_name), AttributeWrapper(orders), AttributeWrapper(password)]
 
 >>> fs = FieldSet(One)
->>> print fs.render(pk=True)
+>>> print _unwhitespace(fs.render(pk=True))
 <div>
   <label class="field_req" for="id">Id</label>
   <input id="id" name="id" type="text" />
@@ -100,7 +105,7 @@ document.getElementById("id").focus();
 </script>
 
 >>> fs = FieldSet(Two)
->>> print fs.render(pk=True)
+>>> print _unwhitespace(fs.render(pk=True))
 <div>
   <label class="field_req" for="foo">Foo</label>
   <input id="foo" name="foo" type="text" />
@@ -116,7 +121,7 @@ document.getElementById("foo").focus();
 </div>
 
 >>> fs = FieldSet(Two)
->>> print fs.render()
+>>> print _unwhitespace(fs.render())
 <div>
   <label class="field_req" for="foo">Foo</label>
   <input id="foo" name="foo" type="text" />
@@ -128,7 +133,7 @@ document.getElementById("foo").focus();
 </script>
 
 >>> fs = FieldSet(Two)
->>> print fs.render(options=[fs.foo.label('A custom label')])
+>>> print _unwhitespace(fs.render(options=[fs.foo.label('A custom label')]))
 <div>
   <label class="field_req" for="foo">A custom label</label>
   <input id="foo" name="foo" type="text" />
@@ -144,15 +149,15 @@ document.getElementById("foo").focus();
 >>> assert fs.render(pk=False) == fs.render(exclude=[fs.id])
 
 >>> fs = FieldSet(Two) 
->>> print fs.render(include=[fs.foo.hidden()])
+>>> print _unwhitespace(fs.render(include=[fs.foo.hidden()]))
 <input id="foo" name="foo" type="hidden" />
 
 >>> fs = FieldSet(Two)
->>> print fs.render(include=[fs.foo.dropdown([('option1', 'value1'), ('option2', 'value2')])])
+>>> print _unwhitespace(fs.render(include=[fs.foo.dropdown([('option1', 'value1'), ('option2', 'value2')])]))
 <div>
   <label class="field_req" for="foo">Foo</label>
   <select id="foo" name="foo"><option value="value1">option1</option>
-  <option value="value2">option2</option></select>
+<option value="value2">option2</option></select>
 </div>
 <script type="text/javascript">
 //<![CDATA[
@@ -164,7 +169,7 @@ document.getElementById("foo").focus();
 >>> assert fs.render(include=[fs.foo.dropdown([('option1', 'value1'), ('option2', 'value2')])]) == fs.render(options=[fs.foo.dropdown([('option1', 'value1'), ('option2', 'value2')])]) 
 
 >>> fs = FieldSet(Checkbox)
->>> print fs.render()
+>>> print _unwhitespace(fs.render())
 <div>
   <label class="field_req" for="field">Field</label>
   <input id="field" name="field" type="checkbox" value="True" /><input id="field" name="field" type="hidden" value="False" />
@@ -176,7 +181,7 @@ document.getElementById("field").focus();
 </script>
 
 >>> fs = FieldSet(User, session)
->>> print fs.render()
+>>> print _unwhitespace(fs.render())
 <div>
   <label class="field_opt" for="active">Active</label>
   <input checked="checked" id="active" name="active" type="checkbox" value="True" /><input id="active" name="active" type="hidden" value="False" />
@@ -201,7 +206,7 @@ document.getElementById("active").focus();
 <div>
   <label class="field_req" for="orders">Orders</label>
   <select id="orders" multiple="multiple" name="orders" size="5"><option value="1">Quantity: 10</option>
-  <option value="2">Quantity: 5</option></select>
+<option value="2">Quantity: 5</option></select>
 </div>
 <div>
   <label class="field_req" for="password">Password</label>
@@ -223,7 +228,7 @@ document.getElementById("active").focus();
 <option value="value2">option2</option></select>
 
 >>> fs = FieldSet(Order, session)
->>> print fs.render()
+>>> print _unwhitespace(fs.render())
 <div>
   <label class="field_req" for="quantity">Quantity</label>
   <input id="quantity" name="quantity" type="text" />
@@ -236,7 +241,7 @@ document.getElementById("quantity").focus();
 <div>
   <label class="field_req" for="user_id">User id</label>
   <select id="user_id" name="user_id"><option value="1">Bill Jones</option>
-  <option value="2">John Kerry</option></select>
+<option value="2">John Kerry</option></select>
 </div>
 
 # this seems particularly prone to errors; break it out in its own test
@@ -250,7 +255,7 @@ document.getElementById("quantity").focus();
 >>> fs.bind(order1)
 >>> fs.session == object_session(order1)
 True
->>> print fs.render(pk=True) # should render w/ current selection the default.
+>>> print _unwhitespace(fs.render(pk=True)) # should render w/ current selection the default.)
 <div>
   <label class="field_req" for="id">Id</label>
   <input id="id" name="id" type="text" value="1" />
@@ -264,11 +269,11 @@ document.getElementById("id").focus();
 <div>
   <label class="field_req" for="user_id">User id</label>
   <select id="user_id" name="user_id"><option value="1" selected="selected">Bill Jones</option>
-  <option value="2">John Kerry</option></select>
+<option value="2">John Kerry</option></select>
 </div>
 
 >>> t = Table(bill)
->>> print t.render()
+>>> print _unwhitespace(t.render())
 <table>
   <caption>User</caption>
   <tbody>
@@ -300,7 +305,7 @@ document.getElementById("id").focus();
 </table>
 
 >>> t = TableCollection([bill])
->>> print t.render()
+>>> print _unwhitespace(t.render())
 <table>
   <caption>Nonetype (1)</caption>
   <thead>
@@ -326,7 +331,7 @@ document.getElementById("id").focus();
 </table>
 
 >>> fs = FieldSet(OTOParent, session)
->>> print fs.render()
+>>> print _unwhitespace(fs.render())
 <div>
   <label class="field_req" for="oto_child_id">Oto child id</label>
   <select id="oto_child_id" name="oto_child_id"></select>
