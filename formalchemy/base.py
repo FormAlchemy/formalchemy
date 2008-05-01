@@ -68,6 +68,7 @@ class ModelRender(Render):
     """
 
     def __init__(self, model, session=None):
+        self.model = None
         self.bind(model, session)
         from fields import AttributeWrapper
         
@@ -87,6 +88,8 @@ class ModelRender(Render):
                     s.expunge(model)
             except:
                 raise Exception('%s appears to be a class, not an instance, but FormAlchemy cannot instantiate it' % model)
+        if self.model and type(self.model) != type(model):
+            raise ValueError('You can only bind to another object of the same type you originally bound to (%s), not %s' % (type(self.model), type(model)))
         self.model = model
         if session:
             self.session = session
@@ -178,10 +181,7 @@ class ColumnRender(ModelRender):
 
     def __init__(self, model, session=None, attr=None):
         super(ColumnRender, self).__init__(model, session)
-        if attr:
-            self.attr = attr
-        else:
-            self._wrapper = None
+        self.attr = attr
 
     def _set_attr(self, wrapper):
         """Set the column to render."""

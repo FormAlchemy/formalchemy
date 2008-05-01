@@ -272,6 +272,13 @@ document.getElementById("id").focus();
 <option value="2">John Kerry</option></select>
 </div>
 
+>>> fs = FieldSet(One)
+>>> fs.bind(Two)
+Traceback (most recent call last):
+...
+ValueError: You can only bind to another object of the same type you originally bound to (<class '__main__.One'>), not <class '__main__.Two'>
+
+# tables
 >>> t = Table(bill)
 >>> print _unwhitespace(t.render())
 <table>
@@ -341,6 +348,7 @@ document.getElementById("id").focus();
 document.getElementById("oto_child_id").focus();
 //]]>
 </script>
+
 """
 
 if __name__ == '__main__':
