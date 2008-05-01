@@ -7,7 +7,6 @@ import helpers as h
 
 import base, utils
 from forms import FieldSet
-from options import Options
 
 __all__ = ["Table", "TableConcat", "TableCollection"]
 
@@ -80,8 +79,7 @@ class Table(base.ModelRender, Caption, Th, Td):
         return tbody
 
     def render(self, **options):
-        # Merge class level options with `options`.
-        self._render_options = self.new_options(**options)
+        self._render_options = options
 
         table = []
 
@@ -106,11 +104,10 @@ class TableCollection(base.Render, Caption, Th, Td):
         if not isinstance(collection, (list, tuple)):
             raise Exception('invalid collection %r' % (collection,))
         self.collection = collection
-        self.options = Options()
         self.model = None
 
     def render(self, **options):
-        self._render_options = self.options.new_options(**options)
+        self._render_options = options
         table = []
 
         # Make the table's caption.

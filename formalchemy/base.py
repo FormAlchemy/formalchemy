@@ -16,7 +16,6 @@ from sqlalchemy.orm.attributes \
 from sqlalchemy.orm import compile_mappers, object_session
 
 import utils
-from options import Options
 
 
 compile_mappers() # initializes InstrumentedAttributes
@@ -70,12 +69,7 @@ class ModelRender(Render):
 
     def __init__(self, model, session=None):
         self.model = None
-        self.options = Options()
-        self.configure = self.options.configure
-        self.reconfigure = self.options.reconfigure
-        self.get_options = self.options.get_options
-        self.new_options = self.options.new_options
-        self.options.parse(model)
+        self.options = {}
 
         self.bind(model, session)
         from fields import AttributeWrapper
@@ -85,6 +79,13 @@ class ModelRender(Render):
                 logger.warn('ignoring multi-column property %s' % iattr.impl.key)
             else:
                 setattr(self, iattr.impl.key, AttributeWrapper((iattr, self.model, self.session)))
+                
+    def configure(self, **options):
+        self.options.update(options)
+
+    def reconfigure(self, **options):
+        self.options.clear()
+        self.options.update(options)
             
     def bind(self, model, session=None):
         if isinstance(model, type):

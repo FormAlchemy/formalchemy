@@ -250,7 +250,7 @@ document.getElementById("quantity").focus();
 1
 
 # test re-binding
->>> fs = FieldSet(Order, session)
+>>> fs = FieldSet(Order)
 >>> fs.quantity = fs.quantity.hidden()
 >>> fs.bind(order1)
 >>> fs.session == object_session(order1)
@@ -271,6 +271,22 @@ document.getElementById("id").focus();
   <select id="user_id" name="user_id"><option value="1" selected="selected">Bill Jones</option>
 <option value="2">John Kerry</option></select>
 </div>
+
+>>> fs = FieldSet(One)
+>>> fs.configure(pk=True)
+>>> print _unwhitespace(fs.render())
+<div>
+  <label class="field_req" for="id">Id</label>
+  <input id="id" name="id" type="text" />
+</div>
+<script type="text/javascript">
+//<![CDATA[
+document.getElementById("id").focus();
+//]]>
+</script>
+>>> fs.reconfigure(include=[])
+>>> print _unwhitespace(fs.render())
+<BLANKLINE>
 
 >>> fs = FieldSet(One)
 >>> fs.bind(Two)

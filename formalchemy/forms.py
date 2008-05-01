@@ -46,4 +46,6 @@ class FieldSet(base.ModelRender):
     """
     
     def render(self, prettify=base.Render.prettify, focus=True, **options):
-        return template.render(attrs=self.get_attrs(**options), fields=fields, h=h, prettify=prettify, focus=focus)
+        opts = dict(self.options)
+        opts.update(options)
+        return template.render(attrs=self.get_attrs(**opts), fields=fields, h=h, prettify=prettify, focus=focus)
