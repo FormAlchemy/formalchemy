@@ -145,30 +145,3 @@ class ModelRender(object):
     def render(self):
         """This function must be overridden by any subclass of `ModelRender`."""
         raise NotImplementedError()
-
-
-class ColumnRender(ModelRender):
-    """The `ColumnRender` class.
-
-    This should be the superclass for all classes that want attribute-level
-    rendering. Takes an extra `attr=None` keyword argument as the concerned
-    attribute.
-
-    Methods:
-      * set_attr(self, attr)
-
-    """
-
-    def __init__(self, model, session=None, attr=None):
-        super(ColumnRender, self).__init__(model, session)
-        self.attr = attr
-
-    def _set_attr(self, wrapper):
-        """Set the column to render."""
-        from fields import AttributeWrapper
-        if not isinstance(wrapper, AttributeWrapper):
-            raise ValueError("AttributeWrapper object expected; found %s of type %s instead." % (repr(wrapper), type(wrapper)))
-        self._wrapper = wrapper
-    def _get_attr(self):
-        return self._wrapper
-    attr = property(_get_attr, _set_attr)
