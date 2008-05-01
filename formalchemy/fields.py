@@ -289,7 +289,7 @@ class AttributeWrapper:
     def __eq__(self, other):
         try:
             return self._impl is other._impl
-        except ValueError:
+        except (AttributeError, ValueError):
             return False
     def __hash__(self):
         return hash(self._impl)
