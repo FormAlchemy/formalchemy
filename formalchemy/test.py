@@ -82,6 +82,16 @@ def _unwhitespace(st):
 from forms import FieldSet
 from tables import Table, TableCollection
 
+def configure_and_render(fs, **options):
+    fs.configure(**options)
+    return fs.render()
+
+
+fs = FieldSet(Order)
+fs.configure(pk=True, options=[fs.quantity.hidden()])
+fs.rebind(order1)
+fs.render()
+
 __doc__ = r"""
 # some low-level testing first
 >>> fs = FieldSet(order1)
@@ -93,7 +103,8 @@ __doc__ = r"""
 [AttributeWrapper(active), AttributeWrapper(email), AttributeWrapper(first_name), AttributeWrapper(id), AttributeWrapper(last_name), AttributeWrapper(orders), AttributeWrapper(password)]
 
 >>> fs = FieldSet(One)
->>> print _unwhitespace(fs.render(pk=True))
+>>> fs.configure(pk=True)
+>>> print _unwhitespace(fs.render())
 <div>
   <label class="field_req" for="id">Id</label>
   <input id="id" name="id" type="text" />
@@ -105,7 +116,8 @@ document.getElementById("id").focus();
 </script>
 
 >>> fs = FieldSet(Two)
->>> print _unwhitespace(fs.render(pk=True))
+>>> fs.configure(pk=True)
+>>> print _unwhitespace(fs.render())
 <div>
   <label class="field_req" for="foo">Foo</label>
   <input id="foo" name="foo" type="text" />
@@ -133,7 +145,8 @@ document.getElementById("foo").focus();
 </script>
 
 >>> fs = FieldSet(Two)
->>> print _unwhitespace(fs.render(options=[fs.foo.label('A custom label')]))
+>>> fs.configure(options=[fs.foo.label('A custom label')])
+>>> print _unwhitespace(fs.render())
 <div>
   <label class="field_req" for="foo">A custom label</label>
   <input id="foo" name="foo" type="text" />
@@ -145,15 +158,17 @@ document.getElementById("foo").focus();
 </script>
 
 >>> fs = FieldSet(Two)
->>> assert fs.render(pk=False) == fs.render(include=[fs.foo])
->>> assert fs.render(pk=False) == fs.render(exclude=[fs.id])
+>>> assert fs.render() == configure_and_render(fs, include=[fs.foo])
+>>> assert fs.render() == configure_and_render(fs, exclude=[fs.id])
 
 >>> fs = FieldSet(Two) 
->>> print _unwhitespace(fs.render(include=[fs.foo.hidden()]))
+>>> fs.configure(include=[fs.foo.hidden()])
+>>> print _unwhitespace(fs.render())
 <input id="foo" name="foo" type="hidden" />
 
 >>> fs = FieldSet(Two)
->>> print _unwhitespace(fs.render(include=[fs.foo.dropdown([('option1', 'value1'), ('option2', 'value2')])]))
+>>> fs.configure(include=[fs.foo.dropdown([('option1', 'value1'), ('option2', 'value2')])])
+>>> print _unwhitespace(fs.render())
 <div>
   <label class="field_req" for="foo">Foo</label>
   <select id="foo" name="foo"><option value="value1">option1</option>
@@ -166,8 +181,9 @@ document.getElementById("foo").focus();
 </script>
 
 >>> fs = FieldSet(Two)
->>> assert fs.render(include=[fs.foo.dropdown([('option1', 'value1'), ('option2', 'value2')])]) == fs.render(options=[fs.foo.dropdown([('option1', 'value1'), ('option2', 'value2')])]) 
+>>> assert configure_and_render(fs, include=[fs.foo.dropdown([('option1', 'value1'), ('option2', 'value2')])]) == configure_and_render(fs, options=[fs.foo.dropdown([('option1', 'value1'), ('option2', 'value2')])]) 
 
+# todo fix checkbox/hidden weirdassery
 >>> fs = FieldSet(Checkbox)
 >>> print _unwhitespace(fs.render())
 <div>
@@ -251,11 +267,13 @@ document.getElementById("quantity").focus();
 
 # test re-binding
 >>> fs = FieldSet(Order)
->>> fs.quantity = fs.quantity.hidden()
+>>> fs.configure(pk=True, options=[fs.quantity.hidden()])
 >>> fs.rebind(order1)
+>>> fs.quantity.value
+10
 >>> fs.session == object_session(order1)
 True
->>> print _unwhitespace(fs.render(pk=True)) # should render w/ current selection the default.)
+>>> print _unwhitespace(fs.render()) # should render w/ current selection the default.)
 <div>
   <label class="field_req" for="id">Id</label>
   <input id="id" name="id" type="text" value="1" />
@@ -284,7 +302,7 @@ document.getElementById("id").focus();
 document.getElementById("id").focus();
 //]]>
 </script>
->>> fs.reconfigure(include=[])
+>>> fs.configure(include=[])
 >>> print _unwhitespace(fs.render())
 <BLANKLINE>
 

@@ -42,7 +42,5 @@ class FieldSet(base.ModelRender):
     generated HTML code from the `model` object.
     """
     
-    def render(self, prettify=base.prettify, focus=True, **options):
-        opts = dict(self.options)
-        opts.update(options)
-        return template.render(attrs=self.get_attrs(**opts), fields=fields, h=h, prettify=prettify, focus=focus)
+    def render(self, prettify=base.prettify, focus=True):
+        return template.render(attrs=self.render_attrs, fields=fields, h=h, prettify=prettify, focus=focus)

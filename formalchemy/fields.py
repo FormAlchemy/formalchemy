@@ -206,7 +206,7 @@ class AttributeWrapper:
             self.__dict__.update(data.__dict__)
             self.render_opts = dict(data.render_opts)
         else:
-            instrumented_attribute, self.model, self.session = data
+            instrumented_attribute, self.parent = data
             self._impl = instrumented_attribute.impl
             self._property = instrumented_attribute.property
             self.render_as = None
@@ -250,6 +250,9 @@ class AttributeWrapper:
     def is_collection(self):
         return isinstance(self._impl, CollectionAttributeImpl)
     
+    def is_required(self):
+        return not (self.is_collection() or self.column.nullable)
+    
     def value(self):
         v = getattr(self.model, self.name)
         if self.is_collection():
@@ -285,6 +288,14 @@ class AttributeWrapper:
     
     def __repr__(self):
         return 'AttributeWrapper(%s)' % self._impl.key
+    
+    def model(self):
+        return self.parent.model
+    model = property(model)
+    
+    def session(self):
+        return self.parent.session
+    session = property(session)
 
     def label(self, text):
         attr = AttributeWrapper(self)

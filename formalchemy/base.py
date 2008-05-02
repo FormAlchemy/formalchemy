@@ -40,7 +40,7 @@ class ModelRender(object):
 
     def __init__(self, model, session=None):
         self.model = self.session = None
-        self.options = {}
+        self._render_attrs = None
 
         self.rebind(model, session)
         from fields import AttributeWrapper
@@ -49,23 +49,27 @@ class ModelRender(object):
             if hasattr(iattr.property, 'mapper') and len(iattr.property.mapper.primary_key) != 1:
                 logger.warn('ignoring multi-column property %s' % iattr.impl.key)
             else:
-                setattr(self, iattr.impl.key, AttributeWrapper((iattr, self.model, self.session)))
+                setattr(self, iattr.impl.key, AttributeWrapper((iattr, self)))
+                
+    def render_attrs(self):
+        if self._render_attrs:
+            return self._render_attrs
+        return self.get_attrs()
+    render_attrs = property(render_attrs)
                 
     def configure(self, **options):
-        self.options.update(options)
+        self._render_attrs = self.get_attrs(**options)
 
-    def reconfigure(self, **options):
-        self.options.clear()
-        self.options.update(options)
-            
     def bind(self, model, session=None):
+        """return a copy of this object, bound to model and session"""
         # two steps so bind's error checking can work
         copy = type(self)(self.model, self.session)
+        copy._render_attrs = self._render_attrs
         copy.rebind(model, session)
-        copy.configure(**self.options)
         return copy
 
     def rebind(self, model, session=None):
+        """rebind this object to model and session.  no return value"""
         if isinstance(model, type):
             try:
                 model = model()
@@ -82,9 +86,6 @@ class ModelRender(object):
             self.session = session
         else:
             self.session = object_session(model)
-        for attr in self._raw_attrs():
-            attr.model = model
-            attr.session = self.session
 
     def get_pks(self):
         """Return a list of primary key attributes."""
@@ -92,7 +93,7 @@ class ModelRender(object):
 
     def get_required(self):
         """Return a list of non-nullable attributes."""
-        return [wrapper for wrapper in self._raw_attrs() if not wrapper.column.nullable]
+        return [wrapper for wrapper in self._raw_attrs() if wrapper.is_required()]
 
     def _raw_attrs(self):
         from fields import AttributeWrapper
