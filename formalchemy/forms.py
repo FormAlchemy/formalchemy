@@ -42,5 +42,8 @@ class FieldSet(base.ModelRender):
     generated HTML code from the `model` object.
     """
     
-    def render(self, prettify=base.prettify, focus=True):
+    def render(self):
+        """default template understands extra args 'prettify' and 'focus'"""
+        prettify = self.render_opts.get('prettify', base.prettify)
+        focus = self.render_opts.get('focus', True)
         return template.render(attrs=self.render_attrs, fields=fields, h=h, prettify=prettify, focus=focus)

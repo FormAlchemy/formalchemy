@@ -41,6 +41,7 @@ class ModelRender(object):
     def __init__(self, model, session=None):
         self.model = self.session = None
         self._render_attrs = None
+        self.render_opts = {}
 
         self.rebind(model, session)
         from fields import AttributeWrapper
@@ -57,8 +58,10 @@ class ModelRender(object):
         return self.get_attrs()
     render_attrs = property(render_attrs)
                 
-    def configure(self, **options):
-        self._render_attrs = self.get_attrs(**options)
+    def configure(self, pk=False, exclude=[], include=[], options=[], **kwargs):
+        """configure render_attrs and any extra args for template"""
+        self._render_attrs = self.get_attrs(pk, exclude, include, options)
+        self.render_opts = kwargs
 
     def bind(self, model, session=None):
         """return a copy of this object, bound to model and session"""
@@ -87,14 +90,6 @@ class ModelRender(object):
         else:
             self.session = object_session(model)
 
-    def get_pks(self):
-        """Return a list of primary key attributes."""
-        return [wrapper for wrapper in self._raw_attrs() if wrapper.column.primary_key and not wrapper.is_collection()]
-
-    def get_required(self):
-        """Return a list of non-nullable attributes."""
-        return [wrapper for wrapper in self._raw_attrs() if wrapper.is_required()]
-
     def _raw_attrs(self):
         from fields import AttributeWrapper
         wrappers = [attr for attr in self.__dict__.itervalues()
@@ -103,7 +98,7 @@ class ModelRender(object):
         wrappers.sort(key=lambda wrapper: wrapper.name)
         return wrappers
     
-    def get_attrs(self, **kwargs):
+    def get_attrs(self, pk=False, exclude=[], include=[], options=[]):
         """Return a list of filtered attributes.
 
         Keyword arguments:
@@ -112,15 +107,10 @@ class ModelRender(object):
           * `include=[]` - An iterable containing attributes to include.
           * `options=[]` - An iterable containing options to apply to attributes.
 
-        Note that, when `include` is non-empty, it will
+        Note that when `include` is non-empty, it will
         take precedence over the other options.
 
         """
-        pk = kwargs.get("pk", False)
-        exclude = kwargs.get("exclude", [])
-        include = kwargs.get("include", [])
-        options = kwargs.get("options", [])
-        
         if include and exclude:
             raise Exception('Specify at most one of include, exclude')
 
@@ -133,7 +123,7 @@ class ModelRender(object):
         if not include:
             ignore = list(exclude)
             if not pk:
-                ignore.extend(self.get_pks())
+                ignore.extend([wrapper for wrapper in self._raw_attrs() if wrapper.column.primary_key and not wrapper.is_collection()])
             ignore.extend([wrapper for wrapper in self._raw_attrs() if wrapper.is_raw_foreign_key()])
             logger.debug('ignoring %s' % ignore)
     

@@ -305,6 +305,12 @@ document.getElementById("id").focus();
 >>> fs.configure(include=[])
 >>> print _unwhitespace(fs.render())
 <BLANKLINE>
+>>> fs.configure(pk=True, focus=None)
+>>> print _unwhitespace(fs.render())
+<div>
+  <label class="field_req" for="id">Id</label>
+  <input id="id" name="id" type="text" />
+</div>
 
 >>> fs = FieldSet(One)
 >>> fs.rebind(Two)
