@@ -252,7 +252,7 @@ document.getElementById("quantity").focus();
 # test re-binding
 >>> fs = FieldSet(Order)
 >>> fs.quantity = fs.quantity.hidden()
->>> fs.bind(order1)
+>>> fs.rebind(order1)
 >>> fs.session == object_session(order1)
 True
 >>> print _unwhitespace(fs.render(pk=True)) # should render w/ current selection the default.)
@@ -289,7 +289,7 @@ document.getElementById("id").focus();
 <BLANKLINE>
 
 >>> fs = FieldSet(One)
->>> fs.bind(Two)
+>>> fs.rebind(Two)
 Traceback (most recent call last):
 ...
 ValueError: You can only bind to another object of the same type you originally bound to (<class '__main__.One'>), not <class '__main__.Two'>

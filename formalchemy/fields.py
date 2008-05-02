@@ -204,6 +204,7 @@ class AttributeWrapper:
     def __init__(self, data):
         if isinstance(data, AttributeWrapper):
             self.__dict__.update(data.__dict__)
+            self.render_opts = dict(data.render_opts)
         else:
             instrumented_attribute, self.model, self.session = data
             self._impl = instrumented_attribute.impl
@@ -212,7 +213,7 @@ class AttributeWrapper:
             self.render_opts = {}
             self.modifier = None
             self.label_text = None
-            
+                        
     def is_raw_foreign_key(self):
         try:
             return self._property.columns[0].foreign_keys

@@ -39,10 +39,10 @@ class ModelRender(object):
     """
 
     def __init__(self, model, session=None):
-        self.model = None
+        self.model = self.session = None
         self.options = {}
 
-        self.bind(model, session)
+        self.rebind(model, session)
         from fields import AttributeWrapper
         
         for iattr in _managed_attributes(self.model.__class__):
@@ -59,6 +59,13 @@ class ModelRender(object):
         self.options.update(options)
             
     def bind(self, model, session=None):
+        # two steps so bind's error checking can work
+        copy = type(self)(self.model, self.session)
+        copy.rebind(model, session)
+        copy.configure(**self.options)
+        return copy
+
+    def rebind(self, model, session=None):
         if isinstance(model, type):
             try:
                 model = model()
