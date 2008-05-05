@@ -71,7 +71,7 @@ class ModelRender(object):
         copy._render_attrs = self._render_attrs
         return copy
 
-    def rebind(self, model, session=None, data={}):
+    def rebind(self, model, session=None, data=None):
         """rebind this object to model and session.  no return value"""
         if isinstance(model, type):
             try:
