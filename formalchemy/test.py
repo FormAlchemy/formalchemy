@@ -386,20 +386,29 @@ document.getElementById("oto_child_id").focus();
 
 # validation + sync
 >>> two = Two()
->>> fs = FieldSet(two, data={'foo': 'asdf'})
->>> fs.validate()
-True
->>> fs.sync()
->>> two.foo
-'asdf'
-
->>> two = Two()
 >>> fs = FieldSet(two, data={'foo': ''})
->>> fs.configure(options=[fs.foo.required()])
+>>> fs.configure(options=[fs.foo.required()], focus=None)
 >>> fs.validate()
 False
 >>> fs.errors()
 {AttributeWrapper(foo): ['Please enter a value']}
+>>> print _unwhitespace(fs.render())
+<div>
+  <label class="field_opt" for="foo">Foo</label>
+  <input id="foo" name="foo" type="text" value="" />
+  <span class="field_error">Please enter a value</span>
+</div>
+>>> fs.rebind(two, data={'foo': 'asdf'})
+>>> fs.data
+{'foo': 'asdf'}
+>>> fs.validate()
+True
+>>> fs.errors()
+{}
+>>> fs.sync()
+>>> two.foo
+'asdf'
+
 """
 
 if __name__ == '__main__':

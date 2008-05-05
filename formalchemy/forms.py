@@ -52,7 +52,7 @@ class FieldSet(base.ModelRender):
         return template.render(attrs=self.render_attrs, fields=fields, h=h, prettify=prettify, focus=focus)
 
     def validate(self):
-        if not self.data:
+        if self.data is None:
             raise Exception('Cannot validate without binding data')
         success = True
         for attr in self.render_attrs:
@@ -61,7 +61,7 @@ class FieldSet(base.ModelRender):
     
     def errors(self):
         errors = {}
-        errors.update([(attr, attr.errors) for attr in self.render_attrs])
+        errors.update([(attr, attr.errors) for attr in self.render_attrs if attr.errors])
         return errors
 
     def sync(self):

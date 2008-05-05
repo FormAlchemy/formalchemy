@@ -310,7 +310,11 @@ class AttributeWrapper:
             setattr(self.model, self.name, unstr(self, self.parent.data[self.name]))
             
     def _validate(self):
-        for validator in self.validators:
+        self.errors = []
+        L = list(self.validators)
+        if self.required and validators.required not in L:
+            L.append(validators.required)
+        for validator in L:
             try:
                 validator(self.parent.data.get(self.name))
             except validators.ValidationException, e:
@@ -341,7 +345,9 @@ class AttributeWrapper:
         attr.validators.append(validator)
         return attr
     def required(self):
-        return self.validate(validators.required)
+        attr = AttributeWrapper(self)
+        attr.required = True
+        return attr
     def label(self, text):
         attr = AttributeWrapper(self)
         attr.label_text = text
