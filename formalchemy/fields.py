@@ -10,11 +10,14 @@ import helpers as h
 import sqlalchemy.types as types
 from sqlalchemy.orm import class_mapper
 from sqlalchemy.orm.attributes import ScalarAttributeImpl, ScalarObjectAttributeImpl, CollectionAttributeImpl
-import base
+import sqlalchemy.types as types
+import base, validators
 
 __all__ = ["TextField", "PasswordField", "HiddenField", "BooleanField",
     "FileField", "IntegerField", "DateTimeField", "DateField", "TimeField",
-    "RadioSet", "SelectField"]
+    "RadioSet", "SelectField",
+    'required_validator']
+
 
 class ModelFieldRender(object):
     """The `ModelFieldRender` class.
@@ -200,17 +203,38 @@ def _pk(instance):
     column = class_mapper(type(instance)).primary_key[0]
     return getattr(instance, column.key)
 
+def unstr(attr, st):
+    """convert st into the data type expected by attr"""
+    if attr.is_collection():
+        pass
+    if isinstance(attr.column.type, types.Integer):
+        return int(st)
+    if isinstance(attr.column.type, types.DateTime):
+        # todo
+        pass
+    if isinstance(attr.column.type, types.Date):
+        # todo
+        pass
+    if isinstance(attr.column.type, types.Boolean):
+        # todo
+        pass
+    return st
+
 class AttributeWrapper:
     def __init__(self, data):
         if isinstance(data, AttributeWrapper):
             self.__dict__.update(data.__dict__)
             self.render_opts = dict(data.render_opts)
+            self.validators = list(data.validators)
+            self.errors = list(data.errors)
         else:
             instrumented_attribute, self.parent = data
             self._impl = instrumented_attribute.impl
             self._property = instrumented_attribute.property
             self.render_as = None
             self.render_opts = {}
+            self.validators = []
+            self.errors = []
             self.modifier = None
             self.label_text = None
                         
@@ -254,7 +278,10 @@ class AttributeWrapper:
         return not (self.is_collection() or self.column.nullable)
     
     def value(self):
-        v = getattr(self.model, self.name)
+        if self.name in self.parent.data:
+            v = unstr(self, self.parent.data[self.name])
+        else:
+            v = getattr(self.model, self.name)
         if self.is_collection():
             return [_pk(item) for item in v]
         if v is not None:
@@ -268,11 +295,27 @@ class AttributeWrapper:
     value = property(value)
     
     def value_str(self):
+        # should only be used in non-editable contexts, so we don't check 'data'
         if self.is_collection():
-            L = getattr(self.model, self._impl.key)
+            L = getattr(self.model, self.key)
             return ','.join([str(item) for item in L])
         else:
-            return str(getattr(self.model, self._impl.key))
+            return str(getattr(self.model, self.key))
+        
+    def sync(self):
+        # we could avoid the if with
+        # setattr(self.model, attr.name, self.data.get(attr.name, getattr(self.model, attr.name)))
+        # but that could generate unnecessary SA dirty-ness
+        if self.name in self.parent.data:
+            setattr(self.model, self.name, unstr(self, self.parent.data[self.name]))
+            
+    def _validate(self):
+        for validator in self.validators:
+            try:
+                validator(self.parent.data.get(self.name))
+            except validators.ValidationException, e:
+                self.errors.append(e.message)
+        return not self.errors
 
     def nullable(self):
         return self.column.nullable
@@ -293,10 +336,12 @@ class AttributeWrapper:
         return self.parent.model
     model = property(model)
     
-    def session(self):
-        return self.parent.session
-    session = property(session)
-
+    def validate(self, validator):
+        attr = AttributeWrapper(self)
+        attr.validators.append(validator)
+        return attr
+    def required(self):
+        return self.validate(validators.required)
     def label(self, text):
         attr = AttributeWrapper(self)
         attr.label_text = text
@@ -346,7 +391,7 @@ class AttributeWrapper:
                 logger.debug('loading options for ' + self.name)
                 fk_cls = self._property.mapper.class_
                 fk_pk = class_mapper(fk_cls).primary_key[0]
-                items = self.session.query(fk_cls).order_by(fk_pk).all()
+                items = self.parent.session.query(fk_cls).order_by(fk_pk).all()
                 self.render_opts['options'] = [(str(item), _pk(item)) for item in items]
             self.render_opts['multiple'] = self.is_collection() # todo make default size bigger than 1
             if self.render_opts['multiple'] and 'size' not in self.render_opts:

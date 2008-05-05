@@ -38,12 +38,12 @@ class ModelRender(object):
       * bind(self)
     """
 
-    def __init__(self, model, session=None):
+    def __init__(self, model, session=None, data={}):
         self.model = self.session = None
         self._render_attrs = None
         self.render_opts = {}
 
-        self.rebind(model, session)
+        self.rebind(model, session, data)
         from fields import AttributeWrapper
         
         for iattr in _managed_attributes(self.model.__class__):
@@ -63,15 +63,15 @@ class ModelRender(object):
         self._render_attrs = self.get_attrs(pk, exclude, include, options)
         self.render_opts = kwargs
 
-    def bind(self, model, session=None):
+    def bind(self, model, session=None, data={}):
         """return a copy of this object, bound to model and session"""
         # two steps so bind's error checking can work
-        copy = type(self)(self.model, self.session)
+        copy = type(self)(self.model)
+        copy.rebind(model, session, data)
         copy._render_attrs = self._render_attrs
-        copy.rebind(model, session)
         return copy
 
-    def rebind(self, model, session=None):
+    def rebind(self, model, session=None, data={}):
         """rebind this object to model and session.  no return value"""
         if isinstance(model, type):
             try:
@@ -85,6 +85,7 @@ class ModelRender(object):
         if self.model and type(self.model) != type(model):
             raise ValueError('You can only bind to another object of the same type you originally bound to (%s), not %s' % (type(self.model), type(model)))
         self.model = model
+        self.data = data
         if session:
             self.session = session
         else:
@@ -114,6 +115,10 @@ class ModelRender(object):
         if include and exclude:
             raise Exception('Specify at most one of include, exclude')
 
+        if pk not in [True, False]:
+            # help people who meant include=[X] but just wrote X
+            raise ValueError('pk option must be True or False, not %s' % pk)
+            
         for lst in ['include', 'exclude', 'options']:
             try:
                 utils.validate_columns(eval(lst))

@@ -17,7 +17,7 @@ class One(Base):
 class Two(Base):
     __tablename__ = 'twos'
     id = Column('id', Integer, primary_key=True)
-    foo = Column('foo', Text, nullable=False)
+    foo = Column('foo', Text, nullable=True)
 
 class Checkbox(Base):
     __tablename__ = 'checkboxes'
@@ -87,11 +87,6 @@ def configure_and_render(fs, **options):
     return fs.render()
 
 
-fs = FieldSet(Order)
-fs.configure(pk=True, options=[fs.quantity.hidden()])
-fs.rebind(order1)
-fs.render()
-
 __doc__ = r"""
 # some low-level testing first
 >>> fs = FieldSet(order1)
@@ -119,7 +114,7 @@ document.getElementById("id").focus();
 >>> fs.configure(pk=True)
 >>> print _unwhitespace(fs.render())
 <div>
-  <label class="field_req" for="foo">Foo</label>
+  <label class="field_opt" for="foo">Foo</label>
   <input id="foo" name="foo" type="text" />
 </div>
 <script type="text/javascript">
@@ -135,7 +130,7 @@ document.getElementById("foo").focus();
 >>> fs = FieldSet(Two)
 >>> print _unwhitespace(fs.render())
 <div>
-  <label class="field_req" for="foo">Foo</label>
+  <label class="field_opt" for="foo">Foo</label>
   <input id="foo" name="foo" type="text" />
 </div>
 <script type="text/javascript">
@@ -148,7 +143,7 @@ document.getElementById("foo").focus();
 >>> fs.configure(options=[fs.foo.label('A custom label')])
 >>> print _unwhitespace(fs.render())
 <div>
-  <label class="field_req" for="foo">A custom label</label>
+  <label class="field_opt" for="foo">A custom label</label>
   <input id="foo" name="foo" type="text" />
 </div>
 <script type="text/javascript">
@@ -170,7 +165,7 @@ document.getElementById("foo").focus();
 >>> fs.configure(include=[fs.foo.dropdown([('option1', 'value1'), ('option2', 'value2')])])
 >>> print _unwhitespace(fs.render())
 <div>
-  <label class="field_req" for="foo">Foo</label>
+  <label class="field_opt" for="foo">Foo</label>
   <select id="foo" name="foo"><option value="value1">option1</option>
 <option value="value2">option2</option></select>
 </div>
@@ -389,6 +384,22 @@ document.getElementById("oto_child_id").focus();
 //]]>
 </script>
 
+# validation + sync
+>>> two = Two()
+>>> fs = FieldSet(two, data={'foo': 'asdf'})
+>>> fs.validate()
+True
+>>> fs.sync()
+>>> two.foo
+'asdf'
+
+>>> two = Two()
+>>> fs = FieldSet(two, data={'foo': ''})
+>>> fs.configure(options=[fs.foo.required()])
+>>> fs.validate()
+False
+>>> fs.errors()
+{AttributeWrapper(foo): ['Please enter a value']}
 """
 
 if __name__ == '__main__':

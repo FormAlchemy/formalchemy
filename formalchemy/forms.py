@@ -22,6 +22,9 @@ ${attr.render()}
 <div>
   ${h.content_tag("label", content=attr.label_text or prettify(attr.key), for_=attr.name, class_=attr.nullable and 'field_opt' or 'field_req')}
   ${attr.render()}
+  % for error in attr.errors:
+  <span class="field_error">${error}</span>
+  % endfor
 </div>
 % if (focus == attr or focus is True) and not _focus_rendered:
 ${h.javascript_tag('document.getElementById("%s").focus();' % attr.name)}
@@ -47,3 +50,20 @@ class FieldSet(base.ModelRender):
         prettify = self.render_opts.get('prettify', base.prettify)
         focus = self.render_opts.get('focus', True)
         return template.render(attrs=self.render_attrs, fields=fields, h=h, prettify=prettify, focus=focus)
+
+    def validate(self):
+        if not self.data:
+            raise Exception('Cannot validate without binding data')
+        success = True
+        for attr in self.render_attrs:
+            success = attr._validate() and success
+        return success
+    
+    def errors(self):
+        errors = {}
+        errors.update([(attr, attr.errors) for attr in self.render_attrs])
+        return errors
+
+    def sync(self):
+        for attr in self.render_attrs:
+            attr.sync()
