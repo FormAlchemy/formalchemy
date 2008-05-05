@@ -278,7 +278,7 @@ class AttributeWrapper:
         return not (self.is_collection() or self.column.nullable)
     
     def value(self):
-        if self.name in self.parent.data:
+        if self.parent.data is not None and self.name in self.parent.data:
             v = unstr(self, self.parent.data[self.name])
         else:
             v = getattr(self.model, self.name)
