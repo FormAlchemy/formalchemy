@@ -8,5 +8,5 @@ setup(name='FormAlchemy',
       url='http://formalchemy.googlecode.com',
       download_url='http://code.google.com/p/formalchemy/downloads/list',
       packages=['formalchemy'],
-      install_requires=['webhelpers>=0.6', 'mako']
+      install_requires=['mako']
       )
