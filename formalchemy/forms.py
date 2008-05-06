@@ -11,7 +11,48 @@ import base, fields, utils
 from validators import ValidationException
 from mako.template import Template
 
-__all__ = ["FieldSet"]
+__all__ = ["AbstractFieldSet, FieldSet"]
+
+
+class AbstractFieldSet(base.ModelRender):
+    """
+    The `FieldSet` class.
+
+    This class is responsible for generating HTML fields from a given
+    `model`.
+
+    The one method to use is `render`. This is the method that returns
+    generated HTML code from the `model` object.
+    """
+    def __init__(self, *args, **kwargs):
+        base.ModelRender.__init__(self, *args, **kwargs)
+        self.validator = None
+        self._errors = []
+
+    def configure(self, pk=False, exclude=[], include=[], options=[], global_validator=None):
+        base.ModelRender.configure(self, pk, exclude, include, options)
+        self.validator = global_validator
+
+    def validate(self):
+        if self.data is None:
+            raise Exception('Cannot validate without binding data')
+        success = True
+        for attr in self.render_attrs:
+            success = attr._validate() and success
+        if self.validator:
+            try:
+                self.validator(self.data)
+            except ValidationException, e:
+                self._errors = e.args
+                success = False
+        return success
+    
+    def errors(self):
+        errors = {}
+        if self._errors:
+            errors[None] = self._errors
+        errors.update([(attr, attr.errors) for attr in self.render_attrs if attr.errors])
+        return errors
 
 
 template_text = """
@@ -41,50 +82,20 @@ ${h.javascript_tag('document.getElementById("%s").focus();' % attr.name)}
 """.strip()
 template = Template(template_text)
 
-class FieldSet(base.ModelRender):
-    """The `FieldSet` class.
-
-    This class is responsible for generating HTML fields from a given
-    `model`.
-
-    The one method to use is `render`. This is the method that returns
-    generated HTML code from the `model` object.
+class FieldSet(AbstractFieldSet):
     """
-    
+    Default FieldSet implementation.  Adds prettify, focus options.
+    """
     def __init__(self, *args, **kwargs):
-        base.ModelRender.__init__(self, *args, **kwargs)
+        AbstractFieldSet.__init__(self, *args, **kwargs)
         self.prettify = base.prettify
         self.focus = True
-        self.validator = None
-        self._errors = []
 
     def configure(self, pk=False, exclude=[], include=[], options=[], global_validator=None, prettify=base.prettify, focus=True):
-        base.ModelRender.configure(self, pk, exclude, include, options)
-        self.validator = global_validator
+        AbstractFieldSet.configure(self, pk, exclude, include, options, global_validator)
         self.prettify = prettify
         self.focus = focus
 
     def render(self):
         """default template understands extra args 'prettify' and 'focus'"""
         return template.render(attrs=self.render_attrs, global_errors=self._errors, fields=fields, h=h, prettify=self.prettify, focus=self.focus)
-
-    def validate(self):
-        if self.data is None:
-            raise Exception('Cannot validate without binding data')
-        success = True
-        for attr in self.render_attrs:
-            success = attr._validate() and success
-        if self.validator:
-            try:
-                self.validator(self.data)
-            except ValidationException, e:
-                self._errors = e.args
-                success = False
-        return success
-    
-    def errors(self):
-        errors = {}
-        if self._errors:
-            errors[None] = self._errors
-        errors.update([(attr, attr.errors) for attr in self.render_attrs if attr.errors])
-        return errors
