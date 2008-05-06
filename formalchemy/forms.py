@@ -56,8 +56,8 @@ class AbstractFieldSet(base.ModelRender):
         return errors
 
 
-template_text = """
-<% _focus_rendered = False %>
+template_text = r"""
+<% _focus_rendered = False %>\
 % for error in global_errors:
 <div class="fieldset_error">
   ${error}
@@ -76,7 +76,7 @@ ${attr.render()}
 </div>
 % if (focus == attr or focus is True) and not _focus_rendered:
 ${h.javascript_tag('document.getElementById("%s").focus();' % attr.name)}
-<% _focus_rendered = True %>
+<% _focus_rendered = True %>\
 % endif
 % endif
 % endfor

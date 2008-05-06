@@ -80,11 +80,6 @@ order2 = Order(user=john, quantity=5)
 session.commit()
 
 
-def _unwhitespace(st):
-    import re
-    return re.sub(r'''\n\s*\n''', '\n', st).strip()
-
-
 from forms import FieldSet
 from validators import ValidationException
 from tables import Table, TableCollection
@@ -108,7 +103,7 @@ __doc__ = r"""
 >>> fs.configure(pk=True, focus=None)
 >>> fs.id.is_required()
 True
->>> print _unwhitespace(fs.render())
+>>> print fs.render().strip()
 <div>
   <label class="field_req" for="id">Id</label>
   <input id="id" name="id" type="text" />
@@ -116,7 +111,7 @@ True
 
 >>> fs = FieldSet(Two)
 >>> fs.configure(pk=True)
->>> print _unwhitespace(fs.render())
+>>> print fs.render().strip()
 <div>
   <label class="field_opt" for="foo">Foo</label>
   <input id="foo" name="foo" type="text" />
@@ -132,7 +127,7 @@ document.getElementById("foo").focus();
 </div>
 
 >>> fs = FieldSet(Two)
->>> print _unwhitespace(fs.render())
+>>> print fs.render().strip()
 <div>
   <label class="field_opt" for="foo">Foo</label>
   <input id="foo" name="foo" type="text" />
@@ -145,7 +140,7 @@ document.getElementById("foo").focus();
 
 >>> fs = FieldSet(Two)
 >>> fs.configure(options=[fs.foo.label('A custom label')])
->>> print _unwhitespace(fs.render())
+>>> print fs.render().strip()
 <div>
   <label class="field_opt" for="foo">A custom label</label>
   <input id="foo" name="foo" type="text" />
@@ -162,12 +157,12 @@ document.getElementById("foo").focus();
 
 >>> fs = FieldSet(Two) 
 >>> fs.configure(include=[fs.foo.hidden()])
->>> print _unwhitespace(fs.render())
+>>> print fs.render().strip()
 <input id="foo" name="foo" type="hidden" />
 
 >>> fs = FieldSet(Two)
 >>> fs.configure(include=[fs.foo.dropdown([('option1', 'value1'), ('option2', 'value2')])])
->>> print _unwhitespace(fs.render())
+>>> print fs.render().strip()
 <div>
   <label class="field_opt" for="foo">Foo</label>
   <select id="foo" name="foo"><option value="value1">option1</option>
@@ -184,7 +179,7 @@ document.getElementById("foo").focus();
 
 # todo fix checkbox/hidden weirdassery
 >>> fs = FieldSet(Checkbox)
->>> print _unwhitespace(fs.render())
+>>> print fs.render().strip()
 <div>
   <label class="field_req" for="field">Field</label>
   <input id="field" name="field" type="checkbox" value="True" /><input id="field" name="field" type="hidden" value="False" />
@@ -196,7 +191,7 @@ document.getElementById("field").focus();
 </script>
 
 >>> fs = FieldSet(User, session)
->>> print _unwhitespace(fs.render())
+>>> print fs.render().strip()
 <div>
   <label class="field_opt" for="active">Active</label>
   <input checked="checked" id="active" name="active" type="checkbox" value="True" /><input id="active" name="active" type="hidden" value="False" />
@@ -243,7 +238,7 @@ document.getElementById("active").focus();
 <option value="value2">option2</option></select>
 
 >>> fs = FieldSet(Order, session)
->>> print _unwhitespace(fs.render())
+>>> print fs.render().strip()
 <div>
   <label class="field_req" for="quantity">Quantity</label>
   <input id="quantity" name="quantity" type="text" />
@@ -272,7 +267,7 @@ document.getElementById("quantity").focus();
 10
 >>> fs.session == object_session(order1)
 True
->>> print _unwhitespace(fs.render()) # should render w/ current selection the default.)
+>>> print fs.render().strip() # should render w/ current selection the default
 <div>
   <label class="field_req" for="id">Id</label>
   <input id="id" name="id" type="text" value="1" />
@@ -291,7 +286,7 @@ document.getElementById("id").focus();
 
 >>> fs = FieldSet(One)
 >>> fs.configure(pk=True)
->>> print _unwhitespace(fs.render())
+>>> print fs.render().strip()
 <div>
   <label class="field_req" for="id">Id</label>
   <input id="id" name="id" type="text" />
@@ -302,10 +297,10 @@ document.getElementById("id").focus();
 //]]>
 </script>
 >>> fs.configure(include=[])
->>> print _unwhitespace(fs.render())
+>>> print fs.render().strip()
 <BLANKLINE>
 >>> fs.configure(pk=True, focus=None)
->>> print _unwhitespace(fs.render())
+>>> print fs.render().strip()
 <div>
   <label class="field_req" for="id">Id</label>
   <input id="id" name="id" type="text" />
@@ -319,7 +314,7 @@ ValueError: You can only bind to another object of the same type you originally 
 
 # tables
 >>> t = Table(bill)
->>> print _unwhitespace(t.render())
+>>> print t.render().strip()
 <table>
   <caption>User</caption>
   <tbody>
@@ -351,7 +346,7 @@ ValueError: You can only bind to another object of the same type you originally 
 </table>
 
 >>> t = TableCollection([bill])
->>> print _unwhitespace(t.render())
+>>> print t.render().strip()
 <table>
   <caption>Nonetype (1)</caption>
   <thead>
@@ -377,7 +372,7 @@ ValueError: You can only bind to another object of the same type you originally 
 </table>
 
 >>> fs = FieldSet(OTOParent, session)
->>> print _unwhitespace(fs.render())
+>>> print fs.render().strip()
 <div>
   <label class="field_req" for="oto_child_id">Child</label>
   <select id="oto_child_id" name="oto_child_id"></select>
@@ -396,7 +391,7 @@ document.getElementById("oto_child_id").focus();
 False
 >>> fs.errors()
 {AttributeWrapper(foo): ['Please enter a value']}
->>> print _unwhitespace(fs.render())
+>>> print fs.render().strip()
 <div>
   <label class="field_req" for="foo">Foo</label>
   <input id="foo" name="foo" type="text" value="" />
@@ -422,7 +417,7 @@ True
 False
 >>> fs.errors()
 {None: ('foo and bar do not match',)}
->>> print _unwhitespace(fs.render())
+>>> print fs.render().strip()
 <div class="fieldset_error">
   foo and bar do not match
 </div>
