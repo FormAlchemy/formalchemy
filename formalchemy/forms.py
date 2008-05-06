@@ -51,11 +51,22 @@ class FieldSet(base.ModelRender):
     generated HTML code from the `model` object.
     """
     
+    def __init__(self, *args, **kwargs):
+        base.ModelRender.__init__(self, *args, **kwargs)
+        self.prettify = base.prettify
+        self.focus = True
+        self.validator = None
+        self._errors = []
+
+    def configure(self, pk=False, exclude=[], include=[], options=[], global_validator=None, prettify=base.prettify, focus=True):
+        base.ModelRender.configure(self, pk, exclude, include, options)
+        self.validator = global_validator
+        self.prettify = prettify
+        self.focus = focus
+
     def render(self):
         """default template understands extra args 'prettify' and 'focus'"""
-        prettify = self.render_opts.get('prettify', base.prettify)
-        focus = self.render_opts.get('focus', True)
-        return template.render(attrs=self.render_attrs, global_errors=self._errors, fields=fields, h=h, prettify=prettify, focus=focus)
+        return template.render(attrs=self.render_attrs, global_errors=self._errors, fields=fields, h=h, prettify=self.prettify, focus=self.focus)
 
     def validate(self):
         if self.data is None:
@@ -77,7 +88,3 @@ class FieldSet(base.ModelRender):
             errors[None] = self._errors
         errors.update([(attr, attr.errors) for attr in self.render_attrs if attr.errors])
         return errors
-
-    def sync(self):
-        for attr in self.render_attrs:
-            attr.sync()

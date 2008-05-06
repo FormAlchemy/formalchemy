@@ -41,9 +41,6 @@ class ModelRender(object):
     def __init__(self, model, session=None, data={}):
         self.model = self.session = None
         self._render_attrs = None
-        self.render_opts = {}
-        self.validator = None
-        self._errors = []
 
         self.rebind(model, session, data)
         from fields import AttributeWrapper
@@ -60,11 +57,9 @@ class ModelRender(object):
         return self.get_attrs()
     render_attrs = property(render_attrs)
                 
-    def configure(self, pk=False, exclude=[], include=[], options=[], global_validator=None, **kwargs):
+    def configure(self, pk=False, exclude=[], include=[], options=[]):
         """configure render_attrs and any extra args for template"""
         self._render_attrs = self.get_attrs(pk, exclude, include, options)
-        self.validator = global_validator
-        self.render_opts = kwargs
 
     def bind(self, model, session=None, data={}):
         """return a copy of this object, bound to model and session"""
@@ -93,6 +88,10 @@ class ModelRender(object):
             self.session = session
         else:
             self.session = object_session(model)
+
+    def sync(self):
+        for attr in self.render_attrs:
+            attr.sync()
 
     def _raw_attrs(self):
         from fields import AttributeWrapper
