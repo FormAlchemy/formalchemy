@@ -11,7 +11,7 @@ import base, fields, utils
 from validators import ValidationException
 from mako.template import Template
 
-__all__ = ["AbstractFieldSet, FieldSet"]
+__all__ = ['AbstractFieldSet', 'FieldSet']
 
 
 class AbstractFieldSet(base.ModelRender):
