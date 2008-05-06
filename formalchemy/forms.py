@@ -20,7 +20,7 @@ template_text = """
 ${attr.render()}
   % else:
 <div>
-  ${h.content_tag("label", content=attr.label_text or prettify(attr.key), for_=attr.name, class_=attr.nullable and 'field_opt' or 'field_req')}
+  ${h.content_tag("label", content=attr.label_text or prettify(attr.key), for_=attr.name, class_=attr.is_required() and 'field_req' or 'field_opt')}
   ${attr.render()}
   % for error in attr.errors:
   <span class="field_error">${error}</span>

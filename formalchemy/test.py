@@ -98,17 +98,14 @@ __doc__ = r"""
 [AttributeWrapper(active), AttributeWrapper(email), AttributeWrapper(first_name), AttributeWrapper(id), AttributeWrapper(last_name), AttributeWrapper(orders), AttributeWrapper(password)]
 
 >>> fs = FieldSet(One)
->>> fs.configure(pk=True)
+>>> fs.configure(pk=True, focus=None)
+>>> fs.id.is_required()
+True
 >>> print _unwhitespace(fs.render())
 <div>
   <label class="field_req" for="id">Id</label>
   <input id="id" name="id" type="text" />
 </div>
-<script type="text/javascript">
-//<![CDATA[
-document.getElementById("id").focus();
-//]]>
-</script>
 
 >>> fs = FieldSet(Two)
 >>> fs.configure(pk=True)
@@ -215,7 +212,7 @@ document.getElementById("active").focus();
   <input id="last_name" maxlength="20" name="last_name" type="text" />
 </div>
 <div>
-  <label class="field_req" for="orders">Orders</label>
+  <label class="field_opt" for="orders">Orders</label>
   <select id="orders" multiple="multiple" name="orders" size="5"><option value="1">Quantity: 10</option>
 <option value="2">Quantity: 5</option></select>
 </div>
@@ -394,7 +391,7 @@ False
 {AttributeWrapper(foo): ['Please enter a value']}
 >>> print _unwhitespace(fs.render())
 <div>
-  <label class="field_opt" for="foo">Foo</label>
+  <label class="field_req" for="foo">Foo</label>
   <input id="foo" name="foo" type="text" value="" />
   <span class="field_error">Please enter a value</span>
 </div>

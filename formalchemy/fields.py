@@ -237,6 +237,7 @@ class AttributeWrapper:
             self.errors = []
             self.modifier = None
             self.label_text = None
+            self._required = not (self.is_collection() or self.column.nullable)
                         
     def is_raw_foreign_key(self):
         try:
@@ -273,9 +274,6 @@ class AttributeWrapper:
 
     def is_collection(self):
         return isinstance(self._impl, CollectionAttributeImpl)
-    
-    def is_required(self):
-        return not (self.is_collection() or self.column.nullable)
     
     def value(self):
         if self.parent.data is not None and self.name in self.parent.data:
@@ -321,9 +319,8 @@ class AttributeWrapper:
                 self.errors.append(e.message)
         return not self.errors
 
-    def nullable(self):
-        return self.column.nullable
-    nullable = property(nullable)
+    def is_required(self):
+        return self._required
     
     def __eq__(self, other):
         try:
@@ -346,7 +343,7 @@ class AttributeWrapper:
         return attr
     def required(self):
         attr = AttributeWrapper(self)
-        attr.required = True
+        attr._required = True
         return attr
     def label(self, text):
         attr = AttributeWrapper(self)
