@@ -21,8 +21,9 @@ class AbstractFieldSet(base.ModelRender):
     This class is responsible for generating HTML fields from a given
     `model`.
 
-    The one method to use is `render`. This is the method that returns
-    generated HTML code from the `model` object.
+    The one method you must implement is `render`. This is the method that returns
+    generated HTML code from the `model` object.  See 'FieldSet' for the default
+    implementation.
     """
     def __init__(self, *args, **kwargs):
         base.ModelRender.__init__(self, *args, **kwargs)
@@ -98,4 +99,8 @@ class FieldSet(AbstractFieldSet):
 
     def render(self):
         """default template understands extra args 'prettify' and 'focus'"""
+        # we pass 'fields' and 'h' because a relative import in the template
+        # won't work in production, and an absolute import makes testing more of a pain.
+        # since the FA test suite won't concern you if you roll your own FieldSet,
+        # feel free to perform such imports in the template.
         return template.render(attrs=self.render_attrs, global_errors=self._errors, fields=fields, h=h, prettify=self.prettify, focus=self.focus)

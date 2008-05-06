@@ -15,8 +15,7 @@ import base, validators
 
 __all__ = ["TextField", "PasswordField", "HiddenField", "BooleanField",
     "FileField", "IntegerField", "DateTimeField", "DateField", "TimeField",
-    "RadioSet", "SelectField",
-    'required_validator']
+    "RadioSet", "SelectField"]
 
 
 class ModelFieldRender(object):
@@ -396,7 +395,7 @@ class AttributeWrapper:
                 fk_pk = class_mapper(fk_cls).primary_key[0]
                 items = self.parent.session.query(fk_cls).order_by(fk_pk).all()
                 self.render_opts['options'] = [(str(item), _pk(item)) for item in items]
-            self.render_opts['multiple'] = self.is_collection() # todo make default size bigger than 1
+            self.render_opts['multiple'] = self.is_collection()
             if self.render_opts['multiple'] and 'size' not in self.render_opts:
                 self.render_opts['size'] = 5
             return SelectField
