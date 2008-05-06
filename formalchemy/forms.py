@@ -8,6 +8,7 @@ logger = logging.getLogger('formalchemy.' + __name__)
 
 import helpers as h
 import base, fields, utils
+from validators import ValidationException
 from mako.template import Template
 
 __all__ = ["FieldSet"]
@@ -15,6 +16,11 @@ __all__ = ["FieldSet"]
 
 template_text = """
 <% _focus_rendered = False %>
+% for error in global_errors:
+<div class="fieldset_error">
+  ${error}
+</div>
+% endfor
 % for attr in attrs:
   % if attr.render_as == fields.HiddenField:
 ${attr.render()}
@@ -49,7 +55,7 @@ class FieldSet(base.ModelRender):
         """default template understands extra args 'prettify' and 'focus'"""
         prettify = self.render_opts.get('prettify', base.prettify)
         focus = self.render_opts.get('focus', True)
-        return template.render(attrs=self.render_attrs, fields=fields, h=h, prettify=prettify, focus=focus)
+        return template.render(attrs=self.render_attrs, global_errors=self._errors, fields=fields, h=h, prettify=prettify, focus=focus)
 
     def validate(self):
         if self.data is None:
@@ -57,10 +63,18 @@ class FieldSet(base.ModelRender):
         success = True
         for attr in self.render_attrs:
             success = attr._validate() and success
+        if self.validator:
+            try:
+                self.validator(self.data)
+            except ValidationException, e:
+                self._errors = e.args
+                success = False
         return success
     
     def errors(self):
         errors = {}
+        if self._errors:
+            errors[None] = self._errors
         errors.update([(attr, attr.errors) for attr in self.render_attrs if attr.errors])
         return errors
 

@@ -42,6 +42,8 @@ class ModelRender(object):
         self.model = self.session = None
         self._render_attrs = None
         self.render_opts = {}
+        self.validator = None
+        self._errors = []
 
         self.rebind(model, session, data)
         from fields import AttributeWrapper
@@ -58,9 +60,10 @@ class ModelRender(object):
         return self.get_attrs()
     render_attrs = property(render_attrs)
                 
-    def configure(self, pk=False, exclude=[], include=[], options=[], **kwargs):
+    def configure(self, pk=False, exclude=[], include=[], options=[], global_validator=None, **kwargs):
         """configure render_attrs and any extra args for template"""
         self._render_attrs = self.get_attrs(pk, exclude, include, options)
+        self.validator = global_validator
         self.render_opts = kwargs
 
     def bind(self, model, session=None, data={}):

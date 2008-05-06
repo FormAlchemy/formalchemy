@@ -19,6 +19,12 @@ class Two(Base):
     id = Column('id', Integer, primary_key=True)
     foo = Column('foo', Text, nullable=True)
 
+class Three(Base):
+    __tablename__ = 'threes'
+    id = Column('id', Integer, primary_key=True)
+    foo = Column('foo', Text, nullable=True)
+    bar = Column('bar', Text, nullable=True)
+
 class Checkbox(Base):
     __tablename__ = 'checkboxes'
     id = Column('id', Integer, primary_key=True)
@@ -80,6 +86,7 @@ def _unwhitespace(st):
 
 
 from forms import FieldSet
+from validators import ValidationException
 from tables import Table, TableCollection
 
 def configure_and_render(fs, **options):
@@ -406,6 +413,27 @@ True
 >>> two.foo
 'asdf'
 
+>>> fs = FieldSet(Three, data={'foo': 'asdf', 'bar': 'fdsa'})
+>>> def custom_validator(data):
+...   if data['foo'] != data['bar']:
+...     raise ValidationException('foo and bar do not match')
+>>> fs.configure(global_validator=custom_validator, focus=None)
+>>> fs.validate()
+False
+>>> fs.errors()
+{None: ('foo and bar do not match',)}
+>>> print _unwhitespace(fs.render())
+<div class="fieldset_error">
+  foo and bar do not match
+</div>
+<div>
+  <label class="field_opt" for="bar">Bar</label>
+  <input id="bar" name="bar" type="text" value="fdsa" />
+</div>
+<div>
+  <label class="field_opt" for="foo">Foo</label>
+  <input id="foo" name="foo" type="text" value="asdf" />
+</div>
 """
 
 if __name__ == '__main__':
