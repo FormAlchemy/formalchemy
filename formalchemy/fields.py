@@ -336,6 +336,11 @@ class AttributeWrapper:
         return self.parent.model
     model = property(model)
     
+    def bind(self, parent):
+        attr = AttributeWrapper(self)
+        attr.parent = parent
+        return attr
+    
     def validate(self, validator):
         attr = AttributeWrapper(self)
         attr.validators.append(validator)

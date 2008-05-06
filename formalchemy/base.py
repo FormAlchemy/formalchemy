@@ -66,7 +66,8 @@ class ModelRender(object):
         # two steps so bind's error checking can work
         copy = type(self)(self.model)
         copy.rebind(model, session, data)
-        copy._render_attrs = self._render_attrs
+        if self._render_attrs:
+            copy._render_attrs = [attr.bind(copy) for attr in self._render_attrs]
         return copy
 
     def rebind(self, model, session=None, data=None):

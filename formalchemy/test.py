@@ -312,6 +312,12 @@ Traceback (most recent call last):
 ...
 ValueError: You can only bind to another object of the same type you originally bound to (<class '__main__.One'>), not <class '__main__.Two'>
 
+>>> fs = FieldSet(Two)
+>>> fs.configure()
+>>> fs2 = fs.bind(Two)
+>>> [fs2 == attr.parent for attr in fs2._render_attrs]
+[True]
+
 # tables
 >>> t = Table(bill)
 >>> print t.render().strip()
