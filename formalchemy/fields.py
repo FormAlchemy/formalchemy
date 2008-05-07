@@ -207,7 +207,10 @@ def unstr(attr, st):
     if attr.is_collection():
         pass
     if isinstance(attr.column.type, types.Integer):
-        return int(st)
+        try:
+            return int(st)
+        except:
+            raise validators.ValidationException('Value is not an integer')
     if isinstance(attr.column.type, types.DateTime):
         # todo
         pass
@@ -308,6 +311,13 @@ class AttributeWrapper:
             
     def _validate(self):
         self.errors = []
+
+        try:
+            unstr(self, self.parent.data[self.name])
+        except validators.ValidationException, e:
+            self.errors.append(e)
+            return False
+
         L = list(self.validators)
         if self.required and validators.required not in L:
             L.append(validators.required)

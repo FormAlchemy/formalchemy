@@ -414,6 +414,20 @@ True
 >>> two.foo
 'asdf'
 
+>>> one = One()
+>>> fs = FieldSet(one, data={'id': 1})
+>>> fs.configure(pk=True)
+>>> fs.validate()
+True
+>>> fs.sync()
+>>> one.id
+1
+>>> fs.rebind(one, data={'id': 'asdf'})
+>>> fs.validate()
+False
+>>> fs.errors()
+{AttributeWrapper(id): [ValidationException('Value is not an integer',)]}
+
 >>> fs = FieldSet(Three, data={'foo': 'asdf', 'bar': 'fdsa'})
 >>> def custom_validator(data):
 ...   if data['foo'] != data['bar']:
