@@ -137,7 +137,7 @@ class TableCollection(Caption, Th, Td):
         # Make the table's body.
         tbody = []
         for model in self.collection:
-            mr.bind(model)
+            mr.rebind(model)
             self.model = model
             tr = []
             for attr in attrs:
