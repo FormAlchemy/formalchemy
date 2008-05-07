@@ -428,6 +428,20 @@ False
 >>> fs.errors()
 {AttributeWrapper(id): [ValidationException('Value is not an integer',)]}
 
+>>> fs = FieldSet(User, data={})
+>>> fs.configure(include=[fs.orders])
+>>> fs.validate()
+True
+>>> fs.sync()
+>>> fs.model.orders
+[]
+>>> fs.rebind(User, session, {'orders': [str(order1.id), str(order2.id)]})
+>>> fs.validate()
+True
+>>> fs.sync()
+>>> fs.model.orders == [order1, order2]
+True
+
 >>> fs = FieldSet(Three, data={'foo': 'asdf', 'bar': 'fdsa'})
 >>> def custom_validator(data):
 ...   if data['foo'] != data['bar']:

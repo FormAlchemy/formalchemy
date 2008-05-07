@@ -204,8 +204,13 @@ def _pk(instance):
 
 def unstr(attr, st):
     """convert st into the data type expected by attr"""
+    assert isinstance(attr, AttributeWrapper)
     if attr.is_collection():
-        pass
+        if st is None:
+            return []
+        # todo handle non-int PKs
+        return [attr.query(attr.collection_type()).get(int(id_st))
+                for id_st in st]
     if isinstance(attr.column.type, types.Integer):
         try:
             return int(st)
@@ -277,6 +282,12 @@ class AttributeWrapper:
     def is_collection(self):
         return isinstance(self._impl, CollectionAttributeImpl)
     
+    def collection_type(self):
+        return self._property.mapper.class_
+    
+    def query(self, *args, **kwargs):
+        return self.parent.session.query(*args, **kwargs)
+    
     def value(self):
         if self.parent.data is not None and self.name in self.parent.data:
             v = unstr(self, self.parent.data[self.name])
@@ -313,17 +324,17 @@ class AttributeWrapper:
         self.errors = []
 
         try:
-            unstr(self, self.parent.data[self.name])
+            value = unstr(self, self.parent.data.get(self.name))
         except validators.ValidationException, e:
             self.errors.append(e)
             return False
 
         L = list(self.validators)
-        if self.required and validators.required not in L:
+        if self.is_required() and validators.required not in L:
             L.append(validators.required)
         for validator in L:
             try:
-                validator(self.parent.data.get(self.name))
+                validator(value)
             except validators.ValidationException, e:
                 self.errors.append(e.message)
         return not self.errors
@@ -406,7 +417,7 @@ class AttributeWrapper:
         if isinstance(self._impl, ScalarObjectAttributeImpl) or self.is_collection():
             if 'options' not in self.render_opts:
                 logger.debug('loading options for ' + self.name)
-                fk_cls = self._property.mapper.class_
+                fk_cls = self.collection_type()
                 fk_pk = class_mapper(fk_cls).primary_key[0]
                 items = self.parent.session.query(fk_cls).order_by(fk_pk).all()
                 self.render_opts['options'] = [(str(item), _pk(item)) for item in items]

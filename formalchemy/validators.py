@@ -3,7 +3,7 @@ class ValidationException(Exception):
         return self.args[0]
     message = property(message)
 
-def required(st):
-    if not st:
-        raise ValidationException('Please enter a value')
-
+def required(value):
+    if not value:
+        msg = isinstance(value, list) and 'Please select a value' or 'Please enter a value'
+        raise ValidationException(msg)
