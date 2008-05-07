@@ -89,6 +89,9 @@ class ModelRender(object):
             self.session = session
         else:
             self.session = object_session(model)
+        if self.session and object_session(self.model):
+            if self.session is not object_session(self.model):
+                raise Exception('Thou shalt not rebind to different session than the one the model belongs to')
 
     def sync(self):
         for attr in self.render_attrs:
