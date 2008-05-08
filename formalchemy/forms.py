@@ -79,14 +79,18 @@ template_text = r"""
 ${attr.render()}
   % else:
 <div>
-  ${h.content_tag("label", content=attr.label_text or prettify(attr.key), for_=attr.name, class_=attr.is_required() and 'field_req' or 'field_opt')}
+  <label class="${attr.is_required() and 'field_req' or 'field_opt'}" for="${attr.name}">${attr.label_text or prettify(attr.key)}</label>
   ${attr.render()}
   % for error in attr.errors:
   <span class="field_error">${error}</span>
   % endfor
 </div>
 % if (focus == attr or focus is True) and not _focus_rendered:
-${h.javascript_tag('document.getElementById("%s").focus();' % attr.name)}
+<script type="text/javascript">
+//<![CDATA[
+document.getElementById("${attr.name}").focus();
+//]]>
+</script>
 <% _focus_rendered = True %>\
 % endif
 % endif
@@ -110,8 +114,8 @@ class FieldSet(AbstractFieldSet):
         self.focus = focus
 
     def render(self):
-        # we pass 'fields' and 'h' because a relative import in the template
+        # we pass 'fields' because a relative import in the template
         # won't work in production, and an absolute import makes testing more of a pain.
         # since the FA test suite won't concern you if you roll your own FieldSet,
         # feel free to perform such imports in the template.
-        return template.render(attrs=self.render_attrs, global_errors=self._errors, fields=fields, h=h, prettify=self.prettify, focus=self.focus)
+        return template.render(attrs=self.render_attrs, global_errors=self._errors, fields=fields, prettify=self.prettify, focus=self.focus)

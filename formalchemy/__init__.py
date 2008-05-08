@@ -7,8 +7,8 @@ from formalchemy.tables import *
 from formalchemy.forms import *
 from formalchemy.validation import *
 
-__all__ = ["FieldSet", "MultiFields", "Field", "Table", "TableConcat", "TableCollection", "Populate"]
-__version__ = "0.2"
+__all__ = ["FieldSet", "AbstractFieldSet", "Table", "TableConcat", "TableCollection", "form_data"]
+__version__ = "0.5"
 
 __doc__ = """FormAlchemy
 
