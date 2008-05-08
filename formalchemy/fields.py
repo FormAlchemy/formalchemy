@@ -415,7 +415,9 @@ class AttributeWrapper:
         attr.render_as = SelectField
         attr.render_opts = {'multiple': multiple, 'options': options}
         return attr
-    def render(self):
+    def render(self, **html_options):
+        # html_options are not used by the default fieldset template, but are
+        # provided to make more customization possible in custom templates
         if not self.render_as:
             self.render_as = self._get_render_as()
         if isinstance(self._impl, ScalarObjectAttributeImpl) or self.is_collection():
@@ -425,7 +427,9 @@ class AttributeWrapper:
                 items = self.parent.session.query(fk_cls).order_by(fk_pk).all()
                 self.render_opts['options'] = [(str(item), _pk(item)) for item in items]
                 logger.debug('options for %s are %s' % (self.name, self.render_opts['options']))
-        return self.render_as(self, readonly=self.modifier=='readonly', disabled=self.modifier=='disabled', **self.render_opts).render()
+        opts = dict(self.render_opts)
+        opts.update(html_options)
+        return self.render_as(self, readonly=self.modifier=='readonly', disabled=self.modifier=='disabled', **opts).render()
     def _get_render_as(self):
         if isinstance(self._impl, ScalarObjectAttributeImpl) or self.is_collection():
             self.render_opts['multiple'] = self.is_collection()

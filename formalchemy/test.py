@@ -177,6 +177,10 @@ document.getElementById("foo").focus();
 >>> fs = FieldSet(Two)
 >>> assert configure_and_render(fs, include=[fs.foo.dropdown([('option1', 'value1'), ('option2', 'value2')])]) == configure_and_render(fs, options=[fs.foo.dropdown([('option1', 'value1'), ('option2', 'value2')])]) 
 
+>>> fs = FieldSet(Two)
+>>> print fs.foo.render(onblur='test()')
+<input id="foo" name="foo" onblur="test()" type="text" />
+
 # todo fix checkbox/hidden weirdassery
 >>> fs = FieldSet(Checkbox)
 >>> print fs.render().strip()
