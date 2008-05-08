@@ -23,6 +23,7 @@ def form_data(form, post):
             d[attr.name] = post.getall(attr.name)
         else:
             d[attr.name] = post.getone(attr.name)
+    return d
 
 class AbstractFieldSet(base.ModelRender):
     """
