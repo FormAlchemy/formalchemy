@@ -134,7 +134,7 @@ class ModelRender(object):
         if not include:
             ignore = list(exclude)
             if not pk:
-                ignore.extend([wrapper for wrapper in self._raw_attrs() if wrapper.column.primary_key and not wrapper.is_collection()])
+                ignore.extend([wrapper for wrapper in self._raw_attrs() if wrapper.is_pk() and not wrapper.is_collection()])
             ignore.extend([wrapper for wrapper in self._raw_attrs() if wrapper.is_raw_foreign_key()])
             logger.debug('ignoring %s' % ignore)
     

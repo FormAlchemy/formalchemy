@@ -56,7 +56,7 @@ class TextField(ModelFieldRender):
 
     def __init__(self, attr, **kwargs):
         super(TextField, self).__init__(attr, **kwargs)
-        self.length = attr.column.type.length
+        self.length = attr.type.length
 
     def render(self):
         return h.text_field(self.name, value=self.value, maxlength=self.length, **self.attribs)
@@ -211,18 +211,18 @@ def unstr(attr, st):
         # todo handle non-int PKs
         return [attr.query(attr.collection_type()).get(int(id_st))
                 for id_st in st]
-    if isinstance(attr.column.type, types.Integer):
+    if isinstance(attr.type, types.Integer):
         try:
             return int(st)
         except:
             raise validators.ValidationException('Value is not an integer')
-    if isinstance(attr.column.type, types.DateTime):
+    if isinstance(attr.type, types.DateTime):
         # todo
         pass
-    if isinstance(attr.column.type, types.Date):
+    if isinstance(attr.type, types.Date):
         # todo
         pass
-    if isinstance(attr.column.type, types.Boolean):
+    if isinstance(attr.type, types.Boolean):
         # todo
         pass
     return st
@@ -244,15 +244,22 @@ class AttributeWrapper:
             self.errors = []
             self.modifier = None
             self.label_text = None
-            self._required = not (self.is_collection() or self.column.nullable)
+            self._required = not (self.is_collection() or self._column.nullable)
                         
     def is_raw_foreign_key(self):
         try:
             return self._property.columns[0].foreign_keys
         except AttributeError:
             return False
+        
+    def is_pk(self):
+        return self._column.primary_key
+    
+    def type(self):
+        return self._column.type
+    type = property(type)
 
-    def column(self):
+    def _column(self):
         if isinstance(self._impl, ScalarObjectAttributeImpl):
             return self._property.foreign_keys[0]
         elif isinstance(self._impl, ScalarAttributeImpl):
@@ -260,7 +267,7 @@ class AttributeWrapper:
         else:
             assert isinstance(self._impl, CollectionAttributeImpl)
             return self._property.mapper.primary_key[0]
-    column = property(column)
+    _column = property(_column)
 
     def key(self):
         """The name of the attribute in the class"""
@@ -276,7 +283,7 @@ class AttributeWrapper:
         """
         if self.is_collection():
             return self._impl.key
-        return self.column.name
+        return self._column.name
     name = property(name)
 
     def is_collection(self):
@@ -297,11 +304,11 @@ class AttributeWrapper:
             return [_pk(item) for item in v]
         if v is not None:
             return v
-        if self.column.default:
-            if callable(self.column.default.arg):
+        if self._column.default:
+            if callable(self._column.default.arg):
                 logger.info('Ignoring callable default value for %s' % self)
             else:
-                return self.column.default
+                return self._column.default
         return None
     value = property(value)
     
@@ -398,7 +405,7 @@ class AttributeWrapper:
         attr.render_opts = {'size': size}
         return attr
     def radio(self, choices=[]):
-        if isinstance(self.column.type, types.Boolean) and not choices:
+        if isinstance(self.type, types.Boolean) and not choices:
             choices = [True, False]
         attr = AttributeWrapper(self)
         attr.render_as = RadioSet
@@ -425,18 +432,18 @@ class AttributeWrapper:
             if self.render_opts['multiple'] and 'size' not in self.render_opts:
                 self.render_opts['size'] = 5
             return SelectField
-        if isinstance(self.column.type, types.String):
+        if isinstance(self.type, types.String):
             return TextField
-        elif isinstance(self.column.type, types.Integer):
+        elif isinstance(self.type, types.Integer):
             return IntegerField
-        elif isinstance(self.column.type, types.Boolean):
+        elif isinstance(self.type, types.Boolean):
             return BooleanField
-        elif isinstance(self.column.type, types.DateTime):
+        elif isinstance(self.type, types.DateTime):
             return DateTimeField
-        elif isinstance(self.column.type, types.Date):
+        elif isinstance(self.type, types.Date):
             return DateField
-        elif isinstance(self.column.type, types.Time):
+        elif isinstance(self.type, types.Time):
             return TimeField
-        elif isinstance(self.column.type, types.Binary):
+        elif isinstance(self.type, types.Binary):
             return FileField
         return ModelFieldRender
