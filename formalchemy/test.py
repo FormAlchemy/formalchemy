@@ -89,6 +89,9 @@ def configure_and_render(fs, **options):
     return fs.render()
 
 
+fs = FieldSet(bill)
+print fs.orders.radio().render()
+
 __doc__ = r"""
 # some low-level testing first
 >>> fs = FieldSet(order1)
@@ -227,6 +230,8 @@ document.getElementById("active").focus();
 >>> print fs.orders.render()
 <select id="orders" multiple="multiple" name="orders" size="5"><option value="1" selected="selected">Quantity: 10</option>
 <option value="2">Quantity: 5</option></select>
+>>> print fs.orders.radio().render()
+<input id="orders_1" name="orders" type="radio" value="1" />Quantity: 10<br /><input id="orders_2" name="orders" type="radio" value="2" />Quantity: 5
 
 >>> fs = FieldSet(Two)
 >>> print fs.foo.render()

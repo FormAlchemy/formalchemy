@@ -157,15 +157,15 @@ class RadioField:
 class RadioSet(ModelFieldRender):
     """The `RadioSet` class."""
 
-    def __init__(self, attr, choices, **kwargs):
+    def __init__(self, attr, options, **kwargs):
         super(RadioSet, self).__init__(attr)
 
         radios = []
 
-        if isinstance(choices, dict):
-            choices = choices.items()
+        if isinstance(options, dict):
+            options = options.items()
 
-        for choice in choices:
+        for choice in options:
             # Choice is a list/tuple...
             if isinstance(choice, (list, tuple)):
                 choice_name, choice_value = choice
@@ -175,7 +175,6 @@ class RadioSet(ModelFieldRender):
             elif isinstance(choice, bool):
                 radio = RadioField(self.name, choice, checked=self.value == choice, **kwargs)
                 radios.append(radio.render() + str(choice))
-#                radios.append("\n" + h.radio_button(self.name, choice, checked=self.value == choice) + str(choice))
             # ... or just a string.
             else:
                 checked = choice == attr.value or choice == self.default
@@ -404,12 +403,12 @@ class AttributeWrapper:
         attr.render_as = TextAreaField
         attr.render_opts = {'size': size}
         return attr
-    def radio(self, choices=[]):
-        if isinstance(self.type, types.Boolean) and not choices:
-            choices = [True, False]
+    def radio(self, options=[]):
+        if isinstance(self.type, types.Boolean) and not options:
+            options = [True, False]
         attr = AttributeWrapper(self)
         attr.render_as = RadioSet
-        attr.render_opts = {'choices': choices}
+        attr.render_opts = {'options': options}
         return attr
     def dropdown(self, options=[], multiple=False):
         attr = AttributeWrapper(self)
@@ -419,15 +418,16 @@ class AttributeWrapper:
     def render(self):
         if not self.render_as:
             self.render_as = self._get_render_as()
-        return self.render_as(self, readonly=self.modifier=='readonly', disabled=self.modifier=='disabled', **self.render_opts).render()
-    def _get_render_as(self):
         if isinstance(self._impl, ScalarObjectAttributeImpl) or self.is_collection():
-            if 'options' not in self.render_opts:
-                logger.debug('loading options for ' + self.name)
+            if not self.render_opts.get('options'):
                 fk_cls = self.collection_type()
                 fk_pk = class_mapper(fk_cls).primary_key[0]
                 items = self.parent.session.query(fk_cls).order_by(fk_pk).all()
                 self.render_opts['options'] = [(str(item), _pk(item)) for item in items]
+                logger.debug('options for %s are %s' % (self.name, self.render_opts['options']))
+        return self.render_as(self, readonly=self.modifier=='readonly', disabled=self.modifier=='disabled', **self.render_opts).render()
+    def _get_render_as(self):
+        if isinstance(self._impl, ScalarObjectAttributeImpl) or self.is_collection():
             self.render_opts['multiple'] = self.is_collection()
             if self.render_opts['multiple'] and 'size' not in self.render_opts:
                 self.render_opts['size'] = 5
