@@ -11,8 +11,18 @@ import base, fields, utils
 from validators import ValidationException
 from mako.template import Template
 
-__all__ = ['AbstractFieldSet', 'FieldSet']
+__all__ = ['form_data', 'AbstractFieldSet', 'FieldSet']
 
+
+def form_data(form, post):
+    if not (hasattr(post, 'getall') and hasattr(post, 'getone')):
+        raise Exception('unsupported post object.  currently only MultiDict-like objects are supported (see http://pythonpaste.org/module-paste.util.multidict.html)')
+    d = {}
+    for attr in form.render_attrs:
+        if attr.is_collection():
+            d[attr.name] = post.getall(attr.name)
+        else:
+            d[attr.name] = post.getone(attr.name)
 
 class AbstractFieldSet(base.ModelRender):
     """
@@ -93,12 +103,12 @@ class FieldSet(AbstractFieldSet):
         self.focus = True
 
     def configure(self, pk=False, exclude=[], include=[], options=[], global_validator=None, prettify=base.prettify, focus=True):
+        """default template understands extra args 'prettify' and 'focus'"""
         AbstractFieldSet.configure(self, pk, exclude, include, options, global_validator)
         self.prettify = prettify
         self.focus = focus
 
     def render(self):
-        """default template understands extra args 'prettify' and 'focus'"""
         # we pass 'fields' and 'h' because a relative import in the template
         # won't work in production, and an absolute import makes testing more of a pain.
         # since the FA test suite won't concern you if you roll your own FieldSet,

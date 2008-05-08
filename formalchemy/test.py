@@ -89,9 +89,6 @@ def configure_and_render(fs, **options):
     return fs.render()
 
 
-fs = FieldSet(bill)
-print fs.orders.radio().render()
-
 __doc__ = r"""
 # some low-level testing first
 >>> fs = FieldSet(order1)
@@ -433,7 +430,7 @@ False
 >>> fs.errors()
 {AttributeWrapper(id): [ValidationException('Value is not an integer',)]}
 
->>> fs = FieldSet(User, data={})
+>>> fs = FieldSet(User, data={'orders': []})
 >>> fs.configure(include=[fs.orders])
 >>> fs.validate()
 True

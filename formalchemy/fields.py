@@ -205,11 +205,11 @@ def unstr(attr, st):
     """convert st into the data type expected by attr"""
     assert isinstance(attr, AttributeWrapper)
     if attr.is_collection():
-        if st is None:
-            return []
         # todo handle non-int PKs
         return [attr.query(attr.collection_type()).get(int(id_st))
                 for id_st in st]
+    if st is None:
+        return None
     if isinstance(attr.type, types.Integer):
         try:
             return int(st)
