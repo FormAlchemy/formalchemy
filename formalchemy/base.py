@@ -5,6 +5,7 @@
 
 import logging
 logger = logging.getLogger('formalchemy.' + __name__)
+from copy import copy
 
 from sqlalchemy import __version__
 if __version__.split('.') < [0, 4, 1]:
@@ -70,11 +71,13 @@ class ModelRender(object):
     def bind(self, model, session=None, data={}):
         """return a copy of this object, bound to model and session"""
         # two steps so bind's error checking can work
-        copy = type(self)(self.model)
-        copy.rebind(model, session, data)
+        mr = copy(self)
+        mr.rebind(model, session, data)
+        for iattr in _managed_attributes(type(self.model)):
+            setattr(mr, iattr.impl.key, getattr(self, iattr.impl.key).bind(mr))
         if self._render_attrs:
-            copy._render_attrs = [attr.bind(copy) for attr in self._render_attrs]
-        return copy
+            mr._render_attrs = [attr.bind(mr) for attr in self._render_attrs]
+        return mr
 
     def rebind(self, model, session=None, data=None):
         """rebind this object to model and session.  no return value"""

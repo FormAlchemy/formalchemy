@@ -469,6 +469,13 @@ False
   <label class="field_opt" for="foo">Foo</label>
   <input id="foo" name="foo" type="text" value="asdf" />
 </div>
+
+# allow attaching custom attributes to wrappers
+>>> fs = FieldSet(User)
+>>> fs.first_name.baz = 'asdf'
+>>> fs2 = fs.bind(bill)
+>>> fs2.first_name.baz
+'asdf'
 """
 
 if __name__ == '__main__':
