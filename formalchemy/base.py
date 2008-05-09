@@ -11,8 +11,7 @@ if __version__.split('.') < [0, 4, 1]:
     raise ImportError('Version 0.4.1 or later of SQLAlchemy required')
 
 import sqlalchemy.types as types
-from sqlalchemy.orm.attributes \
-    import InstrumentedAttribute, _managed_attributes, ScalarAttributeImpl
+from sqlalchemy.orm.attributes import InstrumentedAttribute, ScalarAttributeImpl
 from sqlalchemy.orm import compile_mappers, object_session
 
 import utils
@@ -27,6 +26,13 @@ def prettify(text):
     "My column name"
     """
     return text.replace("_", " ").capitalize()
+
+try:
+    from sqlalchemy.orm.attributes import _managed_attributes
+except ImportError:
+    from sqlalchemy.orm.attributes import manager_of_class
+    def _managed_attributes(cls):
+        return manager_of_class(cls).values()
 
 class ModelRender(object):
     """The `ModelRender` class.
@@ -45,7 +51,7 @@ class ModelRender(object):
         self.rebind(model, session, data)
         from fields import AttributeWrapper
         
-        for iattr in _managed_attributes(self.model.__class__):
+        for iattr in _managed_attributes(type(self.model)):
             if hasattr(iattr.property, 'mapper') and len(iattr.property.mapper.primary_key) != 1:
                 logger.warn('ignoring multi-column property %s' % iattr.impl.key)
             else:
