@@ -6,6 +6,8 @@
 import logging
 logger = logging.getLogger('formalchemy.' + __name__)
 
+from copy import copy, deepcopy
+
 import helpers as h
 import sqlalchemy.types as types
 from sqlalchemy.orm import class_mapper
@@ -226,24 +228,25 @@ def unstr(attr, st):
         pass
     return st
 
-class AttributeWrapper:
-    def __init__(self, data):
-        if isinstance(data, AttributeWrapper):
-            self.__dict__.update(data.__dict__)
-            self.render_opts = dict(data.render_opts)
-            self.validators = list(data.validators)
-            self.errors = list(data.errors)
-        else:
-            instrumented_attribute, self.parent = data
-            self._impl = instrumented_attribute.impl
-            self._property = instrumented_attribute.property
-            self.render_as = None
-            self.render_opts = {}
-            self.validators = []
-            self.errors = []
-            self.modifier = None
-            self.label_text = None
-            self._required = not (self.is_collection() or self._column.nullable)
+class AttributeWrapper(object):
+    def __init__(self, instrumented_attribute, parent):
+        self.parent = parent
+        self._impl = instrumented_attribute.impl
+        self._property = instrumented_attribute.property
+        self.render_as = None
+        self.render_opts = {}
+        self.validators = []
+        self.errors = []
+        self.modifier = None
+        self.label_text = None
+        self._required = not (self.is_collection() or self._column.nullable)
+            
+    def __deepcopy__(self, memo):
+        wrapper = copy(self)
+        wrapper.render_opts = dict(self.render_opts)
+        wrapper.validators = list(self.validators)
+        wrapper.errors = list(self.errors)
+        return wrapper
                         
     def is_raw_foreign_key(self):
         try:
@@ -364,54 +367,54 @@ class AttributeWrapper:
     model = property(model)
     
     def bind(self, parent):
-        attr = AttributeWrapper(self)
+        attr = deepcopy(self)
         attr.parent = parent
         return attr
     
     def validate(self, validator):
-        attr = AttributeWrapper(self)
+        attr = deepcopy(self)
         attr.validators.append(validator)
         return attr
     def required(self):
-        attr = AttributeWrapper(self)
+        attr = deepcopy(self)
         attr._required = True
         return attr
     def label(self, text):
-        attr = AttributeWrapper(self)
+        attr = deepcopy(self)
         attr.label_text = text
         return attr
     def disabled(self):
-        attr = AttributeWrapper(self)
+        attr = deepcopy(self)
         attr.modifier = 'disabled'
         return attr
     def readonly(self):
-        attr = AttributeWrapper(self)
+        attr = deepcopy(self)
         attr.modifier = 'readonly'
         return attr
     def hidden(self):
-        attr = AttributeWrapper(self)
+        attr = deepcopy(self)
         attr.render_as = HiddenField
         attr.render_opts = {}
         return attr
     def password(self):
-        attr = AttributeWrapper(self)
+        attr = deepcopy(self)
         attr.render_as = PasswordField
         attr.render_opts = {}
         return attr
     def textarea(self, size=None):
-        attr = AttributeWrapper(self)
+        attr = deepcopy(self)
         attr.render_as = TextAreaField
         attr.render_opts = {'size': size}
         return attr
     def radio(self, options=[]):
         if isinstance(self.type, types.Boolean) and not options:
             options = [True, False]
-        attr = AttributeWrapper(self)
+        attr = deepcopy(self)
         attr.render_as = RadioSet
         attr.render_opts = {'options': options}
         return attr
     def dropdown(self, options=[], multiple=False):
-        attr = AttributeWrapper(self)
+        attr = deepcopy(self)
         attr.render_as = SelectField
         attr.render_opts = {'multiple': multiple, 'options': options}
         return attr

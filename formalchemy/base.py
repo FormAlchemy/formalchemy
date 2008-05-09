@@ -56,7 +56,7 @@ class ModelRender(object):
             if hasattr(iattr.property, 'mapper') and len(iattr.property.mapper.primary_key) != 1:
                 logger.warn('ignoring multi-column property %s' % iattr.impl.key)
             else:
-                setattr(self, iattr.impl.key, AttributeWrapper((iattr, self)))
+                setattr(self, iattr.impl.key, AttributeWrapper(iattr, self))
                 
     def render_attrs(self):
         if self._render_attrs:
