@@ -5,7 +5,6 @@
 
 from formalchemy.tables import *
 from formalchemy.forms import *
-from formalchemy.validation import *
 
 __all__ = ["FieldSet", "AbstractFieldSet", "Table", "TableConcat", "TableCollection", "form_data"]
 __version__ = "0.5"
