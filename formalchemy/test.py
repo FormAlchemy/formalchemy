@@ -81,6 +81,7 @@ session.commit()
 
 
 from forms import FieldSet
+from fields import query_options
 from validators import ValidationException
 from tables import Table, TableCollection
 
@@ -233,6 +234,8 @@ document.getElementById("active").focus();
 <option value="2">Quantity: 5</option></select>
 >>> print fs.orders.radio().render()
 <input id="orders_1" name="orders" type="radio" value="1" />Quantity: 10<br /><input id="orders_2" name="orders" type="radio" value="2" />Quantity: 5
+>>> print fs.orders.radio(options=query_options(session.query(Order).filter_by(id=1))).render()
+<input id="orders_1" name="orders" type="radio" value="1" />Quantity: 10
 
 >>> fs = FieldSet(Two)
 >>> print fs.foo.render()

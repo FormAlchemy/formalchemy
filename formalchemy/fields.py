@@ -17,7 +17,7 @@ import base, validators
 
 __all__ = ["TextField", "PasswordField", "HiddenField", "BooleanField",
     "FileField", "IntegerField", "DateTimeField", "DateField", "TimeField",
-    "RadioSet", "SelectField"]
+    "RadioSet", "SelectField", 'query_options']
 
 
 class ModelFieldRender(object):
@@ -202,6 +202,9 @@ class SelectField(ModelFieldRender):
 def _pk(instance):
     column = class_mapper(type(instance)).primary_key[0]
     return getattr(instance, column.key)
+
+def query_options(query):
+    return [(str(item), _pk(item)) for item in query.all()]
 
 def unstr(attr, st):
     """convert st into the data type expected by attr"""
@@ -427,8 +430,8 @@ class AttributeWrapper(object):
             if not self.render_opts.get('options'):
                 fk_cls = self.collection_type()
                 fk_pk = class_mapper(fk_cls).primary_key[0]
-                items = self.parent.session.query(fk_cls).order_by(fk_pk).all()
-                self.render_opts['options'] = [(str(item), _pk(item)) for item in items]
+                q = self.parent.session.query(fk_cls).order_by(fk_pk)
+                self.render_opts['options'] = query_options(q)
                 logger.debug('options for %s are %s' % (self.name, self.render_opts['options']))
         opts = dict(self.render_opts)
         opts.update(html_options)

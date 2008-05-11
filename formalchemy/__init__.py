@@ -5,8 +5,9 @@
 
 from formalchemy.tables import *
 from formalchemy.forms import *
+from formalchemy.fields import query_options
 
-__all__ = ["FieldSet", "AbstractFieldSet", "Table", "TableConcat", "TableCollection", "form_data"]
+__all__ = ["FieldSet", "AbstractFieldSet", "Table", "TableConcat", "TableCollection", "form_data", "query_options"]
 __version__ = "0.5"
 
 __doc__ = """FormAlchemy
