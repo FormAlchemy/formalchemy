@@ -19,7 +19,7 @@ def form_data(form, post):
         raise Exception('unsupported post object.  currently only MultiDict-like objects are supported (see http://pythonpaste.org/module-paste.util.multidict.html)')
     d = {}
     for attr in form.render_attrs:
-        if attr.is_collection():
+        if attr.is_multiple():
             d[attr.name] = post.getall(attr.name)
         else:
             d[attr.name] = post.getone(attr.name)

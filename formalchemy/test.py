@@ -3,7 +3,7 @@ logging.basicConfig(level=logging.DEBUG)
 
 from sqlalchemy import *
 from sqlalchemy.orm import *
-from sqlalchemy.ext.declarative import declarative_base, declared_synonym
+from sqlalchemy.ext.declarative import declarative_base
 logging.getLogger('sqlalchemy').setLevel(logging.ERROR)
 
 engine = create_engine('sqlite://')
@@ -29,6 +29,12 @@ class Checkbox(Base):
     __tablename__ = 'checkboxes'
     id = Column('id', Integer, primary_key=True)
     field = Column('field', Boolean, nullable=False)
+    
+# todo: test a CustomBoolean, using a TypeDecorator --
+# http://www.sqlalchemy.org/docs/04/types.html#types_custom
+# probably need to add _render_as attr and check
+# isinstance(getattr(myclass, '_render_as', type(myclass)), Boolean)
+# since the custom class shouldn't really inherit from Boolean
 
 class OTOChild(Base):
     __tablename__ = 'one_to_one_child'
@@ -56,7 +62,6 @@ class User(Base):
     password = Column('password', Unicode(20), nullable=False)
     first_name = Column('first_name', Unicode(20))
     last_name = Column('last_name', Unicode(20))
-    active = Column('active', Boolean, default=True)
     orders = relation(Order, backref='user')
     def __str__(self):
         return self.first_name + ' ' + self.last_name
@@ -89,7 +94,6 @@ def configure_and_render(fs, **options):
     fs.configure(**options)
     return fs.render()
 
-
 __doc__ = r"""
 # some low-level testing first
 >>> fs = FieldSet(order1)
@@ -98,7 +102,7 @@ __doc__ = r"""
 
 >>> fs = FieldSet(bill)
 >>> list(sorted(fs._raw_attrs(), key=lambda attr: attr.key))
-[AttributeWrapper(active), AttributeWrapper(email), AttributeWrapper(first_name), AttributeWrapper(id), AttributeWrapper(last_name), AttributeWrapper(orders), AttributeWrapper(password)]
+[AttributeWrapper(email), AttributeWrapper(first_name), AttributeWrapper(id), AttributeWrapper(last_name), AttributeWrapper(orders), AttributeWrapper(password)]
 
 >>> fs = FieldSet(One)
 >>> fs.configure(pk=True, focus=None)
@@ -182,34 +186,43 @@ document.getElementById("foo").focus();
 >>> print fs.foo.render(onblur='test()')
 <input id="foo" name="foo" onblur="test()" type="text" />
 
-# todo fix checkbox/hidden weirdassery
->>> fs = FieldSet(Checkbox)
+>>> cb = Checkbox()
+>>> fs = FieldSet(cb)
 >>> print fs.render().strip()
 <div>
   <label class="field_req" for="field">Field</label>
-  <input id="field" name="field" type="checkbox" value="True" /><input id="field" name="field" type="hidden" value="False" />
+  <input id="field" name="field" type="checkbox" value="True" />
 </div>
 <script type="text/javascript">
 //<![CDATA[
 document.getElementById("field").focus();
 //]]>
 </script>
+>>> fs.validate()
+True
+>>> fs.errors()
+{}
+>>> fs.sync()
+>>> cb.field
+False
+>>> fs.rebind(data={'field': 'true'})
+>>> fs.validate()
+True
+>>> fs.sync()
+>>> cb.field
+True
 
 >>> fs = FieldSet(User, session)
 >>> print fs.render().strip()
 <div>
-  <label class="field_opt" for="active">Active</label>
-  <input checked="checked" id="active" name="active" type="checkbox" value="True" /><input id="active" name="active" type="hidden" value="False" />
-</div>
-<script type="text/javascript">
-//<![CDATA[
-document.getElementById("active").focus();
-//]]>
-</script>
-<div>
   <label class="field_req" for="email">Email</label>
   <input id="email" maxlength="40" name="email" type="text" />
 </div>
+<script type="text/javascript">
+//<![CDATA[
+document.getElementById("email").focus();
+//]]>
+</script>
 <div>
   <label class="field_opt" for="first_name">First name</label>
   <input id="first_name" maxlength="20" name="first_name" type="text" />
@@ -334,10 +347,6 @@ ValueError: You can only bind to another object of the same type you originally 
   <caption>User</caption>
   <tbody>
     <tr>
-      <th>Active</th>
-      <td>True</td>
-    </tr>
-    <tr>
       <th>Email</th>
       <td>bill@example.com</td>
     </tr>
@@ -366,7 +375,6 @@ ValueError: You can only bind to another object of the same type you originally 
   <caption>Nonetype (1)</caption>
   <thead>
     <tr>
-      <th>Active</th>
       <th>Email</th>
       <th>First name</th>
       <th>Last name</th>
@@ -376,7 +384,6 @@ ValueError: You can only bind to another object of the same type you originally 
   </thead>
   <tbody>
     <tr>
-      <td>True</td>
       <td>bill@example.com</td>
       <td>Bill</td>
       <td>Jones</td>

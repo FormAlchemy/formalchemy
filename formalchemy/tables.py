@@ -175,7 +175,7 @@ class TableConcat(Caption):
     </table>
 
     """
-
+    
     def __init__(self, models=[]):
         self.options = Options()
         self.models = models

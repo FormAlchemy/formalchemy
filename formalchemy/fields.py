@@ -96,7 +96,7 @@ class BooleanField(ModelFieldRender):
     def render(self):
         # This is a browser hack to have a checkbox POSTed as False even if it wasn't
         # checked, as unchecked boxes are not POSTed. The hidden field should be *after* the checkbox.
-        return h.check_box(self.name, True, checked=self.value, **self.attribs) + h.hidden_field(self.name, value=False)
+        return h.check_box(self.name, True, checked=self.value, **self.attribs)
 
 class FileField(ModelFieldRender):
     """The `FileField` class."""
@@ -213,6 +213,11 @@ def unstr(attr, st):
         # todo handle non-int PKs
         return [attr.query(attr.collection_type()).get(int(id_st))
                 for id_st in st]
+    if attr.is_multiple():
+        # todo
+        pass
+    if isinstance(attr.type, types.Boolean):
+        return st is not None
     if st is None:
         return None
     if isinstance(attr.type, types.Integer):
@@ -224,9 +229,6 @@ def unstr(attr, st):
         # todo
         pass
     if isinstance(attr.type, types.Date):
-        # todo
-        pass
-    if isinstance(attr.type, types.Boolean):
         # todo
         pass
     return st
@@ -294,6 +296,9 @@ class AttributeWrapper(object):
     def is_collection(self):
         return isinstance(self._impl, CollectionAttributeImpl)
     
+    def is_multiple(self):
+        return self.is_collection() or 'options' in self.render_opts
+    
     def collection_type(self):
         return self._property.mapper.class_
     
@@ -326,11 +331,7 @@ class AttributeWrapper(object):
             return str(getattr(self.model, self.key))
         
     def sync(self):
-        # we could avoid the if with
-        # setattr(self.model, attr.name, self.data.get(attr.name, getattr(self.model, attr.name)))
-        # but that could generate unnecessary SA dirty-ness
-        if self.name in self.parent.data:
-            setattr(self.model, self.name, unstr(self, self.parent.data[self.name]))
+        setattr(self.model, self.name, unstr(self, self.parent.data.get(self.name)))
             
     def _validate(self):
         self.errors = []
@@ -416,6 +417,7 @@ class AttributeWrapper(object):
         attr.render_as = RadioSet
         attr.render_opts = {'options': options}
         return attr
+    # todo support .checkbox()
     def dropdown(self, options=[], multiple=False):
         attr = deepcopy(self)
         attr.render_as = SelectField

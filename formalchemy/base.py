@@ -79,24 +79,25 @@ class ModelRender(object):
             mr._render_attrs = [attr.bind(mr) for attr in self._render_attrs]
         return mr
 
-    def rebind(self, model, session=None, data=None):
+    def rebind(self, model=None, session=None, data=None):
         """rebind this object to model and session.  no return value"""
-        if isinstance(model, type):
-            try:
-                model = model()
-                # take object out of session, if present
-                s = object_session(model)
-                if s:
-                    s.expunge(model)
-            except:
-                raise Exception('%s appears to be a class, not an instance, but FormAlchemy cannot instantiate it' % model)
-        if self.model and type(self.model) != type(model):
-            raise ValueError('You can only bind to another object of the same type you originally bound to (%s), not %s' % (type(self.model), type(model)))
-        self.model = model
+        if model:
+            if isinstance(model, type):
+                try:
+                    model = model()
+                    # take object out of session, if present
+                    s = object_session(model)
+                    if s:
+                        s.expunge(model)
+                except:
+                    raise Exception('%s appears to be a class, not an instance, but FormAlchemy cannot instantiate it' % model)
+            if self.model and type(self.model) != type(model):
+                raise ValueError('You can only bind to another object of the same type you originally bound to (%s), not %s' % (type(self.model), type(model)))
+            self.model = model
         self.data = data
         if session:
             self.session = session
-        else:
+        elif model:
             self.session = object_session(model)
         if self.session and object_session(self.model):
             if self.session is not object_session(self.model):

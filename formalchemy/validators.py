@@ -4,6 +4,6 @@ class ValidationException(Exception):
     message = property(message)
 
 def required(value):
-    if not value:
+    if value is None or value == '':
         msg = isinstance(value, list) and 'Please select a value' or 'Please enter a value'
         raise ValidationException(msg)
