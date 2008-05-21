@@ -213,9 +213,6 @@ def unstr(attr, st):
         # todo handle non-int PKs
         return [attr.query(attr.collection_type()).get(int(id_st))
                 for id_st in st]
-    if attr.is_multiple():
-        # todo
-        pass
     if isinstance(attr.type, types.Boolean):
         return st is not None
     if st is None:
@@ -295,9 +292,6 @@ class AttributeWrapper(object):
 
     def is_collection(self):
         return isinstance(self._impl, CollectionAttributeImpl)
-    
-    def is_multiple(self):
-        return self.is_collection() or 'options' in self.render_opts
     
     def collection_type(self):
         return self._property.mapper.class_
@@ -417,7 +411,8 @@ class AttributeWrapper(object):
         attr.render_as = RadioSet
         attr.render_opts = {'options': options}
         return attr
-    # todo support .checkbox()
+    # todo support .checkbox() -- only needs to support collections and booleans
+    # (a non-collection will be single-valued, and 'pick one from these values' field should be a RadioSet)
     def dropdown(self, options=[], multiple=False):
         attr = deepcopy(self)
         attr.render_as = SelectField
