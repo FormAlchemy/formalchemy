@@ -26,6 +26,7 @@ except ImportError:
     from sqlalchemy.orm.attributes import manager_of_class
     def _managed_attributes(cls):
         return manager_of_class(cls).values()
+    
 
 class ModelRender(object):
     """The `ModelRender` class.
@@ -154,3 +155,12 @@ class ModelRender(object):
     def render(self):
         """This function must be overridden by any subclass of `ModelRender`."""
         raise NotImplementedError()
+
+
+def prettify(text):
+    """
+    Turn an attribute name into something prettier, for a default label where none is given.
+    >>> prettify("my_column_name")
+    'My column name'
+    """
+    return text.replace("_", " ").capitalize()
