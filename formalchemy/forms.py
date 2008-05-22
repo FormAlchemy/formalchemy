@@ -104,19 +104,38 @@ document.getElementById("${attr.name}").focus();
 """.strip()
 template = Template(template_text)
 
+def prettify(text):
+    """
+    Turn an attribute name into something prettier, for a default label where none is given.
+    >>> prettify("my_column_name")
+    'My column name'
+    """
+    return text.replace("_", " ").capitalize()
+
 class FieldSet(AbstractFieldSet):
     """
     Default FieldSet implementation.  Adds prettify, focus options.
+    
+    You can override the default prettify either by subclassing:
+    
+    class MyFieldSet(FieldSet):
+        prettify = staticmethod(myprettify)
+        
+    or just on a per-instance basis:
+    
+    fs = FieldSet(...)
+    fs.prettify = myprettify
     """
+    prettify = staticmethod(prettify)
+    
     def __init__(self, *args, **kwargs):
         AbstractFieldSet.__init__(self, *args, **kwargs)
-        self.prettify = base.prettify
+        self.prettify = prettify
         self.focus = True
 
-    def configure(self, pk=False, exclude=[], include=[], options=[], global_validator=None, prettify=base.prettify, focus=True):
+    def configure(self, pk=False, exclude=[], include=[], options=[], global_validator=None, focus=True):
         """default template understands extra args 'prettify' and 'focus'"""
         AbstractFieldSet.configure(self, pk, exclude, include, options, global_validator)
-        self.prettify = prettify
         self.focus = focus
 
     def render(self):

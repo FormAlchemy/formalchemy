@@ -20,14 +20,6 @@ import utils
 
 compile_mappers() # initializes InstrumentedAttributes
 
-def prettify(text):
-    """
-    Return `text` prettify-ed.
-    >>> prettify("my_column_name")
-    "My column name"
-    """
-    return text.replace("_", " ").capitalize()
-
 try:
     from sqlalchemy.orm.attributes import _managed_attributes
 except ImportError:
