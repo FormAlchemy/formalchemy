@@ -15,8 +15,16 @@ __all__ = ['form_data', 'AbstractFieldSet', 'FieldSet']
 
 
 def form_data(form, post):
+    """ 
+    Given POST data (currently must be an object providing getone and
+    getall, like paste's MultiDict), transform it into data suitable for use
+    in bind(). 
+    
+    getone and getall are described at
+    http://pythonpaste.org/module-paste.util.multidict.html
+    """
     if not (hasattr(post, 'getall') and hasattr(post, 'getone')):
-        raise Exception('unsupported post object.  currently only MultiDict-like objects are supported (see http://pythonpaste.org/module-paste.util.multidict.html)')
+        raise Exception('unsupported post object.  see help(formdata) for supported interfaces')
     d = {}
     for attr in form.render_attrs:
         if attr.is_collection():
@@ -27,13 +35,11 @@ def form_data(form, post):
 
 class AbstractFieldSet(base.ModelRender):
     """
-    The `FieldSet` class.
-
-    This class is responsible for generating HTML fields from a given
+    `FieldSets` are responsible for generating HTML fields from a given
     `model`.
 
     The one method you must implement is `render`. This is the method that returns
-    generated HTML code from the `model` object.  See 'FieldSet' for the default
+    generated HTML code from the `model` object.  See `FieldSet` for the default
     implementation.
     """
     def __init__(self, *args, **kwargs):
