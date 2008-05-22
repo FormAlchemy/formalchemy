@@ -85,12 +85,12 @@ class ModelRender(object):
             if isinstance(model, type):
                 try:
                     model = model()
-                    # take object out of session, if present
-                    s = object_session(model)
-                    if s:
-                        s.expunge(model)
                 except:
                     raise Exception('%s appears to be a class, not an instance, but FormAlchemy cannot instantiate it' % model)
+                # take object out of session, if present
+                s = object_session(model)
+                if s:
+                    s.expunge(model)
             if self.model and type(self.model) != type(model):
                 raise ValueError('You can only bind to another object of the same type you originally bound to (%s), not %s' % (type(self.model), type(model)))
             self.model = model
@@ -132,7 +132,7 @@ class ModelRender(object):
             raise Exception('Specify at most one of include, exclude')
 
         if pk not in [True, False]:
-            # help people who meant include=[X] but just wrote X
+            # help people who meant configure(include=[X]) but just wrote configure(X), resulting in pk getting the positional argument
             raise ValueError('pk option must be True or False, not %s' % pk)
             
         for lst in ['include', 'exclude', 'options']:
