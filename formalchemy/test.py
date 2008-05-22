@@ -206,6 +206,16 @@ True
 >>> cb.field
 True
 
+>>> fs = FieldSet(Two)
+>>> print fs.foo.dropdown(options=['one', 'two']).radio().render() 
+<input id="foo_one" name="foo" type="radio" value="one" />one<br /><input id="foo_two" name="foo" type="radio" value="two" />two
+>>> assert fs.foo.radio(options=['one', 'two']).render() == fs.foo.dropdown(options=['one', 'two']).radio().render()
+>>> print fs.foo.radio(options=['one', 'two']).dropdown().render()
+<select id="foo" name="foo"><option value="one">one</option>
+<option value="two">two</option></select>
+>>> assert fs.foo.dropdown(options=['one', 'two']).render() == fs.foo.radio(options=['one', 'two']).dropdown().render()
+>>> # todo checkbox
+
 >>> fs = FieldSet(User, session)
 >>> print fs.render().strip()
 <div>

@@ -88,7 +88,7 @@ class BooleanField(ModelFieldRender):
 
 class FileField(ModelFieldRender):
     def render(self):
-        # Do we need a value here ?
+        # todo Do we need a value here ?
         return h.file_field(self.name, **self.attribs)
 
 class IntegerField(ModelFieldRender):
@@ -133,32 +133,35 @@ class RadioField:
 
     def render(self):
         return h.radio_button(self.name, self.value, **self.attribs)
+    
+    
+def _extract_options(options):
+    if isinstance(options, dict):
+        options = options.items()
+    for choice in options:
+        # Choice is a list/tuple...
+        if isinstance(choice, (list, tuple)):
+            if len(choice) != 2:
+                raise Exception('Options should consist of two items, a name and a value; found %d items in %r' % (len(choice, choice)))
+            yield choice
+        # ... or just a string.
+        else:
+            if not isinstance(choice, basestring):
+                raise Exception('List, tuple, or string value expected as option (got %r)' % choice)
+            yield (choice, choice)
+
 
 class RadioSet(ModelFieldRender):
     def __init__(self, attr, options, **kwargs):
         super(RadioSet, self).__init__(attr)
-
-        radios = []
-
-        if isinstance(options, dict):
-            options = options.items()
-        for choice in options:
-            # Choice is a list/tuple...
-            if isinstance(choice, (list, tuple)):
-                choice_name, choice_value = choice
-                radio = RadioField(self.name, choice_value, checked=self.value == choice_value, **kwargs)
-                radios.append(radio.render() + choice_name)
-            # ... or just a string.
-            else:
-                if not isinstance(choice, basestring):
-                    raise Exception('List, tuple, or string value expected as option (got %r)' % choice)
-                checked = choice == attr.value or choice == self.default
-                radios.append("\n" + h.radio_button(attr.name, choice, checked=checked, **kwargs) + choice)
-
-        self.radios = radios
+        self.radios = []
+        for choice_name, choice_value in _extract_options(options):
+            radio = RadioField(self.name, choice_value, checked=self.value == choice_value, **kwargs)
+            self.radios.append(radio.render() + choice_name)
 
     def render(self):
         return h.tag("br").join(self.radios)
+
 
 class SelectField(ModelFieldRender):
     def __init__(self, attr, options, **kwargs):
@@ -169,13 +172,16 @@ class SelectField(ModelFieldRender):
 
     def render(self):
         return h.select(self.name, h.options_for_select(self.options, selected=self.selected), **self.attribs)
+
     
 def _pk(instance):
     column = class_mapper(type(instance)).primary_key[0]
     return getattr(instance, column.key)
 
+
 def query_options(query):
     return [(str(item), _pk(item)) for item in query.all()]
+
 
 def unstr(attr, st):
     """convert st (raw user data, or None) into the data type expected by attr"""
@@ -200,6 +206,7 @@ def unstr(attr, st):
         # todo
         pass
     return st
+
 
 class AttributeWrapper(object):
     def __init__(self, instrumented_attribute, parent):
@@ -375,16 +382,20 @@ class AttributeWrapper(object):
         attr.render_as = TextAreaField
         attr.render_opts = {'size': size}
         return attr
-    def radio(self, options=[]):
+    def radio(self, options=None):
         attr = deepcopy(self)
         attr.render_as = RadioSet
+        if options is None:
+            options = self.render_opts.get('options')
         attr.render_opts = {'options': options}
         return attr
     # todo support .checkbox() -- only needs to support collections and booleans
     # (a non-collection will be single-valued, and 'pick one from these values' field should be a RadioSet)
-    def dropdown(self, options=[], multiple=False):
+    def dropdown(self, options=None, multiple=False):
         attr = deepcopy(self)
         attr.render_as = SelectField
+        if options is None:
+            options = self.render_opts.get('options')
         attr.render_opts = {'multiple': multiple, 'options': options}
         return attr
     def render(self, **html_options):
