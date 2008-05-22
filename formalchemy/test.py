@@ -1,6 +1,8 @@
 import logging
 logging.basicConfig(level=logging.DEBUG)
 
+from BeautifulSoup import BeautifulSoup # required for html prettification
+
 from sqlalchemy import *
 from sqlalchemy.orm import *
 from sqlalchemy.ext.declarative import declarative_base
@@ -94,6 +96,10 @@ def configure_and_render(fs, **options):
     fs.configure(**options)
     return fs.render()
 
+def _pretty_html(html):
+    soup = BeautifulSoup(html)
+    return soup.prettify().strip()
+
 __doc__ = r"""
 # some low-level testing first
 >>> fs = FieldSet(order1)
@@ -108,50 +114,60 @@ __doc__ = r"""
 >>> fs.configure(pk=True, focus=None)
 >>> fs.id.is_required()
 True
->>> print fs.render().strip()
+>>> print _pretty_html(fs.render())
 <div>
-  <label class="field_req" for="id">Id</label>
-  <input id="id" name="id" type="text" />
+ <label class="field_req" for="id">
+  Id
+ </label>
+ <input id="id" name="id" type="text" />
 </div>
 
 >>> fs = FieldSet(Two)
 >>> fs.configure(pk=True)
->>> print fs.render().strip()
+>>> print _pretty_html(fs.render())
 <div>
-  <label class="field_opt" for="foo">Foo</label>
-  <input id="foo" name="foo" type="text" />
+ <label class="field_opt" for="foo">
+  Foo
+ </label>
+ <input id="foo" name="foo" type="text" />
 </div>
 <script type="text/javascript">
-//<![CDATA[
+ //<![CDATA[
 document.getElementById("foo").focus();
 //]]>
 </script>
 <div>
-  <label class="field_req" for="id">Id</label>
-  <input id="id" name="id" type="text" />
+ <label class="field_req" for="id">
+  Id
+ </label>
+ <input id="id" name="id" type="text" />
 </div>
 
 >>> fs = FieldSet(Two)
->>> print fs.render().strip()
+>>> print _pretty_html(fs.render())
 <div>
-  <label class="field_opt" for="foo">Foo</label>
-  <input id="foo" name="foo" type="text" />
+ <label class="field_opt" for="foo">
+  Foo
+ </label>
+ <input id="foo" name="foo" type="text" />
 </div>
 <script type="text/javascript">
-//<![CDATA[
+ //<![CDATA[
 document.getElementById("foo").focus();
 //]]>
 </script>
 
 >>> fs = FieldSet(Two)
 >>> fs.configure(options=[fs.foo.label('A custom label')])
->>> print fs.render().strip()
+>>> print _pretty_html(fs.render())
 <div>
-  <label class="field_opt" for="foo">A custom label</label>
-  <input id="foo" name="foo" type="text" />
+ <label class="field_opt" for="foo">
+  A custom label
+ </label>
+ <input id="foo" name="foo" type="text" />
 </div>
 <script type="text/javascript">
-//<![CDATA[
+ //<![CDATA[
 document.getElementById("foo").focus();
 //]]>
 </script>
@@ -162,19 +178,27 @@ document.getElementById("foo").focus();
 
 >>> fs = FieldSet(Two) 
 >>> fs.configure(include=[fs.foo.hidden()])
->>> print fs.render().strip()
+>>> print _pretty_html(fs.render())
 <input id="foo" name="foo" type="hidden" />
 
 >>> fs = FieldSet(Two)
 >>> fs.configure(include=[fs.foo.dropdown([('option1', 'value1'), ('option2', 'value2')])])
->>> print fs.render().strip()
+>>> print _pretty_html(fs.render())
 <div>
-  <label class="field_opt" for="foo">Foo</label>
-  <select id="foo" name="foo"><option value="value1">option1</option>
-<option value="value2">option2</option></select>
+ <label class="field_opt" for="foo">
+  Foo
+ </label>
+ <select id="foo" name="foo">
+  <option value="value1">
+   option1
+  </option>
+  <option value="value2">
+   option2
+  </option>
+ </select>
 </div>
 <script type="text/javascript">
-//<![CDATA[
+ //<![CDATA[
 document.getElementById("foo").focus();
 //]]>
 </script>
@@ -187,11 +211,17 @@ document.getElementById("foo").focus();
 <input id="foo" name="foo" onblur="test()" type="text" />
 >>> cb = Checkbox()
 >>> fs = FieldSet(cb)
->>> print fs.field.render().strip()
+>>> print fs.field.render()
 <input id="field" name="field" type="checkbox" value="True" />
->>> print fs.field.dropdown().render().strip()
-<select id="field" name="field"><option value="True">True</option>
-<option value="False">False</option></select>
+>>> print _pretty_html(fs.field.dropdown().render())
+<select id="field" name="field">
+ <option value="True">
+  True
+ </option>
+ <option value="False">
+  False
+ </option>
+</select>
 >>> fs.validate()
 True
 >>> fs.errors()
@@ -218,32 +248,48 @@ True
 <input id="foo" name="foo" type="checkbox" value="one" />one<br /><input id="foo" name="foo" type="checkbox" value="two" />two
 
 >>> fs = FieldSet(User, session)
->>> print fs.render().strip()
+>>> print _pretty_html(fs.render())
 <div>
-  <label class="field_req" for="email">Email</label>
-  <input id="email" maxlength="40" name="email" type="text" />
+ <label class="field_req" for="email">
+  Email
+ </label>
+ <input id="email" maxlength="40" name="email" type="text" />
 </div>
 <script type="text/javascript">
-//<![CDATA[
+ //<![CDATA[
 document.getElementById("email").focus();
 //]]>
 </script>
 <div>
-  <label class="field_opt" for="first_name">First name</label>
-  <input id="first_name" maxlength="20" name="first_name" type="text" />
+ <label class="field_opt" for="first_name">
+  First name
+ </label>
+ <input id="first_name" maxlength="20" name="first_name" type="text" />
 </div>
 <div>
-  <label class="field_opt" for="last_name">Last name</label>
-  <input id="last_name" maxlength="20" name="last_name" type="text" />
+ <label class="field_opt" for="last_name">
+  Last name
+ </label>
+ <input id="last_name" maxlength="20" name="last_name" type="text" />
 </div>
 <div>
-  <label class="field_opt" for="orders">Orders</label>
-  <select id="orders" multiple="multiple" name="orders" size="5"><option value="1">Quantity: 10</option>
-<option value="2">Quantity: 5</option></select>
+ <label class="field_opt" for="orders">
+  Orders
+ </label>
+ <select id="orders" multiple="multiple" name="orders" size="5">
+  <option value="1">
+   Quantity: 10
+  </option>
+  <option value="2">
+   Quantity: 5
+  </option>
+ </select>
 </div>
 <div>
-  <label class="field_req" for="password">Password</label>
-  <input id="password" maxlength="20" name="password" type="text" />
+ <label class="field_req" for="password">
+  Password
+ </label>
+ <input id="password" maxlength="20" name="password" type="text" />
 </div>
 
 >>> fs = FieldSet(bill)
@@ -265,20 +311,30 @@ document.getElementById("email").focus();
 <option value="value2">option2</option></select>
 
 >>> fs = FieldSet(Order, session)
->>> print fs.render().strip()
+>>> print _pretty_html(fs.render())
 <div>
-  <label class="field_req" for="quantity">Quantity</label>
-  <input id="quantity" name="quantity" type="text" />
+ <label class="field_req" for="quantity">
+  Quantity
+ </label>
+ <input id="quantity" name="quantity" type="text" />
 </div>
 <script type="text/javascript">
-//<![CDATA[
+ //<![CDATA[
 document.getElementById("quantity").focus();
 //]]>
 </script>
 <div>
-  <label class="field_req" for="user_id">User</label>
-  <select id="user_id" name="user_id"><option value="1">Bill Jones</option>
-<option value="2">John Kerry</option></select>
+ <label class="field_req" for="user_id">
+  User
+ </label>
+ <select id="user_id" name="user_id">
+  <option value="1">
+   Bill Jones
+  </option>
+  <option value="2">
+   John Kerry
+  </option>
+ </select>
 </div>
 
 # this seems particularly prone to errors; break it out in its own test
@@ -294,43 +350,57 @@ document.getElementById("quantity").focus();
 10
 >>> fs.session == object_session(order1)
 True
->>> print fs.render().strip() # should render w/ current selection the default
+>>> print _pretty_html(fs.render())
 <div>
-  <label class="field_req" for="id">Id</label>
-  <input id="id" name="id" type="text" value="1" />
+ <label class="field_req" for="id">
+  Id
+ </label>
+ <input id="id" name="id" type="text" value="1" />
 </div>
 <script type="text/javascript">
-//<![CDATA[
+ //<![CDATA[
 document.getElementById("id").focus();
 //]]>
 </script>
 <input id="quantity" name="quantity" type="hidden" value="10" />
 <div>
-  <label class="field_req" for="user_id">User</label>
-  <select id="user_id" name="user_id"><option value="1" selected="selected">Bill Jones</option>
-<option value="2">John Kerry</option></select>
+ <label class="field_req" for="user_id">
+  User
+ </label>
+ <select id="user_id" name="user_id">
+  <option value="1" selected="selected">
+   Bill Jones
+  </option>
+  <option value="2">
+   John Kerry
+  </option>
+ </select>
 </div>
 
 >>> fs = FieldSet(One)
 >>> fs.configure(pk=True)
->>> print fs.render().strip()
+>>> print _pretty_html(fs.render())
 <div>
-  <label class="field_req" for="id">Id</label>
-  <input id="id" name="id" type="text" />
+ <label class="field_req" for="id">
+  Id
+ </label>
+ <input id="id" name="id" type="text" />
 </div>
 <script type="text/javascript">
-//<![CDATA[
+ //<![CDATA[
 document.getElementById("id").focus();
 //]]>
 </script>
 >>> fs.configure(include=[])
->>> print fs.render().strip()
+>>> print _pretty_html(fs.render())
 <BLANKLINE>
 >>> fs.configure(pk=True, focus=None)
->>> print fs.render().strip()
+>>> print _pretty_html(fs.render())
 <div>
-  <label class="field_req" for="id">Id</label>
-  <input id="id" name="id" type="text" />
+ <label class="field_req" for="id">
+  Id
+ </label>
+ <input id="id" name="id" type="text" />
 </div>
 
 >>> fs = FieldSet(One)
@@ -399,13 +469,16 @@ ValueError: You can only bind to another object of the same type you originally 
 </table>
 
 >>> fs = FieldSet(OTOParent, session)
->>> print fs.render().strip()
+>>> print _pretty_html(fs.render())
 <div>
-  <label class="field_req" for="oto_child_id">Child</label>
-  <select id="oto_child_id" name="oto_child_id"></select>
+ <label class="field_req" for="oto_child_id">
+  Child
+ </label>
+ <select id="oto_child_id" name="oto_child_id">
+ </select>
 </div>
 <script type="text/javascript">
-//<![CDATA[
+ //<![CDATA[
 document.getElementById("oto_child_id").focus();
 //]]>
 </script>
@@ -418,11 +491,15 @@ document.getElementById("oto_child_id").focus();
 False
 >>> fs.errors()
 {AttributeWrapper(foo): ['Please enter a value']}
->>> print fs.render().strip()
+>>> print _pretty_html(fs.render())
 <div>
-  <label class="field_req" for="foo">Foo</label>
-  <input id="foo" name="foo" type="text" value="" />
-  <span class="field_error">Please enter a value</span>
+ <label class="field_req" for="foo">
+  Foo
+ </label>
+ <input id="foo" name="foo" type="text" value="" />
+ <span class="field_error">
+  Please enter a value
+ </span>
 </div>
 >>> fs.rebind(two, data={'foo': 'asdf'})
 >>> fs.data
@@ -472,17 +549,21 @@ True
 False
 >>> fs.errors()
 {None: ('foo and bar do not match',)}
->>> print fs.render().strip()
+>>> print _pretty_html(fs.render())
 <div class="fieldset_error">
-  foo and bar do not match
+ foo and bar do not match
 </div>
 <div>
-  <label class="field_opt" for="bar">Bar</label>
-  <input id="bar" name="bar" type="text" value="fdsa" />
+ <label class="field_opt" for="bar">
+  Bar
+ </label>
+ <input id="bar" name="bar" type="text" value="fdsa" />
 </div>
 <div>
-  <label class="field_opt" for="foo">Foo</label>
-  <input id="foo" name="foo" type="text" value="asdf" />
+ <label class="field_opt" for="foo">
+  Foo
+ </label>
+ <input id="foo" name="foo" type="text" value="asdf" />
 </div>
 
 # allow attaching custom attributes to wrappers
