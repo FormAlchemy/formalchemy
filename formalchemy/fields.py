@@ -21,8 +21,7 @@ __all__ = ["TextField", "PasswordField", "HiddenField", "BooleanField",
 
 
 class ModelFieldRender(object):
-    """The `ModelFieldRender` class.
-
+    """
     This should be the super class of all xField classes.
 
     This class takes a SQLAlchemy mapped class as first argument and the column
@@ -35,7 +34,6 @@ class ModelFieldRender(object):
         return the default column value if available.
       * `render(self)`
         Return generated HTML.
-
     """
 
     def __init__(self, attr, **kwargs):
@@ -54,8 +52,6 @@ class ModelFieldRender(object):
         return h.text_field(self.name, value=self.value)
 
 class TextField(ModelFieldRender):
-    """The `TextField` class."""
-
     def __init__(self, attr, **kwargs):
         super(TextField, self).__init__(attr, **kwargs)
         self.length = attr.type.length
@@ -64,14 +60,10 @@ class TextField(ModelFieldRender):
         return h.text_field(self.name, value=self.value, maxlength=self.length, **self.attribs)
 
 class PasswordField(TextField):
-    """The `PasswordField` class."""
-
     def render(self):
         return h.password_field(self.name, value=self.value, maxlength=self.length, **self.attribs)
 
 class TextAreaField(ModelFieldRender):
-    """The `TextAreaField` class."""
-
     def __init__(self, attr, size, **kwargs):
         super(TextAreaField, self).__init__(attr, **kwargs)
         self.size = size
@@ -85,37 +77,28 @@ class TextAreaField(ModelFieldRender):
             return h.text_area(self.name, content=self.value, cols=cols, rows=rows, **self.attribs)
 
 class HiddenField(ModelFieldRender):
-    """The `HiddenField` class."""
-
     def render(self):
         return h.hidden_field(self.name, value=self.value, **self.attribs)
 
 class BooleanField(ModelFieldRender):
-    """The `BooleanField` class."""
-
     def render(self):
         # This is a browser hack to have a checkbox POSTed as False even if it wasn't
         # checked, as unchecked boxes are not POSTed. The hidden field should be *after* the checkbox.
         return h.check_box(self.name, True, checked=self.value, **self.attribs)
 
 class FileField(ModelFieldRender):
-    """The `FileField` class."""
-
     def render(self):
         # Do we need a value here ?
         return h.file_field(self.name, **self.attribs)
 
 class IntegerField(ModelFieldRender):
-    """The `IntegerField` class."""
-
     def render(self):
         return h.text_field(self.name, value=self.value, **self.attribs)
 
 class ModelDateTimeRender(ModelFieldRender):
-    """The `ModelDateTimeRender` class.
-
-    This should be the super class for (Date|Time|DateTime)Field.
-
+    """
+    The `ModelDateTimeRender` class
+    should be the super class for (Date|Time|DateTime)Field.
     """
 
     def __init__(self, attr, format, **kwargs):
@@ -134,20 +117,15 @@ class ModelDateTimeRender(ModelFieldRender):
         return h.text_field(self.name, value=self.value, **self.attribs)
 
 class DateTimeField(ModelDateTimeRender):
-    """The `DateTimeField` class."""
     pass
 
 class DateField(ModelDateTimeRender):
-    """The `DateField` class."""
     pass
 
 class TimeField(ModelDateTimeRender):
-    """The `TimeField` class."""
     pass
 
 class RadioField:
-    """The `RadioField` class."""
-
     def __init__(self, name, value, **kwargs):
         self.name = name
         self.value = value
@@ -157,8 +135,6 @@ class RadioField:
         return h.radio_button(self.name, self.value, **self.attribs)
 
 class RadioSet(ModelFieldRender):
-    """The `RadioSet` class."""
-
     def __init__(self, attr, options, **kwargs):
         super(RadioSet, self).__init__(attr)
 
@@ -188,8 +164,6 @@ class RadioSet(ModelFieldRender):
         return h.tag("br").join(self.radios)
 
 class SelectField(ModelFieldRender):
-    """The `SelectField` class."""
-
     def __init__(self, attr, options, **kwargs):
         self.options = options
         selected = kwargs.get('selected', None)
@@ -207,7 +181,7 @@ def query_options(query):
     return [(str(item), _pk(item)) for item in query.all()]
 
 def unstr(attr, st):
-    """convert st into the data type expected by attr"""
+    """convert st (raw user data, or None) into the data type expected by attr"""
     assert isinstance(attr, AttributeWrapper)
     if attr.is_collection():
         # todo handle non-int PKs
