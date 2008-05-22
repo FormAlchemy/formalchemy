@@ -214,7 +214,8 @@ True
 <select id="foo" name="foo"><option value="one">one</option>
 <option value="two">two</option></select>
 >>> assert fs.foo.dropdown(options=['one', 'two']).render() == fs.foo.radio(options=['one', 'two']).dropdown().render()
->>> # todo checkbox
+>>> print fs.foo.dropdown(options=['one', 'two'], multiple=True).checkbox().render() 
+<input id="foo" name="foo" type="checkbox" value="one" />one<br /><input id="foo" name="foo" type="checkbox" value="two" />two
 
 >>> fs = FieldSet(User, session)
 >>> print fs.render().strip()

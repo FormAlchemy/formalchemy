@@ -125,16 +125,7 @@ class DateField(ModelDateTimeRender):
 class TimeField(ModelDateTimeRender):
     pass
 
-class RadioField:
-    def __init__(self, name, value, **kwargs):
-        self.name = name
-        self.value = value
-        self.attribs = kwargs
 
-    def render(self):
-        return h.radio_button(self.name, self.value, **self.attribs)
-    
-    
 def _extract_options(options):
     if isinstance(options, dict):
         options = options.items()
@@ -152,15 +143,18 @@ def _extract_options(options):
 
 
 class RadioSet(ModelFieldRender):
+    widget = staticmethod(h.radio_button)
     def __init__(self, attr, options, **kwargs):
         super(RadioSet, self).__init__(attr)
         self.radios = []
         for choice_name, choice_value in _extract_options(options):
-            radio = RadioField(self.name, choice_value, checked=self.value == choice_value, **kwargs)
-            self.radios.append(radio.render() + choice_name)
-
+            radio = self.widget(self.name, choice_value, checked=self.value == choice_value, **kwargs)
+            self.radios.append(radio + choice_name)
     def render(self):
         return h.tag("br").join(self.radios)
+
+class CheckBoxSet(RadioSet):
+    widget = staticmethod(h.check_box)
 
 
 class SelectField(ModelFieldRender):
@@ -389,8 +383,13 @@ class AttributeWrapper(object):
             options = self.render_opts.get('options')
         attr.render_opts = {'options': options}
         return attr
-    # todo support .checkbox() -- only needs to support collections and booleans
-    # (a non-collection will be single-valued, and 'pick one from these values' field should be a RadioSet)
+    def checkbox(self, options=None):
+        attr = deepcopy(self)
+        attr.render_as = CheckBoxSet
+        if options is None:
+            options = self.render_opts.get('options')
+        attr.render_opts = {'options': options}
+        return attr
     def dropdown(self, options=None, multiple=False):
         attr = deepcopy(self)
         attr.render_as = SelectField
