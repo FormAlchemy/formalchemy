@@ -9,7 +9,7 @@ logger = logging.getLogger('formalchemy.' + __name__)
 import helpers as h
 import base, fields, utils
 from validators import ValidationException
-from mako.template import Template
+from tempita import Template
 
 __all__ = ['form_data', 'AbstractFieldSet', 'FieldSet']
 
@@ -71,15 +71,17 @@ class AbstractFieldSet(base.ModelRender):
             errors[None] = self._errors
         errors.update([(attr, attr.errors) for attr in self.render_attrs if attr.errors])
         return errors
-
-
-template_text = r"""
+    
+    
+template_text_mako = r"""
 <% _focus_rendered = False %>\
+
 % for error in global_errors:
 <div class="fieldset_error">
   ${error}
 </div>
 % endfor
+
 % for attr in attrs:
   % if attr.render_as == fields.HiddenField:
 ${attr.render()}
@@ -91,6 +93,7 @@ ${attr.render()}
   <span class="field_error">${error}</span>
   % endfor
 </div>
+
 % if (focus == attr or focus is True) and not _focus_rendered:
 <script type="text/javascript">
 //<![CDATA[
@@ -99,10 +102,53 @@ document.getElementById("${attr.name}").focus();
 </script>
 <% _focus_rendered = True %>\
 % endif
+
 % endif
 % endfor
 """.strip()
-template = Template(template_text)
+try:
+    from mako.template import Template as MakoTemplate
+except ImportError:
+    pass
+else:
+    template_mako = MakoTemplate(template_text_mako)
+    render_mako = template_mako.render
+
+template_text_tempita = r"""
+{{py:_focus_rendered = False}}
+
+{{for error in global_errors}}
+<div class="fieldset_error">
+  {{error}}
+</div>
+{{endfor}}
+
+{{for attr in attrs}}                                                                          
+{{if attr.render_as == fields.HiddenField}}                                                    
+{{attr.render()}}                                                                              
+{{else}}                                                                                       
+<div>                                                                                          
+  <label class="{{attr.is_required() and 'field_req' or 'field_opt'}}" for="{{attr.name}}">{{attr.label_text or prettify(attr.key)}}</label>
+  {{attr.render()}}                                                                            
+  {{for error in attr.errors}}
+  <span class="field_error">{{error}}</span>
+  {{endfor}}
+</div>                                                                                         
+
+{{if (focus == attr or focus is True) and not _focus_rendered}}
+<script type="text/javascript">
+//<![CDATA[
+document.getElementById("{{attr.name}}").focus();
+//]]>
+</script>
+{{py:_focus_rendered = True}}
+{{endif}}
+
+{{endif}}                                                                                      
+{{endfor}}                                                                                     
+""".strip()
+template_tempita = Template(template_text_tempita, name='fieldset_template')
+render_tempita = template_tempita.substitute
 
 class FieldSet(AbstractFieldSet):
     """
@@ -129,9 +175,9 @@ class FieldSet(AbstractFieldSet):
         AbstractFieldSet.configure(self, pk, exclude, include, options, global_validator)
         self.focus = focus
 
-    def render(self):
+    def render(self, render_with=render_tempita):
         # we pass 'fields' because a relative import in the template
         # won't work in production, and an absolute import makes testing more of a pain.
         # since the FA test suite won't concern you if you roll your own FieldSet,
         # feel free to perform such imports in the template.
-        return template.render(attrs=self.render_attrs, global_errors=self._errors, fields=fields, prettify=self.prettify, focus=self.focus)
+        return render_with(attrs=self.render_attrs, global_errors=self._errors, fields=fields, prettify=self.prettify, focus=self.focus)
