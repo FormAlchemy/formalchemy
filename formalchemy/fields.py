@@ -142,19 +142,16 @@ class RadioSet(ModelFieldRender):
 
         if isinstance(options, dict):
             options = options.items()
-
         for choice in options:
             # Choice is a list/tuple...
             if isinstance(choice, (list, tuple)):
                 choice_name, choice_value = choice
                 radio = RadioField(self.name, choice_value, checked=self.value == choice_value, **kwargs)
                 radios.append(radio.render() + choice_name)
-            # ... a boolean...
-            elif isinstance(choice, bool):
-                radio = RadioField(self.name, choice, checked=self.value == choice, **kwargs)
-                radios.append(radio.render() + str(choice))
             # ... or just a string.
             else:
+                if not isinstance(choice, basestring):
+                    raise Exception('List, tuple, or string value expected as option (got %r)' % choice)
                 checked = choice == attr.value or choice == self.default
                 radios.append("\n" + h.radio_button(attr.name, choice, checked=checked, **kwargs) + choice)
 
@@ -380,7 +377,7 @@ class AttributeWrapper(object):
         return attr
     def radio(self, options=[]):
         if isinstance(self.type, types.Boolean) and not options:
-            options = [True, False]
+            options = [('True', True), ('False', False)]
         attr = deepcopy(self)
         attr.render_as = RadioSet
         attr.render_opts = {'options': options}
