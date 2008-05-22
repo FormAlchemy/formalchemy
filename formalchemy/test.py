@@ -185,19 +185,13 @@ document.getElementById("foo").focus();
 >>> fs = FieldSet(Two)
 >>> print fs.foo.render(onblur='test()')
 <input id="foo" name="foo" onblur="test()" type="text" />
-
 >>> cb = Checkbox()
 >>> fs = FieldSet(cb)
->>> print fs.render().strip()
-<div>
-  <label class="field_req" for="field">Field</label>
-  <input id="field" name="field" type="checkbox" value="True" />
-</div>
-<script type="text/javascript">
-//<![CDATA[
-document.getElementById("field").focus();
-//]]>
-</script>
+>>> print fs.field.render().strip()
+<input id="field" name="field" type="checkbox" value="True" />
+>>> print fs.field.dropdown().render().strip()
+<select id="field" name="field"><option value="True">True</option>
+<option value="False">False</option></select>
 >>> fs.validate()
 True
 >>> fs.errors()

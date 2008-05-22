@@ -376,8 +376,6 @@ class AttributeWrapper(object):
         attr.render_opts = {'size': size}
         return attr
     def radio(self, options=[]):
-        if isinstance(self.type, types.Boolean) and not options:
-            options = [('True', True), ('False', False)]
         attr = deepcopy(self)
         attr.render_as = RadioSet
         attr.render_opts = {'options': options}
@@ -401,6 +399,8 @@ class AttributeWrapper(object):
                 q = self.parent.session.query(fk_cls).order_by(fk_pk)
                 self.render_opts['options'] = query_options(q)
                 logger.debug('options for %s are %s' % (self.name, self.render_opts['options']))
+        if isinstance(self.type, types.Boolean) and not self.render_opts.get('options') and self.render_as in [SelectField, RadioSet]:
+            self.render_opts['options'] = [('True', True), ('False', False)]
         opts = dict(self.render_opts)
         opts.update(html_options)
         return self.render_as(self, readonly=self.modifier=='readonly', disabled=self.modifier=='disabled', **opts).render()
