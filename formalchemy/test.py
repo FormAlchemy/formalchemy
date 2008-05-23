@@ -62,11 +62,10 @@ class User(Base):
     id = Column('id', Integer, primary_key=True)
     email = Column('email', Unicode(40), unique=True, nullable=False)
     password = Column('password', Unicode(20), nullable=False)
-    first_name = Column('first_name', Unicode(20))
-    last_name = Column('last_name', Unicode(20))
+    name = Column('name', Unicode(30))
     orders = relation(Order, backref='user')
     def __str__(self):
-        return self.first_name + ' ' + self.last_name
+        return self.name
     
 Base.metadata.create_all()
 
@@ -74,12 +73,10 @@ session = Session()
 
 bill = User(email='bill@example.com', 
             password='1234',
-            first_name='Bill',
-            last_name='Jones')
+            name='Bill')
 john = User(email='john@example.com', 
             password='5678',
-            first_name='John',
-            last_name='Kerry')
+            name='John')
 
 order1 = Order(user=bill, quantity=10)
 order2 = Order(user=john, quantity=5)
@@ -99,8 +96,8 @@ def _pretty_html(html):
 class FieldSet(DefaultFieldSet):
     def render(self):
         kwargs = dict(attrs=self.render_attrs, global_errors=self._errors, fields=fields, prettify=self.prettify, focus=self.focus)
-        tempita = _pretty_html(render_tempita(**kwargs)).strip()
-        mako = _pretty_html(render_mako(**kwargs)).strip()
+        tempita = _pretty_html(render_tempita(**kwargs))
+        mako = _pretty_html(render_mako(**kwargs))
         assert mako == tempita
         return mako
 
@@ -117,7 +114,7 @@ __doc__ = r"""
 
 >>> fs = FieldSet(bill)
 >>> list(sorted(fs._raw_attrs(), key=lambda attr: attr.key))
-[AttributeWrapper(email), AttributeWrapper(first_name), AttributeWrapper(id), AttributeWrapper(last_name), AttributeWrapper(orders), AttributeWrapper(password)]
+[AttributeWrapper(email), AttributeWrapper(id), AttributeWrapper(name), AttributeWrapper(orders), AttributeWrapper(password)]
 
 >>> fs = FieldSet(One)
 >>> fs.configure(pk=True, focus=None)
@@ -264,16 +261,10 @@ document.getElementById("email").focus();
 //]]>
 </script>
 <div>
- <label class="field_opt" for="first_name">
-  First name
+ <label class="field_opt" for="name">
+  Name
  </label>
- <input id="first_name" maxlength="20" name="first_name" type="text" />
-</div>
-<div>
- <label class="field_opt" for="last_name">
-  Last name
- </label>
- <input id="last_name" maxlength="20" name="last_name" type="text" />
+ <input id="name" maxlength="20" name="name" type="text" />
 </div>
 <div>
  <label class="field_opt" for="orders">
@@ -429,12 +420,8 @@ ValueError: You can only bind to another object of the same type you originally 
       <td>bill@example.com</td>
     </tr>
     <tr>
-      <th>First name</th>
+      <th>Name</th>
       <td>Bill</td>
-    </tr>
-    <tr>
-      <th>Last name</th>
-      <td>Jones</td>
     </tr>
     <tr>
       <th>Orders</th>
@@ -454,8 +441,7 @@ ValueError: You can only bind to another object of the same type you originally 
   <thead>
     <tr>
       <th>Email</th>
-      <th>First name</th>
-      <th>Last name</th>
+      <th>Name</th>
       <th>Orders</th>
       <th>Password</th>
     </tr>
@@ -464,7 +450,6 @@ ValueError: You can only bind to another object of the same type you originally 
     <tr>
       <td>bill@example.com</td>
       <td>Bill</td>
-      <td>Jones</td>
       <td>Quantity: 10</td>
       <td>1234</td>
     </tr>
@@ -571,9 +556,9 @@ False
 
 # allow attaching custom attributes to wrappers
 >>> fs = FieldSet(User)
->>> fs.first_name.baz = 'asdf'
+>>> fs.name.baz = 'asdf'
 >>> fs2 = fs.bind(bill)
->>> fs2.first_name.baz
+>>> fs2.name.baz
 'asdf'
 """
 
