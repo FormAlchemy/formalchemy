@@ -106,13 +106,6 @@ document.getElementById("${attr.name}").focus();
 % endif
 % endfor
 """.strip()
-try:
-    from mako.template import Template as MakoTemplate
-except ImportError:
-    pass
-else:
-    template_mako = MakoTemplate(template_text_mako)
-    render_mako = template_mako.render
 
 template_text_tempita = r"""
 {{py:_focus_rendered = False}}
@@ -150,6 +143,17 @@ document.getElementById("{{attr.name}}").focus();
 template_tempita = Template(template_text_tempita, name='fieldset_template')
 render_tempita = template_tempita.substitute
 
+try:
+    from mako.template import Template as MakoTemplate
+except ImportError:
+    render = render_tempita
+else:
+    template_mako = MakoTemplate(template_text_mako)
+    render = render_mako = template_mako.render
+
+# todo use mako template as default; fall back to tempita if import fails?
+# how do we test this nicely?
+
 class FieldSet(AbstractFieldSet):
     """
     Default FieldSet implementation.  Adds prettify, focus options.
@@ -175,9 +179,9 @@ class FieldSet(AbstractFieldSet):
         AbstractFieldSet.configure(self, pk, exclude, include, options, global_validator)
         self.focus = focus
 
-    def render(self, render_with=render_tempita):
+    def render(self):
         # we pass 'fields' because a relative import in the template
         # won't work in production, and an absolute import makes testing more of a pain.
         # since the FA test suite won't concern you if you roll your own FieldSet,
         # feel free to perform such imports in the template.
-        return render_with(attrs=self.render_attrs, global_errors=self._errors, fields=fields, prettify=self.prettify, focus=self.focus)
+        return render(attrs=self.render_attrs, global_errors=self._errors, fields=fields, prettify=self.prettify, focus=self.focus)

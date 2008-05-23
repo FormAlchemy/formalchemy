@@ -87,18 +87,27 @@ order2 = Order(user=john, quantity=5)
 session.commit()
 
 
-from forms import FieldSet
-from fields import query_options
+from forms import FieldSet as DefaultFieldSet, render_mako, render_tempita
+import fields
 from validators import ValidationException
 from tables import Table, TableCollection
+
+def _pretty_html(html):
+    soup = BeautifulSoup(html)
+    return soup.prettify().strip()
+
+class FieldSet(DefaultFieldSet):
+    def render(self):
+        kwargs = dict(attrs=self.render_attrs, global_errors=self._errors, fields=fields, prettify=self.prettify, focus=self.focus)
+        tempita = _pretty_html(render_tempita(**kwargs)).strip()
+        mako = _pretty_html(render_mako(**kwargs)).strip()
+        assert mako == tempita
+        return mako
 
 def configure_and_render(fs, **options):
     fs.configure(**options)
     return fs.render()
 
-def _pretty_html(html):
-    soup = BeautifulSoup(html)
-    return soup.prettify().strip()
 
 __doc__ = r"""
 # some low-level testing first
@@ -114,7 +123,7 @@ __doc__ = r"""
 >>> fs.configure(pk=True, focus=None)
 >>> fs.id.is_required()
 True
->>> print _pretty_html(fs.render())
+>>> print fs.render()
 <div>
  <label class="field_req" for="id">
   Id
@@ -124,7 +133,7 @@ True
 
 >>> fs = FieldSet(Two)
 >>> fs.configure(pk=True)
->>> print _pretty_html(fs.render())
+>>> print fs.render()
 <div>
  <label class="field_opt" for="foo">
   Foo
@@ -144,7 +153,7 @@ document.getElementById("foo").focus();
 </div>
 
 >>> fs = FieldSet(Two)
->>> print _pretty_html(fs.render())
+>>> print fs.render()
 <div>
  <label class="field_opt" for="foo">
   Foo
@@ -159,7 +168,7 @@ document.getElementById("foo").focus();
 
 >>> fs = FieldSet(Two)
 >>> fs.configure(options=[fs.foo.label('A custom label')])
->>> print _pretty_html(fs.render())
+>>> print fs.render()
 <div>
  <label class="field_opt" for="foo">
   A custom label
@@ -178,12 +187,12 @@ document.getElementById("foo").focus();
 
 >>> fs = FieldSet(Two) 
 >>> fs.configure(include=[fs.foo.hidden()])
->>> print _pretty_html(fs.render())
+>>> print fs.render()
 <input id="foo" name="foo" type="hidden" />
 
 >>> fs = FieldSet(Two)
 >>> fs.configure(include=[fs.foo.dropdown([('option1', 'value1'), ('option2', 'value2')])])
->>> print _pretty_html(fs.render())
+>>> print fs.render()
 <div>
  <label class="field_opt" for="foo">
   Foo
@@ -213,15 +222,9 @@ document.getElementById("foo").focus();
 >>> fs = FieldSet(cb)
 >>> print fs.field.render()
 <input id="field" name="field" type="checkbox" value="True" />
->>> print _pretty_html(fs.field.dropdown().render())
-<select id="field" name="field">
- <option value="True">
-  True
- </option>
- <option value="False">
-  False
- </option>
-</select>
+>>> print fs.field.dropdown().render()
+<select id="field" name="field"><option value="True">True</option>
+<option value="False">False</option></select>
 >>> fs.validate()
 True
 >>> fs.errors()
@@ -248,7 +251,7 @@ True
 <input id="foo" name="foo" type="checkbox" value="one" />one<br /><input id="foo" name="foo" type="checkbox" value="two" />two
 
 >>> fs = FieldSet(User, session)
->>> print _pretty_html(fs.render())
+>>> print fs.render()
 <div>
  <label class="field_req" for="email">
   Email
@@ -298,7 +301,7 @@ document.getElementById("email").focus();
 <option value="2">Quantity: 5</option></select>
 >>> print fs.orders.radio().render()
 <input id="orders_1" name="orders" type="radio" value="1" />Quantity: 10<br /><input id="orders_2" name="orders" type="radio" value="2" />Quantity: 5
->>> print fs.orders.radio(options=query_options(session.query(Order).filter_by(id=1))).render()
+>>> print fs.orders.radio(options=fields.query_options(session.query(Order).filter_by(id=1))).render()
 <input id="orders_1" name="orders" type="radio" value="1" />Quantity: 10
 
 >>> fs = FieldSet(Two)
@@ -311,7 +314,7 @@ document.getElementById("email").focus();
 <option value="value2">option2</option></select>
 
 >>> fs = FieldSet(Order, session)
->>> print _pretty_html(fs.render())
+>>> print fs.render()
 <div>
  <label class="field_req" for="quantity">
   Quantity
@@ -350,7 +353,7 @@ document.getElementById("quantity").focus();
 10
 >>> fs.session == object_session(order1)
 True
->>> print _pretty_html(fs.render())
+>>> print fs.render()
 <div>
  <label class="field_req" for="id">
   Id
@@ -379,7 +382,7 @@ document.getElementById("id").focus();
 
 >>> fs = FieldSet(One)
 >>> fs.configure(pk=True)
->>> print _pretty_html(fs.render())
+>>> print fs.render()
 <div>
  <label class="field_req" for="id">
   Id
@@ -392,10 +395,10 @@ document.getElementById("id").focus();
 //]]>
 </script>
 >>> fs.configure(include=[])
->>> print _pretty_html(fs.render())
+>>> print fs.render()
 <BLANKLINE>
 >>> fs.configure(pk=True, focus=None)
->>> print _pretty_html(fs.render())
+>>> print fs.render()
 <div>
  <label class="field_req" for="id">
   Id
@@ -469,7 +472,7 @@ ValueError: You can only bind to another object of the same type you originally 
 </table>
 
 >>> fs = FieldSet(OTOParent, session)
->>> print _pretty_html(fs.render())
+>>> print fs.render()
 <div>
  <label class="field_req" for="oto_child_id">
   Child
@@ -491,7 +494,7 @@ document.getElementById("oto_child_id").focus();
 False
 >>> fs.errors()
 {AttributeWrapper(foo): ['Please enter a value']}
->>> print _pretty_html(fs.render())
+>>> print fs.render()
 <div>
  <label class="field_req" for="foo">
   Foo
@@ -549,7 +552,7 @@ True
 False
 >>> fs.errors()
 {None: ('foo and bar do not match',)}
->>> print _pretty_html(fs.render())
+>>> print fs.render()
 <div class="fieldset_error">
  foo and bar do not match
 </div>
