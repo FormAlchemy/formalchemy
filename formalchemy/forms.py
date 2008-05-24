@@ -69,7 +69,8 @@ class AbstractFieldSet(base.ModelRender):
         errors = {}
         if self._errors:
             errors[None] = self._errors
-        errors.update([(attr, attr.errors) for attr in self.render_attrs if attr.errors])
+        errors.update(dict([(attr, attr.errors)
+                            for attr in self.render_attrs if attr.errors]))
         return errors
     
     

@@ -105,7 +105,11 @@ class ModelRender(object):
         wrappers = [attr for attr in self.__dict__.itervalues()
                     if isinstance(attr, AttributeWrapper)]
         # sort by name for reproducibility
-        wrappers.sort(key=lambda wrapper: wrapper.name)
+        try:
+            wrappers.sort(key=lambda wrapper: wrapper.name)
+        except TypeError:
+            # 2.3 support
+            wrappers.sort(lambda a, b: cmp(a.name, b.name))
         return wrappers
     
     def get_attrs(self, pk=False, exclude=[], include=[], options=[]):
@@ -143,7 +147,7 @@ class ModelRender(object):
             
         # this feels overcomplicated
         options_dict = {}
-        options_dict.update([(wrapper, wrapper) for wrapper in options])
+        options_dict.update(dict([(wrapper, wrapper) for wrapper in options]))
         L = []
         for wrapper in include:
             if wrapper in options_dict:

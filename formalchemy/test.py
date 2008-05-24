@@ -1,5 +1,6 @@
 import logging
-logging.basicConfig(level=logging.DEBUG)
+logging.basicConfig()
+logging.getLogger().setLevel(logging.DEBUG)
 
 from BeautifulSoup import BeautifulSoup # required for html prettification
 
@@ -105,6 +106,13 @@ def configure_and_render(fs, **options):
     fs.configure(**options)
     return fs.render()
 
+if not hasattr(__builtins__, 'sorted'):
+    # 2.3 support
+    def sorted(L, key=None):
+        assert key
+        L = list(L)
+        L.sort(lambda a, b: cmp(key(a), key(b)))
+        return L
 
 __doc__ = r"""
 # some low-level testing first
