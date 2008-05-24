@@ -7,248 +7,270 @@ http://www.opensource.org/licenses/mit-license.php
 
 """
 
+import cgi, re
+
 # Flag to indcate whether XHTML-style empty tags (< />) should be used.
 XHTML = True
 
-def build_attr_string(attrs=None):
-    """
-    Given a dictionary of attributes, construct a string suitable for
-    inclusion in an HTML tag mapping the attributes to their values.
-
-    Because Python's dictionary datatype is used, the order of the
-    attributes is not usually predictable; therefore, we run the
-    dictionary keys through sorted() first. This means that they'll
-    come back in alphabetical order of the attribute names.
-
-    No escaping of either attributes or values is done. TODO: is this
-    what FormAlchemy expects?
-
-    >>> build_attr_string()
-    ''
-    >>> build_attr_string({'foo':'bar'})
-    ' foo="bar"'
-    >>> build_attr_string({'foo':'bar', 'baz':'fooz'})
-    ' baz="fooz" foo="bar"'
+def html_escape(s):
+    """HTML-escape a string or object
     
+    This converts any non-string objects passed into it to strings
+    (actually, using ``unicode()``).  All values returned are
+    non-unicode strings (using ``&#num;`` entities for all non-ASCII
+    characters).
     
+    None is treated specially, and returns the empty string.
     """
-    if attrs is None:
-        return ""
-    attrs = ['%s="%s"' % (key, attrs[key])
-             for key in sorted(attrs.keys()) if attrs[key]]
-    if not attrs:
-        return ""
+    if s is None:
+        return ''
+    if not isinstance(s, basestring):
+        if hasattr(s, '__unicode__'):
+            s = unicode(s)
+        else:
+            s = str(s)
+    s = cgi.escape(s, True)
+    if isinstance(s, unicode):
+        s = s.encode('ascii', 'xmlcharrefreplace')
+    return s
+
+def escape_once(html):
+    """Escapes a given string without affecting existing escaped entities.
+
+    >>> escape_once("1 < 2 &amp; 3")
+    '1 &lt; 2 &amp; 3'
+    """
+    return fix_double_escape(html_escape(html))
+
+def fix_double_escape(escaped):
+    """Fix double-escaped entities, such as &amp;amp;, &amp;#123;, etc"""
+    return re.sub(r'&amp;([a-z]+|(#\d+));', r'&\1;', escaped)
+
+def convert_booleans(options):
+    for attr in ['disabled', 'readonly', 'multiple']:
+        boolean_attribute(options, attr)
+    return options
+
+def boolean_attribute(options, attribute):
+    if options.get(attribute):
+        options[attribute] = attribute
+    elif options.has_key(attribute):
+        del options[attribute]
+
+def strip_unders(options):
+    for x, y in options.items():
+        if x.endswith('_'):
+            options[x[:-1]] = y
+            del options[x]
+
+def content_tag(name, content, **options):
+    """
+    Create a tag with content
+    
+    Takes the same keyword args as ``tag``
+    
+    Examples::
+    
+        >>> content_tag("p", "Hello world!")
+        '<p>Hello world!</p>'
+        >>> content_tag("div", content_tag("p", "Hello world!"), class_="strong")
+        '<div class="strong"><p>Hello world!</p></div>'
+    """
+    if content is None:
+        content = ''
+    tag = '<%s%s>%s</%s>' % (name, (options and tag_options(**options)) or '', content, name)
+    return tag
+
+def text_field(name, value=None, **options):
+    """
+    Creates a standard text field.
+    
+    ``value`` is a string, the content of the text field
+    
+    Options:
+    
+    * ``disabled`` - If set to True, the user will not be able to use this input.
+    * ``size`` - The number of visible characters that will fit in the input.
+    * ``maxlength`` - The maximum number of characters that the browser will allow the user to enter.
+    
+    Remaining keyword options will be standard HTML options for the tag.
+    """
+    o = {'type': 'text', 'name_': name, 'id': name, 'value': value}
+    o.update(options)
+    return tag("input", **o)
+
+def password_field(name="password", value=None, **options):
+    """
+    Creates a password field
+    
+    Takes the same options as text_field
+    """
+    return text_field(name, value, type="password", **options)
+
+def text_area(name, content='', **options):
+    """
+    Creates a text input area.
+    
+    Options:
+    
+    * ``size`` - A string specifying the dimensions of the textarea.
+    
+    Example::
+    
+        >>> text_area("body", '', size="25x10")
+        '<textarea cols="25" id="body" name="body" rows="10"></textarea>'
+    """
+    if 'size' in options:
+        options["cols"], options["rows"] = options["size"].split("x")
+        del options['size']
+    o = {'name_': name, 'id': name}
+    o.update(options)
+    return content_tag("textarea", content, **o)
+
+def check_box(name, value="1", checked=False, **options):
+    """
+    Creates a check box.
+    """
+    o = {'type': 'checkbox', 'name_': name, 'id': name, 'value': value}
+    o.update(options)
+    if checked:
+        o["checked"] = "checked"
+    return tag("input", **o)
+
+def hidden_field(name, value=None, **options):
+    """
+    Creates a hidden field.
+    
+    Takes the same options as text_field
+    """
+    return text_field(name, value, type="hidden", **options)
+
+def file_field(name, value=None, **options):
+    """
+    Creates a file upload field.
+    
+    If you are using file uploads then you will also need to set the multipart option for the form.
+
+    Example::
+
+        >>> file_field('myfile')
+        '<input id="myfile" name="myfile" type="file" />'
+    """
+    return text_field(name, value=value, type="file", **options)
+
+def radio_button(name, value, checked=False, **options):
+    """Creates a radio button.
+    
+    The id of the radio button will be set to the name + value with a _ in
+    between to ensure its uniqueness.
+    """
+    pretty_tag_value = re.sub(r'\s', "_", '%s' % value)
+    pretty_tag_value = re.sub(r'(?!-)\W', "", pretty_tag_value).lower()
+    html_options = {'type': 'radio', 'name_': name, 'id': '%s_%s' % (name, pretty_tag_value), 'value': value}
+    html_options.update(options)
+    if checked:
+        html_options["checked"] = "checked"
+    return tag("input", **html_options)
+
+def tag_options(**options):
+    strip_unders(options)
+    cleaned_options = convert_booleans(dict([(x, y) for x, y in options.iteritems() if y is not None]))
+    optionlist = ['%s="%s"' % (x, escape_once(y)) for x, y in cleaned_options.iteritems()]
+    optionlist.sort()
+    if optionlist:
+        return ' ' + ' '.join(optionlist)
     else:
-        # Space-separated list of key="value" pairs, with a leading space. 
-        return " "+' '.join(attrs)
+        return ''
 
-
-def content_tag(tag_name, content="", for_="", class_="", type_="", xhtml=None, **kwargs):
-    """Given a 'name', create a tag for it, give it 'for' and 'class'
-    attributes, and populate it with content.
-
-    >>> content_tag("p")
-    '<p />'
-    >>> content_tag("p", "foo")
-    '<p>foo</p>'
-    >>> content_tag("label", "Foo", for_="some_id", class_="bar")
-    '<label class="bar" for="some_id">Foo</label>'
-    >>> content_tag("input", type_="checkbox", checked="checked")
-    '<input checked="checked" type="checkbox" />'
-    >>> content_tag("input", type_="checkbox", checked="checked", xhtml=False)
-    '<input checked="checked" type="checkbox">'
+def tag(name, open=False, **options):
+    """
+    Returns an XHTML compliant tag of type ``name``.
     
+    ``open``
+        Set to True if the tag should remain open
+    
+    All additional keyword args become attribute/value's for the tag. To pass in Python
+    reserved words, append _ to the name of the key. For attributes with no value (such as
+    disabled and readonly), a value of True is permitted.
+    
+    Examples::
+    
+        >>> tag("br")
+        '<br />'
+        >>> tag("br", True)
+        '<br>'
+        >>> tag("input", type="text")
+        '<input type="text" />'
+        >>> tag("input", type='text', disabled=True)
+        '<input disabled="disabled" type="text" />'
+    """
+    tag = '<%s%s%s' % (name, (options and tag_options(**options)) or '', (open and '>') or ' />')
+    return tag
+
+def select(name, option_tags='', **options):
+    """
+    Creates a dropdown selection box
+    
+    ``option_tags`` is a string containing the option tags for the select box::
+
+        >>> select("people", "<option>George</option>")
+        '<select id="people" name="people"><option>George</option></select>'
+    
+    Options:
+    
+    * ``multiple`` - If set to true the selection will allow multiple choices.
     
     """
-    # Handle the xhtml argument.
-    if xhtml is None:
-        xhtml = XHTML
+    o = { 'name_': name, 'id': name }
+    o.update(options)
+    return content_tag("select", option_tags, **o)
+
+def options_for_select(container, selected=None):
+    """
+    Creates select options from a container (list, tuple, dict)
+    
+    Accepts a container (list, tuple, dict) and returns a string of option tags. Given a container where the 
+    elements respond to first and last (such as a two-element array), the "lasts" serve as option values and
+    the "firsts" as option text. Dicts are turned into this form automatically, so the keys become "firsts" and values
+    become lasts. If ``selected`` is specified, the matching "last" or element will get the selected option-tag.
+    ``Selected`` may also be an array of values to be selected when using a multiple select.
+    
+    Examples (call, result)::
+    
+        >>> options_for_select([["Dollar", "$"], ["Kroner", "DKK"]])
+        '<option value="$">Dollar</option>\\n<option value="DKK">Kroner</option>'
+        >>> options_for_select([ "VISA", "MasterCard" ], "MasterCard")
+        '<option value="VISA">VISA</option>\\n<option value="MasterCard" selected="selected">MasterCard</option>'
+        >>> options_for_select(dict(Basic="$20", Plus="$40"), "$40")
+        '<option value="$40" selected="selected">Plus</option>\\n<option value="$20">Basic</option>'
+        >>> options_for_select([ "VISA", "MasterCard", "Discover" ], ["VISA", "Discover"])
+        '<option value="VISA" selected="selected">VISA</option>\\n<option value="MasterCard">MasterCard</option>\\n<option value="Discover" selected="selected">Discover</option>'
+
+    Note: Only the option tags are returned, you have to wrap this call in a regular HTML select tag.
+    """
+    if hasattr(container, 'values'):
+        container = container.items()
+    
+    if not isinstance(selected, (list, tuple)):
+        selected = (selected,)
+    
+    options = []
+    
+    for elem in container:
+        if isinstance(elem, (list, tuple)):
+            name, value = elem
+            n = html_escape(name)
+            v = html_escape(value)
+        else :
+            name = value = elem
+            n = v = html_escape(elem)
         
-    kwargs.update(
-        {"for":for_,
-         "class": class_,
-         "type": type_,
-         })
-    # Implicit handling of form fields with "name" but not "id" defined. 
-    if "name" in kwargs and not "id" in kwargs:
-        kwargs["id"] = kwargs["name"]
-    attr_string = build_attr_string(kwargs)
-    if content:
-        return "<%(tag_name)s%(attr_string)s>%(content)s</%(tag_name)s>" % locals()
-    elif xhtml:
-        return "<%(tag_name)s%(attr_string)s />" % locals()
-    else:
-        return "<%(tag_name)s%(attr_string)s>" % locals()
-
-
-
-def text_field(name, **kwargs):
-    """Return a text input. 
-
-    >>> text_field("foo")
-    '<input id="foo" name="foo" type="text" />'
-    >>> text_field("foo", value="Test!")
-    '<input id="foo" name="foo" type="text" value="Test!" />'
-    
-    """
-    return content_tag("input", name=name, type_="text", **kwargs)
-
-def password_field(name, **kwargs):
-    """Return a password field.
-
-    >>> password_field("foo")
-    '<input id="foo" name="foo" type="password" />'
-
-    """
-    return content_tag("input", type_="password", name=name, **kwargs)
-
-def text_area(name, **kwargs):
-    """Return a textarea field.
-
-    >>> text_area("foo")
-    '<textarea id="foo" name="foo" />'
-    >>> text_area("foo", content="Some Content")
-    '<textarea id="foo" name="foo">Some Content</textarea>'
-    
-
-    """
-    return content_tag("textarea", name=name, **kwargs)
-
-def hidden_field(name, **kwargs):
-    """Return a hidden field.
-
-    >>> hidden_field("foo")
-    '<input id="foo" name="foo" type="hidden" />'
-    >>> hidden_field("foo", value="some_value")
-    '<input id="foo" name="foo" type="hidden" value="some_value" />'
-
-    """
-    return content_tag("input", type_="hidden", name=name, **kwargs)
-
-def check_box(name, value, checked, **kwargs):
-    """Return a checkbox.
-
-    >>> check_box("foo", value="bar", checked=True)
-    '<input checked="checked" id="foo" name="foo" type="checkbox" value="bar" />'
-    >>> check_box("foo", value="bar", checked=False)
-    '<input id="foo" name="foo" type="checkbox" value="bar" />'
-    >>> check_box("foo", value="bar", checked="checked")
-    '<input checked="checked" id="foo" name="foo" type="checkbox" value="bar" />'
-    >>> check_box("foo", value="bar", checked="")
-    '<input id="foo" name="foo" type="checkbox" value="bar" />'
-
-    """
-    if not isinstance(checked, basestring):
-        checked = "checked" if checked else ""
-    return content_tag("input", type_="checkbox", name=name,
-                       value=value, checked=checked, **kwargs)
-
-def file_field(name, **kwargs):
-    """Return a file input.
-
-    >>> file_field("foo")
-    '<input id="foo" name="foo" type="file" />'
-
-    """
-    return content_tag("input", type_="file", name=name, **kwargs)
-
-def radio_button(name, value,**kwargs):
-    """Return a radio button
-
-    >>> radio_button("foo", "bar")
-    '<input id="foo" name="foo" type="radio" value="bar" />'
-
-    """
-    return content_tag("input", type_="radio", name=name, value=value, **kwargs)
-
-def tag(string):
-    """Return an empty closed tag.
-
-    >>> tag("p")
-    '<p />'
-
-    """
-    return "<%s />" % string
-
-def select(name, options_string, **kwargs):
-    """Return a select object.
-
-    >>> print select("foo", options_for_select(['test1', 'test2']))
-    <select id="foo" name="foo"><option value="test1">test1</option>
-    <option value="test2">test2</option></select>
-    
-
-    """
-    return content_tag("select", name=name, content=options_string, **kwargs)
-
-def options_for_select(options, selected=''):
-    """Return a string of options, suitable for use in a select.
-
-    >>> print options_for_select([["Dollar", "$"], ["Kroner", "DKK"]])
-    <option value="$">Dollar</option>
-    <option value="DKK">Kroner</option>
-    >>> print options_for_select([ "VISA", "MasterCard" ], "MasterCard")
-    <option value="VISA">VISA</option>
-    <option selected="selected" value="MasterCard">MasterCard</option>
-    >>> print options_for_select(dict(Basic="$20", Plus="$40"), "$40")
-    <option selected="selected" value="$40">Plus</option>
-    <option value="$20">Basic</option>
-    >>> print options_for_select([ "VISA", "MasterCard", "Discover" ], ["VISA", "Discover"])
-    <option selected="selected" value="VISA">VISA</option>
-    <option value="MasterCard">MasterCard</option>
-    <option selected="selected" value="Discover">Discover</option>
-
-
-    The following tests for a bug in which a value that was the subset
-    of the 'selected' value would be incorrectly selected.
-
-    >>> print options_for_select(["a", "ab"], "ab")
-    <option value="a">a</option>
-    <option selected="selected" value="ab">ab</option>
-
-    
-
-    """
-    ## Transform a dictionary into a list of [[key, value]].
-    if isinstance(options, dict):
-        options = [[key, options[key]] for key in options]
-    
-    ## Transform a list of [content] into a list of [[content,
-    # value]].  Check the first element: if it's not a list, we need
-    # to copy the content to value for each one.
-    if not isinstance(options[0], (tuple, list)):
-        options = [[content, content] for content in options]
-
-    if not isinstance(selected,  (tuple, list)):
-        # Turn a passed-in string to a list so we can use it in a list
-        # comprehension below
-        selected = [selected]
-
-    tags = [content_tag(
-        "option", content=content, value=value,
-        # The Boolean will eval to 0 or 1, so multiplying "selected"
-        # by that means that we'll end up with selected="" or
-        # selected="selected", respectively. content_tag() will filter
-        # the former.
-        selected="selected"*bool([
-                sel for sel in selected if sel==value]))
-            for content, value in options]
-    return '\n'.join(tags)
-
-def javascript_tag(content, **kwargs):
-    """
-    Return a javascript tag, with code escaped in a CDATA section.
-
-    >>> print javascript_tag('window.alert("foo!")')
-    <script type="text/javascript">
-    // <![CDATA[
-    window.alert("foo!")
-    // ]]>
-    </script>
-
-    """
-    return content_tag("script", "\n// <![CDATA[\n%s\n// ]]>\n" % content,
-                       type_="text/javascript",**kwargs)
+        #TODO: run timeit for this against content_tag('option', n, value=v, selected=value in selected)
+        if value in selected:
+            options.append('<option value="%s" selected="selected">%s</option>' % (v, n))
+        else :
+            options.append('<option value="%s">%s</option>' % (v, n))
+    return "\n".join(options)
 
 if __name__=="__main__":
     import doctest
