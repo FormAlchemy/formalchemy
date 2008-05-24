@@ -264,7 +264,7 @@ document.getElementById("email").focus();
  <label class="field_opt" for="name">
   Name
  </label>
- <input id="name" maxlength="20" name="name" type="text" />
+ <input id="name" maxlength="30" name="name" type="text" />
 </div>
 <div>
  <label class="field_opt" for="orders">
@@ -323,10 +323,10 @@ document.getElementById("quantity").focus();
  </label>
  <select id="user_id" name="user_id">
   <option value="1">
-   Bill Jones
+   Bill
   </option>
   <option value="2">
-   John Kerry
+   John
   </option>
  </select>
 </div>
@@ -363,10 +363,10 @@ document.getElementById("id").focus();
  </label>
  <select id="user_id" name="user_id">
   <option value="1" selected="selected">
-   Bill Jones
+   Bill
   </option>
   <option value="2">
-   John Kerry
+   John
   </option>
  </select>
 </div>

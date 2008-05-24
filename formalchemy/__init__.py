@@ -45,7 +45,6 @@ To get started, you only need to know about one class, `FieldSet`, and a
 handful of methods:
 
   * `render`: returns a string containing the form input html
-  * `bind`: returns a new FieldSet bound to a model instance and user input data
   * `validate`: true if the form passes its validations; otherwise, false
   * `sync`: syncs the model instance that was bound to the input data
 
@@ -130,7 +129,7 @@ Now let's process some user input. In a real application, you'd get the post
 data from your request object; here we'll just hardcode some:
 
 {{{
->>> fs = fs.bind(order1, data={'quantity': 7, 'user_id': 2})
+>>> fs = FieldSet(order1, data={'quantity': 7, 'user_id': 2})
 >>> if fs.validate():
 ...     fs.sync()
 
