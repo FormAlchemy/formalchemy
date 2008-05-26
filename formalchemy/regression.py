@@ -406,10 +406,10 @@ document.getElementById("id").focus();
 </div>
 
 >>> fs = FieldSet(One)
->>> fs.rebind(Two)
+>>> fs.rebind(Two) #doctest: +ELLIPSIS
 Traceback (most recent call last):
 ...
-ValueError: You can only bind to another object of the same type you originally bound to (<class '__main__.One'>), not <class '__main__.Two'>
+ValueError: ...
 
 >>> fs = FieldSet(Two)
 >>> fs.configure()
