@@ -211,16 +211,30 @@ def _foreign_keys(property):
 
 class AttributeWrapper(object):
     def __init__(self, instrumented_attribute, parent):
+        # the FieldSet (or any ModelRender) owning this instance
         self.parent = parent
+        # we rip out just the parts we care about from InstrumentedAttribute.
+        # impl is the AttributeImpl.  So far all we care about there is ".key,"
+        # which is the name of the attribute in the mapped class.
         self._impl = instrumented_attribute.impl
+        # property is the PropertyLoader which handles all the interesting stuff.
+        # mapper, columns, and foreign keys are all located there.
         self._property = instrumented_attribute.property
+        # what kind of Field to render this attribute as.  this will be autoguessed,
+        # unless the user forces it with .dropdown, .checkbox, etc.
         self.render_as = None
+        # other render options, such as size, multiple, etc.
         self.render_opts = {}
+        # validator functions added with .validate()
         self.validators = []
+        # errors found by _validate() (which runs implicit and explicit validators)
         self.errors = []
+        # disabled or readonly
         self.modifier = None
+        # label to use for the rendered field.  autoguessed if not specified by .label()
         self.label_text = None
-        self._required = not (self.is_collection() or self._column.nullable)
+        # default "required" value -- may be overriden to True by .required()
+        self._required = (not self.is_collection() and not self._column.nullable)
             
     def __deepcopy__(self, memo):
         wrapper = copy(self)
@@ -244,10 +258,16 @@ class AttributeWrapper(object):
 
     def _column(self):
         if isinstance(self._impl, ScalarObjectAttributeImpl):
+            # If the attribute is a foreign key, return the Column that this
+            # attribute is mapped from -- e.g., .user -> .user_id. 
+            # todo this does not allow handling composite FKs
             return _foreign_keys(self._property)[0]
         elif isinstance(self._impl, ScalarAttributeImpl):
+            # normal property, mapped to a single column from the main table
             return self._property.columns[0]
         else:
+            # collection -- use the mapped class's PK
+            # todo does not allow handling composite PKs
             assert isinstance(self._impl, CollectionAttributeImpl)
             return self._property.mapper.primary_key[0]
     _column = property(_column)
@@ -411,6 +431,7 @@ class AttributeWrapper(object):
             self.render_as = self._get_render_as()
         if isinstance(self._impl, ScalarObjectAttributeImpl) or self.is_collection():
             if not self.render_opts.get('options'):
+                # todo this does not handle primaryjoin (/secondaryjoin) alternate join conditions
                 fk_cls = self.collection_type()
                 fk_pk = class_mapper(fk_cls).primary_key[0]
                 q = self.parent.session.query(fk_cls).order_by(fk_pk)
