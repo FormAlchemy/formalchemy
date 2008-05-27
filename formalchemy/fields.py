@@ -202,6 +202,13 @@ def unstr(attr, st):
     return st
 
 
+def _foreign_keys(property):
+    try:
+        return property.foreign_keys
+    except AttributeError:
+        return [r for l, r in property.synchronize_pairs]
+
+
 class AttributeWrapper(object):
     def __init__(self, instrumented_attribute, parent):
         self.parent = parent
@@ -224,7 +231,7 @@ class AttributeWrapper(object):
                         
     def is_raw_foreign_key(self):
         try:
-            return self._property.columns[0].foreign_keys
+            return _foreign_keys(self._property.columns[0])
         except AttributeError:
             return False
         
@@ -237,7 +244,7 @@ class AttributeWrapper(object):
 
     def _column(self):
         if isinstance(self._impl, ScalarObjectAttributeImpl):
-            return self._property.foreign_keys[0]
+            return _foreign_keys(self._property)[0]
         elif isinstance(self._impl, ScalarAttributeImpl):
             return self._property.columns[0]
         else:
