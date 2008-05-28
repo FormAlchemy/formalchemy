@@ -9,7 +9,7 @@ logger = logging.getLogger('formalchemy.' + __name__)
 import helpers as h
 import base, fields, utils
 from validators import ValidationException
-from tempita import Template
+from tempita import Template as TempitaTemplate
 
 __all__ = ['form_data', 'AbstractFieldSet', 'FieldSet']
 
@@ -38,9 +38,21 @@ class AbstractFieldSet(base.ModelRender):
     `FieldSets` are responsible for generating HTML fields from a given
     `model`.
 
-    The one method you must implement is `render`. This is the method that returns
-    generated HTML code from the `model` object.  See `FieldSet` for the default
-    implementation.
+    You can derive your own subclasses from `FieldSet` or `AbstractFieldSet`
+    to provide a customized `render` and/or `configure`.
+
+    `AbstractBaseSet` encorporates validation/errors logic and provides a default
+    `configure` method.  It does *not* provide `render`.
+    
+    You can write `render` by manually sticking strings together if that's what you want,
+    but we recommend using a templating package for clarity and maintainability.
+    !FormAlchemy includes the Tempita templating package as formalchemy.tempita;
+    see http://pythonpaste.org/tempita/ for documentation.  
+    
+    `formalchemy.forms.template_text_tempita` is the default template used by `FieldSet.`
+    !FormAlchemy also includes a Mako version, `formalchemy.forms.template_text_mako`,
+    and will use that instead if Mako is available.  The rendered HTML is identical
+    but (we suspect) Mako is faster.
     """
     def __init__(self, *args, **kwargs):
         base.ModelRender.__init__(self, *args, **kwargs)
@@ -48,10 +60,19 @@ class AbstractFieldSet(base.ModelRender):
         self._errors = []
 
     def configure(self, pk=False, exclude=[], include=[], options=[], global_validator=None):
+        """
+        `global_validator` should be a function that performs validations that need
+        to know about the entire form.  The other parameters are passed directly
+        to `ModelRender.configure`.
+        """
         base.ModelRender.configure(self, pk, exclude, include, options)
         self.validator = global_validator
 
     def validate(self):
+        """
+        Validate attributes and `global_validator`.
+        If validation fails, the validator should raise `ValidationException`.
+        """
         if self.data is None:
             raise Exception('Cannot validate without binding data')
         success = True
@@ -66,12 +87,18 @@ class AbstractFieldSet(base.ModelRender):
         return success
     
     def errors(self):
+        """
+        A dictionary of validation failures.  Always empty before `validate()` is run.
+        Dictionary keys are attributes; values are lists of messages given to `ValidationException`.
+        Global errors (not specific to a single attribute) are under the key `None`.
+        """
         errors = {}
         if self._errors:
             errors[None] = self._errors
         errors.update(dict([(attr, attr.errors)
                             for attr in self.render_attrs if attr.errors]))
         return errors
+    errors = property(errors)
     
     
 template_text_mako = r"""
@@ -141,7 +168,7 @@ document.getElementById("{{attr.name}}").focus();
 {{endif}}                                                                                      
 {{endfor}}                                                                                     
 """.strip()
-template_tempita = Template(template_text_tempita, name='fieldset_template')
+template_tempita = TempitaTemplate(template_text_tempita, name='fieldset_template')
 render_tempita = template_tempita.substitute
 
 try:
@@ -150,39 +177,64 @@ except ImportError:
     render = render_tempita
 else:
     template_mako = MakoTemplate(template_text_mako)
-    render = render_mako = template_mako.render
+    render_mako = template_mako.render
 
-# todo use mako template as default; fall back to tempita if import fails?
-# how do we test this nicely?
 
 class FieldSet(AbstractFieldSet):
     """
-    Default FieldSet implementation.  Adds prettify, focus options.
+    A `FieldSet` is bound to a SQLAlchemy mapped instance (or class, for creating new instances) and can render a form for editing that instance,
+    perform validation, and sync the form data back to the bound instance.
     
-    You can override the default prettify either by subclassing:
+    There are two parts you can customize in a `FieldSet` subclass short of writing your own render method.  These are `prettify` and `render`.  As in,
     
+    {{{
     class MyFieldSet(FieldSet):
         prettify = staticmethod(myprettify)
+        render = staticmethod(myrender)
+    }}}
         
-    or just on a per-instance basis:
+    `prettify` is a function that, given an attribute name ('user_name') turns it into something usable as an HTML label ('User name').
     
+    `render` should be a template rendering method, such as `Template.render` from a mako Template or `Template.substitute` from a Tempita Template.
+    It should take as parameters:
+      * `attrs`: the `FieldSet` attributes to render
+      * `global_errors`: a list of global (not per-attribute) validation failures
+      * `fields`: a reference to the `formalchemy.fields` module (you can of course perform other imports in your template, if it supports Python code blocks)
+      * `prettify`: as above
+      * `focus`: the field to focus
+    You can also override these on a per-`FieldSet` basis:
+    
+    {{{
     fs = FieldSet(...)
     fs.prettify = myprettify
+    ...
+    }}}
+    
+    See `AbstractFieldSet` for more details about writing your own `render` method.
     """
     prettify = staticmethod(base.prettify)
+    render = staticmethod('render_mako' in locals() and render_mako)
     
     def __init__(self, *args, **kwargs):
         AbstractFieldSet.__init__(self, *args, **kwargs)
         self.focus = True
 
     def configure(self, pk=False, exclude=[], include=[], options=[], global_validator=None, focus=True):
-        """default template understands extra args 'prettify' and 'focus'"""
+        """ 
+        Besides the options in `AbstractFieldSet.configure`,
+        `FieldSet.configure` takes the `focus` parameter, which should be the
+        attribute whose rendered input element gets focus. Default value is
+        True, meaning, focus the first element. False means do not focus at
+        all. 
+        """
         AbstractFieldSet.configure(self, pk, exclude, include, options, global_validator)
         self.focus = focus
 
     def render(self):
-        # we pass 'fields' because a relative import in the template
-        # won't work in production, and an absolute import makes testing more of a pain.
-        # since the FA test suite won't concern you if you roll your own FieldSet,
-        # feel free to perform such imports in the template.
-        return render(attrs=self.render_attrs, global_errors=self._errors, fields=fields, prettify=self.prettify, focus=self.focus)
+        # We pass 'fields' because a relative import in the template won't
+        # work in production, and an absolute import makes testing more of a
+        # pain. Additionally, some templating systems (notably Django's) make
+        # it difficult to perform imports directly in the template itself. If
+        # your templating weapon of choice does allow it, feel free to perform
+        # such imports in the template.
+        return self.render(attrs=self.render_attrs, global_errors=self._errors, fields=fields, prettify=self.prettify, focus=self.focus)

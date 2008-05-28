@@ -169,11 +169,19 @@ class SelectField(ModelFieldRender):
 
     
 def _pk(instance):
+    # Return the value of this instance's primary key.
     column = class_mapper(type(instance)).primary_key[0]
     return getattr(instance, column.key)
 
 
 def query_options(query):
+    """
+    Return a list of tuples of `(item description, item pk)`
+    for each item returned by the query, where `item description`
+    is the result of str(item) and `item pk` is the item's primary key.
+    
+    This list is suitable for using as a value for `options` parameters.
+    """
     return [(str(item), _pk(item)) for item in query.all()]
 
 
@@ -202,6 +210,7 @@ def unstr(attr, st, force_scalar=False):
 
 
 def _foreign_keys(property):
+    # 0.4/0.5 compatibility fn
     try:
         return property.foreign_keys
     except AttributeError:
@@ -209,6 +218,10 @@ def _foreign_keys(property):
 
 
 class AttributeWrapper(object):
+    """
+    Contains the information necessary to render (and modify the rendering of)
+    an SQLAlchemy attribute.
+    """
     def __init__(self, instrumented_attribute, parent):
         # the FieldSet (or any ModelRender) owning this instance
         self.parent = parent
@@ -243,30 +256,32 @@ class AttributeWrapper(object):
         return wrapper
                         
     def is_raw_foreign_key(self):
+        """True iff this attribute is a raw foreign key"""
         try:
             return _foreign_keys(self._property.columns[0])
         except AttributeError:
             return False
         
     def is_pk(self):
+        """True iff this attribute is a primary key"""
         return self._column.primary_key
     
     def type(self):
+        """The SQLAlchemy type of this attribute"""
         return self._column.type
     type = property(type)
 
     def _column(self):
+        # todo this does not allow handling composite attributes (PKs or FKs)
         if isinstance(self._impl, ScalarObjectAttributeImpl):
             # If the attribute is a foreign key, return the Column that this
             # attribute is mapped from -- e.g., .user -> .user_id. 
-            # todo this does not allow handling composite FKs
             return _foreign_keys(self._property)[0]
         elif isinstance(self._impl, ScalarAttributeImpl):
             # normal property, mapped to a single column from the main table
             return self._property.columns[0]
         else:
             # collection -- use the mapped class's PK
-            # todo does not allow handling composite PKs
             assert isinstance(self._impl, CollectionAttributeImpl)
             return self._property.mapper.primary_key[0]
     _column = property(_column)
@@ -278,10 +293,10 @@ class AttributeWrapper(object):
 
     def name(self):
         """ 
-        The name of the form input. usually the same as 'key', except for
-        single-valued SA relation properties. For example, for order.user,
+        The name of the form input. usually the same as the column name, except for
+        multi-valued SA relation properties. For example, for order.user,
         name will be user_id (assuming that is indeed the name of the foreign
-        key to users) 
+        key to users). 
         """
         if self.is_collection():
             return self._impl.key
@@ -289,15 +304,26 @@ class AttributeWrapper(object):
     name = property(name)
 
     def is_collection(self):
+        """True iff this is a multi-valued (one-to-many or many-to-many) SA relation"""
         return isinstance(self._impl, CollectionAttributeImpl)
     
     def collection_type(self):
+        """The type of object in the collection.  Calling this is only valid when `is_collection()` is True"""
         return self._property.mapper.class_
     
     def query(self, *args, **kwargs):
+        """Perform a query in the parent's session"""
         return self.parent.session.query(*args, **kwargs)
     
     def value(self):
+        """
+        The value of this attribute: use the corresponding value in the bound `data`,
+        if any; otherwise, use the value in the bound `model`.  If there is still no
+        value, use the default defined on the corresponding `Column`.
+        
+        For collections,
+        a list of the primary key values of the items in the collection is returned.
+        """
         if self.parent.data is not None and self.name in self.parent.data:
             v = unstr(self, self.parent.data[self.name])
         else:
@@ -315,7 +341,7 @@ class AttributeWrapper(object):
     value = property(value)
     
     def value_str(self):
-        # should only be used in non-editable contexts, so we don't check 'data'
+        """A string representation of `value` for use in non-editable contexts (so we don't check 'data')"""
         if self.is_collection():
             L = getattr(self.model, self.key)
             return ','.join([str(item) for item in L])
@@ -323,6 +349,7 @@ class AttributeWrapper(object):
             return str(getattr(self.model, self.key))
         
     def sync(self):
+        """Set the attribute's value in `model` to the value given in `data`"""
         setattr(self.model, self.name, unstr(self, self.parent.data.get(self.name)))
             
     def _validate(self):
@@ -345,6 +372,7 @@ class AttributeWrapper(object):
         return not self.errors
 
     def is_required(self):
+        """True iff this attribute must be given a non-empty value"""
         return self._required
     
     def __eq__(self, other):
@@ -363,6 +391,7 @@ class AttributeWrapper(object):
     model = property(model)
     
     def bind(self, parent):
+        """Return a copy of this attribute, bound to a different parent"""
         attr = deepcopy(self)
         attr.parent = parent
         return attr
@@ -424,8 +453,12 @@ class AttributeWrapper(object):
         attr.render_opts = {'multiple': multiple, 'options': options}
         return attr
     def render(self, **html_options):
-        # html_options are not used by the default fieldset template, but are
-        # provided to make more customization possible in custom templates
+        """
+        Render this attribute as HTML.
+        
+        `html_options` are not used by the default template, but are
+        provided to make more customization possible in custom templates
+        """
         if not self.render_as:
             self.render_as = self._get_render_as()
         if isinstance(self._impl, ScalarObjectAttributeImpl) or self.is_collection():

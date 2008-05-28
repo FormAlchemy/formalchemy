@@ -29,16 +29,25 @@ except ImportError:
     
 
 class ModelRender(object):
-    """The `ModelRender` class.
-
-    This this is the superclass for all classes needing to deal with `model`
-    access and support rendering capabilities.
-
-    Methods:
-      * bind(self)
+    """
+    The `ModelRender` classis the superclass for all classes needing to deal with `model`
+    access and supporting rendering capabilities.
     """
 
     def __init__(self, model, session=None, data={}):
+        """ 
+          * `model`: a SQLAlchemy mapped class or instance 
+          * `session`: the
+            session to use for queries (for relations). If `model` is associated
+            with a session, that will be used by default. (Objects mapped with a
+            scoped_session will always have a session. Other objects will also
+            have a session if they were loaded by a Query.) 
+           * `data`: dictionary
+            of user-submitted data to validate and/or sync to the `model`. Scalar
+            attributes should have a single value in the dictionary; multi-valued
+            relations should have a list, even if there are zero or one values
+            submitted. 
+        """
         self.model = self.session = None
         self._render_attrs = None
 
@@ -52,17 +61,56 @@ class ModelRender(object):
                 setattr(self, iattr.impl.key, AttributeWrapper(iattr, self))
                 
     def render_attrs(self):
+        """The set of attributes that will be rendered"""
         if self._render_attrs:
             return self._render_attrs
-        return self.get_attrs()
+        return self._get_attrs()
     render_attrs = property(render_attrs)
                 
     def configure(self, pk=False, exclude=[], include=[], options=[]):
-        """configure render_attrs and any extra args for template"""
-        self._render_attrs = self.get_attrs(pk, exclude, include, options)
+        """
+        Configures attributes to be rendered.  By default, all attributes are rendered except
+        primary keys and foreign keys.  (But, relations _based on_ foreign keys _will_ be rendered.
+        For example, if an `Order` has a `user_id` FK and a `user` relation based on it,
+        `user` will be rendered (as a select box of `User`s, by default) but `user_id` will not.)
+        
+        Options:
+          * `pk`: set to True to include primary key columns
+          * `exclude`: an iterable of attributes to exclude.  Other attributes will be rendered normally
+          * `include`: an iterable of attributes to include.  Other attributes will not be rendered
+          * `options`: an iterable of modified attributes.  The set of attributes to be rendered is unaffected
+        Only one of {`include`, `exclude`} may be specified.
+        
+        Note that there is no option to include foreign keys.  This is deliberate.  Use `include` if
+        you really need to manually edit FKs.
+        
+        Examples: given a FieldSet fs bound to a `User` instance as a model with
+        primary key `id` and attributes `name` and `email`, and a relation
+        `orders` of related Order objects, the default will be to render
+        `name`, `email`, and `orders`. To render the orders list as checkboxes
+        instead of a select, you could specify
+        
+        fs.configure(options=[fs.orders.checkbox()])
+        
+        To render only name and email,
+        
+        fs.configure(include=[fs.name, fs.email]) -- or, fs.configure(exclude=[fs.options])
+        
+        To render name and options-as-checkboxes,
+          
+        fs.configure(include=[fs.name, fs.options.checkbox()])
+        """
+        self._render_attrs = self._get_attrs(pk, exclude, include, options)
 
     def bind(self, model, session=None, data={}):
-        """return a copy of this object, bound to model and session"""
+        """ 
+        Return a copy of this FieldSet or Table, bound to the given
+        `model`, `session`, and `data`. The parameters to this method are the
+        same as in the constructor.
+        
+        Often you will create and `configure` a FieldSet or Table at application
+        startup, then `bind` specific instances to it for actual editing or display.
+        """
         # two steps so bind's error checking can work
         mr = copy(self)
         mr.rebind(model, session, data)
@@ -73,7 +121,7 @@ class ModelRender(object):
         return mr
 
     def rebind(self, model=None, session=None, data=None):
-        """rebind this object to model and session.  no return value"""
+        """Like `bind`, but acts on this instance.  No return value."""
         if model:
             if isinstance(model, type):
                 try:
@@ -97,6 +145,9 @@ class ModelRender(object):
                 raise Exception('Thou shalt not rebind to different session than the one the model belongs to')
 
     def sync(self):
+        """
+        Sync (copy to the corresponding attributes) the data passed to the constructor or `bind` to the `model`.
+        """
         for attr in self.render_attrs:
             attr.sync()
 
@@ -112,19 +163,7 @@ class ModelRender(object):
             wrappers.sort(lambda a, b: cmp(a.name, b.name))
         return wrappers
     
-    def get_attrs(self, pk=False, exclude=[], include=[], options=[]):
-        """Return a list of filtered attributes.
-
-        Keyword arguments:
-          * `pk=False` - Include primary key attributes if set to `True`.
-          * `exclude=[]` - An iterable containing attributes to exclude.
-          * `include=[]` - An iterable containing attributes to include.
-          * `options=[]` - An iterable containing options to apply to attributes.
-
-        Note that when `include` is non-empty, it will
-        take precedence over the other options.
-
-        """
+    def _get_attrs(self, pk=False, exclude=[], include=[], options=[]):
         if include and exclude:
             raise Exception('Specify at most one of include, exclude')
 
@@ -157,7 +196,6 @@ class ModelRender(object):
         return L
 
     def render(self):
-        """This function must be overridden by any subclass of `ModelRender`."""
         raise NotImplementedError()
 
 

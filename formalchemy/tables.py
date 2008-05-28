@@ -72,7 +72,7 @@ class Table(base.ModelRender, Caption, Th, Td):
     def tbody(self):
         # Make the table's body.
         tbody = []
-        for attr in self.get_attrs(**self._render_options):
+        for attr in self._get_attrs(**self._render_options):
             tr = []
             tr.append(self.th(attr.name))
             tr.append(self.td(attr))
@@ -125,7 +125,7 @@ class TableCollection(Caption, Th, Td):
         thead = []
         tr = []
         mr = base.ModelRender(self.collection[0])
-        attrs = mr.get_attrs(**self._render_options)
+        attrs = mr._get_attrs(**self._render_options)
         for attr in attrs:
             tr.append(self.th(attr.name))
         tr = utils.wrap("<tr>", "\n".join(tr), "</tr>")

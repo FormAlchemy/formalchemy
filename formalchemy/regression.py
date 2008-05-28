@@ -257,7 +257,7 @@ document.getElementById("foo").focus();
 <option value="False">False</option></select>
 >>> fs.validate()
 True
->>> fs.errors()
+>>> fs.errors
 {}
 >>> fs.sync()
 >>> cb.field
@@ -510,7 +510,7 @@ document.getElementById("oto_child_id").focus();
 >>> fs.configure(options=[fs.foo.required()], focus=None)
 >>> fs.validate()
 False
->>> fs.errors()
+>>> fs.errors
 {AttributeWrapper(foo): ['Please enter a value']}
 >>> print fs.render()
 <div>
@@ -527,7 +527,7 @@ False
 {'foo': 'asdf'}
 >>> fs.validate()
 True
->>> fs.errors()
+>>> fs.errors
 {}
 >>> fs.sync()
 >>> two.foo
@@ -544,7 +544,7 @@ True
 >>> fs.rebind(one, data={'id': 'asdf'})
 >>> fs.validate()
 False
->>> fs.errors()
+>>> fs.errors
 {AttributeWrapper(id): [ValidationException('Value is not an integer',)]}
 
 >>> fs = FieldSet(User, data={'orders': []})
@@ -569,7 +569,7 @@ True
 >>> fs.configure(global_validator=custom_validator, focus=None)
 >>> fs.validate()
 False
->>> fs.errors()
+>>> fs.errors
 {None: ('foo and bar do not match',)}
 >>> print fs.render()
 <div class="fieldset_error">
