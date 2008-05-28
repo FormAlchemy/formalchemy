@@ -68,6 +68,23 @@ class User(Base):
     def __str__(self):
         return self.name
     
+class NaturalOrder(Base):
+    __tablename__ = 'natural_orders'
+    id = Column('id', Integer, primary_key=True)
+    user_email = Column('user_email', String, ForeignKey('natural_users.email'), nullable=False)
+    quantity = Column('quantity', Integer, nullable=False)
+    def __str__(self):
+        return 'Quantity: %s' % self.quantity
+    
+class NaturalUser(Base):
+    __tablename__ = 'natural_users'
+    email = Column('email', Unicode(40), primary_key=True)
+    password = Column('password', Unicode(20), nullable=False)
+    name = Column('name', Unicode(30))
+    orders = relation(NaturalOrder, backref='user')
+    def __str__(self):
+        return self.name
+    
 Base.metadata.create_all()
 
 session = Session()
@@ -78,9 +95,17 @@ bill = User(email='bill@example.com',
 john = User(email='john@example.com', 
             password='5678',
             name='John')
-
 order1 = Order(user=bill, quantity=10)
 order2 = Order(user=john, quantity=5)
+
+nbill = NaturalUser(email='nbill@example.com', 
+                    password='1234',
+                    name='Natural Bill')
+njohn = NaturalUser(email='njohn@example.com', 
+                    password='5678',
+                    name='Natural John')
+norder1 = NaturalOrder(user=nbill, quantity=10)
+norder2 = NaturalOrder(user=njohn, quantity=5)
 
 session.commit()
 
@@ -535,6 +560,7 @@ True
 >>> fs.sync()
 >>> fs.model.orders == [order1, order2]
 True
+>>> session.rollback()
 
 >>> fs = FieldSet(Three, data={'foo': 'asdf', 'bar': 'fdsa'})
 >>> def custom_validator(data):
@@ -561,6 +587,38 @@ False
  </label>
  <input id="foo" name="foo" type="text" value="asdf" />
 </div>
+
+# natural PKs
+>>> fs = FieldSet(NaturalOrder, session)
+>>> print fs.render()
+<div>
+ <label class="field_req" for="quantity">
+  Quantity
+ </label>
+ <input id="quantity" name="quantity" type="text" />
+</div>
+<script type="text/javascript">
+ //<![CDATA[
+document.getElementById("quantity").focus();
+//]]>
+</script>
+<div>
+ <label class="field_req" for="user_email">
+  User
+ </label>
+ <select id="user_email" name="user_email">
+  <option value="nbill@example.com">
+   Natural Bill
+  </option>
+  <option value="njohn@example.com">
+   Natural John
+  </option>
+ </select>
+</div>
+>>> fs.rebind(norder2, session, {'user_email': nbill.email})
+>>> fs.sync()
+>>> fs.model.user_email == nbill.email
+True
 
 # allow attaching custom attributes to wrappers
 >>> fs = FieldSet(User)

@@ -177,12 +177,11 @@ def query_options(query):
     return [(str(item), _pk(item)) for item in query.all()]
 
 
-def unstr(attr, st):
+def unstr(attr, st, force_scalar=False):
     """convert st (raw user data, or None) into the data type expected by attr"""
     assert isinstance(attr, AttributeWrapper)
-    if attr.is_collection():
-        # todo handle non-int PKs
-        return [attr.query(attr.collection_type()).get(int(id_st))
+    if attr.is_collection() and not force_scalar:
+        return [attr.query(attr.collection_type()).get(unstr(attr, id_st, True))
                 for id_st in st]
     if isinstance(attr.type, types.Boolean):
         return st is not None
@@ -271,7 +270,7 @@ class AttributeWrapper(object):
             assert isinstance(self._impl, CollectionAttributeImpl)
             return self._property.mapper.primary_key[0]
     _column = property(_column)
-
+    
     def key(self):
         """The name of the attribute in the class"""
         return self._impl.key
