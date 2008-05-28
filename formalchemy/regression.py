@@ -143,11 +143,11 @@ __doc__ = r"""
 # some low-level testing first
 >>> fs = FieldSet(order1)
 >>> list(sorted(fs._raw_attrs(), key=lambda attr: attr.key))
-[AttributeWrapper(id), AttributeWrapper(quantity), AttributeWrapper(user), AttributeWrapper(user_id)]
+[AttributeRenderer(id), AttributeRenderer(quantity), AttributeRenderer(user), AttributeRenderer(user_id)]
 
 >>> fs = FieldSet(bill)
 >>> list(sorted(fs._raw_attrs(), key=lambda attr: attr.key))
-[AttributeWrapper(email), AttributeWrapper(id), AttributeWrapper(name), AttributeWrapper(orders), AttributeWrapper(password)]
+[AttributeRenderer(email), AttributeRenderer(id), AttributeRenderer(name), AttributeRenderer(orders), AttributeRenderer(password)]
 
 >>> fs = FieldSet(One)
 >>> fs.configure(pk=True, focus=None)
@@ -511,7 +511,7 @@ document.getElementById("oto_child_id").focus();
 >>> fs.validate()
 False
 >>> fs.errors
-{AttributeWrapper(foo): ['Please enter a value']}
+{AttributeRenderer(foo): ['Please enter a value']}
 >>> print fs.render()
 <div>
  <label class="field_req" for="foo">
@@ -545,7 +545,7 @@ True
 >>> fs.validate()
 False
 >>> fs.errors
-{AttributeWrapper(id): [ValidationException('Value is not an integer',)]}
+{AttributeRenderer(id): [ValidationException('Value is not an integer',)]}
 
 >>> fs = FieldSet(User, data={'orders': []})
 >>> fs.configure(include=[fs.orders])

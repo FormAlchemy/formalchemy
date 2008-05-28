@@ -28,9 +28,9 @@ except ImportError:
         return manager_of_class(cls).values()
     
 
-class ModelRender(object):
+class ModelRenderer(object):
     """
-    The `ModelRender` classis the superclass for all classes needing to deal with `model`
+    The `ModelRenderer` class is the superclass for all classes needing to deal with `model`
     access and supporting rendering capabilities.
     """
 
@@ -52,13 +52,13 @@ class ModelRender(object):
         self._render_attrs = None
 
         self.rebind(model, session, data)
-        from fields import AttributeWrapper
+        from fields import AttributeRenderer
         
         for iattr in _managed_attributes(type(self.model)):
             if hasattr(iattr.property, 'mapper') and len(iattr.property.mapper.primary_key) != 1:
                 logger.warn('ignoring multi-column property %s' % iattr.impl.key)
             else:
-                setattr(self, iattr.impl.key, AttributeWrapper(iattr, self))
+                setattr(self, iattr.impl.key, AttributeRenderer(iattr, self))
                 
     def render_attrs(self):
         """The set of attributes that will be rendered"""
@@ -152,9 +152,9 @@ class ModelRender(object):
             attr.sync()
 
     def _raw_attrs(self):
-        from fields import AttributeWrapper
+        from fields import AttributeRenderer
         wrappers = [attr for attr in self.__dict__.itervalues()
-                    if isinstance(attr, AttributeWrapper)]
+                    if isinstance(attr, AttributeRenderer)]
         # sort by name for reproducibility
         try:
             wrappers.sort(key=lambda wrapper: wrapper.name)
@@ -175,7 +175,7 @@ class ModelRender(object):
             try:
                 utils.validate_columns(eval(lst))
             except:
-                raise ValueError('%s parameter should be an iterable of AttributeWrapper objects; was %s' % (lst, eval(lst)))
+                raise ValueError('%s parameter should be an iterable of AttributeRenderer objects; was %s' % (lst, eval(lst)))
 
         if not include:
             ignore = list(exclude)

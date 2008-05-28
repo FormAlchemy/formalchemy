@@ -59,7 +59,7 @@ class Caption(object):
 
         return h.content_tag('caption', self.prettify(caption_txt))
 
-class Table(base.ModelRender, Caption, Th, Td):
+class Table(base.ModelRenderer, Caption, Th, Td):
     """The `Table` class.
 
     This class is responsible for rendering a table from a single model.
@@ -124,7 +124,7 @@ class TableCollection(Caption, Th, Td):
         # Make the table's head.
         thead = []
         tr = []
-        mr = base.ModelRender(self.collection[0])
+        mr = base.ModelRenderer(self.collection[0])
         attrs = mr._get_attrs(**self._render_options)
         for attr in attrs:
             tr.append(self.th(attr.name))

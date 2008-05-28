@@ -20,7 +20,7 @@ __all__ = ["TextField", "PasswordField", "HiddenField", "BooleanField",
     "RadioSet", "SelectField", 'query_options']
 
 
-class ModelFieldRender(object):
+class ModelField(object):
     """
     This should be the super class of all xField classes.
 
@@ -51,7 +51,7 @@ class ModelFieldRender(object):
     def render(self):
         return h.text_field(self.name, value=self.value)
 
-class TextField(ModelFieldRender):
+class TextField(ModelField):
     def __init__(self, attr, **kwargs):
         super(TextField, self).__init__(attr, **kwargs)
         self.length = attr.type.length
@@ -63,7 +63,7 @@ class PasswordField(TextField):
     def render(self):
         return h.password_field(self.name, value=self.value, maxlength=self.length, **self.attribs)
 
-class TextAreaField(ModelFieldRender):
+class TextAreaField(ModelField):
     def __init__(self, attr, size, **kwargs):
         super(TextAreaField, self).__init__(attr, **kwargs)
         self.size = size
@@ -76,37 +76,37 @@ class TextAreaField(ModelFieldRender):
             cols, rows = self.size
             return h.text_area(self.name, content=self.value, cols=cols, rows=rows, **self.attribs)
 
-class HiddenField(ModelFieldRender):
+class HiddenField(ModelField):
     def render(self):
         return h.hidden_field(self.name, value=self.value, **self.attribs)
 
-class BooleanField(ModelFieldRender):
+class BooleanField(ModelField):
     def render(self):
         # This is a browser hack to have a checkbox POSTed as False even if it wasn't
         # checked, as unchecked boxes are not POSTed. The hidden field should be *after* the checkbox.
         return h.check_box(self.name, True, checked=self.value, **self.attribs)
 
-class FileField(ModelFieldRender):
+class FileField(ModelField):
     def render(self):
         # todo Do we need a value here ?
         return h.file_field(self.name, **self.attribs)
 
-class IntegerField(ModelFieldRender):
+class IntegerField(ModelField):
     def render(self):
         return h.text_field(self.name, value=self.value, **self.attribs)
 
-class ModelDateTimeRender(ModelFieldRender):
+class ModelDateTimeField(ModelField):
     """
-    The `ModelDateTimeRender` class
+    The `ModelDateTimeField` class
     should be the super class for (Date|Time|DateTime)Field.
     """
 
     def __init__(self, attr, format, **kwargs):
-        super(ModelDateTimeRender, self).__init__(attr, **kwargs)
+        super(ModelDateTimeField, self).__init__(attr, **kwargs)
         self.format = format
 
     def get_value(self):
-        value = super(ModelDateTimeRender, self).get_value()
+        value = super(ModelDateTimeField, self).get_value()
         if value is not None:
             return value.strftime(self.format)
         else:
@@ -116,13 +116,13 @@ class ModelDateTimeRender(ModelFieldRender):
     def render(self):
         return h.text_field(self.name, value=self.value, **self.attribs)
 
-class DateTimeField(ModelDateTimeRender):
+class DateTimeField(ModelDateTimeField):
     pass
 
-class DateField(ModelDateTimeRender):
+class DateField(ModelDateTimeField):
     pass
 
-class TimeField(ModelDateTimeRender):
+class TimeField(ModelDateTimeField):
     pass
 
 
@@ -142,7 +142,7 @@ def _extract_options(options):
             yield (choice, choice)
 
 
-class RadioSet(ModelFieldRender):
+class RadioSet(ModelField):
     widget = staticmethod(h.radio_button)
     def __init__(self, attr, options, **kwargs):
         super(RadioSet, self).__init__(attr)
@@ -157,7 +157,7 @@ class CheckBoxSet(RadioSet):
     widget = staticmethod(h.check_box)
 
 
-class SelectField(ModelFieldRender):
+class SelectField(ModelField):
     def __init__(self, attr, options, **kwargs):
         self.options = options
         selected = kwargs.get('selected', None)
@@ -187,7 +187,7 @@ def query_options(query):
 
 def unstr(attr, st, force_scalar=False):
     """convert st (raw user data, or None) into the data type expected by attr"""
-    assert isinstance(attr, AttributeWrapper)
+    assert isinstance(attr, AttributeRenderer)
     if attr.is_collection() and not force_scalar:
         return [attr.query(attr.collection_type()).get(unstr(attr, id_st, True))
                 for id_st in st]
@@ -217,13 +217,13 @@ def _foreign_keys(property):
         return [r for l, r in property.synchronize_pairs]
 
 
-class AttributeWrapper(object):
+class AttributeRenderer(object):
     """
     Contains the information necessary to render (and modify the rendering of)
     an SQLAlchemy attribute.
     """
     def __init__(self, instrumented_attribute, parent):
-        # the FieldSet (or any ModelRender) owning this instance
+        # the FieldSet (or any ModelRenderer) owning this instance
         self.parent = parent
         # we rip out just the parts we care about from InstrumentedAttribute.
         # impl is the AttributeImpl.  So far all we care about there is ".key,"
@@ -384,7 +384,7 @@ class AttributeWrapper(object):
         return hash(self._impl)
     
     def __repr__(self):
-        return 'AttributeWrapper(%s)' % self._impl.key
+        return 'AttributeRenderer(%s)' % self._impl.key
     
     def model(self):
         return self.parent.model
@@ -494,4 +494,4 @@ class AttributeWrapper(object):
             return TimeField
         elif isinstance(self.type, types.Binary):
             return FileField
-        return ModelFieldRender
+        return ModelField

@@ -33,7 +33,7 @@ def form_data(form, post):
             d[attr.name] = post.getone(attr.name)
     return d
 
-class AbstractFieldSet(base.ModelRender):
+class AbstractFieldSet(base.ModelRenderer):
     """
     `FieldSets` are responsible for generating HTML fields from a given
     `model`.
@@ -55,7 +55,7 @@ class AbstractFieldSet(base.ModelRender):
     but (we suspect) Mako is faster.
     """
     def __init__(self, *args, **kwargs):
-        base.ModelRender.__init__(self, *args, **kwargs)
+        base.ModelRenderer.__init__(self, *args, **kwargs)
         self.validator = None
         self._errors = []
 
@@ -63,9 +63,9 @@ class AbstractFieldSet(base.ModelRender):
         """
         `global_validator` should be a function that performs validations that need
         to know about the entire form.  The other parameters are passed directly
-        to `ModelRender.configure`.
+        to `ModelRenderer.configure`.
         """
-        base.ModelRender.configure(self, pk, exclude, include, options)
+        base.ModelRenderer.configure(self, pk, exclude, include, options)
         self.validator = global_validator
 
     def validate(self):
