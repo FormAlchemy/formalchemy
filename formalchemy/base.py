@@ -33,7 +33,6 @@ class ModelRenderer(object):
     The `ModelRenderer` class is the superclass for all classes needing to deal with `model`
     access and supporting rendering capabilities.
     """
-
     def __init__(self, model, session=None, data={}):
         """ 
           * `model`: a SQLAlchemy mapped class or instance 
@@ -49,27 +48,30 @@ class ModelRenderer(object):
             submitted. 
         """
         self.model = self.session = None
-        self.renderers = {}
-        self._render_attrs = None
+        self.fields = {}
+        self._render_fields = None
 
         self.rebind(model, session, data)
-        from fields import AttributeRenderer
+        from fields import AttributeField
         
         for iattr in _managed_attributes(type(self.model)):
             if hasattr(iattr.property, 'mapper') and len(iattr.property.mapper.primary_key) != 1:
                 logger.warn('ignoring multi-column property %s' % iattr.impl.key)
             else:
-                self.renderers[iattr.impl.key] = AttributeRenderer(iattr, self)
+                self.fields[iattr.impl.key] = AttributeField(iattr, self)
                 
-    def add(self, name, type=types.String, value=None):
+    def add(self, field):
         """Add a form field with the given name, type, and default value"""
-        from fields import AdditionalRenderer
-        self.renderers[name] = AdditionalRenderer(self, name, type, value)
+        from fields import Field
+        if not isinstance(field, Field):
+            raise ValueError('Can only add Field objects; got %s instead' % field)
+        field.parent = self
+        self.fields[field.name] = field
                 
     def render_attrs(self):
         """The set of attributes that will be rendered"""
-        if self._render_attrs:
-            return self._render_attrs
+        if self._render_fields:
+            return self._render_fields
         return self._get_attrs()
     render_attrs = property(render_attrs)
                 
@@ -106,7 +108,7 @@ class ModelRenderer(object):
           
         fs.configure(include=[fs.name, fs.options.checkbox()])
         """
-        self._render_attrs = self._get_attrs(pk, exclude, include, options)
+        self._render_fields = self._get_attrs(pk, exclude, include, options)
 
     def bind(self, model, session=None, data={}):
         """ 
@@ -120,9 +122,9 @@ class ModelRenderer(object):
         # two steps so bind's error checking can work
         mr = copy(self)
         mr.rebind(model, session, data)
-        mr.renderers = dict([(key, renderer.bind(mr)) for key, renderer in self.renderers.iteritems()])
-        if self._render_attrs:
-            mr._render_attrs = [attr.bind(mr) for attr in self._render_attrs]
+        mr.fields = dict([(key, renderer.bind(mr)) for key, renderer in self.fields.iteritems()])
+        if self._render_fields:
+            mr._render_fields = [attr.bind(mr) for attr in self._render_fields]
         return mr
 
     def rebind(self, model=None, session=None, data=None):
@@ -157,7 +159,7 @@ class ModelRenderer(object):
             attr.sync()
 
     def _raw_attrs(self):
-        L = self.renderers.values()
+        L = self.fields.values()
         # sort by name for reproducibility
         try:
             L.sort(key=lambda wrapper: wrapper.name)
@@ -178,7 +180,7 @@ class ModelRenderer(object):
             try:
                 utils.validate_columns(eval(lst))
             except:
-                raise ValueError('%s parameter should be an iterable of AbstractRenderer objects; was %s' % (lst, eval(lst)))
+                raise ValueError('%s parameter should be an iterable of AbstractField objects; was %s' % (lst, eval(lst)))
 
         if not include:
             ignore = list(exclude)
@@ -200,14 +202,14 @@ class ModelRenderer(object):
     
     def __getattr__(self, attrname):
         try:
-            return self.renderers[attrname]
+            return self.fields[attrname]
         except KeyError:
             raise AttributeError
         
     def __setattr__(self, attrname, value):
-        from fields import AbstractRenderer
-        if isinstance(value, AbstractRenderer):
-            self.renderers[attrname] = value
+        from fields import AbstractField
+        if isinstance(value, AbstractField):
+            self.fields[attrname] = value
         else:
             object.__setattr__(self, attrname, value)
 

@@ -111,7 +111,7 @@ template_text_mako = r"""
 % endfor
 
 % for attr in attrs:
-  % if attr.render_as == fields.HiddenField:
+  % if attr.renderer == fields.HiddenFieldRenderer:
 ${attr.render()}
   % else:
 <div>
@@ -145,7 +145,7 @@ template_text_tempita = r"""
 {{endfor}}
 
 {{for attr in attrs}}                                                                          
-{{if attr.render_as == fields.HiddenField}}                                                    
+{{if attr.renderer == fields.HiddenFieldRenderer}}                                                    
 {{attr.render()}}                                                                              
 {{else}}                                                                                       
 <div>                                                                                          
@@ -185,17 +185,17 @@ class FieldSet(AbstractFieldSet):
     A `FieldSet` is bound to a SQLAlchemy mapped instance (or class, for creating new instances) and can render a form for editing that instance,
     perform validation, and sync the form data back to the bound instance.
     
-    There are two parts you can customize in a `FieldSet` subclass short of writing your own render method.  These are `prettify` and `render`.  As in,
+    There are two parts you can customize in a `FieldSet` subclass short of writing your own render method.  These are `prettify` and `_render`.  As in,
     
     {{{
     class MyFieldSet(FieldSet):
         prettify = staticmethod(myprettify)
-        render = staticmethod(myrender)
+        _render = staticmethod(myrender)
     }}}
         
     `prettify` is a function that, given an attribute name ('user_name') turns it into something usable as an HTML label ('User name').
     
-    `render` should be a template rendering method, such as `Template.render` from a mako Template or `Template.substitute` from a Tempita Template.
+    `_render` should be a template rendering method, such as `Template.render` from a mako Template or `Template.substitute` from a Tempita Template.
     It should take as parameters:
       * `attrs`: the `FieldSet` attributes to render
       * `global_errors`: a list of global (not per-attribute) validation failures
@@ -213,7 +213,7 @@ class FieldSet(AbstractFieldSet):
     See `AbstractFieldSet` for more details about writing your own `render` method.
     """
     prettify = staticmethod(base.prettify)
-    render = staticmethod('render_mako' in locals() and render_mako)
+    _render = staticmethod('render_mako' in locals() and render_mako or render_tempita)
     
     def __init__(self, *args, **kwargs):
         AbstractFieldSet.__init__(self, *args, **kwargs)
@@ -237,4 +237,4 @@ class FieldSet(AbstractFieldSet):
         # it difficult to perform imports directly in the template itself. If
         # your templating weapon of choice does allow it, feel free to perform
         # such imports in the template.
-        return self.render(attrs=self.render_attrs, global_errors=self._errors, fields=fields, prettify=self.prettify, focus=self.focus)
+        return self._render(attrs=self.render_attrs, global_errors=self._errors, fields=fields, prettify=self.prettify, focus=self.focus)

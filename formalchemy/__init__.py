@@ -8,7 +8,7 @@ from formalchemy.forms import *
 from formalchemy.fields import query_options
 from formalchemy.validators import ValidationException
 
-__all__ = ["FieldSet", "AbstractFieldSet", "Table", "TableCollection", "form_data", "query_options", "ValidationException"]
+__all__ = ["FieldSet", "AbstractFieldSet", "Field", "Table", "TableCollection", "form_data", "query_options", "ValidationException"]
 __version__ = "0.3"
 
 __doc__ = """
@@ -116,7 +116,7 @@ Now, let's render a form for editing the order we've created:
 
 {{{
 >>> from formalchemy import FieldSet
->>> from formalchemy.test import _pretty_html # obviously unnecessary in production
+>>> from formalchemy.regression import _pretty_html # obviously unnecessary in production
 >>> fs = FieldSet(order1)
 >>> print _pretty_html(fs.render())
 <div>

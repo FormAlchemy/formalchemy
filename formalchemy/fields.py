@@ -15,57 +15,54 @@ from sqlalchemy.orm.attributes import ScalarAttributeImpl, ScalarObjectAttribute
 import sqlalchemy.types as types
 import base, validators
 
-__all__ = ["TextField", "PasswordField", "HiddenField", "BooleanField",
-    "FileField", "IntegerField", "DateTimeField", "DateField", "TimeField",
-    "RadioSet", "SelectField", 'query_options']
+__all__ = ['Field', 'query_options']
 
 
-class ModelField(object):
+class FieldRenderer(object):
     """
     This should be the super class of all xField classes.
 
     This class takes a SQLAlchemy mapped class as first argument and the column
     name to process as second argument. It maps the column name as the field
     name and the column's value as the field's value.
-
-    Methods:
-      * `get_value(self)`
-        Return the column's current value if not None, otherwise
-        return the default column value if available.
-      * `render(self)`
-        Return generated HTML.
     """
-
     def __init__(self, attr, **kwargs):
         self.attr = attr
         self.attribs = kwargs
         
     def name(self):
+        """Field name"""
         return self.attr.name
     name = property(name)
         
     def value(self):
+        """Current value, or default if none"""
         return self.attr.value
     value = property(value)
 
     def render(self):
+        """Render the field"""
         return h.text_field(self.name, value=self.value)
 
-class TextField(ModelField):
+class TextFieldRenderer(FieldRenderer):
     def __init__(self, attr, **kwargs):
-        super(TextField, self).__init__(attr, **kwargs)
+        super(TextFieldRenderer, self).__init__(attr, **kwargs)
         self.length = attr.type.length
 
     def render(self):
         return h.text_field(self.name, value=self.value, maxlength=self.length, **self.attribs)
 
-class PasswordField(TextField):
+class IntegerFieldRenderer(FieldRenderer):
+    def render(self):
+        return h.text_field(self.name, value=self.value, **self.attribs)
+
+class PasswordFieldRenderer(TextFieldRenderer):
     def render(self):
         return h.password_field(self.name, value=self.value, maxlength=self.length, **self.attribs)
 
-class TextAreaField(ModelField):
+class TextAreaFieldRenderer(FieldRenderer):
     def __init__(self, attr, size, **kwargs):
-        super(TextAreaField, self).__init__(attr, **kwargs)
+        super(TextAreaFieldRenderer, self).__init__(attr, **kwargs)
         self.size = size
 
     def render(self):
@@ -76,37 +73,33 @@ class TextAreaField(ModelField):
             cols, rows = self.size
             return h.text_area(self.name, content=self.value, cols=cols, rows=rows, **self.attribs)
 
-class HiddenField(ModelField):
+class HiddenFieldRenderer(FieldRenderer):
     def render(self):
         return h.hidden_field(self.name, value=self.value, **self.attribs)
 
-class BooleanField(ModelField):
+class BooleanFieldRenderer(FieldRenderer):
     def render(self):
         # This is a browser hack to have a checkbox POSTed as False even if it wasn't
         # checked, as unchecked boxes are not POSTed. The hidden field should be *after* the checkbox.
         return h.check_box(self.name, True, checked=self.value, **self.attribs)
 
-class FileField(ModelField):
+class FileFieldRenderer(FieldRenderer):
     def render(self):
         # todo Do we need a value here ?
         return h.file_field(self.name, **self.attribs)
 
-class IntegerField(ModelField):
-    def render(self):
-        return h.text_field(self.name, value=self.value, **self.attribs)
-
-class ModelDateTimeField(ModelField):
+class ModelDateTimeRenderer(FieldRenderer):
     """
-    The `ModelDateTimeField` class
+    The `ModelDateTimeRenderer` class
     should be the super class for (Date|Time|DateTime)Field.
     """
 
     def __init__(self, attr, format, **kwargs):
-        super(ModelDateTimeField, self).__init__(attr, **kwargs)
+        super(ModelDateTimeRenderer, self).__init__(attr, **kwargs)
         self.format = format
 
     def get_value(self):
-        value = super(ModelDateTimeField, self).get_value()
+        value = super(ModelDateTimeRenderer, self).get_value()
         if value is not None:
             return value.strftime(self.format)
         else:
@@ -116,13 +109,13 @@ class ModelDateTimeField(ModelField):
     def render(self):
         return h.text_field(self.name, value=self.value, **self.attribs)
 
-class DateTimeField(ModelDateTimeField):
+class DateTimeFieldRendererRenderer(ModelDateTimeRenderer):
     pass
 
-class DateField(ModelDateTimeField):
+class DateFieldRenderer(ModelDateTimeRenderer):
     pass
 
-class TimeField(ModelDateTimeField):
+class TimeFieldRenderer(ModelDateTimeRenderer):
     pass
 
 
@@ -142,7 +135,7 @@ def _extract_options(options):
             yield (choice, choice)
 
 
-class RadioSet(ModelField):
+class RadioSet(FieldRenderer):
     widget = staticmethod(h.radio_button)
     def __init__(self, attr, options, **kwargs):
         super(RadioSet, self).__init__(attr)
@@ -157,11 +150,11 @@ class CheckBoxSet(RadioSet):
     widget = staticmethod(h.check_box)
 
 
-class SelectField(ModelField):
+class SelectFieldRenderer(FieldRenderer):
     def __init__(self, attr, options, **kwargs):
         self.options = options
         selected = kwargs.get('selected', None)
-        super(SelectField, self).__init__(attr, **kwargs)
+        super(SelectFieldRenderer, self).__init__(attr, **kwargs)
         self.selected = selected or self.value
 
     def render(self):
@@ -193,7 +186,7 @@ def _foreign_keys(property):
         return [r for l, r in property.synchronize_pairs]
 
 
-class AbstractRenderer(object):
+class AbstractField(object):
     """
     Contains the information necessary to render (and modify the rendering of)
     a form field
@@ -203,7 +196,7 @@ class AbstractRenderer(object):
         self.parent = parent
         # what kind of Field to render this attribute as.  this will be autoguessed,
         # unless the user forces it with .dropdown, .checkbox, etc.
-        self.render_as = None
+        self.renderer = None
         # other render options, such as size, multiple, etc.
         self.render_opts = {}
         # validator functions added with .validate()
@@ -314,57 +307,57 @@ class AbstractRenderer(object):
         return attr
     def hidden(self):
         attr = deepcopy(self)
-        attr.render_as = HiddenField
+        attr.renderer = HiddenFieldRenderer
         attr.render_opts = {}
         return attr
     def password(self):
         attr = deepcopy(self)
-        attr.render_as = PasswordField
+        attr.renderer = PasswordFieldRenderer
         attr.render_opts = {}
         return attr
     def textarea(self, size=None):
         attr = deepcopy(self)
-        attr.render_as = TextAreaField
+        attr.renderer = TextAreaFieldRenderer
         attr.render_opts = {'size': size}
         return attr
     def radio(self, options=None):
         attr = deepcopy(self)
-        attr.render_as = RadioSet
+        attr.renderer = RadioSet
         if options is None:
             options = self.render_opts.get('options')
         attr.render_opts = {'options': options}
         return attr
     def checkbox(self, options=None):
         attr = deepcopy(self)
-        attr.render_as = CheckBoxSet
+        attr.renderer = CheckBoxSet
         if options is None:
             options = self.render_opts.get('options')
         attr.render_opts = {'options': options}
         return attr
     def dropdown(self, options=None, multiple=False):
         attr = deepcopy(self)
-        attr.render_as = SelectField
+        attr.renderer = SelectFieldRenderer
         if options is None:
             options = self.render_opts.get('options')
         attr.render_opts = {'multiple': multiple, 'options': options}
         return attr
 
-    def _get_render_as(self):
+    def _get_renderer(self):
         if isinstance(self.type, types.String):
-            return TextField
+            return TextFieldRenderer
         elif isinstance(self.type, types.Integer):
-            return IntegerField
+            return IntegerFieldRenderer
         elif isinstance(self.type, types.Boolean):
-            return BooleanField
+            return BooleanFieldRenderer
         elif isinstance(self.type, types.DateTime):
-            return DateTimeField
+            return DateTimeFieldRendererRenderer
         elif isinstance(self.type, types.Date):
-            return DateField
+            return DateFieldRenderer
         elif isinstance(self.type, types.Time):
-            return TimeField
+            return TimeFieldRenderer
         elif isinstance(self.type, types.Binary):
-            return FileField
-        return ModelField
+            return FileFieldRenderer
+        return FieldRenderer
     
     def render(self, **html_options):
         """
@@ -375,15 +368,20 @@ class AbstractRenderer(object):
         """
         opts = dict(self.render_opts)
         opts.update(html_options)
-        return self.render_as(self, readonly=self.modifier=='readonly', disabled=self.modifier=='disabled', **opts).render()
+        return self.renderer(self, readonly=self.modifier=='readonly', disabled=self.modifier=='disabled', **opts).render()
 
 
-class AdditionalRenderer(AbstractRenderer):
+class Field(AbstractField):
     """
-    Renderer for a manually-added form field
+    A manually-added form field
     """
-    def __init__(self, parent, name, type, value):
-        AbstractRenderer.__init__(self, parent)
+    def __init__(self, name, type=types.Integer, value=None):
+        """
+          * Name: field name
+          * type: data type, from sqlalchemy.types (Boolean, Integer, String)
+          * value: default value
+        """
+        AbstractField.__init__(self, None) # parent will be set by ModelRenderer.add
         self.type = type()
         self.name = name
         self.value = value
@@ -405,12 +403,12 @@ class AdditionalRenderer(AbstractRenderer):
         self.value = self._unstr(self.parent.data.get(self.name))
             
     def __repr__(self):
-        return 'AttributeRenderer(%s)' % self.name
+        return 'AttributeField(%s)' % self.name
     
     def render(self, **html_options):
-        if not self.render_as:
-            self.render_as = self._get_render_as()
-        return AbstractRenderer.render(self, **html_options)
+        if not self.renderer:
+            self.renderer = self._get_renderer()
+        return AbstractField.render(self, **html_options)
 
     def __eq__(self, other):
         # we override eq so that when we configure with options=[...], we can match the renders in options
@@ -424,17 +422,17 @@ class AdditionalRenderer(AbstractRenderer):
 
     def _unstr(self, st):
         if self.is_collection():
-            return [AbstractRenderer._unstr(self, id_st)
+            return [AbstractField._unstr(self, id_st)
                     for id_st in st]
-        return AbstractRenderer._unstr(self, st)
+        return AbstractField._unstr(self, st)
 
 
-class AttributeRenderer(AbstractRenderer):
+class AttributeField(AbstractField):
     """
-    Renderer for an SQLAlchemy attribute.
+    Field corresponding to an SQLAlchemy attribute.
     """
     def __init__(self, instrumented_attribute, parent):
-        AbstractRenderer.__init__(self, parent)
+        AbstractField.__init__(self, parent)
         # we rip out just the parts we care about from InstrumentedAttribute.
         # impl is the AttributeImpl.  So far all we care about there is ".key,"
         # which is the name of the attribute in the mapped class.
@@ -546,11 +544,11 @@ class AttributeRenderer(AbstractRenderer):
         return hash(self._impl)
     
     def __repr__(self):
-        return 'AttributeRenderer(%s)' % self.key
+        return 'AttributeField(%s)' % self.key
     
     def render(self, **html_options):
-        if not self.render_as:
-            self.render_as = self._get_render_as()
+        if not self.renderer:
+            self.renderer = self._get_renderer()
         if isinstance(self._impl, ScalarObjectAttributeImpl) or self.is_collection():
             if not self.render_opts.get('options'):
                 # todo this does not handle primaryjoin (/secondaryjoin) alternate join conditions
@@ -559,22 +557,22 @@ class AttributeRenderer(AbstractRenderer):
                 q = self.parent.session.query(fk_cls).order_by(fk_pk)
                 self.render_opts['options'] = query_options(q)
                 logger.debug('options for %s are %s' % (self.name, self.render_opts['options']))
-        if isinstance(self.type, types.Boolean) and not self.render_opts.get('options') and self.render_as in [SelectField, RadioSet]:
+        if isinstance(self.type, types.Boolean) and not self.render_opts.get('options') and self.renderer in [SelectFieldRenderer, RadioSet]:
             self.render_opts['options'] = [('True', True), ('False', False)]
-        return AbstractRenderer.render(self, **html_options)
+        return AbstractField.render(self, **html_options)
 
-    def _get_render_as(self):
+    def _get_renderer(self):
         if isinstance(self._impl, ScalarObjectAttributeImpl):
-            return SelectField
+            return SelectFieldRenderer
         if self.is_collection():
             self.render_opts['multiple'] = True
             if 'size' not in self.render_opts:
                 self.render_opts['size'] = 5
-            return SelectField
-        return AbstractRenderer._get_render_as(self)
+            return SelectFieldRenderer
+        return AbstractField._get_renderer(self)
 
     def _unstr(self, st):
         if self.is_collection():
-            return [self.query(self.collection_type()).get(AbstractRenderer._unstr(self, id_st))
+            return [self.query(self.collection_type()).get(AbstractField._unstr(self, id_st))
                     for id_st in st]
-        return AbstractRenderer._unstr(self, st)
+        return AbstractField._unstr(self, st)

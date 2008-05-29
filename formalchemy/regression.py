@@ -36,8 +36,8 @@ class Checkbox(Base):
     
 # todo: test a CustomBoolean, using a TypeDecorator --
 # http://www.sqlalchemy.org/docs/04/types.html#types_custom
-# probably need to add _render_as attr and check
-# isinstance(getattr(myclass, '_render_as', type(myclass)), Boolean)
+# probably need to add _renderer attr and check
+# isinstance(getattr(myclass, '_renderer', type(myclass)), Boolean)
 # since the custom class shouldn't really inherit from Boolean
 
 class OTOChild(Base):
@@ -112,7 +112,7 @@ session.commit()
 
 
 from forms import FieldSet as DefaultFieldSet, render_mako, render_tempita
-import fields
+from fields import Field, query_options
 from validators import ValidationException
 from tables import Table, TableCollection
 
@@ -122,6 +122,7 @@ def _pretty_html(html):
 
 class FieldSet(DefaultFieldSet):
     def render(self):
+        import fields
         kwargs = dict(attrs=self.render_attrs, global_errors=self._errors, fields=fields, prettify=self.prettify, focus=self.focus)
         tempita = _pretty_html(render_tempita(**kwargs))
         mako = _pretty_html(render_mako(**kwargs))
@@ -144,11 +145,11 @@ __doc__ = r"""
 # some low-level testing first
 >>> fs = FieldSet(order1)
 >>> list(sorted(fs._raw_attrs(), key=lambda attr: attr.key))
-[AttributeRenderer(id), AttributeRenderer(quantity), AttributeRenderer(user), AttributeRenderer(user_id)]
+[AttributeField(id), AttributeField(quantity), AttributeField(user), AttributeField(user_id)]
 
 >>> fs = FieldSet(bill)
 >>> list(sorted(fs._raw_attrs(), key=lambda attr: attr.key))
-[AttributeRenderer(email), AttributeRenderer(id), AttributeRenderer(name), AttributeRenderer(orders), AttributeRenderer(password)]
+[AttributeField(email), AttributeField(id), AttributeField(name), AttributeField(orders), AttributeField(password)]
 
 >>> fs = FieldSet(One)
 >>> fs.configure(pk=True, focus=None)
@@ -326,7 +327,7 @@ document.getElementById("email").focus();
 <option value="2">Quantity: 5</option></select>
 >>> print fs.orders.radio().render()
 <input id="orders_1" name="orders" type="radio" value="1" />Quantity: 10<br /><input id="orders_2" name="orders" type="radio" value="2" />Quantity: 5
->>> print fs.orders.radio(options=fields.query_options(session.query(Order).filter_by(id=1))).render()
+>>> print fs.orders.radio(options=query_options(session.query(Order).filter_by(id=1))).render()
 <input id="orders_1" name="orders" type="radio" value="1" />Quantity: 10
 
 >>> fs = FieldSet(Two)
@@ -440,7 +441,7 @@ ValueError: ...
 >>> fs = FieldSet(Two)
 >>> fs.configure()
 >>> fs2 = fs.bind(Two)
->>> [fs2 == attr.parent for attr in fs2._render_attrs]
+>>> [fs2 == attr.parent for attr in fs2._render_fields]
 [True]
 
 # tables
@@ -512,7 +513,7 @@ document.getElementById("oto_child_id").focus();
 >>> fs.validate()
 False
 >>> fs.errors
-{AttributeRenderer(foo): ['Please enter a value']}
+{AttributeField(foo): ['Please enter a value']}
 >>> print fs.render()
 <div>
  <label class="field_req" for="foo">
@@ -546,7 +547,7 @@ True
 >>> fs.validate()
 False
 >>> fs.errors
-{AttributeRenderer(id): [ValidationException('Value is not an integer',)]}
+{AttributeField(id): [ValidationException('Value is not an integer',)]}
 
 >>> fs = FieldSet(User, data={'orders': []})
 >>> fs.configure(include=[fs.orders])
@@ -628,9 +629,9 @@ True
 >>> fs2.name.baz
 'asdf'
 
-# AdditionalRenderer
+# Field
 >>> fs = FieldSet(One)
->>> fs.add('foo')
+>>> fs.add(Field('foo'))
 >>> print configure_and_render(fs, focus=None)
 <div>
  <label class="field_opt" for="foo">
@@ -640,7 +641,7 @@ True
 </div>
 
 >>> fs = FieldSet(One)
->>> fs.add('foo', types.Integer, value=2)
+>>> fs.add(Field('foo', types.Integer, value=2))
 >>> fs.foo.value
 2
 >>> print configure_and_render(fs, focus=None)
@@ -656,8 +657,7 @@ True
 4
 
 >>> fs = FieldSet(One)
->>> fs.add('foo', types.Integer, value=2)
->>> fs.foo = fs.foo.dropdown(options=[('1', 1), ('2', 2)])
+>>> fs.add(Field('foo', types.Integer, value=2).dropdown(options=[('1', 1), ('2', 2)]))
 >>> print configure_and_render(fs, focus=None)
 <div>
  <label class="field_opt" for="foo">
@@ -673,18 +673,17 @@ True
  </select>
 </div>
 
-# testing AdditionalRenderer __hash__, __eq__
+# test Field __hash__, __eq__
 >>> fs.foo == fs.foo.dropdown(options=[('1', 1), ('2', 2)])
 True
 >>> fs2 = FieldSet(One)
->>> fs2.add('foo', types.Integer, value=2)
+>>> fs2.add(Field('foo', types.Integer, value=2))
 >>> fs2.configure(options=[fs2.foo.dropdown(options=[('1', 1), ('2', 2)])], focus=None)
 >>> fs.render() == fs2.render()
 True
 
 >>> fs = FieldSet(One)
->>> fs.add('foo', types.Integer, value=[2, 3])
->>> fs.foo = fs.foo.dropdown(options=[('1', 1), ('2', 2), ('3', 3)], multiple=True)
+>>> fs.add(Field('foo', types.Integer, value=[2, 3]).dropdown(options=[('1', 1), ('2', 2), ('3', 3)], multiple=True))
 >>> print configure_and_render(fs, focus=None)
 <div>
  <label class="field_opt" for="foo">
@@ -709,14 +708,14 @@ True
 
 # test weird attribute names
 >>> fs = FieldSet(One)
->>> fs.add('foo')
->>> fs.foo == fs.renderers['foo']
+>>> fs.add(Field('foo'))
+>>> fs.foo == fs.fields['foo']
 True
->>> fs.add('add')
->>> fs.add == fs.renderers['add']
+>>> fs.add(Field('add'))
+>>> fs.add == fs.fields['add']
 False
 
-# todo add(AdditionalRenderer(...).required()...) ?
+# todo add(Field(...).required()...) ?
 """
 
 if __name__ == '__main__':
