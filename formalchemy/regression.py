@@ -655,6 +655,49 @@ True
 >>> fs.foo.value
 4
 
+>>> fs = FieldSet(One)
+>>> fs.add('foo', types.Integer, value=2)
+>>> fs.foo = fs.foo.dropdown(options=[('1', 1), ('2', 2)])
+>>> print configure_and_render(fs, focus=None)
+<div>
+ <label class="field_opt" for="foo">
+  Foo
+ </label>
+ <select id="foo" name="foo">
+  <option value="1">
+   1
+  </option>
+  <option value="2" selected="selected">
+   2
+  </option>
+ </select>
+</div>
+
+>>> fs = FieldSet(One)
+>>> fs.add('foo', types.Integer, value=[2, 3])
+>>> fs.foo = fs.foo.dropdown(options=[('1', 1), ('2', 2), ('3', 3)], multiple=True)
+>>> print configure_and_render(fs, focus=None)
+<div>
+ <label class="field_opt" for="foo">
+  Foo
+ </label>
+ <select id="foo" multiple="multiple" name="foo">
+  <option value="1">
+   1
+  </option>
+  <option value="2" selected="selected">
+   2
+  </option>
+  <option value="3" selected="selected">
+   3
+  </option>
+ </select>
+</div>
+>>> fs.rebind(One, data={'foo': ['1', '2']})
+>>> fs.sync()
+>>> fs.foo.value
+[1, 2]
+
 # test weird attribute names
 >>> fs = FieldSet(One)
 >>> fs.add('foo')
@@ -664,10 +707,8 @@ True
 >>> fs.add == fs.renderers['add']
 False
 
-# todo add(AdditionalRenderer(...).required()...)
+# todo add(AdditionalRenderer(...).required()...) ?
 # todo test eq by using options
-# todo test select/combo for single and multiple values
-#     (multiple probably requires modifications to unstr)
 """
 
 if __name__ == '__main__':

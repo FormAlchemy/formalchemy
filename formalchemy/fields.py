@@ -259,12 +259,8 @@ class AbstractRenderer(object):
         """True iff this attribute must be given a non-empty value"""
         return self._required
     
-    def _unstr(self, st, force_scalar=False):
+    def _unstr(self, st):
         """convert st (raw user data, or None) into the data type expected by attr"""
-        # todo handle non-object collections from AdditionalRenderer
-        if self.is_collection() and not force_scalar:
-            return [self.query(self.collection_type()).get(self._unstr(id_st, True))
-                    for id_st in st]
         if isinstance(self.type, types.Boolean):
             return st is not None
         if st is None:
@@ -280,10 +276,10 @@ class AbstractRenderer(object):
             except:
                 raise validators.ValidationException('Value is not a number')
         if isinstance(self.type, types.DateTime):
-            # todo
+            # todo handle datetime
             pass
         if isinstance(self.type, types.Date):
-            # todo
+            # todo handle date
             pass
         return st
 
@@ -388,7 +384,7 @@ class AdditionalRenderer(AbstractRenderer):
     """
     def __init__(self, parent, name, type, value):
         AbstractRenderer.__init__(self, parent)
-        self.type = type
+        self.type = type()
         self.name = name
         self.value = value
         
@@ -425,6 +421,12 @@ class AdditionalRenderer(AbstractRenderer):
             return False
     def __hash__(self):
         return hash(self.name)
+
+    def _unstr(self, st):
+        if self.is_collection():
+            return [AbstractRenderer._unstr(self, id_st)
+                    for id_st in st]
+        return AbstractRenderer._unstr(self, st)
 
 
 class AttributeRenderer(AbstractRenderer):
@@ -570,3 +572,9 @@ class AttributeRenderer(AbstractRenderer):
                 self.render_opts['size'] = 5
             return SelectField
         return AbstractRenderer._get_render_as(self)
+
+    def _unstr(self, st):
+        if self.is_collection():
+            return [self.query(self.collection_type()).get(AbstractRenderer._unstr(self, id_st))
+                    for id_st in st]
+        return AbstractRenderer._unstr(self, st)

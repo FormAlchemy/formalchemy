@@ -203,6 +203,13 @@ class ModelRenderer(object):
             return self.renderers[attrname]
         except KeyError:
             raise AttributeError
+        
+    def __setattr__(self, attrname, value):
+        from fields import AbstractRenderer
+        if isinstance(value, AbstractRenderer):
+            self.renderers[attrname] = value
+        else:
+            object.__setattr__(self, attrname, value)
 
     def render(self):
         raise NotImplementedError()

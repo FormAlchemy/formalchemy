@@ -16,6 +16,6 @@ def validate_columns(iterable):
         L = list(iterable)
     except:
         raise ValueError()
-    from fields import AttributeRenderer
-    if L and not isinstance(L[0], AttributeRenderer):
+    from fields import AbstractRenderer
+    if L and not isinstance(L[0], AbstractRenderer):
         raise ValueError()
