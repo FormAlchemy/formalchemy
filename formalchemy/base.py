@@ -49,6 +49,7 @@ class ModelRenderer(object):
             submitted. 
         """
         self.model = self.session = None
+        self.renderers = {}
         self._render_attrs = None
 
         self.rebind(model, session, data)
@@ -58,13 +59,12 @@ class ModelRenderer(object):
             if hasattr(iattr.property, 'mapper') and len(iattr.property.mapper.primary_key) != 1:
                 logger.warn('ignoring multi-column property %s' % iattr.impl.key)
             else:
-                setattr(self, iattr.impl.key, AttributeRenderer(iattr, self))
+                self.renderers[iattr.impl.key] = AttributeRenderer(iattr, self)
                 
     def add(self, name, type=types.String, value=None):
         """Add a form field with the given name, type, and default value"""
         from fields import AdditionalRenderer
-        # todo switch from setattr to maintaining an attr dict, and returning those from __getattr__
-        setattr(self, name, AdditionalRenderer(self, name, type, value))
+        self.renderers[name] = AdditionalRenderer(self, name, type, value)
                 
     def render_attrs(self):
         """The set of attributes that will be rendered"""
@@ -120,8 +120,7 @@ class ModelRenderer(object):
         # two steps so bind's error checking can work
         mr = copy(self)
         mr.rebind(model, session, data)
-        for iattr in _managed_attributes(type(self.model)):
-            setattr(mr, iattr.impl.key, getattr(self, iattr.impl.key).bind(mr))
+        mr.renderers = dict([(key, renderer.bind(mr)) for key, renderer in self.renderers.iteritems()])
         if self._render_attrs:
             mr._render_attrs = [attr.bind(mr) for attr in self._render_attrs]
         return mr
@@ -158,16 +157,14 @@ class ModelRenderer(object):
             attr.sync()
 
     def _raw_attrs(self):
-        from fields import AbstractRenderer
-        wrappers = [attr for attr in self.__dict__.itervalues()
-                    if isinstance(attr, AbstractRenderer)]
+        L = self.renderers.values()
         # sort by name for reproducibility
         try:
-            wrappers.sort(key=lambda wrapper: wrapper.name)
+            L.sort(key=lambda wrapper: wrapper.name)
         except TypeError:
             # 2.3 support
-            wrappers.sort(lambda a, b: cmp(a.name, b.name))
-        return wrappers
+            L.sort(lambda a, b: cmp(a.name, b.name))
+        return L
     
     def _get_attrs(self, pk=False, exclude=[], include=[], options=[]):
         if include and exclude:
@@ -200,6 +197,12 @@ class ModelRenderer(object):
             else:
                 L.append(wrapper)
         return L
+    
+    def __getattr__(self, attrname):
+        try:
+            return self.renderers[attrname]
+        except KeyError:
+            raise AttributeError
 
     def render(self):
         raise NotImplementedError()

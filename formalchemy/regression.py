@@ -654,6 +654,20 @@ True
 >>> fs.sync()
 >>> fs.foo.value
 4
+
+# test weird attribute names
+>>> fs = FieldSet(One)
+>>> fs.add('foo')
+>>> fs.foo == fs.renderers['foo']
+True
+>>> fs.add('add')
+>>> fs.add == fs.renderers['add']
+False
+
+# todo add(AdditionalRenderer(...).required()...)
+# todo test eq by using options
+# todo test select/combo for single and multiple values
+#     (multiple probably requires modifications to unstr)
 """
 
 if __name__ == '__main__':
