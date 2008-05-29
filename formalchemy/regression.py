@@ -673,6 +673,15 @@ True
  </select>
 </div>
 
+# testing AdditionalRenderer __hash__, __eq__
+>>> fs.foo == fs.foo.dropdown(options=[('1', 1), ('2', 2)])
+True
+>>> fs2 = FieldSet(One)
+>>> fs2.add('foo', types.Integer, value=2)
+>>> fs2.configure(options=[fs2.foo.dropdown(options=[('1', 1), ('2', 2)])], focus=None)
+>>> fs.render() == fs2.render()
+True
+
 >>> fs = FieldSet(One)
 >>> fs.add('foo', types.Integer, value=[2, 3])
 >>> fs.foo = fs.foo.dropdown(options=[('1', 1), ('2', 2), ('3', 3)], multiple=True)
@@ -708,7 +717,6 @@ True
 False
 
 # todo add(AdditionalRenderer(...).required()...) ?
-# todo test eq by using options
 """
 
 if __name__ == '__main__':
