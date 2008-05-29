@@ -6,6 +6,7 @@ from BeautifulSoup import BeautifulSoup # required for html prettification
 
 from sqlalchemy import *
 from sqlalchemy.orm import *
+import sqlalchemy.types as types
 from sqlalchemy.ext.declarative import declarative_base
 logging.getLogger('sqlalchemy').setLevel(logging.ERROR)
 
@@ -626,6 +627,33 @@ True
 >>> fs2 = fs.bind(bill)
 >>> fs2.name.baz
 'asdf'
+
+# AdditionalRenderer
+>>> fs = FieldSet(One)
+>>> fs.add('foo')
+>>> print configure_and_render(fs, focus=None)
+<div>
+ <label class="field_opt" for="foo">
+  Foo
+ </label>
+ <input id="foo" name="foo" type="text" />
+</div>
+
+>>> fs = FieldSet(One)
+>>> fs.add('foo', types.Integer, value=2)
+>>> fs.foo.value
+2
+>>> print configure_and_render(fs, focus=None)
+<div>
+ <label class="field_opt" for="foo">
+  Foo
+ </label>
+ <input id="foo" name="foo" type="text" value="2" />
+</div>
+>>> fs.rebind(One, data={'foo': 4})
+>>> fs.sync()
+>>> fs.foo.value
+4
 """
 
 if __name__ == '__main__':

@@ -60,6 +60,12 @@ class ModelRenderer(object):
             else:
                 setattr(self, iattr.impl.key, AttributeRenderer(iattr, self))
                 
+    def add(self, name, type=types.String, value=None):
+        """Add a form field with the given name, type, and default value"""
+        from fields import AdditionalRenderer
+        # todo switch from setattr to maintaining an attr dict, and returning those from __getattr__
+        setattr(self, name, AdditionalRenderer(self, name, type, value))
+                
     def render_attrs(self):
         """The set of attributes that will be rendered"""
         if self._render_attrs:
@@ -152,9 +158,9 @@ class ModelRenderer(object):
             attr.sync()
 
     def _raw_attrs(self):
-        from fields import AttributeRenderer
+        from fields import AbstractRenderer
         wrappers = [attr for attr in self.__dict__.itervalues()
-                    if isinstance(attr, AttributeRenderer)]
+                    if isinstance(attr, AbstractRenderer)]
         # sort by name for reproducibility
         try:
             wrappers.sort(key=lambda wrapper: wrapper.name)
@@ -175,7 +181,7 @@ class ModelRenderer(object):
             try:
                 utils.validate_columns(eval(lst))
             except:
-                raise ValueError('%s parameter should be an iterable of AttributeRenderer objects; was %s' % (lst, eval(lst)))
+                raise ValueError('%s parameter should be an iterable of AbstractRenderer objects; was %s' % (lst, eval(lst)))
 
         if not include:
             ignore = list(exclude)

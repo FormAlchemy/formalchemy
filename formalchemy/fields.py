@@ -274,6 +274,11 @@ class AbstractRenderer(object):
                 return int(st)
             except:
                 raise validators.ValidationException('Value is not an integer')
+        if isinstance(self.type, types.Float):
+            try:
+                return float(st)
+            except:
+                raise validators.ValidationException('Value is not a number')
         if isinstance(self.type, types.DateTime):
             # todo
             pass
@@ -387,6 +392,10 @@ class AdditionalRenderer(AbstractRenderer):
         self.name = name
         self.value = value
         
+    def key(self):
+        return self.name
+    key = property(key)
+
     def is_collection(self):
         return self.render_opts.get('multiple', False)
     
