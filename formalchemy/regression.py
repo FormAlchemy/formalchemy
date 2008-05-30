@@ -689,7 +689,7 @@ True
  <label class="field_opt" for="foo">
   Foo
  </label>
- <select id="foo" multiple="multiple" name="foo">
+ <select id="foo" multiple="multiple" name="foo" size="5">
   <option value="1">
    1
   </option>

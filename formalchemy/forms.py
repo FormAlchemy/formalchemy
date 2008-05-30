@@ -223,7 +223,7 @@ class FieldSet(AbstractFieldSet):
         """ 
         Besides the options in `AbstractFieldSet.configure`,
         `FieldSet.configure` takes the `focus` parameter, which should be the
-        attribute whose rendered input element gets focus. Default value is
+        attribute (e.g., `fs.orders`) whose rendered input element gets focus. Default value is
         True, meaning, focus the first element. False means do not focus at
         all. 
         """

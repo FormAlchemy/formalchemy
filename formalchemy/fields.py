@@ -278,41 +278,63 @@ class AbstractField(object):
         attr.parent = parent
         return attr
     def validate(self, validator):
+        """ 
+        Add the `validator` function to the list of validation routines to run
+        when the FieldSet's `validate` method is run. Validator functions take one
+        parameter, the value to validate. This value will have already been turned
+        into the appropriate data type for the given Field (string, int, float,
+        etc.). It should raise `ValidationException` if validation fails with a
+        message explaining the cause of failure. 
+        """
         attr = deepcopy(self)
         attr.validators.append(validator)
         return attr
     def required(self):
+        """
+        Convenience method for `validate(validators.required)`.  By default, NOT NULL
+        columns are required.  You can only add required-ness, not remove it.
+        """
         attr = deepcopy(self)
         attr._required = True
         return attr
     def label(self, text):
+        """
+        Change the label associated with this field.  By default, the field name
+        is used, modified for readability (e.g., 'user_name' -> 'User name').
+        """
         attr = deepcopy(self)
         attr.label_text = text
         return attr
     def disabled(self):
+        """Render the field disabled."""
         attr = deepcopy(self)
         attr.modifier = 'disabled'
         return attr
     def readonly(self):
+        """Render the field readonly."""
         attr = deepcopy(self)
         attr.modifier = 'readonly'
         return attr
     def hidden(self):
+        """Render the field hidden.  (Value only, no label.)"""
         attr = deepcopy(self)
         attr.renderer = HiddenFieldRenderer
         attr.render_opts = {}
         return attr
     def password(self):
+        """Render the field as a password input, hiding its value."""
         attr = deepcopy(self)
         attr.renderer = PasswordFieldRenderer
         attr.render_opts = {}
         return attr
     def textarea(self, size=None):
+        """Render the field as a textarea."""
         attr = deepcopy(self)
         attr.renderer = TextAreaFieldRenderer
         attr.render_opts = {'size': size}
         return attr
     def radio(self, options=None):
+        """Render the field as a set of radio buttons."""
         attr = deepcopy(self)
         attr.renderer = RadioSet
         if options is None:
@@ -320,18 +342,25 @@ class AbstractField(object):
         attr.render_opts = {'options': options}
         return attr
     def checkbox(self, options=None):
+        """Render the field as a set of checkboxes."""
         attr = deepcopy(self)
         attr.renderer = CheckBoxSet
         if options is None:
             options = self.render_opts.get('options')
         attr.render_opts = {'options': options}
         return attr
-    def dropdown(self, options=None, multiple=False):
+    def dropdown(self, options=None, multiple=False, size=5):
+        """
+        Render the field as an HTML select field.  
+        (With the `multiple` option this is not really a 'dropdown'.)
+        """
         attr = deepcopy(self)
         attr.renderer = SelectFieldRenderer
         if options is None:
             options = self.render_opts.get('options')
         attr.render_opts = {'multiple': multiple, 'options': options}
+        if multiple:
+            attr.render_opts['size'] = size
         return attr
 
     def _get_renderer(self):
@@ -367,11 +396,11 @@ class Field(AbstractField):
     """
     A manually-added form field
     """
-    def __init__(self, name, type=types.Integer, value=None):
+    def __init__(self, name, type=types.String, value=None):
         """
-          * Name: field name
-          * type: data type, from sqlalchemy.types (Boolean, Integer, String)
-          * value: default value
+          * `name`: field name
+          * `type`: data type, from sqlalchemy.types (Boolean, Integer, String)
+          * `value`: default value
         """
         AbstractField.__init__(self, None) # parent will be set by ModelRenderer.add
         self.type = type()
@@ -540,6 +569,8 @@ class AttributeField(AbstractField):
     
     def __repr__(self):
         return 'AttributeField(%s)' % self.key
+    
+    # todo add .options method (for html_options)
     
     def render(self, **html_options):
         if not self.renderer:

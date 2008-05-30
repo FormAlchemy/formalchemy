@@ -39,7 +39,8 @@ class ModelRenderer(object):
           * `session`: the
             session to use for queries (for relations). If `model` is associated
             with a session, that will be used by default. (Objects mapped with a
-            scoped_session will always have a session. Other objects will also
+            [http://www.sqlalchemy.org/docs/04/session.html#unitofwork_contextual scoped_session]
+            will always have a session. Other objects will also
             have a session if they were loaded by a Query.) 
            * `data`: dictionary
             of user-submitted data to validate and/or sync to the `model`. Scalar
@@ -77,12 +78,12 @@ class ModelRenderer(object):
                 
     def configure(self, pk=False, exclude=[], include=[], options=[]):
         """
-        Configures attributes to be rendered.  By default, all attributes are rendered except
-        primary keys and foreign keys.  (But, relations _based on_ foreign keys _will_ be rendered.
+        Configures a set of attributes to be rendered.  By default, all attributes are rendered except
+        primary keys and foreign keys.  But, relations _based on_ foreign keys _will_ be rendered.
         For example, if an `Order` has a `user_id` FK and a `user` relation based on it,
-        `user` will be rendered (as a select box of `User`s, by default) but `user_id` will not.)
+        `user` will be rendered (as a select box of `User`s, by default) but `user_id` will not.
         
-        Options:
+        Parameters:
           * `pk`: set to True to include primary key columns
           * `exclude`: an iterable of attributes to exclude.  Other attributes will be rendered normally
           * `include`: an iterable of attributes to include.  Other attributes will not be rendered
@@ -101,15 +102,24 @@ class ModelRenderer(object):
         `name`, `email`, and `orders`. To render the orders list as checkboxes
         instead of a select, you could specify
         
+        {{{
         fs.configure(options=[fs.orders.checkbox()])
+        }}}
         
         To render only name and email,
         
-        fs.configure(include=[fs.name, fs.email]) -- or, fs.configure(exclude=[fs.options])
+        {{{
+        fs.configure(include=[fs.name, fs.email]) 
+        # or
+        fs.configure(exclude=[fs.options])
+        }}}
         
-        To render name and options-as-checkboxes,
+        Of course, you can include modifications to a field in the `include` paramter, such as
+        here, to render name and options-as-checkboxes:
           
+        {{{
         fs.configure(include=[fs.name, fs.options.checkbox()])
+        }}}
         """
         self._render_fields = self._get_attrs(pk, exclude, include, options)
 
