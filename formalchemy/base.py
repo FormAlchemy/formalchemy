@@ -40,10 +40,10 @@ class ModelRenderer(object):
           * `model`:
                 a SQLAlchemy mapped class or instance
           * `session=None`:
-                the session to use for queries (for relations). If model` is
+                the session to use for queries (for relations). If `model` is
                 associated with a session, that will be used by
                 default. (Objects mapped with a
-                http://www.sqlalchemy.org/docs/04/session.html#unitofwork_contextual
+                [http://www.sqlalchemy.org/docs/04/session.html#unitofwork_contextual
                 scoped_session] will always have a session. Other objects will
                 also have a session if they were loaded by a Query.)
           * `data={}`:
@@ -54,13 +54,14 @@ class ModelRenderer(object):
         
         Only the `model` parameter is required.
         
-        All of these parameters may be overridden by the `bind` or `rebind` methods.
-        The `bind` method returns a new instance bound as specified, while `rebind`
-        modifies the current FieldSet or Table and has no return value. (You may not
-        `bind` to a different type of SQLAlchemy model than the initial one -- if you
-        initially bind to a User, you must subsequently bind Users to that FieldSet.)
+        All of these parameters may be overridden by the `bind` or `rebind`
+        methods.  The `bind` method returns a new instance bound as specified,
+        while `rebind` modifies the current `FieldSet` or `Table` and has no
+        return value. (You may not `bind` to a different type of SQLAlchemy
+        model than the initial one -- if you initially bind to a `User`, you
+        must subsequently bind `User`s to that `FieldSet`.)
         
-        Typically, you will configure a FieldSet or Table once in a common
+        Typically, you will configure a `FieldSet` or `Table` once in a common
         form library, then `bind` specific instances later for editing.  (The
         `bind` method is thread-safe; `rebind` is not.)  Thus:
         
