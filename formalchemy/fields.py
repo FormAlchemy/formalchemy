@@ -279,20 +279,22 @@ class AbstractField(object):
         return attr
     def validate(self, validator):
         """ 
-        Add the `validator` function to the list of validation routines to run
-        when the FieldSet's `validate` method is run. Validator functions take one
-        parameter, the value to validate. This value will have already been turned
-        into the appropriate data type for the given Field (string, int, float,
-        etc.). It should raise `ValidationException` if validation fails with a
-        message explaining the cause of failure. 
+        Add the `validator` function to the list of validation
+        routines to run when the FieldSet's `validate` method is
+        run. Validator functions take one parameter, the value to
+        validate. This value will have already been turned into the
+        appropriate data type for the given Field (string, int, float,
+        etc.). It should raise `ValidationException` if validation
+        fails with a message explaining the cause of failure.
         """
         attr = deepcopy(self)
         attr.validators.append(validator)
         return attr
     def required(self):
         """
-        Convenience method for `validate(validators.required)`.  By default, NOT NULL
-        columns are required.  You can only add required-ness, not remove it.
+        Change the label associated with this field.  By default, the
+        field name is used, modified for readability (e.g.,
+        'user_name' -> 'User name').
         """
         attr = deepcopy(self)
         attr._required = True

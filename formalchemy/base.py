@@ -35,18 +35,46 @@ class ModelRenderer(object):
     """
     def __init__(self, model, session=None, data={}):
         """ 
-          * `model`: a SQLAlchemy mapped class or instance 
-          * `session`: the
-            session to use for queries (for relations). If `model` is associated
-            with a session, that will be used by default. (Objects mapped with a
-            [http://www.sqlalchemy.org/docs/04/session.html#unitofwork_contextual scoped_session]
-            will always have a session. Other objects will also
-            have a session if they were loaded by a Query.) 
-           * `data`: dictionary
-            of user-submitted data to validate and/or sync to the `model`. Scalar
-            attributes should have a single value in the dictionary; multi-valued
-            relations should have a list, even if there are zero or one values
-            submitted. 
+        !FormAlchemy FieldSet and Table constructors take three parameters:
+        
+          * `model`:
+                a SQLAlchemy mapped class or instance
+          * `session=None`:
+                the session to use for queries (for relations). If model` is
+                associated with a session, that will be used by
+                default. (Objects mapped with a
+                http://www.sqlalchemy.org/docs/04/session.html#unitofwork_contextual
+                scoped_session] will always have a session. Other objects will
+                also have a session if they were loaded by a Query.)
+          * `data={}`:
+                dictionary of user-submitted data to validate and/or sync to
+                the `model`. Scalar attributes should have a single value in
+                the dictionary; multi-valued relations should have a list,
+                even if there are zero or one values submitted.
+        
+        Only the `model` parameter is required.
+        
+        All of these parameters may be overridden by the `bind` or `rebind` methods.
+        The `bind` method returns a new instance bound as specified, while `rebind`
+        modifies the current FieldSet or Table and has no return value. (You may not
+        `bind` to a different type of SQLAlchemy model than the initial one -- if you
+        initially bind to a User, you must subsequently bind Users to that FieldSet.)
+        
+        Typically, you will configure a FieldSet or Table once in a common
+        form library, then `bind` specific instances later for editing.  (The
+        `bind` method is thread-safe; `rebind` is not.)  Thus:
+        
+        {{{
+        # library.py
+        fs = FieldSet(User)
+        fs.configure(...)
+        
+        # controller.py
+        from library import fs
+        user = session.query(User).get(id)
+        fs2 = fs.bind(user)
+        fs2.render()
+        }}}
         """
         self.model = self.session = None
         self.fields = {}
@@ -78,29 +106,47 @@ class ModelRenderer(object):
                 
     def configure(self, pk=False, exclude=[], include=[], options=[]):
         """
-        Configures a set of attributes to be rendered.  By default, all attributes are rendered except
-        primary keys and foreign keys.  But, relations _based on_ foreign keys _will_ be rendered.
-        For example, if an `Order` has a `user_id` FK and a `user` relation based on it,
-        `user` will be rendered (as a select box of `User`s, by default) but `user_id` will not.
+        The `configure` method specifies a set of attributes to be rendered.
+        By default, all attributes are rendered except primary keys and
+        foreign keys.  But, relations _based on_ foreign keys _will_ be
+        rendered.  For example, if an `Order` has a `user_id` FK and a `user`
+        relation based on it, `user` will be rendered (as a select box of
+        `User`s, by default) but `user_id` will not.
         
         Parameters:
-          * `pk`: set to True to include primary key columns
-          * `exclude`: an iterable of attributes to exclude.  Other attributes will be rendered normally
-          * `include`: an iterable of attributes to include.  Other attributes will not be rendered
-          * `options`: an iterable of modified attributes.  The set of attributes to be rendered is unaffected
+          * `pk=False`:
+                set to True to include primary key columns
+          * `exclude=[]`:
+                an iterable of attributes to exclude.  Other attributes will
+                be rendered normally
+          * `include=[]`:
+                an iterable of attributes to include.  Other attributes will
+                not be rendered
+          * `options=[]`:
+                an iterable of modified attributes.  The set of attributes to
+                be rendered is unaffected
+          * `global_validator=None`: `
+                global_validator` should be a function that performs
+                validations that need to know about the entire form.
+          * `focus=True`:
+                the attribute (e.g., `fs.orders`) whose rendered input element
+                gets focus. Default value is True, meaning, focus the first
+                element. False means do not focus at all.
+        
         Only one of {`include`, `exclude`} may be specified.
         
-        Note that there is no option to include foreign keys.  This is deliberate.  Use `include` if
-        you really need to manually edit FKs.
+        Note that there is no option to include foreign keys.  This is
+        deliberate.  Use `include` if you really need to manually edit FKs.
         
-        If `include` is specified, fields will be rendered in the order given in `include`.  Otherwise,
-        fields will be rendered in alphabetical order.
+        If `include` is specified, fields will be rendered in the order given
+        in `include`.  Otherwise, fields will be rendered in alphabetical
+        order.
         
-        Examples: given a FieldSet fs bound to a `User` instance as a model with
-        primary key `id` and attributes `name` and `email`, and a relation
-        `orders` of related Order objects, the default will be to render
-        `name`, `email`, and `orders`. To render the orders list as checkboxes
-        instead of a select, you could specify
+        Examples: given a `FieldSet` `fs` bound to a `User` instance as a
+        model with primary key `id` and attributes `name` and `email`, and a
+        relation `orders` of related Order objects, the default will be to
+        render `name`, `email`, and `orders`. To render the orders list as
+        checkboxes instead of a select, you could specify
         
         {{{
         fs.configure(options=[fs.orders.checkbox()])
@@ -109,13 +155,13 @@ class ModelRenderer(object):
         To render only name and email,
         
         {{{
-        fs.configure(include=[fs.name, fs.email]) 
+        fs.configure(include=[fs.name, fs.email])
         # or
         fs.configure(exclude=[fs.options])
         }}}
         
-        Of course, you can include modifications to a field in the `include` paramter, such as
-        here, to render name and options-as-checkboxes:
+        Of course, you can include modifications to a field in the `include`
+        parameter, such as here, to render name and options-as-checkboxes:
           
         {{{
         fs.configure(include=[fs.name, fs.options.checkbox()])
@@ -182,6 +228,8 @@ class ModelRenderer(object):
         return L
     
     def _get_attrs(self, pk=False, exclude=[], include=[], options=[]):
+        # todo make configure "additive" -- specifying new options shouldn't nuke previous ones
+        # might want to make _render_attrs always present to simplify this
         if include and exclude:
             raise Exception('Specify at most one of include, exclude')
 

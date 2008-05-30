@@ -182,26 +182,41 @@ else:
 
 class FieldSet(AbstractFieldSet):
     """
-    A `FieldSet` is bound to a SQLAlchemy mapped instance (or class, for creating new instances) and can render a form for editing that instance,
+    A `FieldSet` is bound to a SQLAlchemy mapped instance (or class, for
+    creating new instances) and can render a form for editing that instance,
     perform validation, and sync the form data back to the bound instance.
     
-    There are two parts you can customize in a `FieldSet` subclass short of writing your own render method.  These are `prettify` and `_render`.  As in,
+    There are two parts you can customize in a `FieldSet` subclass short
+    of writing your own render method.  These are `prettify` and
+    `_render`.  As in,
     
     {{{
     class MyFieldSet(FieldSet):
         prettify = staticmethod(myprettify)
         _render = staticmethod(myrender)
     }}}
-        
-    `prettify` is a function that, given an attribute name ('user_name') turns it into something usable as an HTML label ('User name').
     
-    `_render` should be a template rendering method, such as `Template.render` from a mako Template or `Template.substitute` from a Tempita Template.
-    It should take as parameters:
-      * `attrs`: the `FieldSet` attributes to render
-      * `global_errors`: a list of global (not per-attribute) validation failures
-      * `fields`: a reference to the `formalchemy.fields` module (you can of course perform other imports in your template, if it supports Python code blocks)
-      * `prettify`: as above
-      * `focus`: the field to focus
+    `prettify` is a function that, given an attribute name ('user_name')
+    turns it into something usable as an HTML label ('User name').
+    
+    `_render` should be a template rendering method, such as
+    `Template.render` from a mako Template or `Template.substitute` from a
+    Tempita Template.
+    
+    `_render` should take as parameters:
+      * `attrs`:
+            the `FieldSet` attributes to render
+      * `global_errors`:
+            a list of global (not per-attribute) validation failures
+      * `fields`:
+            a reference to the `formalchemy.fields` module (you can of
+            course perform other imports in your template, if it supports
+            Python code blocks)
+      * `prettify`:
+            as above
+      * `focus`:
+            the field to focus
+    
     You can also override these on a per-`FieldSet` basis:
     
     {{{
@@ -209,8 +224,6 @@ class FieldSet(AbstractFieldSet):
     fs.prettify = myprettify
     ...
     }}}
-    
-    See `AbstractFieldSet` for more details about writing your own `render` method.
     """
     prettify = staticmethod(base.prettify)
     _render = staticmethod('render_mako' in locals() and render_mako or render_tempita)
