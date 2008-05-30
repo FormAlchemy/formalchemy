@@ -1,3 +1,14 @@
+FormAlchemy 0.3:
+  * Completely new API, based on Fields instead of column names
+  * Support manually added Fields, not just attributes from the SA model
+  * Relations (a FK will be rendered with a dropdown of related objects)
+  * Validation + sync
+  * Template-based rendering for greater customizibility.  Tempita is included; Mako is detected and used if present
+  * WebHelpers is no longer a dependency; the small parts FA needs have been moved into helpers.py.  (This was prompted by WebHelpers 0.6 breaking backwards compatibility in nontrivial ways.)
+  * Pervasive docstrings
+  * Preliminary SA 0.5 support
+  * Regression test suite
+
 FormAlchemy 0.2:
   * Added 'disable', 'disable_pk', 'disable_fk' options.
   * Fixed a bug where 'readonly*' options only worked for 'password' fields.

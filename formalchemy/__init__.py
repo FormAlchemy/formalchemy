@@ -18,11 +18,11 @@ __doc__ = """
 !FormAlchemy greatly speeds development with SQLAlchemy mapped classes (models)
 in a HTML forms environment.
 
-!FormAlchemy eliminates boilerplate by autogenerating HTML input fields from a given
-model. !FormAlchemy will try to
-figure out what kind of HTML code should be returned by introspecting the
-model's properties and generate ready-to-use HTML code that will fit the
-developer's application. 
+!FormAlchemy eliminates boilerplate by autogenerating HTML input
+fields from a given model. !FormAlchemy will try to figure out what
+kind of HTML code should be returned by introspecting the model's
+properties and generate ready-to-use HTML code that will fit the
+developer's application.
 
 Of course, !FormAlchemy can't figure out everything,
 i.e, the developer might want to display only a few columns from the given
@@ -61,7 +61,8 @@ Check out the instructions for InstallingFormAlchemy.
 
 Copyright (C) 2007 Alexandre Conrad, aconard(dot.)tlv(at@)magic(dot.)fr
 
-!FormAlchemy is released under the [http://www.opensource.org/licenses/mit-license.php MIT License].
+!FormAlchemy is released under the 
+[http://www.opensource.org/licenses/mit-license.php MIT License].
 
 
 =Quickstart=
@@ -168,6 +169,7 @@ data from your request object; here we'll just hardcode some:
 
 =!FormAlchemy's current state=
 
-!FormAlchemy is in alpha stage and the API is in constant evolution. We think it's useful enough to release, but 
-your code may break from one version to another until !FormAlchemy 1.0 is released.
+!FormAlchemy is in alpha stage and the API is in constant
+evolution. We think it's useful enough to release, but your code may
+break from one version to another until !FormAlchemy 1.0 is released.
 """
