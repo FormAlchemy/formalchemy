@@ -30,7 +30,7 @@ model. Thus, !FormAlchemy is also highly customizable.
 
 =Features=
 
-  * Generates HTML form fields from SQLAlchemy mapped classes
+  * Generates HTML form fields from SQLAlchemy mapped classes or manually added Fields
   * Handles object relationships (including many-to-many), not just simple data types
   * Pre-fills input fields with current or default value
   * Highly customizable HTML output

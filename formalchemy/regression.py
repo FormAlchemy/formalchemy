@@ -706,7 +706,7 @@ True
 >>> fs.foo.value
 [1, 2]
 
-# test weird attribute names
+# test attribute names
 >>> fs = FieldSet(One)
 >>> fs.add(Field('foo'))
 >>> fs.foo == fs.fields['foo']
@@ -715,7 +715,6 @@ True
 >>> fs.add == fs.fields['add']
 False
 
-# todo add(Field(...).required()...) ?
 """
 
 if __name__ == '__main__':

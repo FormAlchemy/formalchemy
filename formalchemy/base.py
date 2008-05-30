@@ -61,7 +61,7 @@ class ModelRenderer(object):
                 self.fields[iattr.impl.key] = AttributeField(iattr, self)
                 
     def add(self, field):
-        """Add a form field with the given name, type, and default value"""
+        """Add a form Field.  By default, this Field will be included in the rendered form or table."""
         from fields import Field
         if not isinstance(field, Field):
             raise ValueError('Can only add Field objects; got %s instead' % field)
@@ -91,6 +91,9 @@ class ModelRenderer(object):
         
         Note that there is no option to include foreign keys.  This is deliberate.  Use `include` if
         you really need to manually edit FKs.
+        
+        If `include` is specified, fields will be rendered in the order given in `include`.  Otherwise,
+        fields will be rendered in alphabetical order.
         
         Examples: given a FieldSet fs bound to a `User` instance as a model with
         primary key `id` and attributes `name` and `email`, and a relation

@@ -98,14 +98,6 @@ class ModelDateTimeRenderer(FieldRenderer):
         super(ModelDateTimeRenderer, self).__init__(attr, **kwargs)
         self.format = format
 
-    def get_value(self):
-        value = super(ModelDateTimeRenderer, self).get_value()
-        if value is not None:
-            return value.strftime(self.format)
-        else:
-            if not callable(self.default):
-                return self.default
-
     def render(self):
         return h.text_field(self.name, value=self.value, **self.attribs)
 
@@ -515,7 +507,10 @@ class AttributeField(AbstractField):
             return v
         if self._column.default:
             if callable(self._column.default.arg):
-                logger.info('Ignoring callable default value for %s' % self)
+                # callables often depend on the current time, e.g. datetime.now or the equivalent SQL function.
+                # these are meant to be the value *at insertion time*, so it's not strictly correct to
+                # generate a value at form-edit time.
+                pass
             else:
                 return self._column.default
         return None
