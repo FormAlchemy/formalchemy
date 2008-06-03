@@ -5,10 +5,13 @@ README.txt
 setup.py
 formalchemy/__init__.py
 formalchemy/base.py
-formalchemy/exceptions.py
 formalchemy/fields.py
 formalchemy/forms.py
-formalchemy/options.py
+formalchemy/helpers.py
+formalchemy/regression.py
 formalchemy/tables.py
+formalchemy/test2.py
 formalchemy/utils.py
-formalchemy/validation.py
+formalchemy/validators.py
+formalchemy/tempita/__init__.py
+formalchemy/tempita/_looper.py
