@@ -271,12 +271,16 @@ class AbstractField(object):
     def model(self):
         return self.parent.model
     model = property(model)
-    
+
+    def _modified(self, **kwattrs):
+        # return a copy of self, with the given attributes modified
+        copied = deepcopy(self)
+        for attr, value in kwattrs.iteritems():
+            setattr(copied, attr, value)
+        return copied
     def bind(self, parent):
         """Return a copy of this attribute, bound to a different parent"""
-        attr = deepcopy(self)
-        attr.parent = parent
-        return attr
+        return self._modified(parent=parent)
     def validate(self, validator):
         """ 
         Add the `validator` function to the list of validation
@@ -296,45 +300,28 @@ class AbstractField(object):
         field name is used, modified for readability (e.g.,
         'user_name' -> 'User name').
         """
-        attr = deepcopy(self)
-        attr._required = True
-        return attr
+        return self._modified(_required=True)
     def label(self, text):
         """
         Change the label associated with this field.  By default, the field name
         is used, modified for readability (e.g., 'user_name' -> 'User name').
         """
-        attr = deepcopy(self)
-        attr.label_text = text
-        return attr
+        return self._modified(label_text=text)
     def disabled(self):
         """Render the field disabled."""
-        attr = deepcopy(self)
-        attr.modifier = 'disabled'
-        return attr
+        return self._modified(modifier='disabled')
     def readonly(self):
         """Render the field readonly."""
-        attr = deepcopy(self)
-        attr.modifier = 'readonly'
-        return attr
+        return self._modified(modifier='readonly')
     def hidden(self):
         """Render the field hidden.  (Value only, no label.)"""
-        attr = deepcopy(self)
-        attr.renderer = HiddenFieldRenderer
-        attr.render_opts = {}
-        return attr
+        return self._modified(renderer=HiddenFieldRenderer, render_opts={})
     def password(self):
         """Render the field as a password input, hiding its value."""
-        attr = deepcopy(self)
-        attr.renderer = PasswordFieldRenderer
-        attr.render_opts = {}
-        return attr
+        return self._modified(renderer=PasswordFieldRenderer, render_opts={})
     def textarea(self, size=None):
         """Render the field as a textarea."""
-        attr = deepcopy(self)
-        attr.renderer = TextAreaFieldRenderer
-        attr.render_opts = {'size': size}
-        return attr
+        return self._modified(renderer=TextAreaFieldRenderer, render_opts={'size': size})
     def radio(self, options=None):
         """Render the field as a set of radio buttons."""
         attr = deepcopy(self)
