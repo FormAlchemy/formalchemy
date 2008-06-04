@@ -134,9 +134,9 @@ class DateFieldRenderer(FieldRenderer):
                 + '(YYYY)'
         return h.content_tag('span', content, **self.attribs)
 
-   def _raw_value(self):
-       data = self.attr.parent.data
-       return data[self.name + '__year'], data[self.name + '__month'], data[self.name + '__day']
+    def raw_value(self):
+        data = self.attr.parent.data
+        return data[self.name + '__year'], data[self.name + '__month'], data[self.name + '__day']
 
 
 class TimeFieldRenderer(ModelDateTimeRenderer):
