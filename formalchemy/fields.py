@@ -7,7 +7,6 @@ import logging
 logger = logging.getLogger('formalchemy.' + __name__)
 
 from copy import copy, deepcopy
-import datetime
 
 import helpers as h
 import sqlalchemy.types as types
@@ -29,7 +28,6 @@ class FieldRenderer(object):
     """
     def __init__(self, attr, **kwargs):
         self.attr = attr
-        assert isinstance(self.attr, AbstractField)
         self.attribs = kwargs
         
     def name(self):
@@ -46,10 +44,6 @@ class FieldRenderer(object):
         """Render the field"""
         return h.text_field(self.name, value=self.value)
 
-    def raw_value(self):
-        return self.attr.parent.data[self.name]
-
-
 class TextFieldRenderer(FieldRenderer):
     def __init__(self, attr, **kwargs):
         super(TextFieldRenderer, self).__init__(attr, **kwargs)
@@ -58,16 +52,13 @@ class TextFieldRenderer(FieldRenderer):
     def render(self):
         return h.text_field(self.name, value=self.value, maxlength=self.length, **self.attribs)
 
-
 class IntegerFieldRenderer(FieldRenderer):
     def render(self):
         return h.text_field(self.name, value=self.value, **self.attribs)
 
-
 class PasswordFieldRenderer(TextFieldRenderer):
     def render(self):
         return h.password_field(self.name, value=self.value, maxlength=self.length, **self.attribs)
-
 
 class TextAreaFieldRenderer(FieldRenderer):
     def __init__(self, attr, size, **kwargs):
@@ -82,11 +73,9 @@ class TextAreaFieldRenderer(FieldRenderer):
             cols, rows = self.size
             return h.text_area(self.name, content=self.value, cols=cols, rows=rows, **self.attribs)
 
-
 class HiddenFieldRenderer(FieldRenderer):
     def render(self):
         return h.hidden_field(self.name, value=self.value, **self.attribs)
-
 
 class BooleanFieldRenderer(FieldRenderer):
     def render(self):
@@ -94,12 +83,10 @@ class BooleanFieldRenderer(FieldRenderer):
         # checked, as unchecked boxes are not POSTed. The hidden field should be *after* the checkbox.
         return h.check_box(self.name, True, checked=self.value, **self.attribs)
 
-
 class FileFieldRenderer(FieldRenderer):
     def render(self):
         # todo Do we need a value here ?
         return h.file_field(self.name, **self.attribs)
-
 
 class ModelDateTimeRenderer(FieldRenderer):
     """
@@ -114,30 +101,11 @@ class ModelDateTimeRenderer(FieldRenderer):
     def render(self):
         return h.text_field(self.name, value=self.value, **self.attribs)
 
-
 class DateTimeFieldRendererRenderer(ModelDateTimeRenderer):
     pass
 
-
-# todo r/m use of super
-class DateFieldRenderer(FieldRenderer):
-    def __init__(self, attr, **kwargs):
-        FieldRenderer,__init__(self, attr, **kwargs)
-        
-    def render(self):
-        import calendar
-        month_options = [(calendar.month_name[i], i) for i in xrange(1, 13)]
-        day_options = [(str(i), i) for i in xrange(1, 32)]
-        content = h.select(self.name + '__month', h.options_for_select(month_options, selected=self.value.month)) \
-                + h.select(self.name + '__day', h.options_for_select(day_options, selected=self.value.day)) \
-                + h.text_field(self.name + '__year', value=self.value.year) \
-                + '(YYYY)'
-        return h.content_tag('span', content, **self.attribs)
-
-    def raw_value(self):
-        data = self.attr.parent.data
-        return data[self.name + '__year'], data[self.name + '__month'], data[self.name + '__day']
-
+class DateFieldRenderer(ModelDateTimeRenderer):
+    pass
 
 class TimeFieldRenderer(ModelDateTimeRenderer):
     pass
@@ -276,36 +244,29 @@ class AbstractField(object):
         """True iff this attribute must be given a non-empty value"""
         return self._required
     
-    def _unstr(self, data):
-        """convert data (raw user data, or None) into the data type expected by attr"""
+    def _unstr(self, st):
+        """convert st (raw user data, or None) into the data type expected by attr"""
         if isinstance(self.type, types.Boolean):
-            return data is not None
-        if data is None:
+            return st is not None
+        if st is None:
             return None
         if isinstance(self.type, types.Integer):
             try:
-                return int(data)
+                return int(st)
             except:
                 raise validators.ValidationException('Value is not an integer')
         if isinstance(self.type, types.Float):
             try:
-                return float(data)
+                return float(st)
             except:
                 raise validators.ValidationException('Value is not a number')
         if isinstance(self.type, types.DateTime):
             # todo handle datetime
             pass
         if isinstance(self.type, types.Date):
-            if isinstance(self.renderer, DateFieldRenderer):
-                year, month, day = data
-                try:
-                    year = int(year)
-                except:
-                    raise validators.ValidationException('Value is not an integer')
-                if not (datetime.MINYEAR <= year <= datetime.MAXYEAR):
-                    raise validators.ValidationException('Invalid year')
-                return datetime.date(year, int(month), int(day))
-        return data
+            # todo handle date
+            pass
+        return st
 
     def model(self):
         return self.parent.model
@@ -545,10 +506,6 @@ class AttributeField(AbstractField):
         """The type of object in the collection (e.g., `User`).  Calling this is only valid when `is_collection()` is True"""
         return self._property.mapper.class_
     
-    def _raw_value(self):
-        # raw data from user input suitable for _unstr
-        return (self.renderer or self._get_renderer()).raw_value()
-        
     def value(self):
         """
         The value of this attribute: use the corresponding value in the bound `data`,
@@ -559,7 +516,7 @@ class AttributeField(AbstractField):
         a list of the primary key values of the items in the collection is returned.
         """
         if self.parent.data is not None and self.name in self.parent.data:
-            v = self._unstr(self._raw_value)
+            v = self._unstr(self.parent.data[self.name])
         else:
             v = getattr(self.model, self.name)
         if self.is_collection():
@@ -587,7 +544,7 @@ class AttributeField(AbstractField):
         
     def sync(self):
         """Set the attribute's value in `model` to the value given in `data`"""
-        setattr(self.model, self.name, self._unstr(self._raw_value))
+        setattr(self.model, self.name, self._unstr(self.parent.data.get(self.name)))
             
     def __eq__(self, other):
         # we override eq so that when we configure with options=[...], we can match the renders in options
