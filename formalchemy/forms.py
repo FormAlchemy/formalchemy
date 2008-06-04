@@ -27,6 +27,7 @@ def form_data(form, post):
         raise Exception('unsupported post object.  see help(formdata) for supported interfaces')
     d = {}
     for attr in form.render_attrs:
+        # todo fix dates
         if attr.is_collection():
             d[attr.name] = post.getall(attr.name)
         else:
