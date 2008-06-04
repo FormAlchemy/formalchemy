@@ -28,7 +28,7 @@ class Three(Base):
     id = Column('id', Integer, primary_key=True)
     foo = Column('foo', Text, nullable=True)
     bar = Column('bar', Text, nullable=True)
-
+    
 class Checkbox(Base):
     __tablename__ = 'checkboxes'
     id = Column('id', Integer, primary_key=True)
@@ -116,7 +116,7 @@ from fields import Field, query_options
 from validators import ValidationException
 from tables import Table, TableCollection
 
-def _pretty_html(html):
+def pretty_html(html):
     soup = BeautifulSoup(html)
     return soup.prettify().strip()
 
@@ -124,8 +124,8 @@ class FieldSet(DefaultFieldSet):
     def render(self):
         import fields
         kwargs = dict(attrs=self.render_attrs, global_errors=self._errors, fields=fields, prettify=self.prettify, focus=self.focus)
-        tempita = _pretty_html(render_tempita(**kwargs))
-        mako = _pretty_html(render_mako(**kwargs))
+        tempita = pretty_html(render_tempita(**kwargs))
+        mako = pretty_html(render_mako(**kwargs))
         assert mako == tempita
         return mako
 
@@ -365,6 +365,8 @@ document.getElementById("quantity").focus();
   </option>
  </select>
 </div>
+>>> print fs.user.radio().render()
+<input id="user_id_1" name="user_id" type="radio" value="1" />Bill<br /><input id="user_id_2" name="user_id" type="radio" value="2" />John
 
 # this seems particularly prone to errors; break it out in its own test
 >>> fs = FieldSet(order1)

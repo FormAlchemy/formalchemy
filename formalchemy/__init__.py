@@ -118,9 +118,9 @@ Now, let's render a form for editing the order we've created:
 
 {{{
 >>> from formalchemy import FieldSet
->>> from formalchemy.regression import _pretty_html # obviously unnecessary in production
+>>> from formalchemy.regression import pretty_html # obviously unnecessary in production
 >>> fs = FieldSet(order1)
->>> print _pretty_html(fs.render())
+>>> print pretty_html(fs.render())
 <div>
  <label class="field_req" for="quantity">
   Quantity
