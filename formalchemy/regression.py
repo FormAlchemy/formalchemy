@@ -255,8 +255,8 @@ document.getElementById("foo").focus();
 >>> print fs.field.render()
 <input id="field" name="field" type="checkbox" value="True" />
 >>> print fs.field.dropdown().render()
-<select id="field" name="field"><option value="True">True</option>
-<option value="False">False</option></select>
+<select id="field" name="field"><option value="True">Yes</option>
+<option value="False">No</option></select>
 >>> fs.validate()
 True
 >>> fs.errors

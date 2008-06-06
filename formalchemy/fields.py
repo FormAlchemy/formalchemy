@@ -440,6 +440,8 @@ class AbstractField(object):
         """
         opts = dict(self.render_opts)
         opts.update(html_options)
+        if isinstance(self.type, types.Boolean) and not opts.get('options') and self.renderer in [SelectFieldRenderer, RadioSet]:
+            opts['options'] = [('Yes', True), ('No', False)]
         return self.renderer(self, readonly=self.modifier=='readonly', disabled=self.modifier=='disabled', **opts).render()
 
 
@@ -631,8 +633,6 @@ class AttributeField(AbstractField):
             self.render_opts['multiple'] = True
             if 'size' not in self.render_opts:
                 self.render_opts['size'] = 5
-        if isinstance(self.type, types.Boolean) and not self.render_opts.get('options') and self.renderer in [SelectFieldRenderer, RadioSet]:
-            self.render_opts['options'] = [('True', True), ('False', False)]
         return AbstractField.render(self, **html_options)
 
     def _get_renderer(self):
