@@ -123,7 +123,7 @@ def pretty_html(html):
 class FieldSet(DefaultFieldSet):
     def render(self):
         import fields
-        kwargs = dict(attrs=self.render_attrs, global_errors=self._errors, fields=fields, prettify=self.prettify, focus=self.focus)
+        kwargs = dict(fieldset=self, fields=fields)
         tempita = pretty_html(render_tempita(**kwargs))
         mako = pretty_html(render_mako(**kwargs))
         assert mako == tempita

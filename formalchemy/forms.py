@@ -102,25 +102,25 @@ class AbstractFieldSet(base.ModelRenderer):
 template_text_mako = r"""
 <% _focus_rendered = False %>\
 
-% for error in global_errors:
+% for error in fieldset._errors:
 <div class="fieldset_error">
   ${error}
 </div>
 % endfor
 
-% for attr in attrs:
+% for attr in fieldset.render_attrs:
   % if attr.renderer == fields.HiddenFieldRenderer:
 ${attr.render()}
   % else:
 <div>
-  <label class="${attr.is_required() and 'field_req' or 'field_opt'}" for="${attr.name}">${attr.label_text or prettify(attr.key)}</label>
+  <label class="${attr.is_required() and 'field_req' or 'field_opt'}" for="${attr.name}">${attr.label_text or fieldset.prettify(attr.key)}</label>
   ${attr.render()}
   % for error in attr.errors:
   <span class="field_error">${error}</span>
   % endfor
 </div>
 
-% if (focus == attr or focus is True) and not _focus_rendered:
+% if (fieldset.focus == attr or fieldset.focus is True) and not _focus_rendered:
 <script type="text/javascript">
 //<![CDATA[
 document.getElementById("${attr.name}").focus();
@@ -136,25 +136,25 @@ document.getElementById("${attr.name}").focus();
 template_text_tempita = r"""
 {{py:_focus_rendered = False}}
 
-{{for error in global_errors}}
+{{for error in fieldset._errors}}
 <div class="fieldset_error">
   {{error}}
 </div>
 {{endfor}}
 
-{{for attr in attrs}}                                                                          
+{{for attr in fieldset.render_attrs}}                                                                          
 {{if attr.renderer == fields.HiddenFieldRenderer}}                                                    
 {{attr.render()}}                                                                              
 {{else}}                                                                                       
 <div>                                                                                          
-  <label class="{{attr.is_required() and 'field_req' or 'field_opt'}}" for="{{attr.name}}">{{attr.label_text or prettify(attr.key)}}</label>
+  <label class="{{attr.is_required() and 'field_req' or 'field_opt'}}" for="{{attr.name}}">{{attr.label_text or fieldset.prettify(attr.key)}}</label>
   {{attr.render()}}                                                                            
   {{for error in attr.errors}}
   <span class="field_error">{{error}}</span>
   {{endfor}}
 </div>                                                                                         
 
-{{if (focus == attr or focus is True) and not _focus_rendered}}
+{{if (fieldset.focus == attr or fieldset.focus is True) and not _focus_rendered}}
 <script type="text/javascript">
 //<![CDATA[
 document.getElementById("{{attr.name}}").focus();
@@ -202,18 +202,12 @@ class FieldSet(AbstractFieldSet):
     Tempita Template.
     
     `_render` should take as parameters:
-      * `attrs`:
-            the `FieldSet` attributes to render
-      * `global_errors`:
-            a list of global (not per-attribute) validation failures
+      * `fieldset`:
+            the `FieldSet` to render
       * `fields`:
             a reference to the `formalchemy.fields` module (you can of
             course perform other imports in your template, if it supports
             Python code blocks)
-      * `prettify`:
-            as above
-      * `focus`:
-            the field to focus
     
     You can also override these on a per-`FieldSet` basis:
     
@@ -242,10 +236,10 @@ class FieldSet(AbstractFieldSet):
         self.focus = focus
 
     def render(self):
-        # We pass 'fields' because a relative import in the template won't
-        # work in production, and an absolute import makes testing more of a
-        # pain. Additionally, some templating systems (notably Django's) make
-        # it difficult to perform imports directly in the template itself. If
-        # your templating weapon of choice does allow it, feel free to perform
-        # such imports in the template.
-        return self._render(attrs=self.render_attrs, global_errors=self._errors, fields=fields, prettify=self.prettify, focus=self.focus)
+        # We pass a reference to the 'fields' module because a relative import
+        # in the template won't work in production, and an absolute import
+        # makes testing more of a pain. Additionally, some templating systems
+        # (notably Django's) make it difficult to perform imports directly in
+        # the template itself. If your templating weapon of choice does allow
+        # it, feel free to perform such imports in the template.
+        return self._render(fieldset=self, fields=fields)
