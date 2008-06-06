@@ -291,8 +291,13 @@ class AbstractField(object):
     
     def _unstr(self, data):
         """convert data (raw user data, or None) into the data type expected by attr"""
+        # todo allow renderers to massage data into "cannonical" format
         if isinstance(self.type, types.Boolean):
-            return data is not None
+            if data is None and self.renderer is BooleanFieldRenderer:
+                return False
+            if data is not None:
+                if data.lower() in ['1', 't', 'true', 'yes']: return True
+                if data.lower() in ['0', 'f', 'false', 'no']: return False
         if data is None:
             return None
         if isinstance(self.type, types.Integer):

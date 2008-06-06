@@ -264,12 +264,17 @@ True
 >>> fs.sync()
 >>> cb.field
 False
->>> fs.rebind(data={'field': 'true'})
+>>> fs.rebind(data={'field': 'True'})
 >>> fs.validate()
 True
 >>> fs.sync()
 >>> cb.field
 True
+>>> fs.configure(options=[fs.field.dropdown()])
+>>> fs.rebind(data={'field': 'False'})
+>>> fs.sync()
+>>> cb.field
+False
 
 >>> fs = FieldSet(Two)
 >>> print fs.foo.dropdown(options=['one', 'two']).radio().render() 
