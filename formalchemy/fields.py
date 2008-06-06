@@ -60,7 +60,7 @@ class FieldRenderer(object):
 
 class TextFieldRenderer(FieldRenderer):
     def __init__(self, attr, **kwargs):
-        TextFieldRenderer.__init__(self, attr, **kwargs)
+        FieldRenderer.__init__(self, attr, **kwargs)
         self.length = attr.type.length
 
     def render(self):
@@ -79,7 +79,7 @@ class PasswordFieldRenderer(TextFieldRenderer):
 
 class TextAreaFieldRenderer(FieldRenderer):
     def __init__(self, attr, size, **kwargs):
-        TextAreaFieldRenderer.__init__(self, attr, **kwargs)
+        FieldRenderer.__init__(self, attr, **kwargs)
         self.size = size
 
     def render(self):
@@ -116,7 +116,7 @@ class ModelDateTimeRenderer(FieldRenderer):
     """
 
     def __init__(self, attr, format, **kwargs):
-        ModelDateTimeRenderer.__init__(self, attr, **kwargs)
+        FieldRenderer.__init__(self, attr, **kwargs)
         self.format = format
 
     def render(self):
@@ -127,6 +127,7 @@ class DateTimeFieldRendererRenderer(ModelDateTimeRenderer):
     pass
 
 
+# todo r/m use of super
 class DateFieldRenderer(FieldRenderer):
     def __init__(self, attr, **kwargs):
         FieldRenderer.__init__(self, attr, **kwargs)
@@ -174,7 +175,7 @@ def _extract_options(options):
 class RadioSet(FieldRenderer):
     widget = staticmethod(h.radio_button)
     def __init__(self, attr, options, **kwargs):
-        RadioSet.__init__(self, attr)
+        FieldRenderer.__init__(self, attr)
         self.radios = []
         for choice_name, choice_value in _extract_options(options):
             radio = self.widget(self.name, choice_value, checked=self.value == choice_value, **kwargs)
@@ -190,7 +191,7 @@ class SelectFieldRenderer(FieldRenderer):
     def __init__(self, attr, options, **kwargs):
         self.options = options
         selected = kwargs.get('selected', None)
-        SelectFieldRenderer.__init__(self, attr, **kwargs)
+        FieldRenderer.__init__(self, attr, **kwargs)
         self.selected = selected or self.value
 
     def render(self):
@@ -615,7 +616,7 @@ class AttributeField(AbstractField):
     def __repr__(self):
         return 'AttributeField(%s)' % self.key
     
-    # todo add .options method (for html_options) ?
+    # todo add .options method (for html_options)
     
     def render(self, **html_options):
         if isinstance(self._impl, ScalarObjectAttributeImpl) or self.is_collection():
