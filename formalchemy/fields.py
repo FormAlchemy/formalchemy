@@ -50,6 +50,14 @@ class FieldRenderer(object):
         return attr.parent.data.get(attr.name)
     raw_value = staticmethod(raw_value)
 
+    def _data(attr, params):
+        # for form_data
+        if attr.is_collection():
+            return params.getall(attr.name)
+        return params.getone(attr.name)
+    _data = staticmethod(_data)
+    
+
 class TextFieldRenderer(FieldRenderer):
     def __init__(self, attr, **kwargs):
         TextFieldRenderer.__init__(self, attr, **kwargs)
@@ -134,10 +142,13 @@ class DateFieldRenderer(FieldRenderer):
         return h.content_tag('span', content, **self.attribs)
 
     def raw_value(attr):
-        data = attr.parent.data
-        name = attr.name
-        return data[name + '__year'], data[name + '__month'], data[name + '__day']
+        return [attr.parent.data[attr.name + '__' + subfield] for subfield in ['year', 'month', 'day']]
     raw_value = staticmethod(raw_value)
+
+    def _data(attr, params):
+        paramnames = [attr.name + '__' + subfield for subfield in ['year', 'month', 'day']]
+        return dict([(pname, params.getone(pname)) for pname in paramnames])
+    _data = staticmethod(_data)
 
 
 class TimeFieldRenderer(ModelDateTimeRenderer):

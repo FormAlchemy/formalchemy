@@ -229,8 +229,6 @@ class ModelRenderer(object):
         return L
     
     def _get_attrs(self, pk=False, exclude=[], include=[], options=[]):
-        # todo make configure "additive" -- specifying new options shouldn't nuke previous ones
-        # might want to make _render_attrs always present to simplify this
         if include and exclude:
             raise Exception('Specify at most one of include, exclude')
 

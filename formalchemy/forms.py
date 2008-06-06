@@ -14,9 +14,9 @@ from tempita import Template as TempitaTemplate
 __all__ = ['form_data', 'AbstractFieldSet', 'FieldSet']
 
 
-def form_data(form, post):
+def form_data(fieldset, params):
     """ 
-    Given POST data (currently must be an object providing getone and
+    Given GET or POST data (currently must be an object providing getone and
     getall, like paste's MultiDict), transform it into data suitable for use
     in bind(). 
     
@@ -26,13 +26,10 @@ def form_data(form, post):
     if not (hasattr(post, 'getall') and hasattr(post, 'getone')):
         raise Exception('unsupported post object.  see help(formdata) for supported interfaces')
     d = {}
-    for attr in form.render_attrs:
-        # todo fix dates
-        if attr.is_collection():
-            d[attr.name] = post.getall(attr.name)
-        else:
-            d[attr.name] = post.getone(attr.name)
+    for attr in fieldset.render_attrs:
+        d.update(attr.renderer._data(attr, params))
     return d
+
 
 class AbstractFieldSet(base.ModelRenderer):
     """
