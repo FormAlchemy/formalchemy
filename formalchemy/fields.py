@@ -47,7 +47,7 @@ class FieldRenderer(object):
         return h.text_field(self.name, value=self.value)
 
     def serialized_value(attr):
-        """the valuse to deserialize (pass to _unstr)"""
+        """the valuse to deserialize"""
         return attr.parent.data.get(attr.name)
     serialized_value = staticmethod(serialized_value)
 
@@ -271,7 +271,7 @@ class AbstractField(object):
         self.errors = []
 
         try:
-            value = self._unstr(self.parent.data.get(self.name))
+            value = self._deserialize(self.parent.data.get(self.name))
         except validators.ValidationException, e:
             self.errors.append(e)
             return False
@@ -290,7 +290,7 @@ class AbstractField(object):
         """True iff this attribute must be given a non-empty value"""
         return self._required
     
-    def _unstr(self, data):
+    def _deserialize(self, data):
         """convert data (serialized user data, or None) into the data type expected by attr"""
         # todo allow renderers to massage data into "cannonical" format
         if isinstance(self.type, types.Boolean):
@@ -327,7 +327,7 @@ class AbstractField(object):
     model = property(model)
 
     def _serialized_value(self):
-        # data from user input suitable for _unstr
+        # data from user input suitable for _deserialize
         return self.renderer.serialized_value(self)
         
     def _modified(self, **kwattrs):
@@ -474,7 +474,7 @@ class Field(AbstractField):
 
     def sync(self):
         """Set the attribute's value in `model` to the value given in `data`"""
-        self.value = self._unstr(self._serialized_value())
+        self.value = self._deserialize(self._serialized_value())
             
     def __repr__(self):
         return 'AttributeField(%s)' % self.name
@@ -489,11 +489,11 @@ class Field(AbstractField):
     def __hash__(self):
         return hash(self.name)
 
-    def _unstr(self, st):
+    def _deserialize(self, st):
         if self.is_collection():
-            return [AbstractField._unstr(self, id_st)
+            return [AbstractField._deserialize(self, id_st)
                     for id_st in st]
-        return AbstractField._unstr(self, st)
+        return AbstractField._deserialize(self, st)
 
 
 class AttributeField(AbstractField):
@@ -575,7 +575,7 @@ class AttributeField(AbstractField):
         a list of the primary key values of the items in the collection is returned.
         """
         if self.parent.data is not None and self.name in self.parent.data:
-            v = self._unstr(self._serialized_value())
+            v = self._deserialize(self._serialized_value())
         else:
             v = getattr(self.model, self.name)
         if self.is_collection():
@@ -603,7 +603,7 @@ class AttributeField(AbstractField):
         
     def sync(self):
         """Set the attribute's value in `model` to the value given in `data`"""
-        setattr(self.model, self.name, self._unstr(self._serialized_value()))
+        setattr(self.model, self.name, self._deserialize(self._serialized_value()))
             
     def __eq__(self, other):
         # we override eq so that when we configure with options=[...], we can match the renders in options
@@ -640,8 +640,8 @@ class AttributeField(AbstractField):
             return SelectFieldRenderer
         return AbstractField._get_renderer(self)
 
-    def _unstr(self, st):
+    def _deserialize(self, st):
         if self.is_collection():
-            return [self.query(self.collection_type()).get(AbstractField._unstr(self, id_st))
+            return [self.query(self.collection_type()).get(AbstractField._deserialize(self, id_st))
                     for id_st in st]
-        return AbstractField._unstr(self, st)
+        return AbstractField._deserialize(self, st)
