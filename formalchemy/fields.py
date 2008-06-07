@@ -46,15 +46,16 @@ class FieldRenderer(object):
         """Render the field"""
         return h.text_field(self.name, value=self.value)
 
-    def raw_value(attr):
+    def serialized_value(attr):
+        """the valuse to deserialize (pass to _unstr)"""
         return attr.parent.data.get(attr.name)
-    raw_value = staticmethod(raw_value)
+    serialized_value = staticmethod(serialized_value)
 
     def _data(attr, params):
         # for form_data
         if attr.is_collection():
-            return params.getall(attr.name)
-        return params.getone(attr.name)
+            return {attr.name: params.getall(attr.name)}
+        return {attr.name: params.getone(attr.name)}
     _data = staticmethod(_data)
     
 
@@ -142,9 +143,9 @@ class DateFieldRenderer(FieldRenderer):
                 + '(YYYY)'
         return h.content_tag('span', content, **self.attribs)
 
-    def raw_value(attr):
-        return [attr.parent.data[attr.name + '__' + subfield] for subfield in ['year', 'month', 'day']]
-    raw_value = staticmethod(raw_value)
+    def serialized_value(attr):
+        return '-'.join([attr.parent.data[attr.name + '__' + subfield] for subfield in ['year', 'month', 'day']])
+    serialized_value = staticmethod(serialized_value)
 
     def _data(attr, params):
         paramnames = [attr.name + '__' + subfield for subfield in ['year', 'month', 'day']]
@@ -290,7 +291,7 @@ class AbstractField(object):
         return self._required
     
     def _unstr(self, data):
-        """convert data (raw user data, or None) into the data type expected by attr"""
+        """convert data (serialized user data, or None) into the data type expected by attr"""
         # todo allow renderers to massage data into "cannonical" format
         if isinstance(self.type, types.Boolean):
             if data is None and self.renderer is BooleanFieldRenderer:
@@ -315,25 +316,19 @@ class AbstractField(object):
             # todo handle Time
             pass
         if isinstance(self.type, types.Date):
-            if self.renderer is DateFieldRenderer:
-                year, month, day = data
-                try:
-                    year = int(year)
-                except:
-                    raise validators.ValidationException('Value is not an integer')
-                if not (datetime.MINYEAR <= year <= datetime.MAXYEAR):
-                    raise validators.ValidationException('Invalid year')
-                # todo raise if err
-                return datetime.date(year, int(month), int(day))
+            try:
+                return datetime.date(*[int(st) for st in data.split('-')])
+            except:
+                raise validators.ValidationException('Invalid date')
         return data
 
     def model(self):
         return self.parent.model
     model = property(model)
 
-    def _raw_value(self):
-        # raw data from user input suitable for _unstr
-        return self.renderer.raw_value(self)
+    def _serialized_value(self):
+        # data from user input suitable for _unstr
+        return self.renderer.serialized_value(self)
         
     def _modified(self, **kwattrs):
         # return a copy of self, with the given attributes modified
@@ -479,7 +474,7 @@ class Field(AbstractField):
 
     def sync(self):
         """Set the attribute's value in `model` to the value given in `data`"""
-        self.value = self._unstr(self._raw_value())
+        self.value = self._unstr(self._serialized_value())
             
     def __repr__(self):
         return 'AttributeField(%s)' % self.name
@@ -580,7 +575,7 @@ class AttributeField(AbstractField):
         a list of the primary key values of the items in the collection is returned.
         """
         if self.parent.data is not None and self.name in self.parent.data:
-            v = self._unstr(self._raw_value())
+            v = self._unstr(self._serialized_value())
         else:
             v = getattr(self.model, self.name)
         if self.is_collection():
@@ -608,7 +603,7 @@ class AttributeField(AbstractField):
         
     def sync(self):
         """Set the attribute's value in `model` to the value given in `data`"""
-        setattr(self.model, self.name, self._unstr(self._raw_value()))
+        setattr(self.model, self.name, self._unstr(self._serialized_value()))
             
     def __eq__(self, other):
         # we override eq so that when we configure with options=[...], we can match the renders in options
