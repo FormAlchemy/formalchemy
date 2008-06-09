@@ -20,50 +20,52 @@ __all__ = ['Field', 'query_options']
 
 class FieldRenderer(object):
     """
-    This should be the super class of all xField classes.
+    This should be the super class of all xRenderer classes.
 
     This class takes a SQLAlchemy mapped class as first argument and the column
     name to process as second argument. It maps the column name as the field
     name and the column's value as the field's value.
     """
-    def __init__(self, attr, **kwargs):
-        self.attr = attr
-        assert isinstance(self.attr, AbstractField)
+    def __init__(self, field, **kwargs):
+        self.field = field
+        assert isinstance(self.field, AbstractField)
         self.attribs = kwargs
         
     def name(self):
         """Field name"""
-        return self.attr.name
+        return self.field.name
     name = property(name)
         
     def value(self):
         """Current value, or default if none"""
-        return self.attr.value
+        return self.field.value
     value = property(value)
 
     def render(self):
         """Render the field"""
         return h.text_field(self.name, value=self.value)
 
-    def serialized_value(attr):
+    def serialized_value(field):
         """
-        Returns the appropriate value to deserialize for attr's datatype, from the user-submitted data.
+        Returns the appropriate value to deserialize for field's datatype, from the user-submitted data.
+        
+        Do not attempt to deserialize here; return value should be a string.
         """
-        return attr.parent.data.get(attr.name)
+        return field.parent.data.get(field.name)
     serialized_value = staticmethod(serialized_value)
 
-    def _data(attr, params):
+    def _data(field, params):
         # for form_data
-        if attr.is_collection():
-            return {attr.name: params.getall(attr.name)}
-        return {attr.name: params.getone(attr.name)}
+        if field.is_collection():
+            return {field.name: params.getall(field.name)}
+        return {field.name: params.getone(field.name)}
     _data = staticmethod(_data)
     
 
 class TextFieldRenderer(FieldRenderer):
-    def __init__(self, attr, **kwargs):
-        FieldRenderer.__init__(self, attr, **kwargs)
-        self.length = attr.type.length
+    def __init__(self, field, **kwargs):
+        FieldRenderer.__init__(self, field, **kwargs)
+        self.length = field.type.length
 
     def render(self):
         return h.text_field(self.name, value=self.value, maxlength=self.length, **self.attribs)
@@ -80,8 +82,8 @@ class PasswordFieldRenderer(TextFieldRenderer):
 
 
 class TextAreaFieldRenderer(FieldRenderer):
-    def __init__(self, attr, size, **kwargs):
-        FieldRenderer.__init__(self, attr, **kwargs)
+    def __init__(self, field, size, **kwargs):
+        FieldRenderer.__init__(self, field, **kwargs)
         self.size = size
 
     def render(self):
@@ -117,8 +119,8 @@ class ModelDateTimeRenderer(FieldRenderer):
     should be the super class for (Date|Time|DateTime)Field.
     """
 
-    def __init__(self, attr, format, **kwargs):
-        FieldRenderer.__init__(self, attr, **kwargs)
+    def __init__(self, field, format, **kwargs):
+        FieldRenderer.__init__(self, field, **kwargs)
         self.format = format
 
     def render(self):
@@ -130,8 +132,8 @@ class DateTimeFieldRendererRenderer(ModelDateTimeRenderer):
 
 
 class DateFieldRenderer(FieldRenderer):
-    def __init__(self, attr, **kwargs):
-        FieldRenderer.__init__(self, attr, **kwargs)
+    def __init__(self, field, **kwargs):
+        FieldRenderer.__init__(self, field, **kwargs)
         
     def render(self):
         import calendar
@@ -143,12 +145,12 @@ class DateFieldRenderer(FieldRenderer):
                 + '(YYYY)'
         return h.content_tag('span', content, **self.attribs)
 
-    def serialized_value(attr):
-        return '-'.join([attr.parent.data[attr.name + '__' + subfield] for subfield in ['year', 'month', 'day']])
+    def serialized_value(field):
+        return '-'.join([field.parent.data[field.name + '__' + subfield] for subfield in ['year', 'month', 'day']])
     serialized_value = staticmethod(serialized_value)
 
-    def _data(attr, params):
-        paramnames = [attr.name + '__' + subfield for subfield in ['year', 'month', 'day']]
+    def _data(field, params):
+        paramnames = [field.name + '__' + subfield for subfield in ['year', 'month', 'day']]
         return dict([(pname, params.getone(pname)) for pname in paramnames])
     _data = staticmethod(_data)
 
@@ -175,8 +177,8 @@ def _extract_options(options):
 
 class RadioSet(FieldRenderer):
     widget = staticmethod(h.radio_button)
-    def __init__(self, attr, options, **kwargs):
-        FieldRenderer.__init__(self, attr)
+    def __init__(self, field, options, **kwargs):
+        FieldRenderer.__init__(self, field)
         self.radios = []
         for choice_name, choice_value in _extract_options(options):
             radio = self.widget(self.name, choice_value, checked=self.value == choice_value, **kwargs)
@@ -189,10 +191,10 @@ class CheckBoxSet(RadioSet):
 
 
 class SelectFieldRenderer(FieldRenderer):
-    def __init__(self, attr, options, **kwargs):
+    def __init__(self, field, options, **kwargs):
         self.options = options
         selected = kwargs.get('selected', None)
-        FieldRenderer.__init__(self, attr, **kwargs)
+        FieldRenderer.__init__(self, field, **kwargs)
         self.selected = selected or self.value
 
     def render(self):
@@ -232,7 +234,7 @@ class AbstractField(object):
     def __init__(self, parent):
         # the FieldSet (or any ModelRenderer) owning this instance
         self.parent = parent
-        # what kind of Field to render this attribute as.  this will
+        # Renderer for this Field.  this will
         # be autoguessed, unless the user forces it with .dropdown,
         # .checkbox, etc.
         self._renderer = None
@@ -258,11 +260,11 @@ class AbstractField(object):
         return wrapper
                         
     def is_raw_foreign_key(self):
-        """True iff this attribute is a raw foreign key"""
+        """True iff this Field is a raw foreign key"""
         return False
 
     def is_pk(self):
-        """True iff this attribute is a primary key"""
+        """True iff this Field is a primary key"""
         return False
 
     def query(self, *args, **kwargs):
@@ -289,11 +291,11 @@ class AbstractField(object):
         return not self.errors
 
     def is_required(self):
-        """True iff this attribute must be given a non-empty value"""
+        """True iff this Field must be given a non-empty value"""
         return self._required
     
     def _deserialize(self, data):
-        """convert data (serialized user data, or None) into the data type expected by attr"""
+        """convert data (serialized user data, or None) into the data type expected by field"""
         if isinstance(self.type, types.Boolean):
             if data is None and self.renderer is BooleanFieldRenderer:
                 return False
@@ -338,7 +340,7 @@ class AbstractField(object):
             setattr(copied, attr, value)
         return copied
     def bind(self, parent):
-        """Return a copy of this attribute, bound to a different parent"""
+        """Return a copy of this Field, bound to a different parent"""
         return self._modified(parent=parent)
     def validate(self, validator):
         """ 
@@ -350,9 +352,9 @@ class AbstractField(object):
         etc.). It should raise `ValidationException` if validation
         fails with a message explaining the cause of failure.
         """
-        attr = deepcopy(self)
-        attr.validators.append(validator)
-        return attr
+        field = deepcopy(self)
+        field.validators.append(validator)
+        return field
     def required(self):
         """
         Change the label associated with this field.  By default, the
@@ -383,33 +385,33 @@ class AbstractField(object):
         return self._modified(_renderer=TextAreaFieldRenderer, render_opts={'size': size})
     def radio(self, options=None):
         """Render the field as a set of radio buttons."""
-        attr = deepcopy(self)
-        attr._renderer = RadioSet
+        field = deepcopy(self)
+        field._renderer = RadioSet
         if options is None:
             options = self.render_opts.get('options')
-        attr.render_opts = {'options': options}
-        return attr
+        field.render_opts = {'options': options}
+        return field
     def checkbox(self, options=None):
         """Render the field as a set of checkboxes."""
-        attr = deepcopy(self)
-        attr._renderer = CheckBoxSet
+        field = deepcopy(self)
+        field._renderer = CheckBoxSet
         if options is None:
             options = self.render_opts.get('options')
-        attr.render_opts = {'options': options}
-        return attr
+        field.render_opts = {'options': options}
+        return field
     def dropdown(self, options=None, multiple=False, size=5):
         """
         Render the field as an HTML select field.  
         (With the `multiple` option this is not really a 'dropdown'.)
         """
-        attr = deepcopy(self)
-        attr._renderer = SelectFieldRenderer
+        field = deepcopy(self)
+        field._renderer = SelectFieldRenderer
         if options is None:
             options = self.render_opts.get('options')
-        attr.render_opts = {'multiple': multiple, 'options': options}
+        field.render_opts = {'multiple': multiple, 'options': options}
         if multiple:
-            attr.render_opts['size'] = size
-        return attr
+            field.render_opts['size'] = size
+        return field
 
     def _get_renderer(self):
         for t in self.parent.default_renderers:
@@ -423,7 +425,7 @@ class AbstractField(object):
     
     def render(self, **html_options):
         """
-        Render this attribute as HTML.
+        Render this Field as HTML.
         
         `html_options` are not used by the default template, but are
         provided to make more customization possible in custom templates
@@ -557,7 +559,7 @@ class AttributeField(AbstractField):
     
     def value(self):
         """
-        The value of this attribute: use the corresponding value in the bound `data`,
+        The value of this Field: use the corresponding value in the bound `data`,
         if any; otherwise, use the value in the bound `model`.  If there is still no
         value, use the default defined on the corresponding `Column`.
         
