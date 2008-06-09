@@ -113,37 +113,16 @@ class FileFieldRenderer(FieldRenderer):
         return h.file_field(self.name, **self.attribs)
 
 
-class ModelDateTimeRenderer(FieldRenderer):
-    """
-    The `ModelDateTimeRenderer` class
-    should be the super class for (Date|Time|DateTime)Field.
-    """
-
-    def __init__(self, field, format, **kwargs):
-        FieldRenderer.__init__(self, field, **kwargs)
-        self.format = format
-
-    def render(self):
-        return h.text_field(self.name, value=self.value, **self.attribs)
-
-
-class DateTimeFieldRendererRenderer(ModelDateTimeRenderer):
-    pass
-
-
 class DateFieldRenderer(FieldRenderer):
-    def __init__(self, field, **kwargs):
-        FieldRenderer.__init__(self, field, **kwargs)
-        
     def render(self):
         import calendar
         month_options = [(calendar.month_name[i], i) for i in xrange(1, 13)]
         day_options = [(str(i), i) for i in xrange(1, 32)]
-        content = h.select(self.name + '__month', h.options_for_select(month_options, selected=self.value.month)) \
-                + h.select(self.name + '__day', h.options_for_select(day_options, selected=self.value.day)) \
-                + h.text_field(self.name + '__year', value=self.value.year) \
+        content = h.select(self.name + '__month', h.options_for_select(month_options, selected=self.value.month), **self.attribs) \
+                + h.select(self.name + '__day', h.options_for_select(day_options, selected=self.value.day), **self.attribs) \
+                + h.text_field(self.name + '__year', value=self.value.year, **self.attribs) \
                 + '(YYYY)'
-        return h.content_tag('span', content, **self.attribs)
+        return h.content_tag('span', content, id=self.name)
 
     def serialized_value(field):
         return '-'.join([field.parent.data[field.name + '__' + subfield] for subfield in ['year', 'month', 'day']])
@@ -155,7 +134,26 @@ class DateFieldRenderer(FieldRenderer):
     _data = staticmethod(_data)
 
 
-class TimeFieldRenderer(ModelDateTimeRenderer):
+class TimeFieldRenderer(FieldRenderer):
+    def render(self):
+        hour_options = [(i, i) for i in xrange(24)]
+        minute_options = second_options = [(i, i) for i in xrange(60)]
+        content = h.select(self.name + '__hour', h.options_for_select(hour_options, selected=self.value.hour), **self.attribs) \
+                + ':' + h.select(self.name + '__minute', h.options_for_select(minute_options, selected=self.value.minute), **self.attribs) \
+                + ':' + h.select(self.name + '__second', h.options_for_select(second_options, selected=self.value.second), **self.attribs)
+        return h.content_tag('span', content, id=self.name)
+
+    def serialized_value(field):
+        return ':'.join([field.parent.data[field.name + '__' + subfield] for subfield in ['hour', 'minute', 'second']])
+    serialized_value = staticmethod(serialized_value)
+
+    def _data(field, params):
+        paramnames = [field.name + '__' + subfield for subfield in ['hour', 'minute', 'second']]
+        return dict([(pname, params.getone(pname)) for pname in paramnames])
+    _data = staticmethod(_data)    
+
+
+class DateTimeFieldRendererRenderer(DateFieldRenderer, TimeFieldRenderer):
     pass
 
 
