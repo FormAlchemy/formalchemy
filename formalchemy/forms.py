@@ -6,8 +6,9 @@
 import logging
 logger = logging.getLogger('formalchemy.' + __name__)
 
-import helpers as h
-import base, fields, utils
+import sqlalchemy.types as types
+
+import base, fields
 from validators import ValidationException
 from tempita import Template as TempitaTemplate
 
@@ -52,6 +53,16 @@ class AbstractFieldSet(base.ModelRenderer):
     and will use that instead if Mako is available.  The rendered HTML is identical
     but (we suspect) Mako is faster.
     """
+    default_renderers = {
+        types.String: fields.TextFieldRenderer,
+        types.Integer: fields.IntegerFieldRenderer,
+        types.Boolean: fields.BooleanFieldRenderer,
+        types.DateTime: fields.DateTimeFieldRendererRenderer,
+        types.Date: fields.DateFieldRenderer,
+        types.Time: fields.TimeFieldRenderer,
+        types.Binary: fields.FileFieldRenderer,
+    }
+
     def __init__(self, *args, **kwargs):
         base.ModelRenderer.__init__(self, *args, **kwargs)
         self.validator = None
@@ -184,14 +195,36 @@ class FieldSet(AbstractFieldSet):
     creating new instances) and can render a form for editing that instance,
     perform validation, and sync the form data back to the bound instance.
     
-    There are two parts you can customize in a `FieldSet` subclass short
-    of writing your own render method.  These are `prettify` and
+    There are three parts you can customize in a `FieldSet` subclass short
+    of writing your own render method.  These are `default_renderers`, `prettify`, and
     `_render`.  As in,
     
     {{{
     class MyFieldSet(FieldSet):
+        default_renderers = {
+            types.String: fields.TextFieldRenderer,
+            types.Integer: fields.IntegerFieldRenderer,
+            # ...
+        }
         prettify = staticmethod(myprettify)
         _render = staticmethod(myrender)
+    }}}
+    
+    `default_renderers` is a dict of callables returning a FieldRenderer.  Usually these
+    will be FieldRenderer subclasses, but this is not required.  For instance,
+    to make Booleans render as select fields with Yes/No options by default,
+    you could write:
+
+    {{{
+    def BooleanSelectRenderer(*args, **kwargs):
+        kwargs['options'] = [('Yes', True), ('No', False)]
+        return fields.SelectFieldRenderer(*args, **kwargs)
+
+    d = dict(FieldSet.default_renderers)
+    d[types.Boolean] = BooleanSelectRenderer
+
+    class MyFieldSet(FieldSet):
+        default_renderers = d
     }}}
     
     `prettify` is a function that, given an attribute name ('user_name')

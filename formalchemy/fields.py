@@ -10,7 +10,6 @@ from copy import copy, deepcopy
 import datetime
 
 import helpers as h
-import sqlalchemy.types as types
 from sqlalchemy.orm import class_mapper
 from sqlalchemy.orm.attributes import ScalarAttributeImpl, ScalarObjectAttributeImpl, CollectionAttributeImpl
 import sqlalchemy.types as types
@@ -47,7 +46,9 @@ class FieldRenderer(object):
         return h.text_field(self.name, value=self.value)
 
     def serialized_value(attr):
-        """the valuse to deserialize"""
+        """
+        Returns the appropriate value to deserialize for attr's datatype, from the user-submitted data.
+        """
         return attr.parent.data.get(attr.name)
     serialized_value = staticmethod(serialized_value)
 
@@ -128,7 +129,6 @@ class DateTimeFieldRendererRenderer(ModelDateTimeRenderer):
     pass
 
 
-# todo r/m use of super
 class DateFieldRenderer(FieldRenderer):
     def __init__(self, attr, **kwargs):
         FieldRenderer.__init__(self, attr, **kwargs)
@@ -232,14 +232,16 @@ class AbstractField(object):
     def __init__(self, parent):
         # the FieldSet (or any ModelRenderer) owning this instance
         self.parent = parent
-        # what kind of Field to render this attribute as.  this will be autoguessed,
-        # unless the user forces it with .dropdown, .checkbox, etc.
+        # what kind of Field to render this attribute as.  this will
+        # be autoguessed, unless the user forces it with .dropdown,
+        # .checkbox, etc.
         self._renderer = None
         # other render options, such as size, multiple, etc.
         self.render_opts = {}
         # validator functions added with .validate()
         self.validators = []
-        # errors found by _validate() (which runs implicit and explicit validators)
+        # errors found by _validate() (which runs implicit and
+        # explicit validators)
         self.errors = []
         # disabled or readonly
         self.modifier = None
@@ -292,7 +294,6 @@ class AbstractField(object):
     
     def _deserialize(self, data):
         """convert data (serialized user data, or None) into the data type expected by attr"""
-        # todo allow renderers to massage data into "cannonical" format
         if isinstance(self.type, types.Boolean):
             if data is None and self.renderer is BooleanFieldRenderer:
                 return False
@@ -411,20 +412,9 @@ class AbstractField(object):
         return attr
 
     def _get_renderer(self):
-        if isinstance(self.type, types.String):
-            return TextFieldRenderer
-        elif isinstance(self.type, types.Integer):
-            return IntegerFieldRenderer
-        elif isinstance(self.type, types.Boolean):
-            return BooleanFieldRenderer
-        elif isinstance(self.type, types.DateTime):
-            return DateTimeFieldRendererRenderer
-        elif isinstance(self.type, types.Date):
-            return DateFieldRenderer
-        elif isinstance(self.type, types.Time):
-            return TimeFieldRenderer
-        elif isinstance(self.type, types.Binary):
-            return FileFieldRenderer
+        for t in self.parent.default_renderers:
+            if isinstance(self.type, t):
+                return self.parent.default_renderers[t]
         return FieldRenderer
     
     def renderer(self):

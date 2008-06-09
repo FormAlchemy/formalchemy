@@ -10,6 +10,8 @@ import sqlalchemy.types as types
 from sqlalchemy.ext.declarative import declarative_base
 logging.getLogger('sqlalchemy').setLevel(logging.ERROR)
 
+import fields
+
 engine = create_engine('sqlite://')
 Session = scoped_session(sessionmaker(autoflush=True, bind=engine))
 Base = declarative_base(engine, mapper=Session.mapper)
@@ -29,7 +31,7 @@ class Three(Base):
     foo = Column('foo', Text, nullable=True)
     bar = Column('bar', Text, nullable=True)
     
-class Checkbox(Base):
+class CheckBox(Base):
     __tablename__ = 'checkboxes'
     id = Column('id', Integer, primary_key=True)
     field = Column('field', Boolean, nullable=False)
@@ -141,6 +143,7 @@ if not hasattr(__builtins__, 'sorted'):
         L.sort(lambda a, b: cmp(key(a), key(b)))
         return L
 
+
 __doc__ = r"""
 # some low-level testing first
 >>> fs = FieldSet(order1)
@@ -250,7 +253,7 @@ document.getElementById("foo").focus();
 >>> fs = FieldSet(Two)
 >>> print fs.foo.render(onblur='test()')
 <input id="foo" name="foo" onblur="test()" type="text" />
->>> cb = Checkbox()
+>>> cb = CheckBox()
 >>> fs = FieldSet(cb)
 >>> print fs.field.render()
 <input id="field" name="field" type="checkbox" value="True" />
@@ -722,6 +725,17 @@ True
 >>> fs.add == fs.fields['add']
 False
 
+# change default renderer 
+>>> def BooleanSelectRenderer(*args, **kwargs):
+...     kwargs['options'] = [('Yes', True), ('No', False)]
+...     return fields.SelectFieldRenderer(*args, **kwargs)
+>>> d = dict(FieldSet.default_renderers)
+>>> d[types.Boolean] = BooleanSelectRenderer
+>>> fs = FieldSet(CheckBox)
+>>> fs.default_renderers = d
+>>> print fs.field.render()
+<select id="field" name="field"><option value="True">Yes</option>
+<option value="False">No</option></select>
 """
 
 if __name__ == '__main__':
