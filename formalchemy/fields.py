@@ -114,15 +114,16 @@ class FileFieldRenderer(FieldRenderer):
 
 
 class DateFieldRenderer(FieldRenderer):
-    def render(self):
+    def _render(self):
         import calendar
         month_options = [(calendar.month_name[i], i) for i in xrange(1, 13)]
         day_options = [(str(i), i) for i in xrange(1, 32)]
-        content = h.select(self.name + '__month', h.options_for_select(month_options, selected=self.value.month), **self.attribs) \
-                + h.select(self.name + '__day', h.options_for_select(day_options, selected=self.value.day), **self.attribs) \
-                + h.text_field(self.name + '__year', value=self.value.year, **self.attribs) \
-                + '(YYYY)'
-        return h.content_tag('span', content, id=self.name)
+        return h.select(self.name + '__month', h.options_for_select(month_options, selected=self.value.month), **self.attribs) \
+               + h.select(self.name + '__day', h.options_for_select(day_options, selected=self.value.day), **self.attribs) \
+               + h.text_field(self.name + '__year', value=self.value.year, **self.attribs) \
+               + '(YYYY)'
+    def render(self):
+        return h.content_tag('span', self._render(), id=self.name)
 
     def serialized_value(field):
         return '-'.join([field.parent.data[field.name + '__' + subfield] for subfield in ['year', 'month', 'day']])
@@ -135,13 +136,14 @@ class DateFieldRenderer(FieldRenderer):
 
 
 class TimeFieldRenderer(FieldRenderer):
-    def render(self):
+    def _render(self):
         hour_options = [(i, i) for i in xrange(24)]
         minute_options = second_options = [(i, i) for i in xrange(60)]
-        content = h.select(self.name + '__hour', h.options_for_select(hour_options, selected=self.value.hour), **self.attribs) \
-                + ':' + h.select(self.name + '__minute', h.options_for_select(minute_options, selected=self.value.minute), **self.attribs) \
-                + ':' + h.select(self.name + '__second', h.options_for_select(second_options, selected=self.value.second), **self.attribs)
-        return h.content_tag('span', content, id=self.name)
+        return h.select(self.name + '__hour', h.options_for_select(hour_options, selected=self.value.hour), **self.attribs) \
+               + ':' + h.select(self.name + '__minute', h.options_for_select(minute_options, selected=self.value.minute), **self.attribs) \
+               + ':' + h.select(self.name + '__second', h.options_for_select(second_options, selected=self.value.second), **self.attribs)
+    def render(self):
+        return h.content_tag('span', self._render(), id=self.name)
 
     def serialized_value(field):
         return ':'.join([field.parent.data[field.name + '__' + subfield] for subfield in ['hour', 'minute', 'second']])
@@ -154,7 +156,18 @@ class TimeFieldRenderer(FieldRenderer):
 
 
 class DateTimeFieldRendererRenderer(DateFieldRenderer, TimeFieldRenderer):
-    pass
+    def render(self):
+        return h.content_tag('span', DateFieldRenderer._render(self) + TimeFieldRenderer._render(self), id=self.name)
+
+    def serialized_value(field):
+        return DateFieldRenderer.serialized_value(field) + ' ' + TimeFieldRenderer.serialized_value(field)
+    serialized_value = staticmethod(serialized_value)
+
+    def _data(field, params):
+        d = DateFieldRenderer._data(field, params)
+        d.update(TimeFieldRenderer._data(field, params))
+        return d
+    _data = staticmethod(_data)    
 
 
 def _extract_options(options):
@@ -312,15 +325,27 @@ class AbstractField(object):
                 return float(data)
             except:
                 raise validators.ValidationException('Value is not a number')
-        if isinstance(self.type, types.DateTime):
-            # todo handle datetime
-            # todo handle Time
-            pass
-        if isinstance(self.type, types.Date):
+
+        def _date(data):
             try:
                 return datetime.date(*[int(st) for st in data.split('-')])
             except:
                 raise validators.ValidationException('Invalid date')
+        def _time(data):
+            try:
+                return datetime.time(*[int(st) for st in data.split(':')])
+            except:
+                raise validators.ValidationException('Invalid time')
+        
+        if isinstance(self.type, types.Date):
+            return _date(data)
+        if isinstance(self.type, types.Time):
+            return _time(data)
+        if isinstance(self.type, types.DateTime):
+            data_date, data_time = data.split(' ')
+            dt, tm = _date(data_date), _time(data_time)
+            return datetime.datetime(dt.year, dt.month, dt.day, tm.hour, tm.minute, tm.second)
+
         return data
 
     def model(self):
