@@ -28,7 +28,7 @@ def form_data(fieldset, params):
         raise Exception('unsupported post object.  see help(formdata) for supported interfaces')
     d = {}
     for attr in fieldset.render_attrs:
-        d.update(attr.renderer._data(attr, params))
+        d.update(attr.renderer.relevant_data(attr, params))
     return d
 
 

@@ -25,6 +25,10 @@ class FieldRenderer(object):
     This class takes a SQLAlchemy mapped class as first argument and the column
     name to process as second argument. It maps the column name as the field
     name and the column's value as the field's value.
+    
+    Subclasses may wish to override `render`, `serialized_value`, or
+    `relevant_data`.  (DateFieldRenderer is an example of overriding all 3.)
+    You should not need to touch `name` or `value`.
     """
     def __init__(self, field, **kwargs):
         self.field = field
@@ -54,12 +58,16 @@ class FieldRenderer(object):
         return field.parent.data.get(field.name)
     serialized_value = staticmethod(serialized_value)
 
-    def _data(field, params):
-        # for form_data
+    def relevant_data(field, params):
+        """
+        Called by form_data.  given `params` miltidict, return a dictionary of the data relevant to the given Field.
+        (key = param name; value = param values.)  For most Fields this just means determining if
+        we need getone or getall, but multi-input renderers can customize as needed.
+        """
         if field.is_collection():
             return {field.name: params.getall(field.name)}
         return {field.name: params.getone(field.name)}
-    _data = staticmethod(_data)
+    relevant_data = staticmethod(relevant_data)
     
 
 class TextFieldRenderer(FieldRenderer):
@@ -129,10 +137,10 @@ class DateFieldRenderer(FieldRenderer):
         return '-'.join([field.parent.data[field.name + '__' + subfield] for subfield in ['year', 'month', 'day']])
     serialized_value = staticmethod(serialized_value)
 
-    def _data(field, params):
+    def relevant_data(field, params):
         paramnames = [field.name + '__' + subfield for subfield in ['year', 'month', 'day']]
         return dict([(pname, params.getone(pname)) for pname in paramnames])
-    _data = staticmethod(_data)
+    relevant_data = staticmethod(relevant_data)
 
 
 class TimeFieldRenderer(FieldRenderer):
@@ -149,10 +157,10 @@ class TimeFieldRenderer(FieldRenderer):
         return ':'.join([field.parent.data[field.name + '__' + subfield] for subfield in ['hour', 'minute', 'second']])
     serialized_value = staticmethod(serialized_value)
 
-    def _data(field, params):
+    def relevant_data(field, params):
         paramnames = [field.name + '__' + subfield for subfield in ['hour', 'minute', 'second']]
         return dict([(pname, params.getone(pname)) for pname in paramnames])
-    _data = staticmethod(_data)    
+    relevant_data = staticmethod(relevant_data)    
 
 
 class DateTimeFieldRendererRenderer(DateFieldRenderer, TimeFieldRenderer):
@@ -163,11 +171,11 @@ class DateTimeFieldRendererRenderer(DateFieldRenderer, TimeFieldRenderer):
         return DateFieldRenderer.serialized_value(field) + ' ' + TimeFieldRenderer.serialized_value(field)
     serialized_value = staticmethod(serialized_value)
 
-    def _data(field, params):
-        d = DateFieldRenderer._data(field, params)
-        d.update(TimeFieldRenderer._data(field, params))
+    def relevant_data(field, params):
+        d = DateFieldRenderer.relevant_data(field, params)
+        d.update(TimeFieldRenderer.relevant_data(field, params))
         return d
-    _data = staticmethod(_data)    
+    relevant_data = staticmethod(relevant_data)    
 
 
 def _extract_options(options):
