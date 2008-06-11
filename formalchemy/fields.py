@@ -15,7 +15,7 @@ from sqlalchemy.orm.attributes import ScalarAttributeImpl, ScalarObjectAttribute
 import sqlalchemy.types as types
 import base, validators
 
-__all__ = ['Field', 'query_options']
+__all__ = ['Field', 'FieldRenderer', 'query_options']
 
 
 class FieldRenderer(object):
@@ -29,6 +29,8 @@ class FieldRenderer(object):
     Subclasses may wish to override `render`, `serialized_value`, or
     `relevant_data`.  (DateFieldRenderer is an example of overriding all 3.)
     You should not need to touch `name` or `value`.
+    
+    Note that `serialized_value` and `relevant_data` are staticmethods.
     """
     def __init__(self, field, **kwargs):
         self.field = field
@@ -53,14 +55,16 @@ class FieldRenderer(object):
         """
         Returns the appropriate value to deserialize for field's datatype, from the user-submitted data.
         
-        Do not attempt to deserialize here; return value should be a string.
+        This is broken out into a separate method so multi-input renderers can stitch their values back into a single one.
+        
+        Do not attempt to deserialize here; return value should be a string (corresponding to the output of `str` for your data type).
         """
         return field.parent.data.get(field.name)
     serialized_value = staticmethod(serialized_value)
 
     def relevant_data(field, params):
         """
-        Called by form_data.  given `params` miltidict, return a dictionary of the data relevant to the given Field.
+        Called by form_data.  given `params` multidict, return a dictionary of the data relevant to the given Field.
         (key = param name; value = param values.)  For most Fields this just means determining if
         we need getone or getall, but multi-input renderers can customize as needed.
         """

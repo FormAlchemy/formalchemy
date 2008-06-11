@@ -5,11 +5,11 @@
 
 from formalchemy.tables import *
 from formalchemy.forms import *
-from formalchemy.fields import query_options
+from formalchemy.fields import *
 from formalchemy.validators import ValidationException
 import formalchemy.validators as validators
 
-__all__ = ["FieldSet", "AbstractFieldSet", "Field", "Table", "TableCollection", "form_data", "query_options", "ValidationException", "validators"]
+__all__ = ["FieldSet", "AbstractFieldSet", "Field", "FieldRenderer", "Table", "TableCollection", "form_data", "query_options", "ValidationException", "validators"]
 __version__ = "0.3"
 
 __doc__ = """

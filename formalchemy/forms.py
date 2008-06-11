@@ -113,7 +113,7 @@ class AbstractFieldSet(base.ModelRenderer):
 template_text_mako = r"""
 <% _focus_rendered = False %>\
 
-% for error in fieldset._errors:
+% for error in fieldset.errors.get(None, []):
 <div class="fieldset_error">
   ${error}
 </div>
@@ -147,7 +147,7 @@ document.getElementById("${attr.name}").focus();
 template_text_tempita = r"""
 {{py:_focus_rendered = False}}
 
-{{for error in fieldset._errors}}
+{{for error in fieldset.errors.get(None, [])}}
 <div class="fieldset_error">
   {{error}}
 </div>
