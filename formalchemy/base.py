@@ -5,7 +5,6 @@
 
 import logging
 logger = logging.getLogger('formalchemy.' + __name__)
-from copy import copy
 
 from sqlalchemy import __version__
 if __version__.split('.') < [0, 4, 1]:
@@ -179,8 +178,10 @@ class ModelRenderer(object):
         Often you will create and `configure` a FieldSet or Table at application
         startup, then `bind` specific instances to it for actual editing or display.
         """
+        # copy.copy causes a stacktrace on python 2.5.2/OSX + pylons.  unable to reproduce w/ simpler sample.
+        mr = object.__new__(self.__class__)
+        mr.__dict__ = dict(self.__dict__)
         # two steps so bind's error checking can work
-        mr = copy(self)
         mr.rebind(model, session, data)
         mr.fields = dict([(key, renderer.bind(mr)) for key, renderer in self.fields.iteritems()])
         if self._render_fields:
