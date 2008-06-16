@@ -328,15 +328,9 @@ class AbstractField(object):
         if data is None:
             return None
         if isinstance(self.type, types.Integer):
-            try:
-                return int(data)
-            except:
-                raise validators.ValidationException('Value is not an integer')
+            return validators.integer(data)
         if isinstance(self.type, types.Float):
-            try:
-                return float(data)
-            except:
-                raise validators.ValidationException('Value is not a number')
+            return validators.float_(data)
 
         def _date(data):
             try:
