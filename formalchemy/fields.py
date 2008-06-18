@@ -134,8 +134,8 @@ class DateFieldRenderer(FieldRenderer):
         dd = self.value and self.value.day
         yyyy = self.value and self.value.year or 'YYYY'
         return h.select(self.name + '__month', h.options_for_select(month_options, selected=mm), **self.attribs) \
-               + h.select(self.name + '__day', h.options_for_select(day_options, selected=dd), **self.attribs) \
-               + h.text_field(self.name + '__year', value=yyyy, **self.attribs)
+               + ' ' + h.select(self.name + '__day', h.options_for_select(day_options, selected=dd), **self.attribs) \
+               + ' ' + h.text_field(self.name + '__year', value=yyyy, **self.attribs)
     def render(self):
         return h.content_tag('span', self._render(), id=self.name)
 
@@ -175,7 +175,7 @@ class TimeFieldRenderer(FieldRenderer):
 
 class DateTimeFieldRendererRenderer(DateFieldRenderer, TimeFieldRenderer):
     def render(self):
-        return h.content_tag('span', DateFieldRenderer._render(self) + TimeFieldRenderer._render(self), id=self.name)
+        return h.content_tag('span', DateFieldRenderer._render(self) + ' ' + TimeFieldRenderer._render(self), id=self.name)
 
     def serialized_value(field):
         return DateFieldRenderer.serialized_value(field) + ' ' + TimeFieldRenderer.serialized_value(field)
