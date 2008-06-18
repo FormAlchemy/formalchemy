@@ -115,7 +115,7 @@ session.commit()
 
 from forms import FieldSet as DefaultFieldSet, render_mako, render_tempita
 from fields import Field, query_options
-from validators import ValidationException
+from validators import ValidationError
 from tables import Table, TableCollection
 
 def pretty_html(html):
@@ -510,7 +510,7 @@ True
 >>> fs.validate()
 False
 >>> fs.errors
-{AttributeField(id): [ValidationException('Value is not an integer',)]}
+{AttributeField(id): [ValidationError('Value is not an integer',)]}
 
 >>> fs = FieldSet(User, data={'orders': []})
 >>> fs.configure(include=[fs.orders])
@@ -530,7 +530,7 @@ True
 >>> fs = FieldSet(Three, data={'foo': 'asdf', 'bar': 'fdsa'})
 >>> def custom_validator(data):
 ...   if data['foo'] != data['bar']:
-...     raise ValidationException('foo and bar do not match')
+...     raise ValidationError('foo and bar do not match')
 >>> fs.configure(global_validator=custom_validator, focus=None)
 >>> fs.validate()
 False

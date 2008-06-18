@@ -299,7 +299,7 @@ class AbstractField(object):
 
         try:
             value = self._deserialize(self.parent.data.get(self.name))
-        except validators.ValidationException, e:
+        except validators.ValidationError, e:
             self.errors.append(e)
             return False
 
@@ -309,7 +309,7 @@ class AbstractField(object):
         for validator in L:
             try:
                 validator(value)
-            except validators.ValidationException, e:
+            except validators.ValidationError, e:
                 self.errors.append(e.message)
         return not self.errors
 
@@ -336,12 +336,12 @@ class AbstractField(object):
             try:
                 return datetime.date(*[int(st) for st in data.split('-')])
             except:
-                raise validators.ValidationException('Invalid date')
+                raise validators.ValidationError('Invalid date')
         def _time(data):
             try:
                 return datetime.time(*[int(st) for st in data.split(':')])
             except:
-                raise validators.ValidationException('Invalid time')
+                raise validators.ValidationError('Invalid time')
         
         if isinstance(self.type, types.Date):
             return _date(data)
@@ -378,7 +378,7 @@ class AbstractField(object):
         run. Validator functions take one parameter: the value to
         validate. This value will have already been turned into the
         appropriate data type for the given `Field` (string, int, float,
-        etc.). It should raise `ValidationException` if validation
+        etc.). It should raise `ValidationError` if validation
         fails with a message explaining the cause of failure.
         """
         field = deepcopy(self)

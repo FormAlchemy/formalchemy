@@ -9,7 +9,7 @@ logger = logging.getLogger('formalchemy.' + __name__)
 import sqlalchemy.types as types
 
 import base, fields
-from validators import ValidationException
+from validators import ValidationError
 from tempita import Template as TempitaTemplate
 
 __all__ = ['form_data', 'AbstractFieldSet', 'FieldSet']
@@ -80,7 +80,7 @@ class AbstractFieldSet(base.ModelRenderer):
     def validate(self):
         """
         Validate attributes and `global_validator`.
-        If validation fails, the validator should raise `ValidationException`.
+        If validation fails, the validator should raise `ValidationError`.
         """
         if self.data is None:
             raise Exception('Cannot validate without binding data')
@@ -90,7 +90,7 @@ class AbstractFieldSet(base.ModelRenderer):
         if self.validator:
             try:
                 self.validator(self.data)
-            except ValidationException, e:
+            except ValidationError, e:
                 self._errors = e.args
                 success = False
         return success
@@ -98,7 +98,7 @@ class AbstractFieldSet(base.ModelRenderer):
     def errors(self):
         """
         A dictionary of validation failures.  Always empty before `validate()` is run.
-        Dictionary keys are attributes; values are lists of messages given to `ValidationException`.
+        Dictionary keys are attributes; values are lists of messages given to `ValidationError`.
         Global errors (not specific to a single attribute) are under the key `None`.
         """
         errors = {}
