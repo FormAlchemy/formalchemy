@@ -147,11 +147,11 @@ if not hasattr(__builtins__, 'sorted'):
 __doc__ = r"""
 # some low-level testing first
 >>> fs = FieldSet(order1)
->>> list(sorted(fs._raw_fields(), key=lambda attr: attr.key))
+>>> list(sorted(fs._raw_fields(), key=lambda field: field.key))
 [AttributeField(id), AttributeField(quantity), AttributeField(user), AttributeField(user_id)]
 
 >>> fs = FieldSet(bill)
->>> list(sorted(fs._raw_fields(), key=lambda attr: attr.key))
+>>> list(sorted(fs._raw_fields(), key=lambda field: field.key))
 [AttributeField(email), AttributeField(id), AttributeField(name), AttributeField(orders), AttributeField(password)]
 
 >>> fs = FieldSet(One)
@@ -451,7 +451,7 @@ ValueError: ...
 >>> fs = FieldSet(Two)
 >>> fs.configure()
 >>> fs2 = fs.bind(Two)
->>> [fs2 == attr.parent for attr in fs2._render_fields]
+>>> [fs2 == field.parent for field in fs2._render_fields]
 [True]
 
 >>> fs = FieldSet(OTOParent, session)

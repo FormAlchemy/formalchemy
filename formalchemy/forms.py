@@ -27,8 +27,8 @@ def form_data(fieldset, params):
     if not (hasattr(post, 'getall') and hasattr(post, 'getone')):
         raise Exception('unsupported post object.  see help(formdata) for supported interfaces')
     d = {}
-    for attr in fieldset.render_attrs:
-        d.update(attr.renderer.relevant_data(attr, params))
+    for field in fieldset.render_fields:
+        d.update(field.renderer.relevant_data(field, params))
     return d
 
 
@@ -85,8 +85,8 @@ class AbstractFieldSet(base.ModelRenderer):
         if self.data is None:
             raise Exception('Cannot validate without binding data')
         success = True
-        for attr in self.render_fields:
-            success = attr._validate() and success
+        for field in self.render_fields:
+            success = field._validate() and success
         if self.validator:
             try:
                 self.validator(self.data)
@@ -104,8 +104,8 @@ class AbstractFieldSet(base.ModelRenderer):
         errors = {}
         if self._errors:
             errors[None] = self._errors
-        errors.update(dict([(attr, attr.errors)
-                            for attr in self.render_fields if attr.errors]))
+        errors.update(dict([(field, field.errors)
+                            for field in self.render_fields if field.errors]))
         return errors
     errors = property(errors)
     
@@ -119,22 +119,22 @@ template_text_mako = r"""
 </div>
 % endfor
 
-% for attr in fieldset.render_fields:
-  % if attr.renderer == fields.HiddenFieldRenderer:
-${attr.render()}
+% for field in fieldset.render_fields:
+  % if field.renderer == fields.HiddenFieldRenderer:
+${field.render()}
   % else:
 <div>
-  <label class="${attr.is_required() and 'field_req' or 'field_opt'}" for="${attr.name}">${attr.label_text or fieldset.prettify(attr.key)}</label>
-  ${attr.render()}
-  % for error in attr.errors:
+  <label class="${field.is_required() and 'field_req' or 'field_opt'}" for="${field.name}">${field.label_text or fieldset.prettify(field.key)}</label>
+  ${field.render()}
+  % for error in field.errors:
   <span class="field_error">${error}</span>
   % endfor
 </div>
 
-% if (fieldset.focus == attr or fieldset.focus is True) and not _focus_rendered:
+% if (fieldset.focus == field or fieldset.focus is True) and not _focus_rendered:
 <script type="text/javascript">
 //<![CDATA[
-document.getElementById("${attr.name}").focus();
+document.getElementById("${field.name}").focus();
 //]]>
 </script>
 <% _focus_rendered = True %>\
@@ -153,22 +153,22 @@ template_text_tempita = r"""
 </div>
 {{endfor}}
 
-{{for attr in fieldset.render_fields}}                                                                          
-{{if attr.renderer == fields.HiddenFieldRenderer}}                                                    
-{{attr.render()}}                                                                              
+{{for field in fieldset.render_fields}}                                                                          
+{{if field.renderer == fields.HiddenFieldRenderer}}                                                    
+{{field.render()}}                                                                              
 {{else}}                                                                                       
 <div>                                                                                          
-  <label class="{{attr.is_required() and 'field_req' or 'field_opt'}}" for="{{attr.name}}">{{attr.label_text or fieldset.prettify(attr.key)}}</label>
-  {{attr.render()}}                                                                            
-  {{for error in attr.errors}}
+  <label class="{{field.is_required() and 'field_req' or 'field_opt'}}" for="{{field.name}}">{{field.label_text or fieldset.prettify(field.key)}}</label>
+  {{field.render()}}                                                                            
+  {{for error in field.errors}}
   <span class="field_error">{{error}}</span>
   {{endfor}}
 </div>                                                                                         
 
-{{if (fieldset.focus == attr or fieldset.focus is True) and not _focus_rendered}}
+{{if (fieldset.focus == field or fieldset.focus is True) and not _focus_rendered}}
 <script type="text/javascript">
 //<![CDATA[
-document.getElementById("{{attr.name}}").focus();
+document.getElementById("{{field.name}}").focus();
 //]]>
 </script>
 {{py:_focus_rendered = True}}

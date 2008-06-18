@@ -185,7 +185,7 @@ class ModelRenderer(object):
         mr.rebind(model, session, data)
         mr.fields = dict([(key, renderer.bind(mr)) for key, renderer in self.fields.iteritems()])
         if self._render_fields:
-            mr._render_fields = [attr.bind(mr) for attr in self._render_fields]
+            mr._render_fields = [field.bind(mr) for field in self._render_fields]
         return mr
 
     def rebind(self, model=None, session=None, data=None):
@@ -216,8 +216,8 @@ class ModelRenderer(object):
         """
         Sync (copy to the corresponding attributes) the data passed to the constructor or `bind` to the `model`.
         """
-        for attr in self.render_fields:
-            attr.sync()
+        for field in self.render_fields:
+            field.sync()
 
     def _raw_fields(self):
         L = self.fields.values()
@@ -248,7 +248,7 @@ class ModelRenderer(object):
             if not pk:
                 ignore.extend([wrapper for wrapper in self._raw_fields() if wrapper.is_pk() and not wrapper.is_collection()])
             ignore.extend([wrapper for wrapper in self._raw_fields() if wrapper.is_raw_foreign_key()])
-            include = [attr for attr in self._raw_fields() if attr not in ignore]
+            include = [field for field in self._raw_fields() if field not in ignore]
             
         # this feels overcomplicated
         options_dict = {}
