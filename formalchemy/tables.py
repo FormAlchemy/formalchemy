@@ -27,10 +27,10 @@ class Td(object):
     This class is responsible for rendering a '<td></td>' tag.
 
     """
-    def td(self, attr):
-        value = attr.value_str()
+    def td(self, field):
+        value = field.value_str()
 
-        display = self._render_options.get("display", {}).get(attr.name)
+        display = self._render_options.get("display", {}).get(field.name)
         if callable(display):
             return h.content_tag("td", display(self.model))
 
@@ -72,10 +72,10 @@ class Table(base.ModelRenderer, Caption, Th, Td):
     def tbody(self):
         # Make the table's body.
         tbody = []
-        for attr in self._get_attrs(**self._render_options):
+        for field in self._get_fields(**self._render_options):
             tr = []
-            tr.append(self.th(attr.name))
-            tr.append(self.td(attr))
+            tr.append(self.th(field.name))
+            tr.append(self.td(field))
             tr = utils.wrap("<tr>", "\n".join(tr), "</tr>")
             tbody.append(tr)
         tbody = utils.wrap("<tbody>", "\n".join(tbody), "</tbody>")
@@ -125,9 +125,9 @@ class TableCollection(Caption, Th, Td):
         thead = []
         tr = []
         mr = base.ModelRenderer(self.collection[0])
-        attrs = mr._get_attrs(**self._render_options)
-        for attr in attrs:
-            tr.append(self.th(attr.name))
+        fields = mr._get_fields(**self._render_options)
+        for field in fields:
+            tr.append(self.th(field.name))
         tr = utils.wrap("<tr>", "\n".join(tr), "</tr>")
         thead.append(tr)
 
@@ -140,8 +140,8 @@ class TableCollection(Caption, Th, Td):
             mr.rebind(model)
             self.model = model
             tr = []
-            for attr in attrs:
-                tr.append(self.td(attr))
+            for field in fields:
+                tr.append(self.td(field))
             tr = utils.wrap("<tr>", "\n".join(tr), "</tr>")
             tbody.append(tr)
         tbody = utils.wrap("<tbody>", "\n".join(tbody), "</tbody>")

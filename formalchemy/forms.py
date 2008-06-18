@@ -85,7 +85,7 @@ class AbstractFieldSet(base.ModelRenderer):
         if self.data is None:
             raise Exception('Cannot validate without binding data')
         success = True
-        for attr in self.render_attrs:
+        for attr in self.render_fields:
             success = attr._validate() and success
         if self.validator:
             try:
@@ -105,7 +105,7 @@ class AbstractFieldSet(base.ModelRenderer):
         if self._errors:
             errors[None] = self._errors
         errors.update(dict([(attr, attr.errors)
-                            for attr in self.render_attrs if attr.errors]))
+                            for attr in self.render_fields if attr.errors]))
         return errors
     errors = property(errors)
     
@@ -119,7 +119,7 @@ template_text_mako = r"""
 </div>
 % endfor
 
-% for attr in fieldset.render_attrs:
+% for attr in fieldset.render_fields:
   % if attr.renderer == fields.HiddenFieldRenderer:
 ${attr.render()}
   % else:
@@ -153,7 +153,7 @@ template_text_tempita = r"""
 </div>
 {{endfor}}
 
-{{for attr in fieldset.render_attrs}}                                                                          
+{{for attr in fieldset.render_fields}}                                                                          
 {{if attr.renderer == fields.HiddenFieldRenderer}}                                                    
 {{attr.render()}}                                                                              
 {{else}}                                                                                       

@@ -97,12 +97,12 @@ class ModelRenderer(object):
         field.parent = self
         self.fields[field.name] = field
                 
-    def render_attrs(self):
+    def render_fields(self):
         """The set of attributes that will be rendered"""
         if self._render_fields:
             return self._render_fields
-        return self._get_attrs()
-    render_attrs = property(render_attrs)
+        return self._get_fields()
+    render_fields = property(render_fields)
                 
     def configure(self, pk=False, exclude=[], include=[], options=[]):
         """
@@ -167,7 +167,7 @@ class ModelRenderer(object):
         fs.configure(include=[fs.name, fs.options.checkbox()])
         }}}
         """
-        self._render_fields = self._get_attrs(pk, exclude, include, options)
+        self._render_fields = self._get_fields(pk, exclude, include, options)
 
     def bind(self, model, session=None, data={}):
         """ 
@@ -216,10 +216,10 @@ class ModelRenderer(object):
         """
         Sync (copy to the corresponding attributes) the data passed to the constructor or `bind` to the `model`.
         """
-        for attr in self.render_attrs:
+        for attr in self.render_fields:
             attr.sync()
 
-    def _raw_attrs(self):
+    def _raw_fields(self):
         L = self.fields.values()
         # sort by name for reproducibility
         try:
@@ -229,7 +229,7 @@ class ModelRenderer(object):
             L.sort(lambda a, b: cmp(a.name, b.name))
         return L
     
-    def _get_attrs(self, pk=False, exclude=[], include=[], options=[]):
+    def _get_fields(self, pk=False, exclude=[], include=[], options=[]):
         if include and exclude:
             raise Exception('Specify at most one of include, exclude')
 
@@ -246,9 +246,9 @@ class ModelRenderer(object):
         if not include:
             ignore = list(exclude)
             if not pk:
-                ignore.extend([wrapper for wrapper in self._raw_attrs() if wrapper.is_pk() and not wrapper.is_collection()])
-            ignore.extend([wrapper for wrapper in self._raw_attrs() if wrapper.is_raw_foreign_key()])
-            include = [attr for attr in self._raw_attrs() if attr not in ignore]
+                ignore.extend([wrapper for wrapper in self._raw_fields() if wrapper.is_pk() and not wrapper.is_collection()])
+            ignore.extend([wrapper for wrapper in self._raw_fields() if wrapper.is_raw_foreign_key()])
+            include = [attr for attr in self._raw_fields() if attr not in ignore]
             
         # this feels overcomplicated
         options_dict = {}

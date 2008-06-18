@@ -147,11 +147,11 @@ if not hasattr(__builtins__, 'sorted'):
 __doc__ = r"""
 # some low-level testing first
 >>> fs = FieldSet(order1)
->>> list(sorted(fs._raw_attrs(), key=lambda attr: attr.key))
+>>> list(sorted(fs._raw_fields(), key=lambda attr: attr.key))
 [AttributeField(id), AttributeField(quantity), AttributeField(user), AttributeField(user_id)]
 
 >>> fs = FieldSet(bill)
->>> list(sorted(fs._raw_attrs(), key=lambda attr: attr.key))
+>>> list(sorted(fs._raw_fields(), key=lambda attr: attr.key))
 [AttributeField(email), AttributeField(id), AttributeField(name), AttributeField(orders), AttributeField(password)]
 
 >>> fs = FieldSet(One)
