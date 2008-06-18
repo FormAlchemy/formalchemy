@@ -128,12 +128,14 @@ class FileFieldRenderer(FieldRenderer):
 class DateFieldRenderer(FieldRenderer):
     def _render(self):
         import calendar
-        month_options = [(calendar.month_name[i], i) for i in xrange(1, 13)]
-        day_options = [(str(i), i) for i in xrange(1, 32)]
-        return h.select(self.name + '__month', h.options_for_select(month_options, selected=self.value.month), **self.attribs) \
-               + h.select(self.name + '__day', h.options_for_select(day_options, selected=self.value.day), **self.attribs) \
-               + h.text_field(self.name + '__year', value=self.value.year, **self.attribs) \
-               + '(YYYY)'
+        month_options = [('Month', 'MM')] + [(calendar.month_name[i], i) for i in xrange(1, 13)]
+        day_options = [('Day', 'DD')] + [(str(i), i) for i in xrange(1, 32)]
+        mm = self.value and self.value.month
+        dd = self.value and self.value.day
+        yyyy = self.value and self.value.year or 'YYYY'
+        return h.select(self.name + '__month', h.options_for_select(month_options, selected=mm), **self.attribs) \
+               + h.select(self.name + '__day', h.options_for_select(day_options, selected=dd), **self.attribs) \
+               + h.text_field(self.name + '__year', value=yyyy, **self.attribs)
     def render(self):
         return h.content_tag('span', self._render(), id=self.name)
 
@@ -149,11 +151,15 @@ class DateFieldRenderer(FieldRenderer):
 
 class TimeFieldRenderer(FieldRenderer):
     def _render(self):
-        hour_options = [(i, i) for i in xrange(24)]
-        minute_options = second_options = [(i, i) for i in xrange(60)]
-        return h.select(self.name + '__hour', h.options_for_select(hour_options, selected=self.value.hour), **self.attribs) \
-               + ':' + h.select(self.name + '__minute', h.options_for_select(minute_options, selected=self.value.minute), **self.attribs) \
-               + ':' + h.select(self.name + '__second', h.options_for_select(second_options, selected=self.value.second), **self.attribs)
+        hour_options = ['HH'] + [(i, i) for i in xrange(24)]
+        minute_options = ['MM' ] + [(i, i) for i in xrange(60)]
+        second_options = ['SS'] + [(i, i) for i in xrange(60)]
+        hh = self.value and self.value.hour
+        mm = self.value and self.value.minute
+        ss = self.value and self.value.second
+        return h.select(self.name + '__hour', h.options_for_select(hour_options, selected=hh), **self.attribs) \
+               + ':' + h.select(self.name + '__minute', h.options_for_select(minute_options, selected=mm), **self.attribs) \
+               + ':' + h.select(self.name + '__second', h.options_for_select(second_options, selected=ss), **self.attribs)
     def render(self):
         return h.content_tag('span', self._render(), id=self.name)
 
@@ -298,7 +304,7 @@ class AbstractField(object):
         self.errors = []
 
         try:
-            value = self._deserialize(self.parent.data.get(self.name))
+            value = self._deserialize(self._serialized_value())
         except validators.ValidationError, e:
             self.errors.append(e)
             return False
@@ -333,11 +339,15 @@ class AbstractField(object):
             return validators.float_(data)
 
         def _date(data):
+            if data == 'YYYY-MM-DD' or data == '-MM-DD':
+                return None
             try:
                 return datetime.date(*[int(st) for st in data.split('-')])
             except:
                 raise validators.ValidationError('Invalid date')
         def _time(data):
+            if data == 'HH:MM:SS':
+                return None
             try:
                 return datetime.time(*[int(st) for st in data.split(':')])
             except:
@@ -350,6 +360,10 @@ class AbstractField(object):
         if isinstance(self.type, types.DateTime):
             data_date, data_time = data.split(' ')
             dt, tm = _date(data_date), _time(data_time)
+            if dt is None and tm is None:
+                return None
+            elif dt is None or tm is None:
+                raise validators.ValidationError('Incomplete datetime')
             return datetime.datetime(dt.year, dt.month, dt.day, tm.hour, tm.minute, tm.second)
 
         return data
