@@ -144,6 +144,12 @@ if not hasattr(__builtins__, 'sorted'):
         return L
 
 
+fs = FieldSet(User)
+fs2 = fs.bind(bill)
+
+# equality can tell an field bound to an instance is the same as one bound to a type
+fs.name == fs2.name
+
 __doc__ = r"""
 # some low-level testing first
 >>> fs = FieldSet(order1)
@@ -591,6 +597,10 @@ True
 >>> fs2 = fs.bind(bill)
 >>> fs2.name.baz
 'asdf'
+
+# equality can tell an field bound to an instance is the same as one bound to a type
+>>> fs.name == fs2.name
+True
 
 # Field
 >>> fs = FieldSet(One)

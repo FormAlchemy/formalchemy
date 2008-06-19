@@ -255,6 +255,14 @@ def _foreign_keys(property):
         return [r for l, r in property.synchronize_pairs]
 
 
+def _model_equal(a, b):
+    if not isinstance(a, type):
+        a = type(a)
+    if not isinstance(b, type):
+        b = type(b)            
+    return a is b
+    
+
 class AbstractField(object):
     """
     Contains the information necessary to render (and modify the rendering of)
@@ -518,7 +526,7 @@ class Field(AbstractField):
         # we override eq so that when we configure with options=[...], we can match the renders in options
         # with the ones that were generated at FieldSet creation time
         try:
-            return self.name is other.name and self.model is other.model
+            return self.name == other.name and _model_equal(self.model, other.model)
         except (AttributeError, ValueError):
             return False
     def __hash__(self):
@@ -644,7 +652,7 @@ class AttributeField(AbstractField):
         # we override eq so that when we configure with options=[...], we can match the renders in options
         # with the ones that were generated at FieldSet creation time
         try:
-            return self._impl is other._impl and self.model is other.model
+            return self._impl is other._impl and _model_equal(self.model, other.model)
         except (AttributeError, ValueError):
             return False
     def __hash__(self):
