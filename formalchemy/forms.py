@@ -24,8 +24,8 @@ def form_data(fieldset, params):
     getone and getall are described at
     http://pythonpaste.org/module-paste.util.multidict.html
     """
-    if not (hasattr(post, 'getall') and hasattr(post, 'getone')):
-        raise Exception('unsupported post object.  see help(formdata) for supported interfaces')
+    if not (hasattr(params, 'getall') and hasattr(params, 'getone')):
+        raise Exception('unsupported params object.  see help(formdata) for supported interfaces')
     d = {}
     for field in fieldset.render_fields:
         d.update(field.renderer.relevant_data(field, params))
