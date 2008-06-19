@@ -89,7 +89,7 @@ class AbstractFieldSet(base.ModelRenderer):
             success = field._validate() and success
         if self.validator:
             try:
-                self.validator(self.data)
+                self.validator(self)
             except ValidationError, e:
                 self._errors = e.args
                 success = False

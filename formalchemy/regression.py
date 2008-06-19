@@ -528,8 +528,8 @@ True
 >>> session.rollback()
 
 >>> fs = FieldSet(Three, data={'foo': 'asdf', 'bar': 'fdsa'})
->>> def custom_validator(data):
-...   if data['foo'] != data['bar']:
+>>> def custom_validator(fs):
+...   if fs.foo.value != fs.bar.value:
 ...     raise ValidationError('foo and bar do not match')
 >>> fs.configure(global_validator=custom_validator, focus=None)
 >>> fs.validate()
