@@ -76,9 +76,9 @@ class ModelRenderer(object):
         fs2.render()
         }}}
         """
-        self.model = self.session = None
         self.fields = {}
         self._render_fields = None
+        self.model = self.session = None
 
         self.rebind(model, session, data)
         from fields import AttributeField
@@ -269,11 +269,10 @@ class ModelRenderer(object):
         
     def __setattr__(self, attrname, value):
         from fields import AbstractField
-        if isinstance(value, AbstractField):
-            self.fields[attrname] = value
-        else:
-            object.__setattr__(self, attrname, value)
-
+        if attrname not in ('fields', '__dict__') and attrname in self.fields or isinstance(value, AbstractField):
+            raise AttributeError('Do not set field attributes manually.  Use add() or configure() instead')
+        object.__setattr__(self, attrname, value)
+        
     def render(self):
         raise NotImplementedError()
 

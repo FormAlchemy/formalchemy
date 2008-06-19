@@ -689,6 +689,13 @@ False
 >>> print fs.field.render()
 <select id="field" name="field"><option value="True">Yes</option>
 <option value="False">No</option></select>
+
+# test setter rejection
+>>> fs = FieldSet(One)
+>>> fs.id = fs.id.required()
+Traceback (most recent call last):
+...
+AttributeError: Do not set field attributes manually.  Use add() or configure() instead
 """
 
 if __name__ == '__main__':
