@@ -10,12 +10,3 @@ def wrap(start, text, end):
 
 def indent(text):
     return "\n".join([INDENTATION + line for line in text.splitlines()])
-
-def validate_columns(iterable):
-    try:
-        L = list(iterable)
-    except:
-        raise ValueError()
-    from fields import AbstractField
-    if L and not isinstance(L[0], AbstractField):
-        raise ValueError()

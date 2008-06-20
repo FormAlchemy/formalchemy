@@ -27,6 +27,16 @@ except ImportError:
         return manager_of_class(cls).values()
     
 
+def _validate_columns(iterable):
+    try:
+        L = list(iterable)
+    except:
+        raise ValueError()
+    from fields import AbstractField
+    if L and not isinstance(L[0], AbstractField):
+        raise ValueError()
+
+
 class ModelRenderer(object):
     """
     The `ModelRenderer` class is the superclass for all classes needing to deal with `model`
@@ -239,7 +249,7 @@ class ModelRenderer(object):
             
         for lst in ['include', 'exclude', 'options']:
             try:
-                utils.validate_columns(eval(lst))
+                _validate_columns(eval(lst))
             except:
                 raise ValueError('%s parameter should be an iterable of AbstractField objects; was %s' % (lst, eval(lst)))
 
