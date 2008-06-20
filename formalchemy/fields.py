@@ -127,15 +127,23 @@ class FileFieldRenderer(FieldRenderer):
 
 class DateFieldRenderer(FieldRenderer):
     def _render(self):
+        data = self.field.parent.data
         import calendar
-        month_options = [('Month', 'MM')] + [(calendar.month_name[i], i) for i in xrange(1, 13)]
-        day_options = [('Day', 'DD')] + [(str(i), i) for i in xrange(1, 32)]
-        mm = self.value and self.value.month
-        dd = self.value and self.value.day
-        yyyy = self.value and self.value.year or 'YYYY'
-        return h.select(self.name + '__month', h.options_for_select(month_options, selected=mm), **self.attribs) \
-               + ' ' + h.select(self.name + '__day', h.options_for_select(day_options, selected=dd), **self.attribs) \
-               + ' ' + h.text_field(self.name + '__year', value=yyyy, **self.attribs)
+        month_options = [('Month', 'MM')] + [(calendar.month_name[i], str(i)) for i in xrange(1, 13)]
+        day_options = [('Day', 'DD')] + [(i, str(i)) for i in xrange(1, 32)]
+        mm_name = self.name + '__month'
+        dd_name = self.name + '__day'
+        yyyy_name = self.name + '__year'
+        mm = mm_name in data and data[mm_name] or str(self.value and self.value.month)
+        dd = dd_name in data and data[dd_name] or str(self.value and self.value.day)
+        # could be blank so don't use and/or construct
+        if yyyy_name in data:
+            yyyy = data[yyyy_name]
+        else:
+            yyyy = str(self.value and self.value.year or 'YYYY')
+        return h.select(mm_name, h.options_for_select(month_options, selected=mm), **self.attribs) \
+               + ' ' + h.select(dd_name, h.options_for_select(day_options, selected=dd), **self.attribs) \
+               + ' ' + h.text_field(yyyy_name, value=yyyy, **self.attribs)
     def render(self):
         return h.content_tag('span', self._render(), id=self.name)
 
@@ -151,15 +159,19 @@ class DateFieldRenderer(FieldRenderer):
 
 class TimeFieldRenderer(FieldRenderer):
     def _render(self):
-        hour_options = ['HH'] + [(i, i) for i in xrange(24)]
-        minute_options = ['MM' ] + [(i, i) for i in xrange(60)]
-        second_options = ['SS'] + [(i, i) for i in xrange(60)]
-        hh = self.value and self.value.hour
-        mm = self.value and self.value.minute
-        ss = self.value and self.value.second
-        return h.select(self.name + '__hour', h.options_for_select(hour_options, selected=hh), **self.attribs) \
-               + ':' + h.select(self.name + '__minute', h.options_for_select(minute_options, selected=mm), **self.attribs) \
-               + ':' + h.select(self.name + '__second', h.options_for_select(second_options, selected=ss), **self.attribs)
+        data = self.field.parent.data
+        hour_options = ['HH'] + [(i, str(i)) for i in xrange(24)]
+        minute_options = ['MM' ] + [(i, str(i)) for i in xrange(60)]
+        second_options = ['SS'] + [(i, str(i)) for i in xrange(60)]
+        hh_name = self.name + '__hour'
+        mm_name = self.name + '__minute'
+        ss_name = self.name + '__second'
+        hh = hh_name in data and data[hh_name] or str(self.value and self.value.hour)
+        mm = mm_name in data and data[mm_name] or str(self.value and self.value.minute)
+        ss = ss_name in data and data[ss_name] or str(self.value and self.value.second)
+        return h.select(hh_name, h.options_for_select(hour_options, selected=hh), **self.attribs) \
+               + ':' + h.select(mm_name, h.options_for_select(minute_options, selected=mm), **self.attribs) \
+               + ':' + h.select(ss_name, h.options_for_select(second_options, selected=ss), **self.attribs)
     def render(self):
         return h.content_tag('span', self._render(), id=self.name)
 

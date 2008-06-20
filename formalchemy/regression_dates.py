@@ -1797,6 +1797,9 @@ __doc__ = r"""
  </select>
 </span>
 
+>>> fs.rebind(dt, data=dict(foo__day='DD', foo__month='2', foo__year='', bar__hour='HH', bar__minute='6', bar__second='8'))
+>>> print fs.render()
+
 >>> fs.rebind(dt, data=dict(foo__day='11', foo__month='2', foo__year='1951', bar__hour='4', bar__minute='6', bar__second='8', foobar__day='11', foobar__month='2', foobar__year='1951', foobar__hour='4', foobar__minute='6', foobar__second='8'))
 >>> fs.sync()
 >>> dt.foo
