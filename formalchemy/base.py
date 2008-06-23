@@ -22,12 +22,15 @@ compile_mappers() # initializes InstrumentedAttributes
 
 
 try:
-    from sqlalchemy.orm.attributes import _managed_attributes
-except ImportError:
+    # 0.5
     from sqlalchemy.orm.attributes import manager_of_class
     def _managed_attributes(cls):
         manager = manager_of_class(cls)
         return [manager[p.key] for p in class_mapper(cls).iterate_properties]
+except ImportError:
+    # 0.4
+    def _managed_attributes(cls):
+        return [getattr(cls, p.key) for p in class_mapper(cls).iterate_properties]
     
 
 def _validate_columns(iterable):
