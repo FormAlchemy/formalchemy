@@ -10,6 +10,11 @@ import sqlalchemy.types as types
 
 import base, fields
 from validators import ValidationError
+
+# put tempita on the path
+import sys, os
+sys.path.append(os.path.split(os.path.abspath(__file__))[0])
+
 from tempita import Template as TempitaTemplate
 
 __all__ = ['form_data', 'AbstractFieldSet', 'FieldSet']
@@ -88,6 +93,7 @@ class AbstractFieldSet(base.ModelRenderer):
         for field in self.render_fields:
             success = field._validate() and success
         if self.validator:
+            self._errors = []
             try:
                 self.validator(self)
             except ValidationError, e:
