@@ -153,12 +153,12 @@ fs.name == fs2.name
 __doc__ = r"""
 # some low-level testing first
 >>> fs = FieldSet(order1)
->>> list(sorted(fs._raw_fields(), key=lambda field: field.key))
-[AttributeField(id), AttributeField(quantity), AttributeField(user), AttributeField(user_id)]
+>>> fs._raw_fields()
+[AttributeField(id), AttributeField(user_id), AttributeField(quantity), AttributeField(user)]
 
 >>> fs = FieldSet(bill)
->>> list(sorted(fs._raw_fields(), key=lambda field: field.key))
-[AttributeField(email), AttributeField(id), AttributeField(name), AttributeField(orders), AttributeField(password)]
+>>> fs._raw_fields()
+[AttributeField(id), AttributeField(email), AttributeField(password), AttributeField(name), AttributeField(orders)]
 
 >>> fs = FieldSet(One)
 >>> fs.configure(pk=True, focus=None)
@@ -176,21 +176,21 @@ True
 >>> fs.configure(pk=True)
 >>> print fs.render()
 <div>
- <label class="field_opt" for="foo">
-  Foo
- </label>
- <input id="foo" name="foo" type="text" />
-</div>
-<script type="text/javascript">
- //<![CDATA[
-document.getElementById("foo").focus();
-//]]>
-</script>
-<div>
  <label class="field_req" for="id">
   Id
  </label>
  <input id="id" name="id" type="text" />
+</div>
+<script type="text/javascript">
+ //<![CDATA[
+document.getElementById("id").focus();
+//]]>
+</script>
+<div>
+ <label class="field_opt" for="foo">
+  Foo
+ </label>
+ <input id="foo" name="foo" type="text" />
 </div>
 
 >>> fs = FieldSet(Two)
@@ -310,6 +310,12 @@ document.getElementById("email").focus();
 //]]>
 </script>
 <div>
+ <label class="field_req" for="password">
+  Password
+ </label>
+ <input id="password" maxlength="20" name="password" type="text" />
+</div>
+<div>
  <label class="field_opt" for="name">
   Name
  </label>
@@ -327,12 +333,6 @@ document.getElementById("email").focus();
    Quantity: 5
   </option>
  </select>
-</div>
-<div>
- <label class="field_req" for="password">
-  Password
- </label>
- <input id="password" maxlength="20" name="password" type="text" />
 </div>
 
 >>> fs = FieldSet(bill)
@@ -547,16 +547,16 @@ False
  foo and bar do not match
 </div>
 <div>
- <label class="field_opt" for="bar">
-  Bar
- </label>
- <input id="bar" name="bar" type="text" value="fdsa" />
-</div>
-<div>
  <label class="field_opt" for="foo">
   Foo
  </label>
  <input id="foo" name="foo" type="text" value="asdf" />
+</div>
+<div>
+ <label class="field_opt" for="bar">
+  Bar
+ </label>
+ <input id="bar" name="bar" type="text" value="fdsa" />
 </div>
 
 # natural PKs

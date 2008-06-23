@@ -11,16 +11,16 @@ __doc__ = """
       <td>bill@example.com</td>
     </tr>
     <tr>
+      <th>Password</th>
+      <td>1234</td>
+    </tr>
+    <tr>
       <th>Name</th>
       <td>Bill</td>
     </tr>
     <tr>
       <th>Orders</th>
       <td>Quantity: 10</td>
-    </tr>
-    <tr>
-      <th>Password</th>
-      <td>1234</td>
     </tr>
   </tbody>
 </table>
@@ -32,17 +32,17 @@ __doc__ = """
   <thead>
     <tr>
       <th>Email</th>
+      <th>Password</th>
       <th>Name</th>
       <th>Orders</th>
-      <th>Password</th>
     </tr>
   </thead>
   <tbody>
     <tr>
       <td>bill@example.com</td>
+      <td>1234</td>
       <td>Bill</td>
       <td>Quantity: 10</td>
-      <td>1234</td>
     </tr>
   </tbody>
 </table>

@@ -12,19 +12,22 @@ if __version__.split('.') < [0, 4, 1]:
 
 import sqlalchemy.types as types
 from sqlalchemy.orm.attributes import InstrumentedAttribute, ScalarAttributeImpl
-from sqlalchemy.orm import compile_mappers, object_session
+from sqlalchemy.orm import compile_mappers, object_session, class_mapper
+from sqlalchemy.util import OrderedDict
 
 import utils
 
 
 compile_mappers() # initializes InstrumentedAttributes
 
+
 try:
     from sqlalchemy.orm.attributes import _managed_attributes
 except ImportError:
     from sqlalchemy.orm.attributes import manager_of_class
     def _managed_attributes(cls):
-        return manager_of_class(cls).values()
+        manager = manager_of_class(cls)
+        return [manager[p.key] for p in class_mapper(cls).iterate_properties]
     
 
 def _validate_columns(iterable):
@@ -86,7 +89,7 @@ class ModelRenderer(object):
         fs2.render()
         }}}
         """
-        self.fields = {}
+        self.fields = OrderedDict()
         self._render_fields = None
         self.model = self.session = None
 
@@ -230,14 +233,7 @@ class ModelRenderer(object):
             field.sync()
 
     def _raw_fields(self):
-        L = self.fields.values()
-        # sort by name for reproducibility
-        try:
-            L.sort(key=lambda wrapper: wrapper.name)
-        except TypeError:
-            # 2.3 support
-            L.sort(lambda a, b: cmp(a.name, b.name))
-        return L
+        return self.fields.values()
     
     def _get_fields(self, pk=False, exclude=[], include=[], options=[]):
         if include and exclude:
