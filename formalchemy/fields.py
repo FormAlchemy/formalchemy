@@ -283,6 +283,9 @@ class AbstractField(object):
     def __init__(self, parent):
         # the FieldSet (or any ModelRenderer) owning this instance
         self.parent = parent
+        if 0:
+            import forms
+            isinstance(self.parent, forms.FieldSet)
         # Renderer for this Field.  this will
         # be autoguessed, unless the user forces it with .dropdown,
         # .checkbox, etc.
@@ -442,14 +445,19 @@ class AbstractField(object):
         return self._modified(_renderer=HiddenFieldRenderer, render_opts={})
     def password(self):
         """Render the field as a password input, hiding its value."""
-        return self._modified(_renderer=PasswordFieldRenderer, render_opts={})
+        field = deepcopy(self)
+        field._renderer = lambda: self.parent.default_renderers['password']
+        field.render_opts={}
+        return field
     def textarea(self, size=None):
         """Render the field as a textarea."""
-        return self._modified(_renderer=TextAreaFieldRenderer, render_opts={'size': size})
+        field = deepcopy(self)
+        field._renderer = lambda: self.parent.default_renderers['textarea']
+        field.render_opts={'size': size}
     def radio(self, options=None):
         """Render the field as a set of radio buttons."""
         field = deepcopy(self)
-        field._renderer = RadioSet
+        field._renderer = lambda: self.parent.default_renderers['radio']
         if options is None:
             options = self.render_opts.get('options')
         field.render_opts = {'options': options}
@@ -457,7 +465,7 @@ class AbstractField(object):
     def checkbox(self, options=None):
         """Render the field as a set of checkboxes."""
         field = deepcopy(self)
-        field._renderer = CheckBoxSet
+        field._renderer = lambda: field.parent.default_renderers['checkbox']
         if options is None:
             options = self.render_opts.get('options')
         field.render_opts = {'options': options}
@@ -468,22 +476,30 @@ class AbstractField(object):
         (With the `multiple` option this is not really a 'dropdown'.)
         """
         field = deepcopy(self)
-        field._renderer = SelectFieldRenderer
+        field._renderer = lambda: field.parent.default_renderers['dropdown']
         if options is None:
             options = self.render_opts.get('options')
         field.render_opts = {'multiple': multiple, 'options': options}
         if multiple:
             field.render_opts['size'] = size
         return field
-
+    
     def _get_renderer(self):
         for t in self.parent.default_renderers:
-            if isinstance(self.type, t):
+            if not isinstance(t, basestring) and isinstance(self.type, t):
                 return self.parent.default_renderers[t]
         return FieldRenderer
     
     def renderer(self):
-        return self._renderer or self._get_renderer()
+        if self._renderer is None:
+            return self._get_renderer()
+        if issubclass(type(self._renderer), type) and issubclass(self._renderer, FieldRenderer):
+            return self._renderer
+        # it's a lambda, because self.parent isn't always set when things like dropdown() are called
+        try:
+            return self._renderer()
+        except:
+            return None
     renderer = property(renderer)
     
     def render(self, **html_options):
@@ -495,7 +511,9 @@ class AbstractField(object):
         """
         opts = dict(self.render_opts)
         opts.update(html_options)
-        if isinstance(self.type, types.Boolean) and not opts.get('options') and self.renderer in [SelectFieldRenderer, RadioSet]:
+        if (isinstance(self.type, types.Boolean) 
+            and not opts.get('options') 
+            and self.renderer in [self.parent.default_renderers['dropdown'], self.parent.default_renderers['radio']]):
             opts['options'] = [('Yes', True), ('No', False)]
         return self.renderer(self, readonly=self.modifier=='readonly', disabled=self.modifier=='disabled', **opts).render()
 
@@ -692,7 +710,7 @@ class AttributeField(AbstractField):
 
     def _get_renderer(self):
         if isinstance(self._impl, ScalarObjectAttributeImpl) or self.is_collection():
-            return SelectFieldRenderer
+            return self.parent.default_renderers['dropdown']
         return AbstractField._get_renderer(self)
 
     def _deserialize(self, st):

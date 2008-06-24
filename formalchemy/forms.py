@@ -66,6 +66,11 @@ class AbstractFieldSet(base.ModelRenderer):
         types.Date: fields.DateFieldRenderer,
         types.Time: fields.TimeFieldRenderer,
         types.Binary: fields.FileFieldRenderer,
+        'dropdown': fields.SelectFieldRenderer,
+        'checkbox': fields.CheckBoxSet,
+        'radio': fields.RadioSet,
+        'password': fields.PasswordFieldRenderer,
+        'textarea': fields.TextAreaFieldRenderer,
     }
 
     def __init__(self, *args, **kwargs):
