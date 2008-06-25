@@ -26,7 +26,10 @@ class FieldRenderer(object):
     name to process as second argument. It maps the column name as the field
     name and the column's value as the field's value.
     
-    Subclasses may wish to override `render`, `serialized_value`, or
+    Subclasses should override `render`.
+    
+    Some subclasses, particularly subclasses that render as multiple form fields,
+    may also wish to override `serialized_value`, or
     `relevant_data`.  (DateFieldRenderer is an example of overriding all 3.)
     You should not need to touch `name` or `value`.
     
@@ -301,8 +304,6 @@ class AbstractField(object):
         self.modifier = None
         # label to use for the rendered field.  autoguessed if not specified by .label()
         self.label_text = None
-        # default = not required; may be overriden to True by .required()
-        self._required = False
 
     def __deepcopy__(self, memo):
         wrapper = copy(self)
@@ -344,7 +345,7 @@ class AbstractField(object):
 
     def is_required(self):
         """True iff this Field must be given a non-empty value"""
-        return self._required
+        return validators.required in self.validators
     
     def _deserialize(self, data):
         """convert data (serialized user data, or None) into the data type expected by field"""
@@ -427,7 +428,7 @@ class AbstractField(object):
         field name is used, modified for readability (e.g.,
         'user_name' -> 'User name').
         """
-        return self._modified(_required=True)
+        return self.validate(validators.required)
     def label(self, text):
         """
         Change the label associated with this field.  By default, the field name
@@ -583,7 +584,8 @@ class AttributeField(AbstractField):
         # mapper, columns, and foreign keys are all located there.
         self._property = instrumented_attribute.property
         # smarter default "required" value
-        self._required = (not self.is_collection() and not self._column.nullable)
+        if not self.is_collection() and not self._column.nullable:
+            self.validators.append(validators.required)
             
     def is_raw_foreign_key(self):
         try:

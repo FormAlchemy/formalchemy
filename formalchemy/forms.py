@@ -231,11 +231,7 @@ class FieldSet(AbstractFieldSet):
         kwargs['options'] = [('Yes', True), ('No', False)]
         return fields.SelectFieldRenderer(*args, **kwargs)
 
-    d = dict(FieldSet.default_renderers)
-    d[types.Boolean] = BooleanSelectRenderer
-
-    class MyFieldSet(FieldSet):
-        default_renderers = d
+    FieldSet.default_renderers[types.Boolean] = BooleanSelectRenderer
     }}}
     
     `prettify` is a function that, given an attribute name ('user_name')
