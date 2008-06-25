@@ -702,7 +702,7 @@ class AttributeField(AbstractField):
                 q = self.parent.session.query(fk_cls).order_by(fk_pk)
                 self.render_opts['options'] = query_options(q)
                 logger.debug('options for %s are %s' % (self.name, self.render_opts['options']))
-        if self.is_collection() and self.renderer is SelectFieldRenderer:
+        if self.is_collection() and self.renderer is self.parent.default_renderers['dropdown']:
             self.render_opts['multiple'] = True
             if 'size' not in self.render_opts:
                 self.render_opts['size'] = 5
