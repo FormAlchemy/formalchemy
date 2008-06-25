@@ -1,7 +1,7 @@
 from distutils.core import setup
 setup(name='FormAlchemy',
       license='MIT License',
-      version='0.3',
+      version='0.3.1',
       description='FormAlchemy greatly speeds development with SQLAlchemy mapped classes (models) in a HTML forms environment.',
       long_description="""FormAlchemy eliminates boilerplate by autogenerating HTML input fields from a
 given model. FormAlchemy will try to figure out what kind of HTML code should

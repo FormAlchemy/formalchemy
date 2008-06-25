@@ -1,3 +1,13 @@
+FormAlchemy 0.3.1:
+  * Bug fixes
+  * Much better DateTime support
+  * Extensible widget API (want to use your favorite date picker instead?  No problem.)
+    - `FieldRenderer` is now part of "from formalchemy import *" for use here
+  * Minor changes to template API (details in documentation).  Does not affect you unless you already wrote a custom template
+  * order fields by declared order as much as possible, instead of alphabetical, when include= is absent
+  * Validator suite fleshed out (minlength, maxlength, regex, email, currency)
+  * Added doc sections on widget API and validation functions
+
 FormAlchemy 0.3:
   * Completely new API, based on Fields instead of column names
   * Support manually added Fields, not just attributes from the SA model

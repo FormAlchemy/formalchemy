@@ -8,14 +8,8 @@ formalchemy/base.py
 formalchemy/fields.py
 formalchemy/forms.py
 formalchemy/helpers.py
-formalchemy/regression.py
 formalchemy/tables.py
-formalchemy/test2.py
 formalchemy/utils.py
-<<<<<<< .mine
-formalchemy/validators.py
-=======
 formalchemy/validators.py
 formalchemy/tempita/__init__.py
 formalchemy/tempita/_looper.py
->>>>>>> .r281
