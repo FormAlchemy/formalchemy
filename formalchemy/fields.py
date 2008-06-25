@@ -634,6 +634,10 @@ class AttributeField(AbstractField):
         """True iff this is a multi-valued (one-to-many or many-to-many) SA relation"""
         return isinstance(self._impl, CollectionAttributeImpl)
     
+    def is_vanilla(self):
+        """True iff this is a simple scalar value mapped from a table"""
+        return not (isinstance(self._impl, ScalarObjectAttributeImpl) or self.is_collection())
+    
     def collection_type(self):
         """The type of object in the collection (e.g., `User`).  Calling this is only valid when `is_collection()` is True"""
         return self._property.mapper.class_
@@ -694,14 +698,13 @@ class AttributeField(AbstractField):
     # todo add .options method (for html_options)
     
     def render(self, **html_options):
-        if isinstance(self._impl, ScalarObjectAttributeImpl) or self.is_collection():
-            if not self.render_opts.get('options'):
-                # todo this does not handle primaryjoin (/secondaryjoin) alternate join conditions
-                fk_cls = self.collection_type()
-                fk_pk = class_mapper(fk_cls).primary_key[0]
-                q = self.parent.session.query(fk_cls).order_by(fk_pk)
-                self.render_opts['options'] = query_options(q)
-                logger.debug('options for %s are %s' % (self.name, self.render_opts['options']))
+        if not self.is_vanilla() and not self.render_opts.get('options'):
+            # todo this does not handle primaryjoin (/secondaryjoin) alternate join conditions
+            fk_cls = self.collection_type()
+            fk_pk = class_mapper(fk_cls).primary_key[0]
+            q = self.parent.session.query(fk_cls).order_by(fk_pk)
+            self.render_opts['options'] = query_options(q)
+            logger.debug('options for %s are %s' % (self.name, self.render_opts['options']))
         if self.is_collection() and self.renderer is self.parent.default_renderers['dropdown']:
             self.render_opts['multiple'] = True
             if 'size' not in self.render_opts:

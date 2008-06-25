@@ -87,7 +87,23 @@ class NaturalUser(Base):
     orders = relation(NaturalOrder, backref='user')
     def __str__(self):
         return self.name
-    
+
+# test property order for non-declarative mapper
+addresses = Table('email_addresses', Base.metadata,
+    Column('address_id', Integer, Sequence('address_id_seq', optional=True), primary_key = True),
+    Column('address', String(40)),
+)
+users2 = Table('users2', Base.metadata,
+    Column('user_id', Integer, Sequence('user_id_seq', optional=True), primary_key = True),
+    Column('address_id', Integer, ForeignKey(addresses.c.address_id)),
+    Column('name', String(40), nullable=False)
+)
+class Address(object): pass
+class User2(object): pass
+mapper(Address, addresses)
+mapper(User2, users2, properties={'address': relation(Address)})
+
+
 Base.metadata.create_all()
 
 session = Session()
@@ -159,6 +175,10 @@ __doc__ = r"""
 >>> fs = FieldSet(bill)
 >>> fs._raw_fields()
 [AttributeField(id), AttributeField(email), AttributeField(password), AttributeField(name), AttributeField(orders)]
+
+>>> fs = FieldSet(User2)
+>>> fs._raw_fields()
+[AttributeField(user_id), AttributeField(address_id), AttributeField(name), AttributeField(address)]
 
 >>> fs = FieldSet(One)
 >>> fs.configure(pk=True, focus=None)

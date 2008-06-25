@@ -99,11 +99,16 @@ class ModelRenderer(object):
         self.rebind(model, session, data)
         from fields import AttributeField
         
+        # two step process so we get the right order in the OrderedDict
+        L = []
         for iattr in _managed_attributes(type(self.model)):
             if hasattr(iattr.property, 'mapper') and len(iattr.property.mapper.primary_key) != 1:
                 logger.warn('ignoring multi-column property %s' % iattr.impl.key)
             else:
-                self.fields[iattr.impl.key] = AttributeField(iattr, self)
+                L.append(AttributeField(iattr, self))
+        L.sort(lambda a, b: cmp(not a.is_vanilla(), not b.is_vanilla())) # note, key= not used for 2.3 support
+        for field in L:
+            self.fields[field.key] = field
                 
     def add(self, field):
         """Add a form Field.  By default, this Field will be included in the rendered form or table."""
