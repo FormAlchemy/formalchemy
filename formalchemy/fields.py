@@ -362,14 +362,14 @@ class AbstractField(object):
             return validators.float_(data)
 
         def _date(data):
-            if data == 'YYYY-MM-DD' or data == '-MM-DD':
+            if data == 'YYYY-MM-DD' or data == '-MM-DD' or not data.strip():
                 return None
             try:
                 return datetime.date(*[int(st) for st in data.split('-')])
             except:
                 raise validators.ValidationError('Invalid date')
         def _time(data):
-            if data == 'HH:MM:SS':
+            if data == 'HH:MM:SS' or not data.strip():
                 return None
             try:
                 return datetime.time(*[int(st) for st in data.split(':')])
