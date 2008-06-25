@@ -20,27 +20,38 @@ class ValidationError(Exception):
     message = property(message)
 
 def required(value):
+    """Successful if value is neither None nor the empty string (yes, including empty lists)"""
     if value is None or value == '':
         msg = isinstance(value, list) and 'Please select a value' or 'Please enter a value'
         raise ValidationError(msg)
 
 def integer(value):
+    """Successful if value is an int"""
     try:
         return int(value)
     except:
         raise ValidationError('Value is not an integer')
     
 def float_(value):
+    """Successful if value is a float"""
     try:
         return float(value)
     except:
         raise ValidationError('Value is not a number')
 
 def currency(value):
+    """Successful if value looks like a currency amount (has exactly two digits after a decimal point)"""
     if '%.2f' % float_(value) != value:
         raise ValidationError('Please specify full currency value, including cents (e.g., 12.34)')
 
 def email(value):
+    """
+    Successful if value is a valid RFC 822 email address.
+    Ignores the more subtle intricacies of what is legal inside a quoted region, 
+    and thus may accept some
+    technically invalid addresses, but will never reject a valid address
+    (which is a much worse problem).
+    """
     reserved = r'()<>@,;:\"[]'
 
     try:
@@ -94,6 +105,7 @@ def email(value):
 
 # parameterized validators return the validation function
 def maxlength(length):
+    """Returns a validator that is successful if the input's length is at most the given one."""
     if length <= 0:
         raise ValueError('Invalid maximum length')
     def f(value):
@@ -102,6 +114,7 @@ def maxlength(length):
     return f
 
 def minlength(length):
+    """Returns a validator that is successful if the input's length is at least the given one."""
     if length <= 0:
         raise ValueError('Invalid minimum length')
     def f(value):
@@ -110,6 +123,12 @@ def minlength(length):
     return f
 
 def regex(exp, errormsg='Invalid input'):
+    """
+    Returns a validator that is successful if the input matches (that is,
+    fulfils the semantics of re.match) the given expression.
+    Expressions may be either a string or a Pattern object of the sort returned by
+    re.compile.
+    """
     import re
     if type(exp) != type(re.compile('')):
         exp = re.compile(exp)
