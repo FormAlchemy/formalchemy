@@ -93,12 +93,13 @@ class ModelRenderer(object):
         }}}
         
         The `fields` attribute is an OrderedDict of all the `Field`s the
-        ModelRenderer knows about. The order of the fields is the order they
-        were declared in the SQLAlchemy model class.
+        ModelRenderer knows about, keyed by name. The order of the fields is
+        the order they were declared in the SQLAlchemy model class.
         
         The `render_fields` attribute is an OrderedDict of all the `Field`s
-        that have been configured. The order of the fields is the order in
-        `include`, or the order in `fields` if no `include` is specified.
+        that have been configured, also keyed by name. The order of the fields
+        is the order in `include`, or the order in `fields` if no `include` is
+        specified.
         
         Note that although equivalent `Field`s (fields referring to the same
         attribute on the SQLAlchemy model) will equate with the == operator,

@@ -146,7 +146,7 @@ class DateFieldRenderer(FieldRenderer):
             yyyy = str(self.value and self.value.year or 'YYYY')
         return h.select(mm_name, h.options_for_select(month_options, selected=mm), **self.attribs) \
                + ' ' + h.select(dd_name, h.options_for_select(day_options, selected=dd), **self.attribs) \
-               + ' ' + h.text_field(yyyy_name, value=yyyy, **self.attribs)
+               + ' ' + h.text_field(yyyy_name, value=yyyy, maxlength=4, size=4, **self.attribs)
     def render(self):
         return h.content_tag('span', self._render(), id=self.name)
 

@@ -153,7 +153,7 @@ __doc__ = r"""
    31
   </option>
  </select>
- <input id="foobar__year" name="foobar__year" type="text" value="YYYY" />
+ <input id="foobar__year" maxlength="4" name="foobar__year" size="4" type="text" value="YYYY" />
  <select id="foobar__hour" name="foobar__hour">
   <option value="HH">
    HH
@@ -748,7 +748,7 @@ __doc__ = r"""
    31
   </option>
  </select>
- <input id="foo__year" name="foo__year" type="text" value="2008" />
+ <input id="foo__year" maxlength="4" name="foo__year" size="4" type="text" value="2008" />
 </span>
 
 >>> print pretty_html(fs.bar.render())
@@ -1345,7 +1345,7 @@ __doc__ = r"""
    31
   </option>
  </select>
- <input id="foobar__year" name="foobar__year" type="text" value="2008" />
+ <input id="foobar__year" maxlength="4" name="foobar__year" size="4" type="text" value="2008" />
  <select id="foobar__hour" name="foobar__hour">
   <option value="HH">
    HH
@@ -1943,7 +1943,7 @@ __doc__ = r"""
     31
    </option>
   </select>
-  <input id="foo__year" name="foo__year" type="text" value="" />
+  <input id="foo__year" maxlength="4" name="foo__year" size="4" type="text" value="" />
  </span>
 </div>
 <script type="text/javascript">
@@ -2551,7 +2551,7 @@ document.getElementById("foo").focus();
     31
    </option>
   </select>
-  <input id="foobar__year" name="foobar__year" type="text" value="2008" />
+  <input id="foobar__year" maxlength="4" name="foobar__year" size="4" type="text" value="2008" />
   <select id="foobar__hour" name="foobar__hour">
    <option value="HH">
     HH
