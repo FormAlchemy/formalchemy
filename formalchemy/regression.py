@@ -477,7 +477,7 @@ ValueError: ...
 >>> fs = FieldSet(Two)
 >>> fs.configure()
 >>> fs2 = fs.bind(Two)
->>> [fs2 == field.parent for field in fs2._render_fields]
+>>> [fs2 == field.parent for field in fs2._render_fields.itervalues()]
 [True]
 
 >>> fs = FieldSet(OTOParent, session)

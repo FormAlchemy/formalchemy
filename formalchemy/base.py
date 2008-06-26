@@ -91,9 +91,23 @@ class ModelRenderer(object):
         fs2 = fs.bind(user)
         fs2.render()
         }}}
+        
+        The `fields` attribute is an OrderedDict of all the `Field`s the
+        ModelRenderer knows about. The order of the fields is the order they
+        were declared in the SQLAlchemy model class.
+        
+        The `render_fields` attribute is an OrderedDict of all the `Field`s
+        that have been configured. The order of the fields is the order in
+        `include`, or the order in `fields` if no `include` is specified.
+        
+        Note that although equivalent `Field`s (fields referring to the same
+        attribute on the SQLAlchemy model) will equate with the == operator,
+        the versions in `fields` are the original, unmodified ones, and the
+        versions in `render_fields` have all the transforms from `configure`
+        applied.
         """
         self.fields = OrderedDict()
-        self._render_fields = None
+        self._render_fields = OrderedDict()
         self.model = self.session = None
 
         self.rebind(model, session, data)
@@ -120,9 +134,9 @@ class ModelRenderer(object):
                 
     def render_fields(self):
         """The set of attributes that will be rendered"""
-        if self._render_fields:
-            return self._render_fields
-        return self._get_fields()
+        if not self._render_fields:
+            self._render_fields = OrderedDict([(field.name, field) for field in self._get_fields()])
+        return self._render_fields
     render_fields = property(render_fields)
                 
     def configure(self, pk=False, exclude=[], include=[], options=[]):
@@ -188,7 +202,7 @@ class ModelRenderer(object):
         fs.configure(include=[fs.name, fs.options.checkbox()])
         }}}
         """
-        self._render_fields = self._get_fields(pk, exclude, include, options)
+        self._render_fields = OrderedDict([(field.name, field) for field in self._get_fields(pk, exclude, include, options)])
 
     def bind(self, model, session=None, data={}):
         """ 
@@ -206,7 +220,8 @@ class ModelRenderer(object):
         mr.rebind(model, session, data)
         mr.fields = dict([(key, renderer.bind(mr)) for key, renderer in self.fields.iteritems()])
         if self._render_fields:
-            mr._render_fields = [field.bind(mr) for field in self._render_fields]
+            mr._render_fields = OrderedDict([(field.name, field) for field in 
+                                             [field.bind(mr) for field in self._render_fields.itervalues()]])
         return mr
 
     def rebind(self, model=None, session=None, data=None):
@@ -237,7 +252,7 @@ class ModelRenderer(object):
         """
         Sync (copy to the corresponding attributes) the data passed to the constructor or `bind` to the `model`.
         """
-        for field in self.render_fields:
+        for field in self.render_fields.itervalues():
             field.sync()
 
     def _raw_fields(self):

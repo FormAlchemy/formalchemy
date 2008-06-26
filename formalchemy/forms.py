@@ -32,7 +32,7 @@ def form_data(fieldset, params):
     if not (hasattr(params, 'getall') and hasattr(params, 'getone')):
         raise Exception('unsupported params object.  see help(formdata) for supported interfaces')
     d = {}
-    for field in fieldset.render_fields:
+    for field in fieldset.render_fields.itervalues():
         d.update(field.renderer.relevant_data(field, params))
     return d
 
@@ -95,7 +95,7 @@ class AbstractFieldSet(base.ModelRenderer):
         if self.data is None:
             raise Exception('Cannot validate without binding data')
         success = True
-        for field in self.render_fields:
+        for field in self.render_fields.itervalues():
             success = field._validate() and success
         if self.validator:
             self._errors = []
@@ -116,7 +116,7 @@ class AbstractFieldSet(base.ModelRenderer):
         if self._errors:
             errors[None] = self._errors
         errors.update(dict([(field, field.errors)
-                            for field in self.render_fields if field.errors]))
+                            for field in self.render_fields.itervalues() if field.errors]))
         return errors
     errors = property(errors)
     
@@ -130,7 +130,7 @@ template_text_mako = r"""
 </div>
 % endfor
 
-% for field in fieldset.render_fields:
+% for field in fieldset.render_fields.itervalues():
   % if field.renderer == fields.HiddenFieldRenderer:
 ${field.render()}
   % else:
@@ -164,7 +164,7 @@ template_text_tempita = r"""
 </div>
 {{endfor}}
 
-{{for field in fieldset.render_fields}}                                                                          
+{{for field in fieldset.render_fields.itervalues()}}
 {{if field.renderer == fields.HiddenFieldRenderer}}                                                    
 {{field.render()}}                                                                              
 {{else}}                                                                                       
