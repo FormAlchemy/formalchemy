@@ -624,14 +624,24 @@ class AttributeField(AbstractField):
         """ 
         The name of the form input. usually the same as the column name, except for
         multi-valued SA relation properties. For example, for order.user,
-        name will be user_id (assuming that is indeed the name of the foreign
-        key to users). 
+        name will be 'user_id' (assuming that is indeed the name of the foreign
+        key to users), but for user.orders, name will be 'orders'.
         """
         if self.is_collection():
             return self.key
         return self._column.name
     name = property(name)
-
+    
+    def table(self):
+        """
+        The table object that owns the column backing this field.  Only valid
+        for simple, single-column fields.
+        """
+        if not self.is_vanilla():
+            raise Exception('No table associated with field %s' % self)
+        return self._column.table
+    table = property(table)
+    
     def is_collection(self):
         """True iff this is a multi-valued (one-to-many or many-to-many) SA relation"""
         return isinstance(self._impl, CollectionAttributeImpl)

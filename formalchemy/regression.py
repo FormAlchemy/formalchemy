@@ -129,6 +129,11 @@ norder2 = NaturalOrder(user=njohn, quantity=5)
 session.commit()
 
 
+from sqlalchemy.ext.sqlsoup import SqlSoup
+soup = SqlSoup(Base.metadata)
+OrderWithUser = soup.join(soup.orders, soup.users)
+
+
 from forms import FieldSet as DefaultFieldSet, render_mako, render_tempita
 from fields import Field, query_options
 from validators import ValidationError
@@ -171,10 +176,14 @@ __doc__ = r"""
 >>> fs = FieldSet(order1)
 >>> fs._raw_fields()
 [AttributeField(id), AttributeField(user_id), AttributeField(quantity), AttributeField(user)]
+>>> fs.user.name
+'user_id'
 
 >>> fs = FieldSet(bill)
 >>> fs._raw_fields()
 [AttributeField(id), AttributeField(email), AttributeField(password), AttributeField(name), AttributeField(orders)]
+>>> fs.orders.name
+'orders'
 
 >>> fs = FieldSet(User2)
 >>> fs._raw_fields()
@@ -726,6 +735,19 @@ False
 Traceback (most recent call last):
 ...
 AttributeError: Do not set field attributes manually.  Use add() or configure() instead
+
+# .table
+>>> fs = FieldSet(One)
+>>> fs.id.table.name
+'ones'
+
+>>> fs = FieldSet(OrderWithUser)
+>>> fs.email.table.name
+'users'
+
+# join
+>>> fs = FieldSet(OrderWithUser)
+>>> fs.fields.values()
 """
 
 if __name__ == '__main__':
