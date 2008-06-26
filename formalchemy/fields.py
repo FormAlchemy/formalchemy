@@ -632,16 +632,6 @@ class AttributeField(AbstractField):
         return self._column.name
     name = property(name)
     
-    def table(self):
-        """
-        The table object that owns the column backing this field.  Only valid
-        for simple, single-column fields.
-        """
-        if not self.is_vanilla():
-            raise Exception('No table associated with field %s' % self)
-        return self._column.table
-    table = property(table)
-    
     def is_collection(self):
         """True iff this is a multi-valued (one-to-many or many-to-many) SA relation"""
         return isinstance(self._impl, CollectionAttributeImpl)

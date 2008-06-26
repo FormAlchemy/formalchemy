@@ -131,7 +131,7 @@ session.commit()
 
 from sqlalchemy.ext.sqlsoup import SqlSoup
 soup = SqlSoup(Base.metadata)
-OrderWithUser = soup.join(soup.orders, soup.users)
+OrderWithUser = soup.with_labels(soup.join(soup.orders, soup.users))
 
 
 from forms import FieldSet as DefaultFieldSet, render_mako, render_tempita
@@ -736,18 +736,10 @@ Traceback (most recent call last):
 ...
 AttributeError: Do not set field attributes manually.  Use add() or configure() instead
 
-# .table
->>> fs = FieldSet(One)
->>> fs.id.table.name
-'ones'
-
->>> fs = FieldSet(OrderWithUser)
->>> fs.email.table.name
-'users'
-
 # join
 >>> fs = FieldSet(OrderWithUser)
 >>> fs.fields.values()
+[AttributeField(orders_id), AttributeField(orders_user_id), AttributeField(orders_quantity), AttributeField(users_id), AttributeField(users_email), AttributeField(users_password), AttributeField(users_name)]
 """
 
 if __name__ == '__main__':
