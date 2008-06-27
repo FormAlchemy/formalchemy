@@ -129,8 +129,10 @@ norder2 = NaturalOrder(user=njohn, quantity=5)
 session.commit()
 
 
+import sqlalchemy.ext.sqlsoup as sqlsoup
 from sqlalchemy.ext.sqlsoup import SqlSoup
 soup = SqlSoup(Base.metadata)
+sqlsoup.Session = Session
 OrderWithUser = soup.with_labels(soup.join(soup.orders, soup.users))
 
 
@@ -619,6 +621,7 @@ document.getElementById("quantity").focus();
 >>> fs.sync()
 >>> fs.model.user_email == nbill.email
 True
+>>> session.rollback()
 
 # allow attaching custom attributes to wrappers
 >>> fs = FieldSet(User)
@@ -740,6 +743,41 @@ AttributeError: Do not set field attributes manually.  Use add() or configure() 
 >>> fs = FieldSet(OrderWithUser)
 >>> fs.fields.values()
 [AttributeField(orders_id), AttributeField(orders_user_id), AttributeField(orders_quantity), AttributeField(users_id), AttributeField(users_email), AttributeField(users_password), AttributeField(users_name)]
+>>> fs.rebind(OrderWithUser.filter_by(orders_id=1).one())
+>>> print configure_and_render(fs, focus=None)
+<div>
+ <label class="field_req" for="orders_quantity">
+  Orders quantity
+ </label>
+ <input id="orders_quantity" name="orders_quantity" type="text" value="10" />
+</div>
+<div>
+ <label class="field_req" for="users_email">
+  Users email
+ </label>
+ <input id="users_email" maxlength="40" name="users_email" type="text" value="bill@example.com" />
+</div>
+<div>
+ <label class="field_req" for="users_password">
+  Users password
+ </label>
+ <input id="users_password" maxlength="20" name="users_password" type="text" value="1234" />
+</div>
+<div>
+ <label class="field_opt" for="users_name">
+  Users name
+ </label>
+ <input id="users_name" maxlength="30" name="users_name" type="text" value="Bill" />
+</div>
+>>> fs.rebind(OrderWithUser.filter_by(orders_id=1).one(), data={'orders_quantity': '5', 'users_email': bill.email, 'users_password': '5678', 'users_name': 'Bill'})
+>>> fs.validate()
+True
+>>> fs.sync()
+>>> session.flush()
+>>> session.refresh(bill)
+>>> bill.password == '5678'
+True
+>>> session.rollback()
 """
 
 if __name__ == '__main__':
