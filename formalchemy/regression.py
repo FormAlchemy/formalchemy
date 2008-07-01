@@ -10,7 +10,7 @@ import sqlalchemy.types as types
 from sqlalchemy.ext.declarative import declarative_base
 logging.getLogger('sqlalchemy').setLevel(logging.ERROR)
 
-import fields
+from fields import Field, SelectFieldRenderer
 
 engine = create_engine('sqlite://')
 Session = scoped_session(sessionmaker(autoflush=True, bind=engine))
@@ -104,7 +104,6 @@ mapper(Address, addresses)
 mapper(User2, users2, properties={'address': relation(Address)})
 
 
-from fields import Field
 class Manual(object):
     a = Field('a')
     b = Field('b', types.Integer).dropdown([('one', 1), ('two', 2)])
@@ -669,10 +668,6 @@ True
 
 >>> fs = FieldSet(Manual)
 >>> print configure_and_render(fs, focus=None)
-
->>> fs = FieldSet(One)
->>> fs.add(Field('foo', types.Integer, value=2).dropdown(options=[('1', 1), ('2', 2)]))
->>> print configure_and_render(fs, focus=None)
 <div>
  <label class="field_opt" for="a">
   A
@@ -689,6 +684,23 @@ True
   </option>
   <option value="2">
    two
+  </option>
+ </select>
+</div>
+
+>>> fs = FieldSet(One)
+>>> fs.add(Field('foo', types.Integer, value=2).dropdown(options=[('1', 1), ('2', 2)]))
+>>> print configure_and_render(fs, focus=None)
+<div>
+ <label class="field_opt" for="foo">
+  Foo
+ </label>
+ <select id="foo" name="foo">
+  <option value="1">
+   1
+  </option>
+  <option value="2" selected="selected">
+   2
   </option>
  </select>
 </div>
@@ -738,7 +750,7 @@ False
 # change default renderer 
 >>> def BooleanSelectRenderer(*args, **kwargs):
 ...     kwargs['options'] = [('Yes', True), ('No', False)]
-...     return fields.SelectFieldRenderer(*args, **kwargs)
+...     return SelectFieldRenderer(*args, **kwargs)
 >>> d = dict(FieldSet.default_renderers)
 >>> d[types.Boolean] = BooleanSelectRenderer
 >>> fs = FieldSet(CheckBox)
