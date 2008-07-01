@@ -118,18 +118,31 @@ class ModelRenderer(object):
         self.model = self.session = None
 
         self.rebind(model, session, data)
-        from fields import AttributeField
+        from fields import Field, AttributeField
         
-        # two step process so we get the right order in the OrderedDict
-        L = []
-        for iattr in _managed_attributes(type(self.model)):
-            if hasattr(iattr.property, 'mapper') and len(iattr.property.mapper.primary_key) != 1:
-                logger.warn('ignoring multi-column property %s' % iattr.impl.key)
-            else:
-                L.append(AttributeField(iattr, self))
-        L.sort(lambda a, b: cmp(not a.is_vanilla(), not b.is_vanilla())) # note, key= not used for 2.3 support
-        for field in L:
-            self.fields[field.key] = field
+        cls = isinstance(self.model, type) and self.model or type(self.model)
+        try:
+            class_mapper(cls)
+        except:
+            # does this class have raw Fields defined on it?
+            for key in cls.__dict__:
+                field = cls.__dict__[key]
+                if isinstance(field, Field):
+                    self.add(field)
+            if not self.fields:
+                raise Exception("not bound to a SA instance, and no manual Field definitions found")
+        else:
+            # SA class.
+            # two step process so we get the right order in the OrderedDict
+            L = []
+            for iattr in _managed_attributes(cls):
+                if hasattr(iattr.property, 'mapper') and len(iattr.property.mapper.primary_key) != 1:
+                    logger.warn('ignoring multi-column property %s' % iattr.impl.key)
+                else:
+                    L.append(AttributeField(iattr, self))
+            L.sort(lambda a, b: cmp(not a.is_vanilla(), not b.is_vanilla())) # note, key= not used for 2.3 support
+            for field in L:
+                self.fields[field.key] = field
                 
     def add(self, field):
         """Add a form Field.  By default, this Field will be included in the rendered form or table."""
@@ -240,9 +253,13 @@ class ModelRenderer(object):
                 except:
                     raise Exception('%s appears to be a class, not an instance, but FormAlchemy cannot instantiate it' % model)
                 # take object out of session, if present
-                s = object_session(model)
-                if s:
-                    s.expunge(model)
+                try:
+                    s = object_session(model)
+                except AttributeError:
+                    pass # non-SA object; doesn't need session
+                else:
+                    if s:
+                        s.expunge(model)
             if self.model and type(self.model) != type(model):
                 raise ValueError('You can only bind to another object of the same type you originally bound to (%s), not %s' % (type(self.model), type(model)))
             self.model = model
@@ -250,7 +267,10 @@ class ModelRenderer(object):
         if session:
             self.session = session
         elif model:
-            self.session = object_session(model)
+            try:
+                self.session = object_session(model)
+            except AttributeError:
+                pass # non-SA object
         if self.session and object_session(self.model):
             if self.session is not object_session(self.model):
                 raise Exception('Thou shalt not rebind to different session than the one the model belongs to')
