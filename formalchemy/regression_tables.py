@@ -72,6 +72,69 @@ __doc__ = """
   </td>
  </tr>
 </tbody>
+
+>>> t = TableCollection(User, [bill, john])
+>>> t.add(Field('link', type=types.String, value=lambda item: '<a href=%d>link</a>' % item.id))
+>>> print pretty_html(t.render().strip())
+<thead>
+ <tr>
+  <th>
+   Email:
+  </th>
+  <th>
+   Password:
+  </th>
+  <th>
+   Name:
+  </th>
+  <th>
+   Orders:
+  </th>
+  <th>
+   Link:
+  </th>
+ </tr>
+</thead>
+<tbody>
+ <tr>
+  <td>
+   bill@example.com
+  </td>
+  <td>
+   1234
+  </td>
+  <td>
+   Bill
+  </td>
+  <td>
+   Quantity: 10
+  </td>
+  <td>
+   <a href="1">
+    link
+   </a>
+  </td>
+ </tr>
+ <tr>
+  <td>
+   john@example.com
+  </td>
+  <td>
+   5678
+  </td>
+  <td>
+   John
+  </td>
+  <td>
+   Quantity: 5
+  </td>
+  <td>
+   <a href="2">
+    link
+   </a>
+  </td>
+ </tr>
+</tbody>
 """
 
 if __name__ == '__main__':
