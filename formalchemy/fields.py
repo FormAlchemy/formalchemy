@@ -527,12 +527,21 @@ class Field(AbstractField):
         """
           * `name`: field name
           * `type`: data type, from sqlalchemy.types (Boolean, Integer, String)
-          * `value`: default value
+          * `value`: default value.  If value is a callable, it will be passed
+            the current bound model instance when the value is read.  This allows
+            creating a Field whose value depends on the model once, then
+            binding different instances to it later.
         """
         AbstractField.__init__(self, None) # parent will be set by ModelRenderer.add
         self.type = type()
         self.name = name
-        self.value = value
+        self._value = value
+        
+    def value(self):
+        if callable(self._value):
+            return self._value(self.model)
+        return self._value
+    value = property(value)
         
     def key(self):
         return self.name
@@ -548,7 +557,7 @@ class Field(AbstractField):
 
     def sync(self):
         """Set the attribute's value in `model` to the value given in `data`"""
-        self.value = self._deserialize(self._serialized_value())
+        self._value = self._deserialize(self._serialized_value())
             
     def __repr__(self):
         return 'AttributeField(%s)' % self.name

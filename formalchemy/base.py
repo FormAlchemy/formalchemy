@@ -3,6 +3,8 @@
 # This module is part of FormAlchemy and is released under
 # the MIT License: http://www.opensource.org/licenses/mit-license.php
 
+# TODO add doc section on recommended session setup
+
 import logging
 logger = logging.getLogger('formalchemy.' + __name__)
 
@@ -16,6 +18,10 @@ from sqlalchemy.orm import compile_mappers, object_session, class_mapper
 from sqlalchemy.util import OrderedDict
 
 import utils
+
+# put tempita on the path
+import sys, os
+sys.path.append(os.path.split(os.path.abspath(__file__))[0])
 
 
 compile_mappers() # initializes InstrumentedAttributes

@@ -11,11 +11,8 @@ import sqlalchemy.types as types
 import base, fields
 from validators import ValidationError
 
-# put tempita on the path
-import sys, os
-sys.path.append(os.path.split(os.path.abspath(__file__))[0])
+from tempita import Template as TempitaTemplate # must import after base
 
-from tempita import Template as TempitaTemplate
 
 __all__ = ['form_data', 'AbstractFieldSet', 'FieldSet']
 
@@ -188,16 +185,14 @@ document.getElementById("{{field.name}}").focus();
 {{endif}}                                                                                      
 {{endfor}}                                                                                     
 """.strip()
-template_tempita = TempitaTemplate(template_text_tempita, name='fieldset_template')
-render_tempita = template_tempita.substitute
+render_tempita = TempitaTemplate(template_text_tempita, name='fieldset_template').substitute
 
 try:
     from mako.template import Template as MakoTemplate
 except ImportError:
     render = render_tempita
 else:
-    template_mako = MakoTemplate(template_text_mako)
-    render_mako = template_mako.render
+    render_mako = MakoTemplate(template_text_mako).render
 
 
 class FieldSet(AbstractFieldSet):
