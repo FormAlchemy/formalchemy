@@ -109,6 +109,9 @@ class Manual(object):
     b = Field('b', types.Integer).dropdown([('one', 1), ('two', 2)])
 
 
+class OrderWithUser(Base):
+    __table__ = join(Order.__table__, User.__table__).alias('__orders__users')
+
 Base.metadata.create_all()
 
 session = Session()
@@ -132,13 +135,6 @@ norder1 = NaturalOrder(user=nbill, quantity=10)
 norder2 = NaturalOrder(user=njohn, quantity=5)
 
 session.commit()
-
-
-import sqlalchemy.ext.sqlsoup as sqlsoup
-from sqlalchemy.ext.sqlsoup import SqlSoup
-soup = SqlSoup(Base.metadata)
-sqlsoup.Session = Session
-OrderWithUser = soup.with_labels(soup.join(soup.orders, soup.users))
 
 
 from forms import FieldSet as DefaultFieldSet, render_mako, render_tempita
@@ -770,7 +766,7 @@ AttributeError: Do not set field attributes manually.  Use add() or configure() 
 >>> fs = FieldSet(OrderWithUser)
 >>> fs.fields.values()
 [AttributeField(orders_id), AttributeField(orders_user_id), AttributeField(orders_quantity), AttributeField(users_id), AttributeField(users_email), AttributeField(users_password), AttributeField(users_name)]
->>> fs.rebind(OrderWithUser.filter_by(orders_id=1).one())
+>>> fs.rebind(session.query(OrderWithUser).filter_by(orders_id=1).one())
 >>> print configure_and_render(fs, focus=None)
 <div>
  <label class="field_req" for="orders_quantity">
@@ -796,7 +792,7 @@ AttributeError: Do not set field attributes manually.  Use add() or configure() 
  </label>
  <input id="users_name" maxlength="30" name="users_name" type="text" value="Bill" />
 </div>
->>> fs.rebind(OrderWithUser.filter_by(orders_id=1).one(), data={'orders_quantity': '5', 'users_email': bill.email, 'users_password': '5678', 'users_name': 'Bill'})
+>>> fs.rebind(session.query(OrderWithUser).filter_by(orders_id=1).one(), data={'orders_quantity': '5', 'users_email': bill.email, 'users_password': '5678', 'users_name': 'Bill'})
 >>> fs.validate()
 True
 >>> fs.sync()
