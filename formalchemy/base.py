@@ -49,11 +49,22 @@ def _validate_columns(iterable):
         raise ValueError()
 
 
+def prettify(text):
+    """
+    Turn an attribute name into something prettier, for a default label where none is given.
+    >>> prettify("my_column_name")
+    'My column name'
+    """
+    return text.replace("_", " ").capitalize()
+
+
 class ModelRenderer(object):
     """
     The `ModelRenderer` class is the superclass for all classes needing to deal with `model`
     access and supporting rendering capabilities.
     """
+    prettify = staticmethod(prettify)
+
     def __init__(self, model, session=None, data={}):
         """ 
         !FormAlchemy FieldSet and Table constructors take three parameters:
@@ -331,12 +342,3 @@ class ModelRenderer(object):
         
     def render(self):
         raise NotImplementedError()
-
-
-def prettify(text):
-    """
-    Turn an attribute name into something prettier, for a default label where none is given.
-    >>> prettify("my_column_name")
-    'My column name'
-    """
-    return text.replace("_", " ").capitalize()

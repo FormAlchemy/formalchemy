@@ -252,7 +252,6 @@ class FieldSet(AbstractFieldSet):
     ...
     }}}
     """
-    prettify = staticmethod(base.prettify)
     _render = staticmethod('render_mako' in locals() and render_mako or render_tempita)
     
     def __init__(self, *args, **kwargs):

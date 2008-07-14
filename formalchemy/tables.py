@@ -53,7 +53,6 @@ class Table(base.ModelRenderer):
     The `Table` class renders tables from a single model, with the field labels
     in column one, and the field values in column two.
     """
-    prettify = staticmethod(base.prettify)
     _render = staticmethod(render_single)
     
     def render(self):
@@ -65,7 +64,6 @@ class TableCollection(base.ModelRenderer):
     The `TableCollection` class renders a table where each row represents a model instance.
     It must be bound to an iterable of instances of the same class.
     """
-    prettify = staticmethod(base.prettify)
     _render = staticmethod(render_collection)
 
     def __init__(self, cls, instances, session=None):
