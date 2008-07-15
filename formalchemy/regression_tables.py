@@ -199,6 +199,30 @@ __doc__ = """
   </td>
  </tr>
 </tbody>
+
+>>> g.rebind(User, [bill, john], data=SimpleMultiDict({'User:1:email': 'bill_@example.com', 'User:1:password': '1234_', 'User:1:name': 'Bill_', 'User:1:orders': '1', 'User:2:email': 'john_@example.com', 'User:2:password': '5678_', 'User:2:name': 'John_', 'User:2:orders': '2', }))
+>>> g.validate()
+True
+>>> g.sync()
+>>> session.flush()
+>>> session.refresh(john)
+>>> john.email == 'john_@example.com'
+True
+>>> session.rollback()
+
+>>> g.rebind(User, [bill, john], data=SimpleMultiDict({'User:1:password': '1234_', 'User:1:name': 'Bill_', 'User:1:orders': '1', 'User:2:email': 'john_@example.com', 'User:2:password': '5678_', 'User:2:name': 'John_', 'User:2:orders': '2', }))
+>>> g.validate()
+False
+>>> g.errors[bill]
+{AttributeField(email): ['Please enter a value']}
+>>> g.errors[john]
+{}
+>>> g.sync_one(john)
+>>> session.flush()
+>>> session.refresh(john)
+>>> john.email == 'john_@example.com'
+True
+>>> session.rollback()
 """
 
 if __name__ == '__main__':

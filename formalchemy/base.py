@@ -64,7 +64,9 @@ class SimpleMultiDict(dict):
     take care to pass a list where you know getall will be used, i.e.,
     when `field.is_collection` is true).
     """
-    getone = getall = dict.get
+    getone = dict.get
+    def getall(self, key):
+        return self.get(key, [])
 
 
 class ModelRenderer(object):

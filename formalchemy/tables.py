@@ -109,8 +109,35 @@ class Grid(base.EditableRenderer):
     _render = staticmethod(render_grid)
 
     def __init__(self, cls, instances, session=None):
-        base.ModelRenderer.__init__(self, cls, session)
+        from sqlalchemy.orm import class_mapper
+        if not class_mapper(cls):
+            raise Exception('Grid must be bound to an SA mapped class')
+        base.EditableRenderer.__init__(self, cls, session)
         self.rows = instances
+        self.errors = {}
 
     def render(self):
         return self._render(collection=self)
+
+    def validate(self):
+        if self.data is None:
+            raise Exception('Cannot validate without binding data')
+        self.errors.clear()
+        success = True
+        for row in self.rows:
+            self.rebind(row, data=self.data)
+            row_errors = {}
+            for field in self.render_fields.itervalues():
+                success = field._validate() and success
+                if field.errors:
+                    row_errors[field] = field.errors
+            self.errors[row] = row_errors
+        return success
+    
+    def sync_one(self, row):
+        self.rebind(row, data=self.data)
+        base.EditableRenderer.sync(self)
+
+    def sync(self):
+        for row in self.rows:
+            self.sync_one(row)
