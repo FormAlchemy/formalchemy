@@ -35,10 +35,9 @@ class FieldRenderer(object):
     
     Note that `serialized_value` and `relevant_data` are staticmethods.
     """
-    def __init__(self, field, **kwargs):
+    def __init__(self, field):
         self.field = field
         assert isinstance(self.field, AbstractField)
-        self.attribs = kwargs
         
     def _name(field):
         # return '%s:%s:%s' % (field.model.__class__.__name__, _pk(field.model), field.name)
@@ -55,11 +54,11 @@ class FieldRenderer(object):
         return self.field.value
     value = property(value)
 
-    def render(self):
+    def render(self, **kwargs):
         """Render the field"""
         return h.text_field(self.name, value=self.value)
 
-    def serialized_value(field):
+    def serialized_value(self):
         """
         Returns the appropriate value to deserialize for field's datatype, from the user-submitted data.
         
@@ -67,76 +66,60 @@ class FieldRenderer(object):
         
         Do not attempt to deserialize here; return value should be a string (corresponding to the output of `str` for your data type).
         """
-        return field.parent.data.get(FieldRenderer._name(field))
-    serialized_value = staticmethod(serialized_value)
-
-    def relevant_data(field, params):
-        """
-        Called by form_data.  given `params` multidict, return a dictionary of the data relevant to the given Field.
-        (key = param name; value = param values.)  For most Fields this just means determining if
-        we need getone or getall, but multi-input renderers can customize as needed.
-        """
+        params = self.field.parent.data
         if not (hasattr(params, 'getall') and hasattr(params, 'getone')):
             raise Exception('unsupported params object.  currently only Paste-style multidicts are supported')
-        if field.is_collection():
-            return {field.name: params.getall(field.name)}
-        return {field.name: params.getone(field.name)}
-    relevant_data = staticmethod(relevant_data)
+        if self.field.is_collection():
+            return params.getall(self.name)
+        return params.getone(self.name)
     
 
 class TextFieldRenderer(FieldRenderer):
-    def __init__(self, field, **kwargs):
-        FieldRenderer.__init__(self, field, **kwargs)
-        self.length = field.type.length
+    def length(self):
+        return self.field.type.length
+    length = property(length)
 
-    def render(self):
-        return h.text_field(self.name, value=self.value, maxlength=self.length, **self.attribs)
+    def render(self, **kwargs):
+        return h.text_field(self.name, value=self.value, maxlength=self.length, **kwargs)
 
 
 class IntegerFieldRenderer(FieldRenderer):
-    def render(self):
-        return h.text_field(self.name, value=self.value, **self.attribs)
+    def render(self, **kwargs):
+        return h.text_field(self.name, value=self.value, **kwargs)
 
 
 class PasswordFieldRenderer(TextFieldRenderer):
-    def render(self):
-        return h.password_field(self.name, value=self.value, maxlength=self.length, **self.attribs)
+    def render(self, **kwargs):
+        return h.password_field(self.name, value=self.value, maxlength=self.length, **kwargs)
 
 
 class TextAreaFieldRenderer(FieldRenderer):
-    def __init__(self, field, size, **kwargs):
-        FieldRenderer.__init__(self, field, **kwargs)
-        self.size = size
-
-    def render(self):
-        if isinstance(self.size, basestring):
-            return h.text_area(self.name, content=self.value, size=self.size, **self.attribs)
+    def render(self, size, **kwargs):
+        if isinstance(size, basestring):
+            return h.text_area(self.name, content=self.value, size=size, **kwargs)
         else:
-            # Will fail if not a 2-item list or tuple. 
-            cols, rows = self.size
-            return h.text_area(self.name, content=self.value, cols=cols, rows=rows, **self.attribs)
+            cols, rows = size
+            return h.text_area(self.name, content=self.value, cols=cols, rows=rows, **kwargs)
 
 
 class HiddenFieldRenderer(FieldRenderer):
-    def render(self):
-        return h.hidden_field(self.name, value=self.value, **self.attribs)
+    def render(self, **kwargs):
+        return h.hidden_field(self.name, value=self.value, **kwargs)
 
 
 class BooleanFieldRenderer(FieldRenderer):
-    def render(self):
-        # This is a browser hack to have a checkbox POSTed as False even if it wasn't
-        # checked, as unchecked boxes are not POSTed. The hidden field should be *after* the checkbox.
-        return h.check_box(self.name, True, checked=self.value, **self.attribs)
+    def render(self, **kwargs):
+        return h.check_box(self.name, True, checked=self.value, **kwargs)
 
 
 class FileFieldRenderer(FieldRenderer):
-    def render(self):
+    def render(self, **kwargs):
         # todo Do we need a value here ?
-        return h.file_field(self.name, **self.attribs)
+        return h.file_field(self.name, **kwargs)
 
 
 class DateFieldRenderer(FieldRenderer):
-    def _render(self):
+    def _render(self, **kwargs):
         data = self.field.parent.data
         import calendar
         month_options = [('Month', 'MM')] + [(calendar.month_name[i], str(i)) for i in xrange(1, 13)]
@@ -151,24 +134,19 @@ class DateFieldRenderer(FieldRenderer):
             yyyy = data[yyyy_name]
         else:
             yyyy = str(self.value and self.value.year or 'YYYY')
-        return h.select(mm_name, h.options_for_select(month_options, selected=mm), **self.attribs) \
-               + ' ' + h.select(dd_name, h.options_for_select(day_options, selected=dd), **self.attribs) \
-               + ' ' + h.text_field(yyyy_name, value=yyyy, maxlength=4, size=4, **self.attribs)
-    def render(self):
-        return h.content_tag('span', self._render(), id=self.name)
+        return h.select(mm_name, h.options_for_select(month_options, selected=mm), **kwargs) \
+               + ' ' + h.select(dd_name, h.options_for_select(day_options, selected=dd), **kwargs) \
+               + ' ' + h.text_field(yyyy_name, value=yyyy, maxlength=4, size=4, **kwargs)
+    def render(self, **kwargs):
+        return h.content_tag('span', self._render(**kwargs), id=self.name)
 
-    def serialized_value(field):
-        return '-'.join([field.parent.data[field.name + '__' + subfield] for subfield in ['year', 'month', 'day']])
-    serialized_value = staticmethod(serialized_value)
-
-    def relevant_data(field, params):
-        paramnames = [field.name + '__' + subfield for subfield in ['year', 'month', 'day']]
-        return dict([(pname, params.getone(pname)) for pname in paramnames])
-    relevant_data = staticmethod(relevant_data)
+    def serialized_value(self):
+        field = self.field
+        return '-'.join([field.parent.data.getone(field.name + '__' + subfield) for subfield in ['year', 'month', 'day']])
 
 
 class TimeFieldRenderer(FieldRenderer):
-    def _render(self):
+    def _render(self, **kwargs):
         data = self.field.parent.data
         hour_options = ['HH'] + [(i, str(i)) for i in xrange(24)]
         minute_options = ['MM' ] + [(i, str(i)) for i in xrange(60)]
@@ -179,35 +157,23 @@ class TimeFieldRenderer(FieldRenderer):
         hh = hh_name in data and data[hh_name] or str(self.value and self.value.hour)
         mm = mm_name in data and data[mm_name] or str(self.value and self.value.minute)
         ss = ss_name in data and data[ss_name] or str(self.value and self.value.second)
-        return h.select(hh_name, h.options_for_select(hour_options, selected=hh), **self.attribs) \
-               + ':' + h.select(mm_name, h.options_for_select(minute_options, selected=mm), **self.attribs) \
-               + ':' + h.select(ss_name, h.options_for_select(second_options, selected=ss), **self.attribs)
-    def render(self):
-        return h.content_tag('span', self._render(), id=self.name)
+        return h.select(hh_name, h.options_for_select(hour_options, selected=hh), **kwargs) \
+               + ':' + h.select(mm_name, h.options_for_select(minute_options, selected=mm), **kwargs) \
+               + ':' + h.select(ss_name, h.options_for_select(second_options, selected=ss), **kwargs)
+    def render(self, **kwargs):
+        return h.content_tag('span', self._render(**kwargs), id=self.name)
 
-    def serialized_value(field):
-        return ':'.join([field.parent.data[field.name + '__' + subfield] for subfield in ['hour', 'minute', 'second']])
-    serialized_value = staticmethod(serialized_value)
-
-    def relevant_data(field, params):
-        paramnames = [field.name + '__' + subfield for subfield in ['hour', 'minute', 'second']]
-        return dict([(pname, params.getone(pname)) for pname in paramnames])
-    relevant_data = staticmethod(relevant_data)    
+    def serialized_value(self):
+        field = self.field
+        return ':'.join([field.parent.data.getone(field.name + '__' + subfield) for subfield in ['hour', 'minute', 'second']])
 
 
 class DateTimeFieldRendererRenderer(DateFieldRenderer, TimeFieldRenderer):
-    def render(self):
-        return h.content_tag('span', DateFieldRenderer._render(self) + ' ' + TimeFieldRenderer._render(self), id=self.name)
+    def render(self, **kwargs):
+        return h.content_tag('span', DateFieldRenderer._render(self, **kwargs) + ' ' + TimeFieldRenderer._render(self, **kwargs), id=self.name)
 
-    def serialized_value(field):
-        return DateFieldRenderer.serialized_value(field) + ' ' + TimeFieldRenderer.serialized_value(field)
-    serialized_value = staticmethod(serialized_value)
-
-    def relevant_data(field, params):
-        d = DateFieldRenderer.relevant_data(field, params)
-        d.update(TimeFieldRenderer.relevant_data(field, params))
-        return d
-    relevant_data = staticmethod(relevant_data)    
+    def serialized_value(self):
+        return DateFieldRenderer.serialized_value(self) + ' ' + TimeFieldRenderer.serialized_value(self)
 
 
 def _extract_options(options):
@@ -228,13 +194,12 @@ def _extract_options(options):
 
 class RadioSet(FieldRenderer):
     widget = staticmethod(h.radio_button)
-    def __init__(self, field, options, **kwargs):
-        FieldRenderer.__init__(self, field)
+
+    def render(self, options, **kwargs):
         self.radios = []
         for choice_name, choice_value in _extract_options(options):
             radio = self.widget(self.name, choice_value, checked=self.value == choice_value, **kwargs)
             self.radios.append(radio + choice_name)
-    def render(self):
         return h.tag("br").join(self.radios)
 
 class CheckBoxSet(RadioSet):
@@ -242,14 +207,9 @@ class CheckBoxSet(RadioSet):
 
 
 class SelectFieldRenderer(FieldRenderer):
-    def __init__(self, field, options, **kwargs):
-        self.options = options
-        selected = kwargs.get('selected', None)
-        FieldRenderer.__init__(self, field, **kwargs)
-        self.selected = selected or self.value
-
-    def render(self):
-        return h.select(self.name, h.options_for_select(self.options, selected=self.selected), **self.attribs)
+    def render(self, options, **kwargs):
+        selected = kwargs.get('selected', None) or self.value
+        return h.select(self.name, h.options_for_select(options, selected=selected), **kwargs)
 
     
 def _pk(instance):
@@ -357,7 +317,7 @@ class AbstractField(object):
     def _deserialize(self, data):
         """convert data (serialized user data, or None) into the data type expected by field"""
         if isinstance(self.type, types.Boolean):
-            if data is None and self.renderer is BooleanFieldRenderer:
+            if data is None and isinstance(self.renderer, BooleanFieldRenderer):
                 return False
             if data is not None:
                 if data.lower() in ['1', 't', 'true', 'yes']: return True
@@ -405,7 +365,7 @@ class AbstractField(object):
 
     def _serialized_value(self):
         # data from user input suitable for _deserialize
-        return self.renderer.serialized_value(self)
+        return self.renderer.serialized_value()
         
     def _modified(self, **kwattrs):
         # return a copy of self, with the given attributes modified
@@ -500,14 +460,17 @@ class AbstractField(object):
     
     def renderer(self):
         if self._renderer is None:
-            return self._get_renderer()
-        if issubclass(type(self._renderer), type) and issubclass(self._renderer, FieldRenderer):
-            return self._renderer
-        # it's a lambda, because self.parent isn't always set when things like dropdown() are called
-        try:
-            return self._renderer()
-        except:
-            return None
+            self._renderer = self._get_renderer()
+        if callable(self._renderer):
+            # invoke potential lambda
+            try:
+                self._renderer = self._renderer()
+            except TypeError:
+                pass
+        if callable(self._renderer):
+            # must be a Renderer class.  instantiate.
+            self._renderer = self._renderer(self)
+        return self._renderer
     renderer = property(renderer)
     
     def render(self, **html_options):
@@ -521,9 +484,9 @@ class AbstractField(object):
         opts.update(html_options)
         if (isinstance(self.type, types.Boolean) 
             and not opts.get('options') 
-            and self.renderer in [self.parent.default_renderers['dropdown'], self.parent.default_renderers['radio']]):
+            and self.renderer.__class__ in [self.parent.default_renderers['dropdown'], self.parent.default_renderers['radio']]):
             opts['options'] = [('Yes', True), ('No', False)]
-        return self.renderer(self, readonly=self.modifier=='readonly', disabled=self.modifier=='disabled', **opts).render()
+        return self.renderer.render(readonly=self.modifier=='readonly', disabled=self.modifier=='disabled', **opts)
 
 
 class Field(AbstractField):
@@ -723,7 +686,7 @@ class AttributeField(AbstractField):
             q = self.parent.session.query(fk_cls).order_by(fk_pk)
             self.render_opts['options'] = query_options(q)
             logger.debug('options for %s are %s' % (self.name, self.render_opts['options']))
-        if self.is_collection() and self.renderer is self.parent.default_renderers['dropdown']:
+        if self.is_collection() and isinstance(self.renderer, self.parent.default_renderers['dropdown']):
             self.render_opts['multiple'] = True
             if 'size' not in self.render_opts:
                 self.render_opts['size'] = 5

@@ -3,13 +3,14 @@
 # This module is part of FormAlchemy and is released under
 # the MIT License: http://www.opensource.org/licenses/mit-license.php
 
+from formalchemy.base import SimpleMultiDict
 from formalchemy.tables import *
 from formalchemy.forms import *
 from formalchemy.fields import *
 from formalchemy.validators import ValidationError
 import formalchemy.validators as validators
 
-__all__ = ["FieldSet", "AbstractFieldSet", "Field", "FieldRenderer", "Table", "TableCollection", "Grid", "form_data", "query_options", "ValidationError", "validators"]
+__all__ = ["FieldSet", "AbstractFieldSet", "Field", "FieldRenderer", "Table", "TableCollection", "Grid", "form_data", "query_options", "ValidationError", "validators", "SimpleMultiDict"]
 __version__ = "0.3"
 
 __doc__ = """
@@ -155,7 +156,8 @@ Now let's process some user input. In a real application, you'd get the post
 data from your request object; here we'll just hardcode some:
 
 {{{
->>> fs = FieldSet(order1, data={'quantity': 7, 'user_id': 2})
+>>> from formalchemy import SimpleMultiDict
+>>> fs = FieldSet(order1, data=SimpleMultiDict({'quantity': 7, 'user_id': 2}))
 >>> if fs.validate():
 ...     fs.sync()
 

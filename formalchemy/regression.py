@@ -138,6 +138,7 @@ session.commit()
 
 
 from forms import FieldSet as DefaultFieldSet, render_mako, render_tempita
+from base import SimpleMultiDict
 from fields import Field, query_options
 from validators import ValidationError
 
@@ -286,33 +287,36 @@ document.getElementById("foo").focus();
 
 >>> fs = FieldSet(Two)
 >>> assert configure_and_render(fs, include=[fs.foo.dropdown([('option1', 'value1'), ('option2', 'value2')])]) == configure_and_render(fs, options=[fs.foo.dropdown([('option1', 'value1'), ('option2', 'value2')])]) 
-
->>> fs = FieldSet(Two)
 >>> print fs.foo.render(onblur='test()')
 <input id="foo" name="foo" onblur="test()" type="text" />
+
 >>> cb = CheckBox()
->>> fs = FieldSet(cb)
->>> print fs.field.render()
+>>> fs_cb = FieldSet(cb)
+>>> print fs_cb.field.render()
 <input id="field" name="field" type="checkbox" value="True" />
->>> print fs.field.dropdown().render()
+>>> print fs_cb.field.dropdown().render()
 <select id="field" name="field"><option value="True">Yes</option>
 <option value="False">No</option></select>
->>> fs.validate()
+>>> fs_cb.field.renderer #doctest: +ELLIPSIS
+<formalchemy.fields.BooleanFieldRenderer object at ...>
+>>> fs_cb.field.renderer.serialized_value() == None
 True
->>> fs.errors
+>>> fs_cb.validate()
+True
+>>> fs_cb.errors
 {}
->>> fs.sync()
+>>> fs_cb.sync()
 >>> cb.field
 False
->>> fs.rebind(data={'field': 'True'})
->>> fs.validate()
+>>> fs_cb.rebind(data=SimpleMultiDict({'field': 'True'}))
+>>> fs_cb.validate()
 True
->>> fs.sync()
+>>> fs_cb.sync()
 >>> cb.field
 True
->>> fs.configure(options=[fs.field.dropdown()])
->>> fs.rebind(data={'field': 'False'})
->>> fs.sync()
+>>> fs_cb.configure(options=[fs_cb.field.dropdown()])
+>>> fs_cb.rebind(data=SimpleMultiDict({'field': 'False'}))
+>>> fs_cb.sync()
 >>> cb.field
 False
 
@@ -508,13 +512,13 @@ document.getElementById("oto_child_id").focus();
 
 # validation + sync
 >>> two = Two()
->>> fs = FieldSet(two, data={'foo': ''})
->>> fs.configure(options=[fs.foo.required()], focus=None)
->>> fs.validate()
+>>> fs_2 = FieldSet(two, data=SimpleMultiDict({'foo': ''}))
+>>> fs_2.configure(options=[fs_2.foo.required()], focus=None)
+>>> fs_2.validate()
 False
->>> fs.errors
+>>> fs_2.errors
 {AttributeField(foo): ['Please enter a value']}
->>> print fs.render()
+>>> print fs_2.render()
 <div>
  <label class="field_req" for="foo">
   Foo
@@ -524,56 +528,56 @@ False
   Please enter a value
  </span>
 </div>
->>> fs.rebind(two, data={'foo': 'asdf'})
->>> fs.data
+>>> fs_2.rebind(two, data=SimpleMultiDict({'foo': 'asdf'}))
+>>> fs_2.data
 {'foo': 'asdf'}
->>> fs.validate()
+>>> fs_2.validate()
 True
->>> fs.errors
+>>> fs_2.errors
 {}
->>> fs.sync()
+>>> fs_2.sync()
 >>> two.foo
 'asdf'
 
 >>> one = One()
->>> fs = FieldSet(one, data={'id': 1})
->>> fs.configure(pk=True)
->>> fs.validate()
+>>> fs_1 = FieldSet(one, data=SimpleMultiDict({'id': 1}))
+>>> fs_1.configure(pk=True)
+>>> fs_1.validate()
 True
->>> fs.sync()
+>>> fs_1.sync()
 >>> one.id
 1
->>> fs.rebind(one, data={'id': 'asdf'})
->>> fs.validate()
+>>> fs_1.rebind(one, data=SimpleMultiDict({'id': 'asdf'}))
+>>> fs_1.validate()
 False
->>> fs.errors
+>>> fs_1.errors
 {AttributeField(id): [ValidationError('Value is not an integer',)]}
 
->>> fs = FieldSet(User, data={'orders': []})
->>> fs.configure(include=[fs.orders])
->>> fs.validate()
+>>> fs_u = FieldSet(User, data=SimpleMultiDict({'orders': []}))
+>>> fs_u.configure(include=[fs_u.orders])
+>>> fs_u.validate()
 True
->>> fs.sync()
->>> fs.model.orders
+>>> fs_u.sync()
+>>> fs_u.model.orders
 []
->>> fs.rebind(User, session, {'orders': [str(order1.id), str(order2.id)]})
->>> fs.validate()
+>>> fs_u.rebind(User, session, data=SimpleMultiDict({'orders': [str(order1.id), str(order2.id)]}))
+>>> fs_u.validate()
 True
->>> fs.sync()
->>> fs.model.orders == [order1, order2]
+>>> fs_u.sync()
+>>> fs_u.model.orders == [order1, order2]
 True
 >>> session.rollback()
 
->>> fs = FieldSet(Three, data={'foo': 'asdf', 'bar': 'fdsa'})
+>>> fs_3 = FieldSet(Three, data=SimpleMultiDict({'foo': 'asdf', 'bar': 'fdsa'}))
 >>> def custom_validator(fs):
 ...   if fs.foo.value != fs.bar.value:
 ...     raise ValidationError('foo and bar do not match')
->>> fs.configure(global_validator=custom_validator, focus=None)
->>> fs.validate()
+>>> fs_3.configure(global_validator=custom_validator, focus=None)
+>>> fs_3.validate()
 False
->>> fs.errors
+>>> fs_3.errors
 {None: ('foo and bar do not match',)}
->>> print fs.render()
+>>> print fs_3.render()
 <div class="fieldset_error">
  foo and bar do not match
 </div>
@@ -591,8 +595,8 @@ False
 </div>
 
 # natural PKs
->>> fs = FieldSet(NaturalOrder, session)
->>> print fs.render()
+>>> fs_npk = FieldSet(NaturalOrder, session)
+>>> print fs_npk.render()
 <div>
  <label class="field_req" for="quantity">
   Quantity
@@ -617,9 +621,9 @@ document.getElementById("quantity").focus();
   </option>
  </select>
 </div>
->>> fs.rebind(norder2, session, {'user_email': nbill.email})
->>> fs.sync()
->>> fs.model.user_email == nbill.email
+>>> fs_npk.rebind(norder2, session, data=SimpleMultiDict({'user_email': nbill.email}))
+>>> fs_npk.sync()
+>>> fs_npk.model.user_email == nbill.email
 True
 >>> session.rollback()
 
@@ -656,7 +660,7 @@ True
  </label>
  <input id="foo" name="foo" type="text" value="2" />
 </div>
->>> fs.rebind(One, data={'foo': 4})
+>>> fs.rebind(One, data=SimpleMultiDict({'foo': 4}))
 >>> fs.sync()
 >>> fs.foo.value
 4
@@ -728,7 +732,7 @@ True
   </option>
  </select>
 </div>
->>> fs.rebind(One, data={'foo': ['1', '2']})
+>>> fs.rebind(One, data=SimpleMultiDict({'foo': ['1', '2']}))
 >>> fs.sync()
 >>> fs.foo.value
 [1, 2]
@@ -743,9 +747,10 @@ True
 False
 
 # change default renderer 
->>> def BooleanSelectRenderer(*args, **kwargs):
-...     kwargs['options'] = [('Yes', True), ('No', False)]
-...     return SelectFieldRenderer(*args, **kwargs)
+>>> class BooleanSelectRenderer(SelectFieldRenderer):
+...     def render(self, **kwargs):
+...         kwargs['options'] = [('Yes', True), ('No', False)]
+...         return SelectFieldRenderer.render(self, **kwargs)
 >>> d = dict(FieldSet.default_renderers)
 >>> d[types.Boolean] = BooleanSelectRenderer
 >>> fs = FieldSet(CheckBox)
@@ -791,7 +796,7 @@ AttributeError: Do not set field attributes manually.  Use add() or configure() 
  </label>
  <input id="users_name" maxlength="30" name="users_name" type="text" value="Bill" />
 </div>
->>> fs.rebind(session.query(Order__User).filter_by(orders_id=1).one(), data={'orders_quantity': '5', 'users_email': bill.email, 'users_password': '5678', 'users_name': 'Bill'})
+>>> fs.rebind(session.query(Order__User).filter_by(orders_id=1).one(), data=SimpleMultiDict({'orders_quantity': '5', 'users_email': bill.email, 'users_password': '5678', 'users_name': 'Bill'}))
 >>> fs.validate()
 True
 >>> fs.sync()

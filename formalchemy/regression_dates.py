@@ -1797,7 +1797,7 @@ __doc__ = r"""
  </select>
 </span>
 
->>> fs.rebind(dt, data=dict(foo__day='DD', foo__month='2', foo__year='', bar__hour='HH', bar__minute='6', bar__second='8'))
+>>> fs.rebind(dt, data=SimpleMultiDict(foo__day='DD', foo__month='2', foo__year='', bar__hour='HH', bar__minute='6', bar__second='8'))
 >>> print fs.render()
 <div>
  <label class="field_opt" for="foo">
@@ -3004,7 +3004,7 @@ document.getElementById("foo").focus();
  </span>
 </div>
 
->>> fs.rebind(dt, data=dict(foo__day='11', foo__month='2', foo__year='1951', bar__hour='4', bar__minute='6', bar__second='8', foobar__day='11', foobar__month='2', foobar__year='1951', foobar__hour='4', foobar__minute='6', foobar__second='8'))
+>>> fs.rebind(dt, data=SimpleMultiDict(foo__day='11', foo__month='2', foo__year='1951', bar__hour='4', bar__minute='6', bar__second='8', foobar__day='11', foobar__month='2', foobar__year='1951', foobar__hour='4', foobar__minute='6', foobar__second='8'))
 >>> fs.sync()
 >>> dt.foo
 datetime.date(1951, 2, 11)
@@ -3014,7 +3014,7 @@ datetime.time(4, 6, 8)
 datetime.datetime(1951, 2, 11, 4, 6, 8)
 >>> session.rollback()
 
->>> fs.rebind(dt, data=dict(foo__day='DD', foo__month='MM', foo__year='YYYY', bar__hour='HH', bar__minute='MM', bar__second='SS', foobar__day='DD', foobar__month='MM', foobar__year='', foobar__hour='HH', foobar__minute='MM', foobar__second='SS'))
+>>> fs.rebind(dt, data=SimpleMultiDict(foo__day='DD', foo__month='MM', foo__year='YYYY', bar__hour='HH', bar__minute='MM', bar__second='SS', foobar__day='DD', foobar__month='MM', foobar__year='', foobar__hour='HH', foobar__minute='MM', foobar__second='SS'))
 >>> fs.validate()
 True
 >>> fs.sync()
@@ -3026,19 +3026,19 @@ True
 True
 >>> session.rollback()
 
->>> fs.rebind(dt, data=dict(foo__day='1', foo__month='MM', foo__year='YYYY', bar__hour='HH', bar__minute='MM', bar__second='SS', foobar__day='DD', foobar__month='MM', foobar__year='', foobar__hour='HH', foobar__minute='MM', foobar__second='SS'))
+>>> fs.rebind(dt, data=SimpleMultiDict(foo__day='1', foo__month='MM', foo__year='YYYY', bar__hour='HH', bar__minute='MM', bar__second='SS', foobar__day='DD', foobar__month='MM', foobar__year='', foobar__hour='HH', foobar__minute='MM', foobar__second='SS'))
 >>> fs.validate()
 False
 >>> fs.errors
 {AttributeField(foo): [ValidationError('Invalid date',)]}
 
->>> fs.rebind(dt, data=dict(foo__day='DD', foo__month='MM', foo__year='YYYY', bar__hour='HH', bar__minute='1', bar__second='SS', foobar__day='DD', foobar__month='MM', foobar__year='', foobar__hour='HH', foobar__minute='MM', foobar__second='SS'))
+>>> fs.rebind(dt, data=SimpleMultiDict(foo__day='DD', foo__month='MM', foo__year='YYYY', bar__hour='HH', bar__minute='1', bar__second='SS', foobar__day='DD', foobar__month='MM', foobar__year='', foobar__hour='HH', foobar__minute='MM', foobar__second='SS'))
 >>> fs.validate()
 False
 >>> fs.errors
 {AttributeField(bar): [ValidationError('Invalid time',)]}
 
->>> fs.rebind(dt, data=dict(foo__day='DD', foo__month='MM', foo__year='YYYY', bar__hour='HH', bar__minute='MM', bar__second='SS', foobar__day='11', foobar__month='2', foobar__year='1951', foobar__hour='HH', foobar__minute='MM', foobar__second='SS'))
+>>> fs.rebind(dt, data=SimpleMultiDict(foo__day='DD', foo__month='MM', foo__year='YYYY', bar__hour='HH', bar__minute='MM', bar__second='SS', foobar__day='11', foobar__month='2', foobar__year='1951', foobar__hour='HH', foobar__minute='MM', foobar__second='SS'))
 >>> fs.validate()
 False
 >>> fs.errors

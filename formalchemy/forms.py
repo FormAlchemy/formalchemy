@@ -14,7 +14,7 @@ from validators import ValidationError
 from tempita import Template as TempitaTemplate # must import after base
 
 
-__all__ = ['form_data', 'AbstractFieldSet', 'FieldSet']
+__all__ = ['AbstractFieldSet', 'FieldSet', 'form_data']
 
 
 def form_data(fieldset, params):
@@ -104,7 +104,7 @@ template_text_mako = r"""
 % endfor
 
 % for field in fieldset.render_fields.itervalues():
-  % if field.renderer == fields.HiddenFieldRenderer:
+  % if isinstance(field.renderer, fields.HiddenFieldRenderer):
 ${field.render()}
   % else:
 <div>
@@ -138,7 +138,7 @@ template_text_tempita = r"""
 {{endfor}}
 
 {{for field in fieldset.render_fields.itervalues()}}
-{{if field.renderer == fields.HiddenFieldRenderer}}                                                    
+{{if isinstance(field.renderer, fields.HiddenFieldRenderer)}}
 {{field.render()}}                                                                              
 {{else}}                                                                                       
 <div>                                                                                          
@@ -198,9 +198,10 @@ class FieldSet(AbstractFieldSet):
     you could write:
 
     {{{
-    def BooleanSelectRenderer(*args, **kwargs):
-        kwargs['options'] = [('Yes', True), ('No', False)]
-        return fields.SelectFieldRenderer(*args, **kwargs)
+    class BooleanSelectRenderer(fields.SelectFieldRenderer):
+        def render(self, **kwargs):
+            kwargs['options'] = [('Yes', True), ('No', False)]
+            return fields.SelectFieldRenderer.render(self, **kwargs)
 
     FieldSet.default_renderers[types.Boolean] = BooleanSelectRenderer
     }}}

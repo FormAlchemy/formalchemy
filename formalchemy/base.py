@@ -57,6 +57,16 @@ def prettify(text):
     return text.replace("_", " ").capitalize()
 
 
+class SimpleMultiDict(dict):
+    """
+    Adds `getone`, `getall` methods to dict (that just call `get`).
+    Used where an empty multidict is needed.  Also useful for testing (just
+    take care to pass a list where you know getall will be used, i.e.,
+    when `field.is_collection` is true).
+    """
+    getone = getall = dict.get
+
+
 class ModelRenderer(object):
     """
     The `ModelRenderer` class is the superclass for all classes needing to deal with `model`
@@ -64,7 +74,7 @@ class ModelRenderer(object):
     """
     prettify = staticmethod(prettify)
 
-    def __init__(self, model, session=None, data={}):
+    def __init__(self, model, session=None, data=SimpleMultiDict()):
         """ 
         !FormAlchemy FieldSet and Table constructors take three parameters:
         
