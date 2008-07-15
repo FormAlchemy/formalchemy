@@ -51,7 +51,7 @@ class FieldRenderer(object):
             assert pk != ''
         if pk is None:
             pk = ''
-        return '%s:%s:%s' % (clsname, pk, self.field.name)
+        return '%s-%s-%s' % (clsname, pk, self.field.name)
     name = property(name)
         
     def value(self):

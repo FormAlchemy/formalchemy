@@ -158,16 +158,16 @@ __doc__ = """
 <tbody>
  <tr>
   <td>
-   <input id="User:1:email" maxlength="40" name="User:1:email" type="text" value="bill@example.com" />
+   <input id="User-1-email" maxlength="40" name="User-1-email" type="text" value="bill@example.com" />
   </td>
   <td>
-   <input id="User:1:password" maxlength="20" name="User:1:password" type="text" value="1234" />
+   <input id="User-1-password" maxlength="20" name="User-1-password" type="text" value="1234" />
   </td>
   <td>
-   <input id="User:1:name" maxlength="30" name="User:1:name" type="text" value="Bill" />
+   <input id="User-1-name" maxlength="30" name="User-1-name" type="text" value="Bill" />
   </td>
   <td>
-   <select id="User:1:orders" multiple="multiple" name="User:1:orders" size="5">
+   <select id="User-1-orders" multiple="multiple" name="User-1-orders" size="5">
     <option value="1" selected="selected">
      Quantity: 10
     </option>
@@ -179,16 +179,16 @@ __doc__ = """
  </tr>
  <tr>
   <td>
-   <input id="User:2:email" maxlength="40" name="User:2:email" type="text" value="john@example.com" />
+   <input id="User-2-email" maxlength="40" name="User-2-email" type="text" value="john@example.com" />
   </td>
   <td>
-   <input id="User:2:password" maxlength="20" name="User:2:password" type="text" value="5678" />
+   <input id="User-2-password" maxlength="20" name="User-2-password" type="text" value="5678" />
   </td>
   <td>
-   <input id="User:2:name" maxlength="30" name="User:2:name" type="text" value="John" />
+   <input id="User-2-name" maxlength="30" name="User-2-name" type="text" value="John" />
   </td>
   <td>
-   <select id="User:2:orders" multiple="multiple" name="User:2:orders" size="5">
+   <select id="User-2-orders" multiple="multiple" name="User-2-orders" size="5">
     <option value="1">
      Quantity: 10
     </option>
@@ -200,7 +200,7 @@ __doc__ = """
  </tr>
 </tbody>
 
->>> g.rebind(User, [bill, john], data=SimpleMultiDict({'User:1:email': 'bill_@example.com', 'User:1:password': '1234_', 'User:1:name': 'Bill_', 'User:1:orders': '1', 'User:2:email': 'john_@example.com', 'User:2:password': '5678_', 'User:2:name': 'John_', 'User:2:orders': '2', }))
+>>> g.rebind(User, [bill, john], data=SimpleMultiDict({'User-1-email': 'bill_@example.com', 'User-1-password': '1234_', 'User-1-name': 'Bill_', 'User-1-orders': '1', 'User-2-email': 'john_@example.com', 'User-2-password': '5678_', 'User-2-name': 'John_', 'User-2-orders': '2', }))
 >>> g.validate()
 True
 >>> g.sync()
@@ -210,7 +210,7 @@ True
 True
 >>> session.rollback()
 
->>> g.rebind(User, [bill, john], data=SimpleMultiDict({'User:1:password': '1234_', 'User:1:name': 'Bill_', 'User:1:orders': '1', 'User:2:email': 'john_@example.com', 'User:2:password': '5678_', 'User:2:name': 'John_', 'User:2:orders': '2', }))
+>>> g.rebind(User, [bill, john], data=SimpleMultiDict({'User-1-password': '1234_', 'User-1-name': 'Bill_', 'User-1-orders': '1', 'User-2-email': 'john_@example.com', 'User-2-password': '5678_', 'User-2-name': 'John_', 'User-2-orders': '2', }))
 >>> g.validate()
 False
 >>> g.errors[bill]

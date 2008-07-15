@@ -13,8 +13,8 @@ class Dt(Base):
 __doc__ = r"""
 >>> fs = FieldSet(Dt)
 >>> print pretty_html(fs.foobar.render())
-<span id="Dt::foobar">
- <select id="Dt::foobar__month" name="Dt::foobar__month">
+<span id="Dt--foobar">
+ <select id="Dt--foobar__month" name="Dt--foobar__month">
   <option value="MM">
    Month
   </option>
@@ -55,7 +55,7 @@ __doc__ = r"""
    December
   </option>
  </select>
- <select id="Dt::foobar__day" name="Dt::foobar__day">
+ <select id="Dt--foobar__day" name="Dt--foobar__day">
   <option value="DD">
    Day
   </option>
@@ -153,8 +153,8 @@ __doc__ = r"""
    31
   </option>
  </select>
- <input id="Dt::foobar__year" maxlength="4" name="Dt::foobar__year" size="4" type="text" value="YYYY" />
- <select id="Dt::foobar__hour" name="Dt::foobar__hour">
+ <input id="Dt--foobar__year" maxlength="4" name="Dt--foobar__year" size="4" type="text" value="YYYY" />
+ <select id="Dt--foobar__hour" name="Dt--foobar__hour">
   <option value="HH">
    HH
   </option>
@@ -232,7 +232,7 @@ __doc__ = r"""
   </option>
  </select>
  :
- <select id="Dt::foobar__minute" name="Dt::foobar__minute">
+ <select id="Dt--foobar__minute" name="Dt--foobar__minute">
   <option value="MM">
    MM
   </option>
@@ -418,7 +418,7 @@ __doc__ = r"""
   </option>
  </select>
  :
- <select id="Dt::foobar__second" name="Dt::foobar__second">
+ <select id="Dt--foobar__second" name="Dt--foobar__second">
   <option value="SS">
    SS
   </option>
@@ -608,8 +608,8 @@ __doc__ = r"""
 >>> dt = Dt(foo=datetime.date(2008, 6, 3), bar=datetime.time(14, 16, 18), foobar=datetime.datetime(2008, 6, 3, 14, 16, 18))
 >>> fs = FieldSet(dt)
 >>> print pretty_html(fs.foo.render())
-<span id="Dt::foo">
- <select id="Dt::foo__month" name="Dt::foo__month">
+<span id="Dt--foo">
+ <select id="Dt--foo__month" name="Dt--foo__month">
   <option value="MM">
    Month
   </option>
@@ -650,7 +650,7 @@ __doc__ = r"""
    December
   </option>
  </select>
- <select id="Dt::foo__day" name="Dt::foo__day">
+ <select id="Dt--foo__day" name="Dt--foo__day">
   <option value="DD">
    Day
   </option>
@@ -748,12 +748,12 @@ __doc__ = r"""
    31
   </option>
  </select>
- <input id="Dt::foo__year" maxlength="4" name="Dt::foo__year" size="4" type="text" value="2008" />
+ <input id="Dt--foo__year" maxlength="4" name="Dt--foo__year" size="4" type="text" value="2008" />
 </span>
 
 >>> print pretty_html(fs.bar.render())
-<span id="Dt::bar">
- <select id="Dt::bar__hour" name="Dt::bar__hour">
+<span id="Dt--bar">
+ <select id="Dt--bar__hour" name="Dt--bar__hour">
   <option value="HH">
    HH
   </option>
@@ -831,7 +831,7 @@ __doc__ = r"""
   </option>
  </select>
  :
- <select id="Dt::bar__minute" name="Dt::bar__minute">
+ <select id="Dt--bar__minute" name="Dt--bar__minute">
   <option value="MM">
    MM
   </option>
@@ -1017,7 +1017,7 @@ __doc__ = r"""
   </option>
  </select>
  :
- <select id="Dt::bar__second" name="Dt::bar__second">
+ <select id="Dt--bar__second" name="Dt--bar__second">
   <option value="SS">
    SS
   </option>
@@ -1205,8 +1205,8 @@ __doc__ = r"""
 </span>
 
 >>> print pretty_html(fs.foobar.render())
-<span id="Dt::foobar">
- <select id="Dt::foobar__month" name="Dt::foobar__month">
+<span id="Dt--foobar">
+ <select id="Dt--foobar__month" name="Dt--foobar__month">
   <option value="MM">
    Month
   </option>
@@ -1247,7 +1247,7 @@ __doc__ = r"""
    December
   </option>
  </select>
- <select id="Dt::foobar__day" name="Dt::foobar__day">
+ <select id="Dt--foobar__day" name="Dt--foobar__day">
   <option value="DD">
    Day
   </option>
@@ -1345,8 +1345,8 @@ __doc__ = r"""
    31
   </option>
  </select>
- <input id="Dt::foobar__year" maxlength="4" name="Dt::foobar__year" size="4" type="text" value="2008" />
- <select id="Dt::foobar__hour" name="Dt::foobar__hour">
+ <input id="Dt--foobar__year" maxlength="4" name="Dt--foobar__year" size="4" type="text" value="2008" />
+ <select id="Dt--foobar__hour" name="Dt--foobar__hour">
   <option value="HH">
    HH
   </option>
@@ -1424,7 +1424,7 @@ __doc__ = r"""
   </option>
  </select>
  :
- <select id="Dt::foobar__minute" name="Dt::foobar__minute">
+ <select id="Dt--foobar__minute" name="Dt--foobar__minute">
   <option value="MM">
    MM
   </option>
@@ -1610,7 +1610,7 @@ __doc__ = r"""
   </option>
  </select>
  :
- <select id="Dt::foobar__second" name="Dt::foobar__second">
+ <select id="Dt--foobar__second" name="Dt--foobar__second">
   <option value="SS">
    SS
   </option>
@@ -1797,14 +1797,14 @@ __doc__ = r"""
  </select>
 </span>
 
->>> fs.rebind(dt, data=SimpleMultiDict({'Dt::foo__day': 'DD', 'Dt::foo__month': '2', 'Dt::foo__year': '', 'Dt::bar__hour': 'HH', 'Dt::bar__minute': '6', 'Dt::bar__second': '8'}))
+>>> fs.rebind(dt, data=SimpleMultiDict({'Dt--foo__day': 'DD', 'Dt--foo__month': '2', 'Dt--foo__year': '', 'Dt--bar__hour': 'HH', 'Dt--bar__minute': '6', 'Dt--bar__second': '8'}))
 >>> print fs.render()
 <div>
- <label class="field_opt" for="Dt::foo">
+ <label class="field_opt" for="Dt--foo">
   Foo
  </label>
- <span id="Dt::foo">
-  <select id="Dt::foo__month" name="Dt::foo__month">
+ <span id="Dt--foo">
+  <select id="Dt--foo__month" name="Dt--foo__month">
    <option value="MM">
     Month
    </option>
@@ -1845,7 +1845,7 @@ __doc__ = r"""
     December
    </option>
   </select>
-  <select id="Dt::foo__day" name="Dt::foo__day">
+  <select id="Dt--foo__day" name="Dt--foo__day">
    <option value="DD" selected="selected">
     Day
    </option>
@@ -1943,20 +1943,20 @@ __doc__ = r"""
     31
    </option>
   </select>
-  <input id="Dt::foo__year" maxlength="4" name="Dt::foo__year" size="4" type="text" value="" />
+  <input id="Dt--foo__year" maxlength="4" name="Dt--foo__year" size="4" type="text" value="" />
  </span>
 </div>
 <script type="text/javascript">
  //<![CDATA[
-document.getElementById("Dt::foo").focus();
+document.getElementById("Dt--foo").focus();
 //]]>
 </script>
 <div>
- <label class="field_opt" for="Dt::bar">
+ <label class="field_opt" for="Dt--bar">
   Bar
  </label>
- <span id="Dt::bar">
-  <select id="Dt::bar__hour" name="Dt::bar__hour">
+ <span id="Dt--bar">
+  <select id="Dt--bar__hour" name="Dt--bar__hour">
    <option value="HH" selected="selected">
     HH
    </option>
@@ -2034,7 +2034,7 @@ document.getElementById("Dt::foo").focus();
    </option>
   </select>
   :
-  <select id="Dt::bar__minute" name="Dt::bar__minute">
+  <select id="Dt--bar__minute" name="Dt--bar__minute">
    <option value="MM">
     MM
    </option>
@@ -2220,7 +2220,7 @@ document.getElementById("Dt::foo").focus();
    </option>
   </select>
   :
-  <select id="Dt::bar__second" name="Dt::bar__second">
+  <select id="Dt--bar__second" name="Dt--bar__second">
    <option value="SS">
     SS
    </option>
@@ -2408,11 +2408,11 @@ document.getElementById("Dt::foo").focus();
  </span>
 </div>
 <div>
- <label class="field_opt" for="Dt::foobar">
+ <label class="field_opt" for="Dt--foobar">
   Foobar
  </label>
- <span id="Dt::foobar">
-  <select id="Dt::foobar__month" name="Dt::foobar__month">
+ <span id="Dt--foobar">
+  <select id="Dt--foobar__month" name="Dt--foobar__month">
    <option value="MM">
     Month
    </option>
@@ -2453,7 +2453,7 @@ document.getElementById("Dt::foo").focus();
     December
    </option>
   </select>
-  <select id="Dt::foobar__day" name="Dt::foobar__day">
+  <select id="Dt--foobar__day" name="Dt--foobar__day">
    <option value="DD">
     Day
    </option>
@@ -2551,8 +2551,8 @@ document.getElementById("Dt::foo").focus();
     31
    </option>
   </select>
-  <input id="Dt::foobar__year" maxlength="4" name="Dt::foobar__year" size="4" type="text" value="2008" />
-  <select id="Dt::foobar__hour" name="Dt::foobar__hour">
+  <input id="Dt--foobar__year" maxlength="4" name="Dt--foobar__year" size="4" type="text" value="2008" />
+  <select id="Dt--foobar__hour" name="Dt--foobar__hour">
    <option value="HH">
     HH
    </option>
@@ -2630,7 +2630,7 @@ document.getElementById("Dt::foo").focus();
    </option>
   </select>
   :
-  <select id="Dt::foobar__minute" name="Dt::foobar__minute">
+  <select id="Dt--foobar__minute" name="Dt--foobar__minute">
    <option value="MM">
     MM
    </option>
@@ -2816,7 +2816,7 @@ document.getElementById("Dt::foo").focus();
    </option>
   </select>
   :
-  <select id="Dt::foobar__second" name="Dt::foobar__second">
+  <select id="Dt--foobar__second" name="Dt--foobar__second">
    <option value="SS">
     SS
    </option>
@@ -3004,7 +3004,7 @@ document.getElementById("Dt::foo").focus();
  </span>
 </div>
 
->>> fs.rebind(dt, data=SimpleMultiDict({'Dt::foo__day': '11', 'Dt::foo__month': '2', 'Dt::foo__year': '1951', 'Dt::bar__hour': '4', 'Dt::bar__minute': '6', 'Dt::bar__second': '8', 'Dt::foobar__day': '11', 'Dt::foobar__month': '2', 'Dt::foobar__year': '1951', 'Dt::foobar__hour': '4', 'Dt::foobar__minute': '6', 'Dt::foobar__second': '8'}))
+>>> fs.rebind(dt, data=SimpleMultiDict({'Dt--foo__day': '11', 'Dt--foo__month': '2', 'Dt--foo__year': '1951', 'Dt--bar__hour': '4', 'Dt--bar__minute': '6', 'Dt--bar__second': '8', 'Dt--foobar__day': '11', 'Dt--foobar__month': '2', 'Dt--foobar__year': '1951', 'Dt--foobar__hour': '4', 'Dt--foobar__minute': '6', 'Dt--foobar__second': '8'}))
 >>> fs.sync()
 >>> dt.foo
 datetime.date(1951, 2, 11)
@@ -3014,7 +3014,7 @@ datetime.time(4, 6, 8)
 datetime.datetime(1951, 2, 11, 4, 6, 8)
 >>> session.rollback()
 
->>> fs.rebind(dt, data=SimpleMultiDict({'Dt::foo__day': 'DD', 'Dt::foo__month': 'MM', 'Dt::foo__year': 'YYYY', 'Dt::bar__hour': 'HH', 'Dt::bar__minute': 'MM', 'Dt::bar__second': 'SS', 'Dt::foobar__day': 'DD', 'Dt::foobar__month': 'MM', 'Dt::foobar__year': '', 'Dt::foobar__hour': 'HH', 'Dt::foobar__minute': 'MM', 'Dt::foobar__second': 'SS'}))
+>>> fs.rebind(dt, data=SimpleMultiDict({'Dt--foo__day': 'DD', 'Dt--foo__month': 'MM', 'Dt--foo__year': 'YYYY', 'Dt--bar__hour': 'HH', 'Dt--bar__minute': 'MM', 'Dt--bar__second': 'SS', 'Dt--foobar__day': 'DD', 'Dt--foobar__month': 'MM', 'Dt--foobar__year': '', 'Dt--foobar__hour': 'HH', 'Dt--foobar__minute': 'MM', 'Dt--foobar__second': 'SS'}))
 >>> fs.validate()
 True
 >>> fs.sync()
@@ -3026,19 +3026,19 @@ True
 True
 >>> session.rollback()
 
->>> fs.rebind(dt, data=SimpleMultiDict({'Dt::foo__day': '1', 'Dt::foo__month': 'MM', 'Dt::foo__year': 'YYYY', 'Dt::bar__hour': 'HH', 'Dt::bar__minute': 'MM', 'Dt::bar__second': 'SS', 'Dt::foobar__day': 'DD', 'Dt::foobar__month': 'MM', 'Dt::foobar__year': '', 'Dt::foobar__hour': 'HH', 'Dt::foobar__minute': 'MM', 'Dt::foobar__second': 'SS'}))
+>>> fs.rebind(dt, data=SimpleMultiDict({'Dt--foo__day': '1', 'Dt--foo__month': 'MM', 'Dt--foo__year': 'YYYY', 'Dt--bar__hour': 'HH', 'Dt--bar__minute': 'MM', 'Dt--bar__second': 'SS', 'Dt--foobar__day': 'DD', 'Dt--foobar__month': 'MM', 'Dt--foobar__year': '', 'Dt--foobar__hour': 'HH', 'Dt--foobar__minute': 'MM', 'Dt--foobar__second': 'SS'}))
 >>> fs.validate()
 False
 >>> fs.errors
 {AttributeField(foo): [ValidationError('Invalid date',)]}
 
->>> fs.rebind(dt, data=SimpleMultiDict({'Dt::foo__day': 'DD', 'Dt::foo__month': 'MM', 'Dt::foo__year': 'YYYY', 'Dt::bar__hour': 'HH', 'Dt::bar__minute': '1', 'Dt::bar__second': 'SS', 'Dt::foobar__day': 'DD', 'Dt::foobar__month': 'MM', 'Dt::foobar__year': '', 'Dt::foobar__hour': 'HH', 'Dt::foobar__minute': 'MM', 'Dt::foobar__second': 'SS'}))
+>>> fs.rebind(dt, data=SimpleMultiDict({'Dt--foo__day': 'DD', 'Dt--foo__month': 'MM', 'Dt--foo__year': 'YYYY', 'Dt--bar__hour': 'HH', 'Dt--bar__minute': '1', 'Dt--bar__second': 'SS', 'Dt--foobar__day': 'DD', 'Dt--foobar__month': 'MM', 'Dt--foobar__year': '', 'Dt--foobar__hour': 'HH', 'Dt--foobar__minute': 'MM', 'Dt--foobar__second': 'SS'}))
 >>> fs.validate()
 False
 >>> fs.errors
 {AttributeField(bar): [ValidationError('Invalid time',)]}
 
->>> fs.rebind(dt, data=SimpleMultiDict({'Dt::foo__day': 'DD', 'Dt::foo__month': 'MM', 'Dt::foo__year': 'YYYY', 'Dt::bar__hour': 'HH', 'Dt::bar__minute': 'MM', 'Dt::bar__second': 'SS', 'Dt::foobar__day': '11', 'Dt::foobar__month': '2', 'Dt::foobar__year': '1951', 'Dt::foobar__hour': 'HH', 'Dt::foobar__minute': 'MM', 'Dt::foobar__second': 'SS'}))
+>>> fs.rebind(dt, data=SimpleMultiDict({'Dt--foo__day': 'DD', 'Dt--foo__month': 'MM', 'Dt--foo__year': 'YYYY', 'Dt--bar__hour': 'HH', 'Dt--bar__minute': 'MM', 'Dt--bar__second': 'SS', 'Dt--foobar__day': '11', 'Dt--foobar__month': '2', 'Dt--foobar__year': '1951', 'Dt--foobar__hour': 'HH', 'Dt--foobar__minute': 'MM', 'Dt--foobar__second': 'SS'}))
 >>> fs.validate()
 False
 >>> fs.errors
