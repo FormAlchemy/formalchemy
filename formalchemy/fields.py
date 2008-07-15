@@ -511,9 +511,10 @@ class Field(AbstractField):
         self._value = value
         
     def value(self):
-# FIXME?        
-#         if self.parent.data is not None and self.renderer.name in self.parent.data:
-#             return self._deserialize(self._serialized_value())
+        if self.parent.data is not None and self.renderer.name in self.parent.data:
+            v = self._deserialize(self._serialized_value())
+            if v is not None:
+                return v
         if callable(self._value):
             return self._value(self.model)
         return self._value

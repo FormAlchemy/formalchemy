@@ -692,6 +692,9 @@ True
   </option>
  </select>
 </div>
+>>> fs.rebind(Manual, data=SimpleMultiDict({'Manual::a': 'asdf'}))
+>>> print pretty_html(fs.a.render())
+<input id="Manual::a" name="Manual::a" type="text" value="asdf" />
 
 >>> fs = FieldSet(One)
 >>> fs.add(Field('foo', types.Integer, value=2).dropdown(options=[('1', 1), ('2', 2)]))
