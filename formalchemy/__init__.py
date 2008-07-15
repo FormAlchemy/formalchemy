@@ -123,21 +123,21 @@ Now, let's render a form for editing the order we've created:
 >>> fs = FieldSet(order1)
 >>> print pretty_html(fs.render())
 <div>
- <label class="field_req" for="quantity">
+ <label class="field_req" for="Order:1:quantity">
   Quantity
  </label>
- <input id="quantity" name="quantity" type="text" value="10" />
+ <input id="Order:1:quantity" name="Order:1:quantity" type="text" value="10" />
 </div>
 <script type="text/javascript">
  //<![CDATA[
-document.getElementById("quantity").focus();
+document.getElementById("Order:1:quantity").focus();
 //]]>
 </script>
 <div>
- <label class="field_req" for="user_id">
+ <label class="field_req" for="Order:1:user_id">
   User
  </label>
- <select id="user_id" name="user_id">
+ <select id="Order:1:user_id" name="Order:1:user_id">
   <option value="1" selected="selected">
    Bill
   </option>
@@ -157,7 +157,7 @@ data from your request object; here we'll just hardcode some:
 
 {{{
 >>> from formalchemy import SimpleMultiDict
->>> fs = FieldSet(order1, data=SimpleMultiDict({'quantity': 7, 'user_id': 2}))
+>>> fs = FieldSet(order1, data=SimpleMultiDict({'Order:1:quantity': 7, 'Order:1:user_id': 2}))
 >>> if fs.validate():
 ...     fs.sync()
 

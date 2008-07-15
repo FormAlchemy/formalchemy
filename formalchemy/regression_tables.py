@@ -139,6 +139,66 @@ __doc__ = """
 
 >>> g = Grid(User, [bill, john])
 >>> print pretty_html(g.render())
+<thead>
+ <tr>
+  <th>
+   Email:
+  </th>
+  <th>
+   Password:
+  </th>
+  <th>
+   Name:
+  </th>
+  <th>
+   Orders:
+  </th>
+ </tr>
+</thead>
+<tbody>
+ <tr>
+  <td>
+   <input id="User:1:email" maxlength="40" name="User:1:email" type="text" value="bill@example.com" />
+  </td>
+  <td>
+   <input id="User:1:password" maxlength="20" name="User:1:password" type="text" value="1234" />
+  </td>
+  <td>
+   <input id="User:1:name" maxlength="30" name="User:1:name" type="text" value="Bill" />
+  </td>
+  <td>
+   <select id="User:1:orders" multiple="multiple" name="User:1:orders" size="5">
+    <option value="1" selected="selected">
+     Quantity: 10
+    </option>
+    <option value="2">
+     Quantity: 5
+    </option>
+   </select>
+  </td>
+ </tr>
+ <tr>
+  <td>
+   <input id="User:2:email" maxlength="40" name="User:2:email" type="text" value="john@example.com" />
+  </td>
+  <td>
+   <input id="User:2:password" maxlength="20" name="User:2:password" type="text" value="5678" />
+  </td>
+  <td>
+   <input id="User:2:name" maxlength="30" name="User:2:name" type="text" value="John" />
+  </td>
+  <td>
+   <select id="User:2:orders" multiple="multiple" name="User:2:orders" size="5">
+    <option value="1">
+     Quantity: 10
+    </option>
+    <option value="2" selected="selected">
+     Quantity: 5
+    </option>
+   </select>
+  </td>
+ </tr>
+</tbody>
 """
 
 if __name__ == '__main__':

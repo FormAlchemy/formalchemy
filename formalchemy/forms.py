@@ -108,7 +108,7 @@ template_text_mako = r"""
 ${field.render()}
   % else:
 <div>
-  <label class="${field.is_required() and 'field_req' or 'field_opt'}" for="${field.name}">${field.label_text or fieldset.prettify(field.key)}</label>
+  <label class="${field.is_required() and 'field_req' or 'field_opt'}" for="${field.renderer.name}">${field.label_text or fieldset.prettify(field.key)}</label>
   ${field.render()}
   % for error in field.errors:
   <span class="field_error">${error}</span>
@@ -118,7 +118,7 @@ ${field.render()}
 % if (fieldset.focus == field or fieldset.focus is True) and not _focus_rendered:
 <script type="text/javascript">
 //<![CDATA[
-document.getElementById("${field.name}").focus();
+document.getElementById("${field.renderer.name}").focus();
 //]]>
 </script>
 <% _focus_rendered = True %>\
@@ -142,7 +142,7 @@ template_text_tempita = r"""
 {{field.render()}}                                                                              
 {{else}}                                                                                       
 <div>                                                                                          
-  <label class="{{field.is_required() and 'field_req' or 'field_opt'}}" for="{{field.name}}">{{field.label_text or fieldset.prettify(field.key)}}</label>
+  <label class="{{field.is_required() and 'field_req' or 'field_opt'}}" for="{{field.renderer.name}}">{{field.label_text or fieldset.prettify(field.key)}}</label>
   {{field.render()}}                                                                            
   {{for error in field.errors}}
   <span class="field_error">{{error}}</span>
@@ -152,7 +152,7 @@ template_text_tempita = r"""
 {{if (fieldset.focus == field or fieldset.focus is True) and not _focus_rendered}}
 <script type="text/javascript">
 //<![CDATA[
-document.getElementById("{{field.name}}").focus();
+document.getElementById("{{field.renderer.name}}").focus();
 //]]>
 </script>
 {{py:_focus_rendered = True}}

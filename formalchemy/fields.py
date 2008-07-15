@@ -12,6 +12,7 @@ import datetime
 import helpers as h
 from sqlalchemy.orm import class_mapper
 from sqlalchemy.orm.attributes import ScalarAttributeImpl, ScalarObjectAttributeImpl, CollectionAttributeImpl
+from sqlalchemy.orm.exc import UnmappedClassError
 import sqlalchemy.types as types
 import validators
 
@@ -39,14 +40,18 @@ class FieldRenderer(object):
         self.field = field
         assert isinstance(self.field, AbstractField)
         
-    def _name(field):
-        # return '%s:%s:%s' % (field.model.__class__.__name__, _pk(field.model), field.name)
-        return field.name
-    _name = staticmethod(_name)
-    
     def name(self):
         """Field name"""
-        return FieldRenderer._name(self.field)
+        clsname = self.field.model.__class__.__name__
+        try:
+            pk = _pk(self.field.model)
+        except UnmappedClassError:
+            pk = ''
+        else:
+            assert pk != ''
+        if pk is None:
+            pk = ''
+        return '%s:%s:%s' % (clsname, pk, self.field.name)
     name = property(name)
         
     def value(self):
@@ -141,8 +146,7 @@ class DateFieldRenderer(FieldRenderer):
         return h.content_tag('span', self._render(**kwargs), id=self.name)
 
     def serialized_value(self):
-        field = self.field
-        return '-'.join([field.parent.data.getone(field.name + '__' + subfield) for subfield in ['year', 'month', 'day']])
+        return '-'.join([self.field.parent.data.getone(self.name + '__' + subfield) for subfield in ['year', 'month', 'day']])
 
 
 class TimeFieldRenderer(FieldRenderer):
@@ -164,8 +168,7 @@ class TimeFieldRenderer(FieldRenderer):
         return h.content_tag('span', self._render(**kwargs), id=self.name)
 
     def serialized_value(self):
-        field = self.field
-        return ':'.join([field.parent.data.getone(field.name + '__' + subfield) for subfield in ['hour', 'minute', 'second']])
+        return ':'.join([self.field.parent.data.getone(self.name + '__' + subfield) for subfield in ['hour', 'minute', 'second']])
 
 
 class DateTimeFieldRendererRenderer(DateFieldRenderer, TimeFieldRenderer):
@@ -508,6 +511,9 @@ class Field(AbstractField):
         self._value = value
         
     def value(self):
+# FIXME?        
+#         if self.parent.data is not None and self.renderer.name in self.parent.data:
+#             return self._deserialize(self._serialized_value())
         if callable(self._value):
             return self._value(self.model)
         return self._value
@@ -632,7 +638,7 @@ class AttributeField(AbstractField):
         For collections,
         a list of the primary key values of the items in the collection is returned.
         """
-        if self.parent.data is not None and self.name in self.parent.data:
+        if self.parent.data is not None and self.renderer.name in self.parent.data:
             v = self._deserialize(self._serialized_value())
         else:
             v = getattr(self.model, self.name)
