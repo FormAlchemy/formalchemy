@@ -17,7 +17,7 @@ from sqlalchemy.orm.attributes import InstrumentedAttribute, ScalarAttributeImpl
 from sqlalchemy.orm import compile_mappers, object_session, class_mapper
 from sqlalchemy.util import OrderedDict
 
-import utils
+import fields, utils
 
 # put tempita on the path
 import sys, os
@@ -44,8 +44,7 @@ def _validate_columns(iterable):
         L = list(iterable)
     except:
         raise ValueError()
-    from fields import AbstractField
-    if L and not isinstance(L[0], AbstractField):
+    if L and not isinstance(L[0], fields.AbstractField):
         raise ValueError()
 
 
@@ -129,7 +128,6 @@ class ModelRenderer(object):
         self.model = self.session = None
 
         self.rebind(model, session, data)
-        from fields import Field, AttributeField
         
         cls = isinstance(self.model, type) and self.model or type(self.model)
         try:
@@ -138,7 +136,7 @@ class ModelRenderer(object):
             # does this class have raw Fields defined on it?
             for key in cls.__dict__:
                 field = cls.__dict__[key]
-                if isinstance(field, Field):
+                if isinstance(field, fields.Field):
                     self.add(field)
             if not self.fields:
                 raise Exception("not bound to a SA instance, and no manual Field definitions found")
@@ -150,15 +148,14 @@ class ModelRenderer(object):
                 if hasattr(iattr.property, 'mapper') and len(iattr.property.mapper.primary_key) != 1:
                     logger.warn('ignoring multi-column property %s' % iattr.impl.key)
                 else:
-                    L.append(AttributeField(iattr, self))
+                    L.append(fields.AttributeField(iattr, self))
             L.sort(lambda a, b: cmp(not a.is_vanilla(), not b.is_vanilla())) # note, key= not used for 2.3 support
             for field in L:
                 self.fields[field.key] = field
                 
     def add(self, field):
         """Add a form Field.  By default, this Field will be included in the rendered form or table."""
-        from fields import Field
-        if not isinstance(field, Field):
+        if not isinstance(field, fields.Field):
             raise ValueError('Can only add Field objects; got %s instead' % field)
         field.parent = self
         self.fields[field.name] = field
@@ -254,7 +251,7 @@ class ModelRenderer(object):
             mr._render_fields = OrderedDict([(field.name, field) for field in 
                                              [field.bind(mr) for field in self._render_fields.itervalues()]])
         return mr
-
+    
     def rebind(self, model=None, session=None, data=None):
         """Like `bind`, but acts on this instance.  No return value."""
         if model:
@@ -332,13 +329,29 @@ class ModelRenderer(object):
         try:
             return self.fields[attrname]
         except KeyError:
-            raise AttributeError
+            raise AttributeError(attrname)
         
     def __setattr__(self, attrname, value):
-        from fields import AbstractField
-        if attrname not in ('fields', '__dict__') and attrname in self.fields or isinstance(value, AbstractField):
+        if attrname not in ('fields', '__dict__') and attrname in self.fields or isinstance(value, fields.AbstractField):
             raise AttributeError('Do not set field attributes manually.  Use add() or configure() instead')
         object.__setattr__(self, attrname, value)
         
     def render(self):
         raise NotImplementedError()
+
+
+class EditableRenderer(ModelRenderer):
+    default_renderers = {
+        types.String: fields.TextFieldRenderer,
+        types.Integer: fields.IntegerFieldRenderer,
+        types.Boolean: fields.BooleanFieldRenderer,
+        types.DateTime: fields.DateTimeFieldRendererRenderer,
+        types.Date: fields.DateFieldRenderer,
+        types.Time: fields.TimeFieldRenderer,
+        types.Binary: fields.FileFieldRenderer,
+        'dropdown': fields.SelectFieldRenderer,
+        'checkbox': fields.CheckBoxSet,
+        'radio': fields.RadioSet,
+        'password': fields.PasswordFieldRenderer,
+        'textarea': fields.TextAreaFieldRenderer,
+    }

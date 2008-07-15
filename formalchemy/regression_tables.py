@@ -1,4 +1,5 @@
 from regression import *
+from tables import *
 
 __doc__ = """
 >>> t = Table(bill)
@@ -39,7 +40,7 @@ __doc__ = """
 </tbody>
 
 >>> t = TableCollection(User, [bill])
->>> print pretty_html(t.render().strip())
+>>> print pretty_html(t.render())
 <thead>
  <tr>
   <th>
@@ -75,7 +76,7 @@ __doc__ = """
 
 >>> t = TableCollection(User, [bill, john])
 >>> t.add(Field('link', type=types.String, value=lambda item: '<a href=%d>link</a>' % item.id))
->>> print pretty_html(t.render().strip())
+>>> print pretty_html(t.render())
 <thead>
  <tr>
   <th>
@@ -135,6 +136,9 @@ __doc__ = """
   </td>
  </tr>
 </tbody>
+
+>>> g = Grid(User, [bill, john])
+>>> print pretty_html(g.render())
 """
 
 if __name__ == '__main__':

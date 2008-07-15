@@ -13,7 +13,7 @@ import helpers as h
 from sqlalchemy.orm import class_mapper
 from sqlalchemy.orm.attributes import ScalarAttributeImpl, ScalarObjectAttributeImpl, CollectionAttributeImpl
 import sqlalchemy.types as types
-import base, validators
+import validators
 
 __all__ = ['Field', 'FieldRenderer', 'query_options']
 
@@ -40,9 +40,14 @@ class FieldRenderer(object):
         assert isinstance(self.field, AbstractField)
         self.attribs = kwargs
         
+    def _name(field):
+        # return '%s:%s:%s' % (field.model.__class__.__name__, _pk(field.model), field.name)
+        return field.name
+    _name = staticmethod(_name)
+    
     def name(self):
         """Field name"""
-        return self.field.name
+        return FieldRenderer._name(self.field)
     name = property(name)
         
     def value(self):
@@ -62,7 +67,7 @@ class FieldRenderer(object):
         
         Do not attempt to deserialize here; return value should be a string (corresponding to the output of `str` for your data type).
         """
-        return field.parent.data.get(field.name)
+        return field.parent.data.get(FieldRenderer._name(field))
     serialized_value = staticmethod(serialized_value)
 
     def relevant_data(field, params):
@@ -71,6 +76,8 @@ class FieldRenderer(object):
         (key = param name; value = param values.)  For most Fields this just means determining if
         we need getone or getall, but multi-input renderers can customize as needed.
         """
+        if not (hasattr(params, 'getall') and hasattr(params, 'getone')):
+            raise Exception('unsupported params object.  currently only Paste-style multidicts are supported')
         if field.is_collection():
             return {field.name: params.getall(field.name)}
         return {field.name: params.getone(field.name)}

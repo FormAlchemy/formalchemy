@@ -19,22 +19,13 @@ __all__ = ['form_data', 'AbstractFieldSet', 'FieldSet']
 
 def form_data(fieldset, params):
     """ 
-    Given GET or POST data (currently must be an object providing getone and
-    getall, like paste's MultiDict), transform it into data suitable for use
-    in bind(). 
-    
-    getone and getall are described at
-    http://pythonpaste.org/module-paste.util.multidict.html
+    deprecated.  moved the "pull stuff out of a request object" stuff
+    into relevant_data().  until this is removed it is a no-op.
     """
-    if not (hasattr(params, 'getall') and hasattr(params, 'getone')):
-        raise Exception('unsupported params object.  see help(formdata) for supported interfaces')
-    d = {}
-    for field in fieldset.render_fields.itervalues():
-        d.update(field.renderer.relevant_data(field, params))
-    return d
+    return params
 
 
-class AbstractFieldSet(base.ModelRenderer):
+class AbstractFieldSet(base.EditableRenderer):
     """
     `FieldSets` are responsible for generating HTML fields from a given
     `model`.
@@ -55,23 +46,8 @@ class AbstractFieldSet(base.ModelRenderer):
     and will use that instead if Mako is available.  The rendered HTML is identical
     but (we suspect) Mako is faster.
     """
-    default_renderers = {
-        types.String: fields.TextFieldRenderer,
-        types.Integer: fields.IntegerFieldRenderer,
-        types.Boolean: fields.BooleanFieldRenderer,
-        types.DateTime: fields.DateTimeFieldRendererRenderer,
-        types.Date: fields.DateFieldRenderer,
-        types.Time: fields.TimeFieldRenderer,
-        types.Binary: fields.FileFieldRenderer,
-        'dropdown': fields.SelectFieldRenderer,
-        'checkbox': fields.CheckBoxSet,
-        'radio': fields.RadioSet,
-        'password': fields.PasswordFieldRenderer,
-        'textarea': fields.TextAreaFieldRenderer,
-    }
-
     def __init__(self, *args, **kwargs):
-        base.ModelRenderer.__init__(self, *args, **kwargs)
+        base.EditableRenderer.__init__(self, *args, **kwargs)
         self.validator = None
         self._errors = []
 
@@ -81,7 +57,7 @@ class AbstractFieldSet(base.ModelRenderer):
         to know about the entire form.  The other parameters are passed directly
         to `ModelRenderer.configure`.
         """
-        base.ModelRenderer.configure(self, pk, exclude, include, options)
+        base.EditableRenderer.configure(self, pk, exclude, include, options)
         self.validator = global_validator
 
     def validate(self):

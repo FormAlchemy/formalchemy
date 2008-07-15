@@ -140,7 +140,6 @@ session.commit()
 from forms import FieldSet as DefaultFieldSet, render_mako, render_tempita
 from fields import Field, query_options
 from validators import ValidationError
-from tables import Table, TableCollection
 
 def pretty_html(html):
     soup = BeautifulSoup(html)

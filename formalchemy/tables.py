@@ -10,7 +10,7 @@ import base, utils
 from tempita import Template as TempitaTemplate # must import after base
 
 
-__all__ = ["Table", "TableCollection"]
+__all__ = ["Table", "TableCollection", "Grid"]
 
 
 template_single = r"""
@@ -47,6 +47,33 @@ template_collection = r"""
 """
 render_collection = TempitaTemplate(template_collection, name='template_collection_table').substitute
 
+template_grid = r"""
+<thead>
+  <tr>
+    {{for field in collection.render_fields.itervalues()}}
+      <th>{{field.label_text or collection.prettify(field.key)}}:</td>
+    {{endfor}}
+  </tr>
+</thead>
+
+<tbody>
+{{for row in collection.rows:}}
+  {{collection.rebind(row, collection.session)}}
+  <tr>
+  {{for field in collection.render_fields.itervalues()}}
+    <td>
+      {{field.render()}}
+      {{for error in field.errors}}
+      <span class="grid_error">{{error}}</span>
+      {{endfor}}
+    </td>
+  {{endfor}}
+  </tr>
+{{endfor}}
+</tbody>
+"""
+render_grid = TempitaTemplate(template_grid, name='template_grid_table').substitute
+
 
 class Table(base.ModelRenderer):
     """
@@ -65,6 +92,21 @@ class TableCollection(base.ModelRenderer):
     It must be bound to an iterable of instances of the same class.
     """
     _render = staticmethod(render_collection)
+
+    def __init__(self, cls, instances, session=None):
+        base.ModelRenderer.__init__(self, cls, session)
+        self.rows = instances
+
+    def render(self):
+        return self._render(collection=self)
+
+
+class Grid(base.EditableRenderer):
+    """
+    `Grid` is essentially an editable `TableCollection`, and must also
+    be bound to an iterable of instances of the same class.
+    """
+    _render = staticmethod(render_grid)
 
     def __init__(self, cls, instances, session=None):
         base.ModelRenderer.__init__(self, cls, session)

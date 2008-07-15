@@ -3012,6 +3012,7 @@ datetime.date(1951, 2, 11)
 datetime.time(4, 6, 8)
 >>> dt.foobar
 datetime.datetime(1951, 2, 11, 4, 6, 8)
+>>> session.rollback()
 
 >>> fs.rebind(dt, data=dict(foo__day='DD', foo__month='MM', foo__year='YYYY', bar__hour='HH', bar__minute='MM', bar__second='SS', foobar__day='DD', foobar__month='MM', foobar__year='', foobar__hour='HH', foobar__minute='MM', foobar__second='SS'))
 >>> fs.validate()
@@ -3023,6 +3024,7 @@ True
 True
 >>> dt.foobar is None
 True
+>>> session.rollback()
 
 >>> fs.rebind(dt, data=dict(foo__day='1', foo__month='MM', foo__year='YYYY', bar__hour='HH', bar__minute='MM', bar__second='SS', foobar__day='DD', foobar__month='MM', foobar__year='', foobar__hour='HH', foobar__minute='MM', foobar__second='SS'))
 >>> fs.validate()
@@ -3041,7 +3043,6 @@ False
 False
 >>> fs.errors
 {AttributeField(foobar): [ValidationError('Incomplete datetime',)]}
-
 """
 
 if __name__ == '__main__':
