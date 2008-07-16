@@ -512,7 +512,10 @@ class Field(AbstractField):
         
     def value(self):
         if self.parent.data is not None and self.renderer.name in self.parent.data:
-            v = self._deserialize(self._serialized_value())
+            try:
+                v = self._deserialize(self._serialized_value())
+            except validators.ValidationError:
+                return self._serialized_value()
             if v is not None:
                 return v
         if callable(self._value):
@@ -640,7 +643,10 @@ class AttributeField(AbstractField):
         a list of the primary key values of the items in the collection is returned.
         """
         if self.parent.data is not None and self.renderer.name in self.parent.data:
-            v = self._deserialize(self._serialized_value())
+            try:
+                v = self._deserialize(self._serialized_value())
+            except validators.ValidationError:
+                v = self._serialized_value()
         else:
             v = getattr(self.model, self.name)
         if self.is_collection():

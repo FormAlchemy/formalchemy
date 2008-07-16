@@ -23,7 +23,7 @@ class One(Base):
 class Two(Base):
     __tablename__ = 'twos'
     id = Column('id', Integer, primary_key=True)
-    foo = Column('foo', Text, nullable=True)
+    foo = Column('foo', Integer, nullable=True)
 
 class Three(Base):
     __tablename__ = 'threes'
@@ -530,12 +530,29 @@ False
 >>> fs_2.data
 {'Two--foo': 'asdf'}
 >>> fs_2.validate()
+False
+>>> fs_2.errors
+{AttributeField(foo): [ValidationError('Value is not an integer',)]}
+>>> print fs_2.render()
+<div>
+ <label class="field_req" for="Two--foo">
+  Foo
+ </label>
+ <input id="Two--foo" name="Two--foo" type="text" value="asdf" />
+ <span class="field_error">
+  Value is not an integer
+ </span>
+</div>
+>>> fs_2.rebind(two, data=SimpleMultiDict({'Two--foo': '2'}))
+>>> fs_2.data
+{'Two--foo': '2'}
+>>> fs_2.validate()
 True
 >>> fs_2.errors
 {}
 >>> fs_2.sync()
 >>> two.foo
-'asdf'
+2
 
 >>> one = One()
 >>> fs_1 = FieldSet(one, data=SimpleMultiDict({'One--id': 1}))
