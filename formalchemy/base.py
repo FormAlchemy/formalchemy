@@ -149,6 +149,9 @@ class ModelRenderer(object):
             for key in cls.__dict__:
                 field = cls.__dict__[key]
                 if isinstance(field, fields.Field):
+                    if field.name:
+                        raise Exception('Fields in a non-mapped class have the same name as their attribute.  Do not manually give them a name.')
+                    field.name = key
                     self.add(field)
             if not self.fields:
                 raise Exception("not bound to a SA instance, and no manual Field definitions found")

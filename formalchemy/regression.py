@@ -105,8 +105,8 @@ mapper(User2, users2, properties={'address': relation(Address)})
 
 
 class Manual(object):
-    a = Field('a')
-    b = Field('b', types.Integer).dropdown([('one', 1), ('two', 2)])
+    a = Field()
+    b = Field(type=types.Integer).dropdown([('one', 1), ('two', 2)])
 
 
 class Order__User(Base):

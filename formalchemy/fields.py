@@ -496,7 +496,7 @@ class Field(AbstractField):
     """
     A manually-added form field
     """
-    def __init__(self, name, type=types.String, value=None):
+    def __init__(self, name=None, type=types.String, value=None):
         """
           * `name`: field name
           * `type`: data type, from sqlalchemy.types (Boolean, Integer, String)
