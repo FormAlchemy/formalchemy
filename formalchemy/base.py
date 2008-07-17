@@ -12,12 +12,11 @@ from sqlalchemy import __version__
 if __version__.split('.') < [0, 4, 1]:
     raise ImportError('Version 0.4.1 or later of SQLAlchemy required')
 
-import sqlalchemy.types as types
 from sqlalchemy.orm.attributes import InstrumentedAttribute, ScalarAttributeImpl
 from sqlalchemy.orm import compile_mappers, object_session, class_mapper
 from sqlalchemy.util import OrderedDict
 
-import fields, utils
+import fields, utils, types
 
 # put tempita on the path
 import sys, os

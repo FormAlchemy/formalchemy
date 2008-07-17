@@ -6,9 +6,7 @@
 import logging
 logger = logging.getLogger('formalchemy.' + __name__)
 
-import sqlalchemy.types as types
-
-import base, fields
+import base, fields, types
 from validators import ValidationError
 
 from tempita import Template as TempitaTemplate # must import after base

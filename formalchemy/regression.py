@@ -6,11 +6,11 @@ from BeautifulSoup import BeautifulSoup # required for html prettification
 
 from sqlalchemy import *
 from sqlalchemy.orm import *
-import sqlalchemy.types as types
 from sqlalchemy.ext.declarative import declarative_base
 logging.getLogger('sqlalchemy').setLevel(logging.ERROR)
 
 from fields import Field, SelectFieldRenderer
+import types
 
 engine = create_engine('sqlite://')
 Session = scoped_session(sessionmaker(autoflush=True, bind=engine))

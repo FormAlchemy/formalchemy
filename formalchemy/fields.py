@@ -13,8 +13,7 @@ import helpers as h
 from sqlalchemy.orm import class_mapper
 from sqlalchemy.orm.attributes import ScalarAttributeImpl, ScalarObjectAttributeImpl, CollectionAttributeImpl
 from sqlalchemy.orm.exc import UnmappedClassError
-import sqlalchemy.types as types
-import validators
+import types, validators
 
 __all__ = ['Field', 'FieldRenderer', 'query_options']
 

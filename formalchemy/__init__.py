@@ -9,9 +9,10 @@ from formalchemy.forms import *
 from formalchemy.fields import *
 from formalchemy.validators import ValidationError
 import formalchemy.validators as validators
+import formalchemy.types as types
 
-__all__ = ["FieldSet", "AbstractFieldSet", "Field", "FieldRenderer", "Table", "TableCollection", "Grid", "form_data", "query_options", "ValidationError", "validators", "SimpleMultiDict"]
-__version__ = "0.3"
+__all__ = ["FieldSet", "AbstractFieldSet", "Field", "FieldRenderer", "Table", "TableCollection", "Grid", "form_data", "query_options", "ValidationError", "validators", "SimpleMultiDict", "types"]
+__version__ = "0.3.3"
 
 __doc__ = """
 =Introduction=
