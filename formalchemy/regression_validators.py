@@ -90,6 +90,7 @@ Traceback (most recent call last):
 ...
 ValidationError: Non-ASCII characters present
 >>> email('')
+>>> email('asdf')
 Traceback (most recent call last):
 ...
 ValidationError: Missing @ sign

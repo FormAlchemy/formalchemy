@@ -158,7 +158,7 @@ data from your request object; here we'll just hardcode some:
 
 {{{
 >>> from formalchemy import SimpleMultiDict
->>> fs = FieldSet(order1, data=SimpleMultiDict({'Order-1-quantity': 7, 'Order-1-user_id': 2}))
+>>> fs = FieldSet(order1, data=SimpleMultiDict({'Order-1-quantity': '7', 'Order-1-user_id': '2'}))
 >>> if fs.validate():
 ...     fs.sync()
 

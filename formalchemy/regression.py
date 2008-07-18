@@ -510,7 +510,9 @@ document.getElementById("OTOParent--oto_child_id").focus();
 
 # validation + sync
 >>> two = Two()
->>> fs_2 = FieldSet(two, data=SimpleMultiDict({'foo': ''}))
+>>> fs_2 = FieldSet(two, data=SimpleMultiDict({'Two--foo': ''}))
+>>> fs_2.validate()
+True
 >>> fs_2.configure(options=[fs_2.foo.required()], focus=None)
 >>> fs_2.validate()
 False
@@ -555,7 +557,7 @@ True
 2
 
 >>> one = One()
->>> fs_1 = FieldSet(one, data=SimpleMultiDict({'One--id': 1}))
+>>> fs_1 = FieldSet(one, data=SimpleMultiDict({'One--id': '1'}))
 >>> fs_1.configure(pk=True)
 >>> fs_1.validate()
 True
@@ -683,7 +685,7 @@ True
  </label>
  <input id="One--foo" name="One--foo" type="text" value="2" />
 </div>
->>> fs.rebind(One, data=SimpleMultiDict({'One--foo': 4}))
+>>> fs.rebind(One, data=SimpleMultiDict({'One--foo': '4'}))
 >>> fs.sync()
 >>> fs.foo.value
 4
