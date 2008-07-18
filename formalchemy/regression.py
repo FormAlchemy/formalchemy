@@ -10,7 +10,7 @@ from sqlalchemy.ext.declarative import declarative_base
 logging.getLogger('sqlalchemy').setLevel(logging.ERROR)
 
 from fields import Field, SelectFieldRenderer
-import types
+import fatypes as types
 
 engine = create_engine('sqlite://')
 Session = scoped_session(sessionmaker(autoflush=True, bind=engine))
@@ -291,7 +291,7 @@ document.getElementById("Two--foo").focus();
 <input id="Two--foo" name="Two--foo" onblur="test()" type="text" />
 
 >>> cb = CheckBox()
->>> fs_cb = FieldSet(cb)
+>>> fs_cb = FieldSet(cb, data=SimpleMultiDict())
 >>> print fs_cb.field.render()
 <input id="CheckBox--field" name="CheckBox--field" type="checkbox" value="True" />
 >>> print fs_cb.field.dropdown().render()

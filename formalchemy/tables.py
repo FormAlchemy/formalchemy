@@ -13,6 +13,7 @@ from tempita import Template as TempitaTemplate # must import after base
 __all__ = ["Table", "TableCollection", "Grid"]
 
 
+# todo shouldn't this be CSS?
 template_single = r"""
 <tbody>
 {{for field in table.render_fields.itervalues()}}
@@ -36,7 +37,7 @@ template_collection = r"""
 
 <tbody>
 {{for row in collection.rows:}}
-  {{collection.rebind(row, collection.session)}}
+  {{collection.set_active(row)}}
   <tr>
   {{for field in collection.render_fields.itervalues()}}
     <td>{{field.value_str()}}</td>
@@ -58,7 +59,7 @@ template_grid = r"""
 
 <tbody>
 {{for row in collection.rows:}}
-  {{collection.rebind(row, collection.session)}}
+  {{collection.set_active(row)}}
   <tr>
   {{for field in collection.render_fields.itervalues()}}
     <td>
@@ -93,9 +94,22 @@ class TableCollection(base.ModelRenderer):
     """
     _render = staticmethod(render_collection)
 
-    def __init__(self, cls, instances, session=None):
+    def __init__(self, cls, instances=[], session=None):
         base.ModelRenderer.__init__(self, cls, session)
         self.rows = instances
+
+    def bind(self, instances, session=None):
+        mr = base.ModelRenderer.bind(self, self.model, session)
+        mr.rows = self.rows.copy()
+        return mr
+
+    def rebind(self, instances=None, session=None):
+        base.ModelRenderer.rebind(self, self.model, session)
+        if instances is not None:
+            self.rows = instances
+            
+    def set_active(self, instance, session=None):
+        base.ModelRenderer.rebind(self, instance, session or self.session, self.data)
 
     def render(self):
         return self._render(collection=self)
@@ -108,13 +122,31 @@ class Grid(base.EditableRenderer):
     """
     _render = staticmethod(render_grid)
 
-    def __init__(self, cls, instances, session=None):
+    def __init__(self, cls, instances=[], session=None, data=base.SimpleMultiDict()):
         from sqlalchemy.orm import class_mapper
         if not class_mapper(cls):
             raise Exception('Grid must be bound to an SA mapped class')
-        base.EditableRenderer.__init__(self, cls, session)
+        base.EditableRenderer.__init__(self, cls, session, data)
         self.rows = instances
         self.errors = {}
+        
+    def bind(self, instances, session=None, data=base.SimpleMultiDict()):
+        mr = base.EditableRenderer.bind(self, self.model, session, data)
+        mr.rows = list(self.rows)
+        return mr
+
+    def rebind(self, instances=None, session=None, data=base.SimpleMultiDict()):
+        if instances is not None:
+            try:
+                iter(instances)
+            except:
+                raise Exception('instances must be an iterable, not %s' % instances)
+        base.EditableRenderer.rebind(self, self.model, session, data)
+        if instances is not None:
+            self.rows = instances
+
+    def set_active(self, instance, session=None):
+        base.ModelRenderer.rebind(self, instance, session or self.session, self.data)
 
     def render(self):
         return self._render(collection=self)
@@ -125,7 +157,7 @@ class Grid(base.EditableRenderer):
         self.errors.clear()
         success = True
         for row in self.rows:
-            self.rebind(row, data=self.data)
+            self.set_active(row)
             row_errors = {}
             for field in self.render_fields.itervalues():
                 success = field._validate() and success
@@ -135,7 +167,8 @@ class Grid(base.EditableRenderer):
         return success
     
     def sync_one(self, row):
-        self.rebind(row, data=self.data)
+        # we want to allow the user to sync just rows w/o errors, so this is public
+        self.set_active(row)
         base.EditableRenderer.sync(self)
 
     def sync(self):

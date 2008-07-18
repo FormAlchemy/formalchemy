@@ -14,9 +14,10 @@ if __version__.split('.') < [0, 4, 1]:
 
 from sqlalchemy.orm.attributes import InstrumentedAttribute, ScalarAttributeImpl
 from sqlalchemy.orm import compile_mappers, object_session, class_mapper
+from sqlalchemy.orm.session import Session
 from sqlalchemy.util import OrderedDict
 
-import fields, utils, types
+import fields, utils, fatypes
 
 # put tempita on the path
 import sys, os
@@ -75,7 +76,7 @@ class ModelRenderer(object):
     """
     prettify = staticmethod(prettify)
 
-    def __init__(self, model, session=None, data=SimpleMultiDict()):
+    def __init__(self, model, session=None, data=None):
         """ 
         !FormAlchemy FieldSet and Table constructors take three parameters:
         
@@ -138,7 +139,7 @@ class ModelRenderer(object):
         self._render_fields = OrderedDict()
         self.model = self.session = None
 
-        self.rebind(model, session, data)
+        ModelRenderer.rebind(self, model, session, data)
         
         cls = isinstance(self.model, type) and self.model or type(self.model)
         try:
@@ -246,7 +247,7 @@ class ModelRenderer(object):
         """
         self._render_fields = OrderedDict([(field.name, field) for field in self._get_fields(pk, exclude, include, options)])
 
-    def bind(self, model, session=None, data={}):
+    def bind(self, model, session=None, data=None):
         """ 
         Return a copy of this FieldSet or Table, bound to the given
         `model`, `session`, and `data`. The parameters to this method are the
@@ -259,7 +260,7 @@ class ModelRenderer(object):
         mr = object.__new__(self.__class__)
         mr.__dict__ = dict(self.__dict__)
         # two steps so bind's error checking can work
-        mr.rebind(model, session, data)
+        ModelRenderer.rebind(mr, model, session, data)
         mr.fields = dict([(key, renderer.bind(mr)) for key, renderer in self.fields.iteritems()])
         if self._render_fields:
             mr._render_fields = OrderedDict([(field.name, field) for field in 
@@ -267,7 +268,13 @@ class ModelRenderer(object):
         return mr
     
     def rebind(self, model=None, session=None, data=None):
-        """Like `bind`, but acts on this instance.  No return value."""
+        """
+        Like `bind`, but acts on this instance.  No return value.
+        Not all parameters are treated the same; specifically, what happens if they are NOT specified is different:
+           * if `model` is not specified, the old model is used
+           * if `session` is not specified, FA tries to re-guess session from the model
+           * if data is not specified, it is rebound to None.
+        """
         if model:
             if isinstance(model, type):
                 try:
@@ -287,6 +294,8 @@ class ModelRenderer(object):
             self.model = model
         self.data = data
         if session:
+            if not isinstance(session, Session):
+                raise ValueError('Invalid SQLAlchemy session object %s' % session)
             self.session = session
         elif model:
             try:
@@ -356,13 +365,13 @@ class ModelRenderer(object):
 
 class EditableRenderer(ModelRenderer):
     default_renderers = {
-        types.String: fields.TextFieldRenderer,
-        types.Integer: fields.IntegerFieldRenderer,
-        types.Boolean: fields.BooleanFieldRenderer,
-        types.DateTime: fields.DateTimeFieldRendererRenderer,
-        types.Date: fields.DateFieldRenderer,
-        types.Time: fields.TimeFieldRenderer,
-        types.Binary: fields.FileFieldRenderer,
+        fatypes.String: fields.TextFieldRenderer,
+        fatypes.Integer: fields.IntegerFieldRenderer,
+        fatypes.Boolean: fields.BooleanFieldRenderer,
+        fatypes.DateTime: fields.DateTimeFieldRendererRenderer,
+        fatypes.Date: fields.DateFieldRenderer,
+        fatypes.Time: fields.TimeFieldRenderer,
+        fatypes.Binary: fields.FileFieldRenderer,
         'dropdown': fields.SelectFieldRenderer,
         'checkbox': fields.CheckBoxSet,
         'radio': fields.RadioSet,

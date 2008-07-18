@@ -13,7 +13,7 @@ import helpers as h
 from sqlalchemy.orm import class_mapper
 from sqlalchemy.orm.attributes import ScalarAttributeImpl, ScalarObjectAttributeImpl, CollectionAttributeImpl
 from sqlalchemy.orm.exc import UnmappedClassError
-import types, validators
+import fatypes, validators
 
 __all__ = ['Field', 'FieldRenderer', 'query_options']
 
@@ -131,10 +131,10 @@ class DateFieldRenderer(FieldRenderer):
         mm_name = self.name + '__month'
         dd_name = self.name + '__day'
         yyyy_name = self.name + '__year'
-        mm = mm_name in data and data[mm_name] or str(self.value and self.value.month)
-        dd = dd_name in data and data[dd_name] or str(self.value and self.value.day)
+        mm = (data is not None and mm_name in data) and data[mm_name] or str(self.value and self.value.month)
+        dd = (data is not None and dd_name in data) and data[dd_name] or str(self.value and self.value.day)
         # could be blank so don't use and/or construct
-        if yyyy_name in data:
+        if data is not None and yyyy_name in data:
             yyyy = data[yyyy_name]
         else:
             yyyy = str(self.value and self.value.year or 'YYYY')
@@ -157,9 +157,9 @@ class TimeFieldRenderer(FieldRenderer):
         hh_name = self.name + '__hour'
         mm_name = self.name + '__minute'
         ss_name = self.name + '__second'
-        hh = hh_name in data and data[hh_name] or str(self.value and self.value.hour)
-        mm = mm_name in data and data[mm_name] or str(self.value and self.value.minute)
-        ss = ss_name in data and data[ss_name] or str(self.value and self.value.second)
+        hh = (data is not None and hh_name in data) and data[hh_name] or str(self.value and self.value.hour)
+        mm = (data is not None and mm_name in data) and data[mm_name] or str(self.value and self.value.minute)
+        ss = (data is not None and ss_name in data) and data[ss_name] or str(self.value and self.value.second)
         return h.select(hh_name, h.options_for_select(hour_options, selected=hh), **kwargs) \
                + ':' + h.select(mm_name, h.options_for_select(minute_options, selected=mm), **kwargs) \
                + ':' + h.select(ss_name, h.options_for_select(second_options, selected=ss), **kwargs)
@@ -279,6 +279,9 @@ class AbstractField(object):
         wrapper.render_opts = dict(self.render_opts)
         wrapper.validators = list(self.validators)
         wrapper.errors = list(self.errors)
+        wrapper._renderer = copy(self._renderer)
+        if hasattr(wrapper._renderer, 'field'):
+            wrapper._renderer.field = wrapper
         return wrapper
                         
     def is_raw_foreign_key(self):
@@ -318,7 +321,7 @@ class AbstractField(object):
     
     def _deserialize(self, data):
         """convert data (serialized user data, or None) into the data type expected by field"""
-        if isinstance(self.type, types.Boolean):
+        if isinstance(self.type, fatypes.Boolean):
             if data is None and isinstance(self.renderer, BooleanFieldRenderer):
                 return False
             if data is not None:
@@ -326,9 +329,9 @@ class AbstractField(object):
                 if data.lower() in ['0', 'f', 'false', 'no']: return False
         if data is None:
             return None
-        if isinstance(self.type, types.Integer):
+        if isinstance(self.type, fatypes.Integer):
             return validators.integer(data)
-        if isinstance(self.type, types.Float):
+        if isinstance(self.type, fatypes.Float):
             return validators.float_(data)
 
         def _date(data):
@@ -346,11 +349,11 @@ class AbstractField(object):
             except:
                 raise validators.ValidationError('Invalid time')
         
-        if isinstance(self.type, types.Date):
+        if isinstance(self.type, fatypes.Date):
             return _date(data)
-        if isinstance(self.type, types.Time):
+        if isinstance(self.type, fatypes.Time):
             return _time(data)
-        if isinstance(self.type, types.DateTime):
+        if isinstance(self.type, fatypes.DateTime):
             data_date, data_time = data.split(' ')
             dt, tm = _date(data_date), _time(data_time)
             if dt is None and tm is None:
@@ -484,7 +487,7 @@ class AbstractField(object):
         """
         opts = dict(self.render_opts)
         opts.update(html_options)
-        if (isinstance(self.type, types.Boolean) 
+        if (isinstance(self.type, fatypes.Boolean) 
             and not opts.get('options') 
             and self.renderer.__class__ in [self.parent.default_renderers['dropdown'], self.parent.default_renderers['radio']]):
             opts['options'] = [('Yes', True), ('No', False)]
@@ -495,7 +498,7 @@ class Field(AbstractField):
     """
     A manually-added form field
     """
-    def __init__(self, name=None, type=types.String, value=None):
+    def __init__(self, name=None, type=fatypes.String, value=None):
         """
           * `name`: field name
           * `type`: data type, from sqlalchemy.types (Boolean, Integer, String)
