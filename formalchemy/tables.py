@@ -107,7 +107,7 @@ class TableCollection(base.ModelRenderer):
     def bind(self, instances, session=None):
         _validate_iterable(instances)
         mr = base.ModelRenderer.bind(self, self.model, session)
-        mr.rows = self.rows.copy()
+        mr.rows = instances
         return mr
 
     def rebind(self, instances=None, session=None):
@@ -142,7 +142,7 @@ class Grid(base.EditableRenderer):
     def bind(self, instances, session=None, data=base.SimpleMultiDict()):
         _validate_iterable(instances)
         mr = base.EditableRenderer.bind(self, self.model, session, data)
-        mr.rows = list(self.rows)
+        mr.rows = instances
         return mr
 
     def rebind(self, instances=None, session=None, data=base.SimpleMultiDict()):

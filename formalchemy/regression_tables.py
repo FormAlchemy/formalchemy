@@ -225,6 +225,10 @@ False
 True
 >>> session.rollback()
 
+>>> g = g.bind([john])
+>>> g.rows == [john]
+True
+
 >>> g.rebind(User)
 Traceback (most recent call last):
 ...
