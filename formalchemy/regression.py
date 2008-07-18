@@ -9,7 +9,7 @@ from sqlalchemy.orm import *
 from sqlalchemy.ext.declarative import declarative_base
 logging.getLogger('sqlalchemy').setLevel(logging.ERROR)
 
-from fields import Field, SelectFieldRenderer
+from fields import Field, SelectFieldRenderer, FieldRenderer
 import fatypes as types
 
 engine = create_engine('sqlite://')
@@ -36,6 +36,50 @@ class CheckBox(Base):
     id = Column('id', Integer, primary_key=True)
     field = Column('field', Boolean, nullable=False)
     
+
+vertices = Table('vertices', Base.metadata, 
+    Column('id', Integer, primary_key=True),
+    Column('x1', Integer),
+    Column('y1', Integer),
+    Column('x2', Integer),
+    Column('y2', Integer),
+    )
+
+class Point(object):
+    def __init__(self, x, y):
+        self.x = x
+        self.y = y
+    def __composite_values__(self):
+        return [self.x, self.y]            
+    def __eq__(self, other):
+        return other.x == self.x and other.y == self.y
+    def __ne__(self, other):
+        return not self.__eq__(other)
+
+class Vertex(object):
+    pass
+
+Session.mapper(Vertex, vertices, properties={
+    'start':composite(Point, vertices.c.x1, vertices.c.y1),
+    'end':composite(Point, vertices.c.x2, vertices.c.y2)
+})
+
+class VertexFieldRenderer(FieldRenderer):
+    def render(self, **kwargs):
+        import helpers as h
+        data = self.field.parent.data
+        x_name = self.name + '-x'
+        y_name = self.name + '-y'
+        x_value = (data is not None and x_name in data) and data[x_name] or str(self.value and self.value.x or '')
+        y_value = (data is not None and y_name in data) and data[y_name] or str(self.value and self.value.y or '')
+        return h.text_field(x_name, value=x_value) + h.text_field(y_name, value=y_value)
+    def serialized_value(self):
+        return self.field.parent.data.getone(self.name + '-x') + ',' + self.field.parent.data.getone(self.name + '-y')
+    def deserialize(data):
+        return Point(*[int(i) for i in data.split(',')])
+    deserialize = staticmethod(deserialize)
+    
+
 # todo: test a CustomBoolean, using a TypeDecorator --
 # http://www.sqlalchemy.org/docs/04/types.html#types_custom
 # probably need to add _renderer attr and check
@@ -832,6 +876,32 @@ True
 >>> session.refresh(bill)
 >>> bill.password == '5678'
 True
+>>> session.rollback()
+
+>>> FieldSet.default_renderers[Vertex] = VertexFieldRenderer
+>>> fs = FieldSet(Vertex)
+>>> print pretty_html(fs.start.render())
+<input id="Vertex--start-x" name="Vertex--start-x" type="text" value="" />
+<input id="Vertex--start-y" name="Vertex--start-y" type="text" value="" />
+>>> v = Vertex()
+>>> v.start = Point(1,2)
+>>> v.end = Point(3,4)
+>>> fs.rebind(v)
+>>> print pretty_html(fs.start.render())
+<input id="Vertex--start-x" name="Vertex--start-x" type="text" value="1" />
+<input id="Vertex--start-y" name="Vertex--start-y" type="text" value="2" />
+>>> fs.rebind(v, data=SimpleMultiDict({'Vertex--start-x': '10', 'Vertex--start-y': '20', 'Vertex--end-x': '30', 'Vertex--end-y': '40'}))
+>>> fs.validate()
+True
+>>> fs.sync()
+>>> session.flush()
+>>> v.id
+1
+>>> session.refresh(v)
+>>> v.start.x
+10
+>>> v.end.y
+40
 >>> session.rollback()
 """
 

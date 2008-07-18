@@ -12,6 +12,7 @@ import datetime
 import helpers as h
 from sqlalchemy.orm import class_mapper
 from sqlalchemy.orm.attributes import ScalarAttributeImpl, ScalarObjectAttributeImpl, CollectionAttributeImpl
+from sqlalchemy.orm.properties import CompositeProperty
 from sqlalchemy.orm.exc import UnmappedClassError
 import fatypes, validators
 
@@ -131,6 +132,7 @@ class DateFieldRenderer(FieldRenderer):
         mm_name = self.name + '__month'
         dd_name = self.name + '__day'
         yyyy_name = self.name + '__year'
+        # todo fix: "or ''"
         mm = (data is not None and mm_name in data) and data[mm_name] or str(self.value and self.value.month)
         dd = (data is not None and dd_name in data) and data[dd_name] or str(self.value and self.value.day)
         # could be blank so don't use and/or construct
@@ -324,6 +326,9 @@ class AbstractField(object):
     def _deserialize(self, data):
         """convert data (serialized user data, or None) into the data type expected by field"""
         assert data is None or isinstance(data, basestring), '%r is not a string' % data
+        # todo move the rest of the deserializing into the renderers too
+        if hasattr(self.renderer.__class__, 'deserialize'):
+            return self.renderer.__class__.deserialize(data)
         if isinstance(self.type, fatypes.Boolean):
             if data is None and isinstance(self.renderer, BooleanFieldRenderer):
                 return False
@@ -591,6 +596,12 @@ class AttributeField(AbstractField):
         return self._column.primary_key
     
     def type(self):
+        if self.is_composite():
+            # this is a little confusing -- we need to return an _instance_ of
+            # the correct type, which for composite values will be the value
+            # itself. SA should probably have called .type something
+            # different, or just not instantiated them...
+            return self.parent.model
         return self._column.type
     type = property(type)
 
@@ -621,7 +632,7 @@ class AttributeField(AbstractField):
         name will be 'user_id' (assuming that is indeed the name of the foreign
         key to users), but for user.orders, name will be 'orders'.
         """
-        if self.is_collection():
+        if self.is_collection() or self.is_composite():
             return self.key
         return self._column.name
     name = property(name)
@@ -629,6 +640,9 @@ class AttributeField(AbstractField):
     def is_collection(self):
         """True iff this is a multi-valued (one-to-many or many-to-many) SA relation"""
         return isinstance(self._impl, CollectionAttributeImpl)
+    
+    def is_composite(self):
+        return isinstance(self._property, CompositeProperty)
     
     def is_vanilla(self):
         """True iff this is a simple scalar value mapped from a table"""
