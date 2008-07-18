@@ -302,9 +302,14 @@ class ModelRenderer(object):
                 self.session = object_session(model)
             except AttributeError:
                 pass # non-SA object
-        if self.session and object_session(self.model):
-            if self.session is not object_session(self.model):
-                raise Exception('Thou shalt not rebind to different session than the one the model belongs to')
+        if self.session:
+            try:
+                o_session = object_session(self.model)
+            except AttributeError:
+                pass # non-SA object
+            else:
+                if o_session and self.session is not o_session:
+                    raise Exception('Thou shalt not rebind to different session than the one the model belongs to')
 
     def sync(self):
         """
