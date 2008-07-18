@@ -24,6 +24,8 @@ def required(value):
     if value is None or value == '':
         msg = isinstance(value, list) and 'Please select a value' or 'Please enter a value'
         raise ValidationError(msg)
+    
+# other validators will not be called for empty values
 
 def integer(value):
     """Successful if value is an int"""

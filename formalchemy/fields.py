@@ -309,6 +309,8 @@ class AbstractField(object):
         if self.is_required() and validators.required not in L:
             L.append(validators.required)
         for validator in L:
+            if validator is not validators.required and (value is None or value == ''):
+                continue
             try:
                 validator(value)
             except validators.ValidationError, e:
