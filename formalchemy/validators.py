@@ -29,7 +29,9 @@ def required(value):
 
 def integer(value):
     """Successful if value is an int"""
-    if value is None or not value.strip():
+    # the validator contract says you don't have to worry about "value is None",
+    # but this is called from deserialize as well as validation
+    if value is None or not value.strip(): 
         return None
     try:
         return int(value)
@@ -38,6 +40,8 @@ def integer(value):
     
 def float_(value):
     """Successful if value is a float"""
+    # the validator contract says you don't have to worry about "value is None",
+    # but this is called from deserialize as well as validation
     if value is None or not value.strip():
         return None
     try:
@@ -58,7 +62,7 @@ def email(value):
     technically invalid addresses, but will never reject a valid address
     (which is a much worse problem).
     """
-    if value is None or not value.strip():
+    if not value.strip():
         return None
 
     reserved = r'()<>@,;:\"[]'
@@ -118,8 +122,6 @@ def maxlength(length):
     if length <= 0:
         raise ValueError('Invalid maximum length')
     def f(value):
-        if value is None:
-            return
         if len(value) > length:
             raise ValidationError('Value must be no more than %d characters long' % length)
     return f
@@ -129,8 +131,6 @@ def minlength(length):
     if length <= 0:
         raise ValueError('Invalid minimum length')
     def f(value):
-        if value is None:
-            return
         if len(value) < length:
             raise ValidationError('Value must be at least %d characters long' % length)
     return f
@@ -146,8 +146,6 @@ def regex(exp, errormsg='Invalid input'):
     if type(exp) != type(re.compile('')):
         exp = re.compile(exp)
     def f(value):
-        if value is None:
-            return
         if not exp.match(value):
             raise ValidationError(errormsg)
     return f
