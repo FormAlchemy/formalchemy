@@ -87,6 +87,12 @@ class Table(base.ModelRenderer):
         return self._render(table=self)
 
 
+def _validate_iterable(o):
+    try:
+        iter(o)
+    except:
+        raise Exception('instances must be an iterable, not %s' % o)
+
 class TableCollection(base.ModelRenderer):
     """
     The `TableCollection` class renders a table where each row represents a model instance.
@@ -99,11 +105,14 @@ class TableCollection(base.ModelRenderer):
         self.rows = instances
 
     def bind(self, instances, session=None):
+        _validate_iterable(instances)
         mr = base.ModelRenderer.bind(self, self.model, session)
         mr.rows = self.rows.copy()
         return mr
 
     def rebind(self, instances=None, session=None):
+        if instances is not None:
+            _validate_iterable(instances)
         base.ModelRenderer.rebind(self, self.model, session)
         if instances is not None:
             self.rows = instances
@@ -131,16 +140,14 @@ class Grid(base.EditableRenderer):
         self.errors = {}
         
     def bind(self, instances, session=None, data=base.SimpleMultiDict()):
+        _validate_iterable(instances)
         mr = base.EditableRenderer.bind(self, self.model, session, data)
         mr.rows = list(self.rows)
         return mr
 
     def rebind(self, instances=None, session=None, data=base.SimpleMultiDict()):
         if instances is not None:
-            try:
-                iter(instances)
-            except:
-                raise Exception('instances must be an iterable, not %s' % instances)
+            _validate_iterable(instances)
         base.EditableRenderer.rebind(self, self.model, session, data)
         if instances is not None:
             self.rows = instances

@@ -224,6 +224,16 @@ False
 >>> john.email == 'john_@example.com'
 True
 >>> session.rollback()
+
+>>> g.rebind(User)
+Traceback (most recent call last):
+...
+Exception: instances must be an iterable, not <class 'formalchemy.regression.User'>
+>>> g = g.bind(User)
+Traceback (most recent call last):
+...
+Exception: instances must be an iterable, not <class 'formalchemy.regression.User'>
+
 """
 
 if __name__ == '__main__':
