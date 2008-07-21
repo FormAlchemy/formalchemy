@@ -632,6 +632,12 @@ True
 >>> fs_3 = FieldSet(Three, data=SimpleMultiDict({'Three--foo': 'asdf', 'Three--bar': 'fdsa'}))
 >>> fs_3.foo.value
 'asdf'
+>>> print fs_3.foo.textarea().render()
+<textarea id="Three--foo" name="Three--foo">asdf</textarea>
+>>> print fs_3.foo.textarea("3x4").render()
+<textarea cols="3" id="Three--foo" name="Three--foo" rows="4">asdf</textarea>
+>>> print fs_3.foo.textarea((3,4)).render()
+<textarea cols="3" id="Three--foo" name="Three--foo" rows="4">asdf</textarea>
 >>> fs_3.bar.value
 'fdsa'
 >>> def custom_validator(fs):

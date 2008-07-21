@@ -169,12 +169,10 @@ class PasswordFieldRenderer(TextFieldRenderer):
 
 
 class TextAreaFieldRenderer(FieldRenderer):
-    def render(self, size, **kwargs):
-        if isinstance(size, basestring):
-            return h.text_area(self.name, content=self._value, size=size, **kwargs)
-        else:
-            cols, rows = size
-            return h.text_area(self.name, content=self._value, cols=cols, rows=rows, **kwargs)
+    def render(self, **kwargs):
+        if isinstance(kwargs.get('size'), tuple):
+            kwargs['size'] = 'x'.join([str(i) for i in kwargs['size']])
+        return h.text_area(self.name, content=self._value, **kwargs)
 
 
 class HiddenFieldRenderer(FieldRenderer):
@@ -452,7 +450,7 @@ class AbstractField(object):
         field.render_opts={}
         return field
     def textarea(self, size=None):
-        """Render the field as a textarea."""
+        """Render the field as a textarea.  Size must be a string (`"25x10"`) or tuple (`25, 10`)."""
         field = deepcopy(self)
         field._renderer = lambda: self.parent.default_renderers['textarea']
         if size:
