@@ -138,7 +138,7 @@ __doc__ = """
 </tbody>
 
 >>> g = Grid(User)
->>> g.rebind([bill, john])
+>>> g.rebind([bill, john]) # explicitly test rebind
 >>> print pretty_html(g.render())
 <thead>
  <tr>

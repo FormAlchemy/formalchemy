@@ -27,16 +27,13 @@ class FieldRenderer(object):
     name to process as second argument. It maps the column name as the field
     name and the column's value as the field's value.
     
-    Subclasses should override `render`.
-    
-    Some subclasses, particularly subclasses that render as multiple
-    form fields, may also wish to override `serialized_value`.
-    (DateFieldRenderer is an example of this.)  !FormAlchemy knows
-    how to deserialize standard data types, but for custom type support
-    (e.g., for Composite values), you can override deserialize as well.
-    Note that deserialize must be a staticmethod.
+    Subclasses should override `render` and `deserialize`.  
+    See the `deserialize` docstring for details.
 
-    You should not need to touch `name` or `value`.
+    `_serialized_data` should only need to be overridden by custom renderers
+    that render as multiple form fields.  (DateFieldRenderer is an example of this.)
+
+    You should not need to override `name` or `value`.
     """
     def __init__(self, field):
         self.field = field
@@ -57,25 +54,35 @@ class FieldRenderer(object):
     name = property(name)
         
     def value(self):
-        """Current value, or default if none"""
-        return self.field.value
+        """Submitted value, or field value if none"""
+        if self.field.parent.data is not None:
+            v = self._serialized_value()
+        else:
+            v = None
+        return v or self.field.value
     value = property(value)
 
     def render(self, **kwargs):
         """Render the field"""
         return h.text_field(self.name, value=self.value)
 
-    def serialized_value(self):
+    def _serialized_value(self):
         """
         Returns the appropriate value to deserialize for field's
-        datatype, from the user-submitted data.
+        datatype, from the user-submitted data.  Only called by
+        `deserialize`.  (So, if you are overriding `deserialize`, 
+        you can use or ignore `_serialized_value` as you please.)
         
         This is broken out into a separate method so multi-input
-        renderers can stitch their values back into a single one.
+        renderers can stitch their values back into a single one
+        to have that can be handled by the default deserialize.
         
         Do not attempt to deserialize here; return value should be a
         string (corresponding to the output of `str` for your data
-        type).
+        type), or for a collection type, a a list of strings.
+
+        The default _serialized_value returns the submitted value(s)
+        in the input element corresponding to self.name.
         """
         params = self.field.parent.data
         if not (hasattr(params, 'getall') and hasattr(params, 'getone')):
@@ -84,10 +91,64 @@ class FieldRenderer(object):
             return params.getall(self.name)
         return params.getone(self.name)
 
-    def deserialize(data):
-        raise NotImplementedError()
-    deserialize = staticmethod(deserialize)
-    
+    def deserialize(self):
+        """
+        Turns the user-submitted data into a Python value.  (The raw
+        data will be available in self.field.parent.data, or you
+        can use `_serialized_value` if it is convenient.)  For SA
+        collections, return a list of primary keys, and !FormAlchemy
+        will take care of turning that into a list of objects.
+        For manually added collections, return a list of values.
+
+        You should only have to override this if you are using custom
+        (e.g., Composite) types.
+        """
+        if self.field.is_collection():
+            return [self._deserialize(subdata) for subdata in self._serialized_value()]
+        return self._deserialize(self._serialized_value())
+
+    def _deserialize(self, data):
+        if isinstance(self.field.type, fatypes.Boolean):
+            if data is not None:
+                if data.lower() in ['1', 't', 'true', 'yes']: return True
+                if data.lower() in ['0', 'f', 'false', 'no']: return False
+        if data is None:
+            return None
+        if isinstance(self.field.type, fatypes.Integer):
+            return validators.integer(data)
+        if isinstance(self.field.type, fatypes.Float):
+            return validators.float_(data)
+
+        def _date(data):
+            if data == 'YYYY-MM-DD' or data == '-MM-DD' or not data.strip():
+                return None
+            try:
+                return datetime.date(*[int(st) for st in data.split('-')])
+            except:
+                raise validators.ValidationError('Invalid date')
+        def _time(data):
+            if data == 'HH:MM:SS' or not data.strip():
+                return None
+            try:
+                return datetime.time(*[int(st) for st in data.split(':')])
+            except:
+                raise validators.ValidationError('Invalid time')
+        
+        if isinstance(self.field.type, fatypes.Date):
+            return _date(data)
+        if isinstance(self.field.type, fatypes.Time):
+            return _time(data)
+        if isinstance(self.field.type, fatypes.DateTime):
+            data_date, data_time = data.split(' ')
+            dt, tm = _date(data_date), _time(data_time)
+            if dt is None and tm is None:
+                return None
+            elif dt is None or tm is None:
+                raise validators.ValidationError('Incomplete datetime')
+            return datetime.datetime(dt.year, dt.month, dt.day, tm.hour, tm.minute, tm.second)
+
+        return data
+
 
 class TextFieldRenderer(FieldRenderer):
     def length(self):
@@ -125,6 +186,10 @@ class HiddenFieldRenderer(FieldRenderer):
 class BooleanFieldRenderer(FieldRenderer):
     def render(self, **kwargs):
         return h.check_box(self.name, True, checked=self.value, **kwargs)
+    def deserialize(self):
+        if self._serialized_value() is None:
+            return False
+        return FieldRenderer.deserialize(self)
 
 
 class FileFieldRenderer(FieldRenderer):
@@ -156,7 +221,7 @@ class DateFieldRenderer(FieldRenderer):
     def render(self, **kwargs):
         return h.content_tag('span', self._render(**kwargs), id=self.name)
 
-    def serialized_value(self):
+    def _serialized_value(self):
         return '-'.join([self.field.parent.data.getone(self.name + '__' + subfield) for subfield in ['year', 'month', 'day']])
 
 
@@ -178,7 +243,7 @@ class TimeFieldRenderer(FieldRenderer):
     def render(self, **kwargs):
         return h.content_tag('span', self._render(**kwargs), id=self.name)
 
-    def serialized_value(self):
+    def _serialized_value(self):
         return ':'.join([self.field.parent.data.getone(self.name + '__' + subfield) for subfield in ['hour', 'minute', 'second']])
 
 
@@ -186,8 +251,8 @@ class DateTimeFieldRendererRenderer(DateFieldRenderer, TimeFieldRenderer):
     def render(self, **kwargs):
         return h.content_tag('span', DateFieldRenderer._render(self, **kwargs) + ' ' + TimeFieldRenderer._render(self, **kwargs), id=self.name)
 
-    def serialized_value(self):
-        return DateFieldRenderer.serialized_value(self) + ' ' + TimeFieldRenderer.serialized_value(self)
+    def _serialized_value(self):
+        return DateFieldRenderer._serialized_value(self) + ' ' + TimeFieldRenderer._serialized_value(self)
 
 
 def _extract_options(options):
@@ -312,7 +377,7 @@ class AbstractField(object):
         self.errors = []
 
         try:
-            value = self._deserialize(self._serialized_value())
+            value = self._deserialize()
         except validators.ValidationError, e:
             self.errors.append(e)
             return False
@@ -333,64 +398,10 @@ class AbstractField(object):
         """True iff this Field must be given a non-empty value"""
         return validators.required in self.validators
     
-    def _deserialize(self, data):
-        """convert data (serialized user data, or None) into the data type expected by field"""
-        assert data is None or isinstance(data, basestring), '%r is not a string' % data
-        try:
-            return self.renderer.__class__.deserialize(data)
-        except NotImplementedError:
-            pass
-        if isinstance(self.type, fatypes.Boolean):
-            if data is None and isinstance(self.renderer, BooleanFieldRenderer):
-                return False
-            if data is not None:
-                if data.lower() in ['1', 't', 'true', 'yes']: return True
-                if data.lower() in ['0', 'f', 'false', 'no']: return False
-        if data is None:
-            return None
-        if isinstance(self.type, fatypes.Integer):
-            return validators.integer(data)
-        if isinstance(self.type, fatypes.Float):
-            return validators.float_(data)
-
-        def _date(data):
-            if data == 'YYYY-MM-DD' or data == '-MM-DD' or not data.strip():
-                return None
-            try:
-                return datetime.date(*[int(st) for st in data.split('-')])
-            except:
-                raise validators.ValidationError('Invalid date')
-        def _time(data):
-            if data == 'HH:MM:SS' or not data.strip():
-                return None
-            try:
-                return datetime.time(*[int(st) for st in data.split(':')])
-            except:
-                raise validators.ValidationError('Invalid time')
-        
-        if isinstance(self.type, fatypes.Date):
-            return _date(data)
-        if isinstance(self.type, fatypes.Time):
-            return _time(data)
-        if isinstance(self.type, fatypes.DateTime):
-            data_date, data_time = data.split(' ')
-            dt, tm = _date(data_date), _time(data_time)
-            if dt is None and tm is None:
-                return None
-            elif dt is None or tm is None:
-                raise validators.ValidationError('Incomplete datetime')
-            return datetime.datetime(dt.year, dt.month, dt.day, tm.hour, tm.minute, tm.second)
-
-        return data
-
     def model(self):
         return self.parent.model
     model = property(model)
 
-    def _serialized_value(self):
-        # data from user input suitable for _deserialize
-        return self.renderer.serialized_value()
-        
     def _modified(self, **kwattrs):
         # return a copy of self, with the given attributes modified
         copied = deepcopy(self)
@@ -512,6 +523,8 @@ class AbstractField(object):
             opts['options'] = [('Yes', True), ('No', False)]
         return self.renderer.render(readonly=self.modifier=='readonly', disabled=self.modifier=='disabled', **opts)
 
+    def _deserialize(self):
+        return self.renderer.deserialize()
 
 class Field(AbstractField):
     """
@@ -533,10 +546,7 @@ class Field(AbstractField):
         
     def value(self):
         if self.parent.data is not None and self.renderer.name in self.parent.data:
-            try:
-                v = self._deserialize(self._serialized_value())
-            except validators.ValidationError:
-                return self._serialized_value()
+            v = self._deserialize()
             if v is not None:
                 return v
         if callable(self._value):
@@ -558,7 +568,7 @@ class Field(AbstractField):
 
     def sync(self):
         """Set the attribute's value in `model` to the value given in `data`"""
-        self._value = self._deserialize(self._serialized_value())
+        self._value = self._deserialize()
             
     def __repr__(self):
         return 'AttributeField(%s)' % self.name
@@ -572,12 +582,6 @@ class Field(AbstractField):
             return False
     def __hash__(self):
         return hash(self.name)
-
-    def _deserialize(self, st):
-        if self.is_collection():
-            return [AbstractField._deserialize(self, id_st)
-                    for id_st in st]
-        return AbstractField._deserialize(self, st)
 
 
 class AttributeField(AbstractField):
@@ -673,10 +677,7 @@ class AttributeField(AbstractField):
         a list of the primary key values of the items in the collection is returned.
         """
         if self.parent.data is not None and self.renderer.name in self.parent.data:
-            try:
-                v = self._deserialize(self._serialized_value())
-            except validators.ValidationError:
-                v = self._serialized_value()
+            v = self._deserialize()
         else:
             v = getattr(self.model, self.name)
         if self.is_collection():
@@ -704,7 +705,7 @@ class AttributeField(AbstractField):
         
     def sync(self):
         """Set the attribute's value in `model` to the value given in `data`"""
-        setattr(self.model, self.name, self._deserialize(self._serialized_value()))
+        setattr(self.model, self.name, self._deserialize())
             
     def __eq__(self, other):
         # we override eq so that when we configure with options=[...], we can match the renders in options
@@ -740,8 +741,8 @@ class AttributeField(AbstractField):
             return self.parent.default_renderers['dropdown']
         return AbstractField._get_renderer(self)
 
-    def _deserialize(self, st):
+    def _deserialize(self):
         if self.is_collection():
-            return [self.query(self.collection_type()).get(AbstractField._deserialize(self, id_st))
-                    for id_st in st]
-        return AbstractField._deserialize(self, st)
+            return [self.query(self.collection_type()).get(pk)
+                    for pk in self.renderer.deserialize()]
+        return self.renderer.deserialize()

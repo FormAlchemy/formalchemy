@@ -73,11 +73,9 @@ class VertexFieldRenderer(FieldRenderer):
         x_value = (data is not None and x_name in data) and data[x_name] or str(self.value and self.value.x or '')
         y_value = (data is not None and y_name in data) and data[y_name] or str(self.value and self.value.y or '')
         return h.text_field(x_name, value=x_value) + h.text_field(y_name, value=y_value)
-    def serialized_value(self):
-        return self.field.parent.data.getone(self.name + '-x') + ',' + self.field.parent.data.getone(self.name + '-y')
-    def deserialize(data):
-        return Point(*[int(i) for i in data.split(',')])
-    deserialize = staticmethod(deserialize)
+    def deserialize(self):
+        data = self.field.parent.data.getone(self.name + '-x'), self.field.parent.data.getone(self.name + '-y')
+        return Point(*[int(i) for i in data])
     
 
 # todo: test a CustomBoolean, using a TypeDecorator --
@@ -343,7 +341,7 @@ document.getElementById("Two--foo").focus();
 <option value="False">No</option></select>
 >>> fs_cb.field.renderer #doctest: +ELLIPSIS
 <formalchemy.fields.BooleanFieldRenderer object at ...>
->>> fs_cb.field.renderer.serialized_value() == None
+>>> fs_cb.field.renderer._serialized_value() == None
 True
 >>> fs_cb.validate()
 True
