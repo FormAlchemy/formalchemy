@@ -29,12 +29,14 @@ class FieldRenderer(object):
     
     Subclasses should override `render`.
     
-    Some subclasses, particularly subclasses that render as multiple form fields,
-    may also wish to override `serialized_value`, or
-    `relevant_data`.  (DateFieldRenderer is an example of overriding all 3.)
+    Some subclasses, particularly subclasses that render as multiple
+    form fields, may also wish to override `serialized_value`.
+    (DateFieldRenderer is an example of this.)  !FormAlchemy knows
+    how to deserialize standard data types, but for custom type support
+    (e.g., for Composite values), you can override deserialize as well.
+    Note that deserialize must be a staticmethod.
+
     You should not need to touch `name` or `value`.
-    
-    Note that `serialized_value` and `relevant_data` are staticmethods.
     """
     def __init__(self, field):
         self.field = field
@@ -65,11 +67,15 @@ class FieldRenderer(object):
 
     def serialized_value(self):
         """
-        Returns the appropriate value to deserialize for field's datatype, from the user-submitted data.
+        Returns the appropriate value to deserialize for field's
+        datatype, from the user-submitted data.
         
-        This is broken out into a separate method so multi-input renderers can stitch their values back into a single one.
+        This is broken out into a separate method so multi-input
+        renderers can stitch their values back into a single one.
         
-        Do not attempt to deserialize here; return value should be a string (corresponding to the output of `str` for your data type).
+        Do not attempt to deserialize here; return value should be a
+        string (corresponding to the output of `str` for your data
+        type).
         """
         params = self.field.parent.data
         if not (hasattr(params, 'getall') and hasattr(params, 'getone')):
@@ -77,6 +83,10 @@ class FieldRenderer(object):
         if self.field.is_collection():
             return params.getall(self.name)
         return params.getone(self.name)
+
+    def deserialize(data):
+        raise NotImplementedError()
+    deserialize = staticmethod(deserialize)
     
 
 class TextFieldRenderer(FieldRenderer):
@@ -326,9 +336,10 @@ class AbstractField(object):
     def _deserialize(self, data):
         """convert data (serialized user data, or None) into the data type expected by field"""
         assert data is None or isinstance(data, basestring), '%r is not a string' % data
-        # todo move the rest of the deserializing into the renderers too
-        if hasattr(self.renderer.__class__, 'deserialize'):
+        try:
             return self.renderer.__class__.deserialize(data)
+        except NotImplementedError:
+            pass
         if isinstance(self.type, fatypes.Boolean):
             if data is None and isinstance(self.renderer, BooleanFieldRenderer):
                 return False
