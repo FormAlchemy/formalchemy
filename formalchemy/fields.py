@@ -28,19 +28,17 @@ class FieldRenderer(object):
     name and the column's value as the field's value.
     
     Subclasses should override `render` and `deserialize`.  
-    See the `deserialize` docstring for details.
+    See their docstrings for details.
 
     `_serialized_data` should only need to be overridden by custom renderers
-    that render as multiple form fields.  (DateFieldRenderer is an example of this.)
-
-    You should not need to override `name` or `value`.
+    that render as multiple form inputs.  (DateFieldRenderer is an example of this.)
     """
     def __init__(self, field):
         self.field = field
         assert isinstance(self.field, AbstractField)
         
     def name(self):
-        """Field name"""
+        """Name of rendered input element"""
         clsname = self.field.model.__class__.__name__
         try:
             pk = _pk(self.field.model)
@@ -53,25 +51,29 @@ class FieldRenderer(object):
         return '%s-%s-%s' % (clsname, pk, self.field.name)
     name = property(name)
         
-    def value(self):
+    def _value(self):
         """Submitted value, or field value if none"""
         if self.field.parent.data is not None:
             v = self._serialized_value()
         else:
             v = None
         return v or self.field.value
-    value = property(value)
+    _value = property(_value)
 
     def render(self, **kwargs):
-        """Render the field"""
-        return h.text_field(self.name, value=self.value)
+        """
+        Render the field.  Use self.name to get a unique name for the
+        input element and id.  self._value may also be useful if
+        you are not rendering multiple input elements.
+        """
+        return h.text_field(self.name, value=self._value)
 
     def _serialized_value(self):
         """
         Returns the appropriate value to deserialize for field's
-        datatype, from the user-submitted data.  Only called by
-        `deserialize`.  (So, if you are overriding `deserialize`, 
-        you can use or ignore `_serialized_value` as you please.)
+        datatype, from the user-submitted data.  Only called
+        internally, so, if you are overriding `deserialize`, 
+        you can use or ignore `_serialized_value` as you please.
         
         This is broken out into a separate method so multi-input
         renderers can stitch their values back into a single one
@@ -156,36 +158,36 @@ class TextFieldRenderer(FieldRenderer):
     length = property(length)
 
     def render(self, **kwargs):
-        return h.text_field(self.name, value=self.value, maxlength=self.length, **kwargs)
+        return h.text_field(self.name, value=self._value, maxlength=self.length, **kwargs)
 
 
 class IntegerFieldRenderer(FieldRenderer):
     def render(self, **kwargs):
-        return h.text_field(self.name, value=self.value, **kwargs)
+        return h.text_field(self.name, value=self._value, **kwargs)
 
 
 class PasswordFieldRenderer(TextFieldRenderer):
     def render(self, **kwargs):
-        return h.password_field(self.name, value=self.value, maxlength=self.length, **kwargs)
+        return h.password_field(self.name, value=self._value, maxlength=self.length, **kwargs)
 
 
 class TextAreaFieldRenderer(FieldRenderer):
     def render(self, size, **kwargs):
         if isinstance(size, basestring):
-            return h.text_area(self.name, content=self.value, size=size, **kwargs)
+            return h.text_area(self.name, content=self._value, size=size, **kwargs)
         else:
             cols, rows = size
-            return h.text_area(self.name, content=self.value, cols=cols, rows=rows, **kwargs)
+            return h.text_area(self.name, content=self._value, cols=cols, rows=rows, **kwargs)
 
 
 class HiddenFieldRenderer(FieldRenderer):
     def render(self, **kwargs):
-        return h.hidden_field(self.name, value=self.value, **kwargs)
+        return h.hidden_field(self.name, value=self._value, **kwargs)
 
 
 class BooleanFieldRenderer(FieldRenderer):
     def render(self, **kwargs):
-        return h.check_box(self.name, True, checked=self.value, **kwargs)
+        return h.check_box(self.name, True, checked=self._value, **kwargs)
     def deserialize(self):
         if self._serialized_value() is None:
             return False
@@ -208,13 +210,13 @@ class DateFieldRenderer(FieldRenderer):
         dd_name = self.name + '__day'
         yyyy_name = self.name + '__year'
         # todo fix: "or ''"
-        mm = (data is not None and mm_name in data) and data[mm_name] or str(self.value and self.value.month)
-        dd = (data is not None and dd_name in data) and data[dd_name] or str(self.value and self.value.day)
+        mm = (data is not None and mm_name in data) and data[mm_name] or str(self._value and self._value.month)
+        dd = (data is not None and dd_name in data) and data[dd_name] or str(self._value and self._value.day)
         # could be blank so don't use and/or construct
         if data is not None and yyyy_name in data:
             yyyy = data[yyyy_name]
         else:
-            yyyy = str(self.value and self.value.year or 'YYYY')
+            yyyy = str(self._value and self._value.year or 'YYYY')
         return h.select(mm_name, h.options_for_select(month_options, selected=mm), **kwargs) \
                + ' ' + h.select(dd_name, h.options_for_select(day_options, selected=dd), **kwargs) \
                + ' ' + h.text_field(yyyy_name, value=yyyy, maxlength=4, size=4, **kwargs)
@@ -234,9 +236,9 @@ class TimeFieldRenderer(FieldRenderer):
         hh_name = self.name + '__hour'
         mm_name = self.name + '__minute'
         ss_name = self.name + '__second'
-        hh = (data is not None and hh_name in data) and data[hh_name] or str(self.value and self.value.hour)
-        mm = (data is not None and mm_name in data) and data[mm_name] or str(self.value and self.value.minute)
-        ss = (data is not None and ss_name in data) and data[ss_name] or str(self.value and self.value.second)
+        hh = (data is not None and hh_name in data) and data[hh_name] or str(self._value and self._value.hour)
+        mm = (data is not None and mm_name in data) and data[mm_name] or str(self._value and self._value.minute)
+        ss = (data is not None and ss_name in data) and data[ss_name] or str(self._value and self._value.second)
         return h.select(hh_name, h.options_for_select(hour_options, selected=hh), **kwargs) \
                + ':' + h.select(mm_name, h.options_for_select(minute_options, selected=mm), **kwargs) \
                + ':' + h.select(ss_name, h.options_for_select(second_options, selected=ss), **kwargs)
@@ -277,7 +279,7 @@ class RadioSet(FieldRenderer):
     def render(self, options, **kwargs):
         self.radios = []
         for choice_name, choice_value in _extract_options(options):
-            radio = self.widget(self.name, choice_value, checked=self.value == choice_value, **kwargs)
+            radio = self.widget(self.name, choice_value, checked=self._value == choice_value, **kwargs)
             self.radios.append(radio + choice_name)
         return h.tag("br").join(self.radios)
 
@@ -287,7 +289,7 @@ class CheckBoxSet(RadioSet):
 
 class SelectFieldRenderer(FieldRenderer):
     def render(self, options, **kwargs):
-        selected = kwargs.get('selected', None) or self.value
+        selected = kwargs.get('selected', None) or self._value
         return h.select(self.name, h.options_for_select(options, selected=selected), **kwargs)
 
     
@@ -545,7 +547,7 @@ class Field(AbstractField):
         self._value = value
         
     def value(self):
-        if self.parent.data is not None and self.renderer.name in self.parent.data:
+        if self.parent.data is not None:
             v = self._deserialize()
             if v is not None:
                 return v
@@ -676,7 +678,7 @@ class AttributeField(AbstractField):
         For collections,
         a list of the primary key values of the items in the collection is returned.
         """
-        if self.parent.data is not None and self.renderer.name in self.parent.data:
+        if self.parent.data is not None:
             v = self._deserialize()
         else:
             v = getattr(self.model, self.name)

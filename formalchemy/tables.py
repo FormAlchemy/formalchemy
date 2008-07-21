@@ -131,7 +131,7 @@ class Grid(base.EditableRenderer):
     """
     _render = staticmethod(render_grid)
 
-    def __init__(self, cls, instances=[], session=None, data=base.SimpleMultiDict()):
+    def __init__(self, cls, instances=[], session=None, data=None):
         from sqlalchemy.orm import class_mapper
         if not class_mapper(cls):
             raise Exception('Grid must be bound to an SA mapped class')
@@ -139,13 +139,13 @@ class Grid(base.EditableRenderer):
         self.rows = instances
         self.errors = {}
         
-    def bind(self, instances, session=None, data=base.SimpleMultiDict()):
+    def bind(self, instances, session=None, data=None):
         _validate_iterable(instances)
         mr = base.EditableRenderer.bind(self, self.model, session, data)
         mr.rows = instances
         return mr
 
-    def rebind(self, instances=None, session=None, data=base.SimpleMultiDict()):
+    def rebind(self, instances=None, session=None, data=None):
         if instances is not None:
             _validate_iterable(instances)
         base.EditableRenderer.rebind(self, self.model, session, data)

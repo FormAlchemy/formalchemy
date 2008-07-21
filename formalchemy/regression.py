@@ -70,8 +70,8 @@ class VertexFieldRenderer(FieldRenderer):
         data = self.field.parent.data
         x_name = self.name + '-x'
         y_name = self.name + '-y'
-        x_value = (data is not None and x_name in data) and data[x_name] or str(self.value and self.value.x or '')
-        y_value = (data is not None and y_name in data) and data[y_name] or str(self.value and self.value.y or '')
+        x_value = (data is not None and x_name in data) and data[x_name] or str(self._value and self._value.x or '')
+        y_value = (data is not None and y_name in data) and data[y_name] or str(self._value and self._value.y or '')
         return h.text_field(x_name, value=x_value) + h.text_field(y_name, value=y_value)
     def deserialize(self):
         data = self.field.parent.data.getone(self.name + '-x'), self.field.parent.data.getone(self.name + '-y')
