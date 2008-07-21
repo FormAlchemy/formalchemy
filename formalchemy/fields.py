@@ -21,17 +21,14 @@ __all__ = ['Field', 'FieldRenderer', 'query_options']
 
 class FieldRenderer(object):
     """
-    This should be the super class of all xRenderer classes.
-
-    This class takes a SQLAlchemy mapped class as first argument and the column
-    name to process as second argument. It maps the column name as the field
-    name and the column's value as the field's value.
+    This should be the super class of all Renderer classes.  
     
+    Renderers generate the html corresponding to a single Field,
+    and are also responsible for deserializing form data into
+    Python objects.
+
     Subclasses should override `render` and `deserialize`.  
     See their docstrings for details.
-
-    `_serialized_data` should only need to be overridden by custom renderers
-    that render as multiple form inputs.  (DateFieldRenderer is an example of this.)
     """
     def __init__(self, field):
         self.field = field
@@ -458,7 +455,9 @@ class AbstractField(object):
         """Render the field as a textarea."""
         field = deepcopy(self)
         field._renderer = lambda: self.parent.default_renderers['textarea']
-        field.render_opts={'size': size}
+        if size:
+            field.render_opts={'size': size}
+        return field
     def radio(self, options=None):
         """Render the field as a set of radio buttons."""
         field = deepcopy(self)
