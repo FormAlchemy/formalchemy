@@ -102,7 +102,7 @@ template_text_mako = r"""
 % endfor
 
 % for field in fieldset.render_fields.itervalues():
-  % if isinstance(field.renderer, fields.HiddenFieldRenderer):
+  % if field.requires_label:
 ${field.render()}
   % else:
 <div>
@@ -136,7 +136,7 @@ template_text_tempita = r"""
 {{endfor}}
 
 {{for field in fieldset.render_fields.itervalues()}}
-{{if isinstance(field.renderer, fields.HiddenFieldRenderer)}}
+{{if field.requires_label}}
 {{field.render()}}                                                                              
 {{else}}                                                                                       
 <div>                                                                                          
@@ -251,4 +251,4 @@ class FieldSet(AbstractFieldSet):
         # (notably Django's) make it difficult to perform imports directly in
         # the template itself. If your templating weapon of choice does allow
         # it, feel free to perform such imports in the template.
-        return self._render(fieldset=self, fields=fields)
+        return self._render(fieldset=self)

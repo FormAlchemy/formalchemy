@@ -59,8 +59,8 @@ class FieldRenderer(object):
 
     def render(self, **kwargs):
         """
-        Render the field.  Use self.name to get a unique name for the
-        input element and id.  self._value may also be useful if
+        Render the field.  Use `self.name` to get a unique name for the
+        input element and id.  `self._value` may also be useful if
         you are not rendering multiple input elements.
         """
         return h.text_field(self.name, value=self._value)
@@ -94,7 +94,7 @@ class FieldRenderer(object):
         """
         Turns the user-submitted data into a Python value.  (The raw
         data will be available in self.field.parent.data, or you
-        can use `_serialized_value` if it is convenient.)  For SA
+        can use `_serialized_value` if it is convenient.)  For SQLAlchemy
         collections, return a list of primary keys, and !FormAlchemy
         will take care of turning that into a list of objects.
         For manually added collections, return a list of values.
@@ -357,6 +357,10 @@ class AbstractField(object):
         if hasattr(wrapper._renderer, 'field'):
             wrapper._renderer.field = wrapper
         return wrapper
+
+    def requires_label(self):
+        return isinstance(self.renderer, HiddenFieldRenderer)
+    requires_label = property(requires_label)
                         
     def is_raw_foreign_key(self):
         """True iff this Field is a raw foreign key"""
