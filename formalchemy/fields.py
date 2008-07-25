@@ -359,7 +359,7 @@ class AbstractField(object):
         return wrapper
 
     def requires_label(self):
-        return isinstance(self.renderer, HiddenFieldRenderer)
+        return not isinstance(self.renderer, HiddenFieldRenderer)
     requires_label = property(requires_label)
                         
     def is_raw_foreign_key(self):

@@ -128,6 +128,8 @@ class Grid(base.EditableRenderer):
     """
     `Grid` is essentially an editable `TableCollection`, and must also
     be bound to an iterable of instances of the same class.
+
+    TODO add option to make readonly?  Would allow eliminating TC
     """
     _render = staticmethod(render_grid)
 

@@ -103,8 +103,6 @@ template_text_mako = r"""
 
 % for field in fieldset.render_fields.itervalues():
   % if field.requires_label:
-${field.render()}
-  % else:
 <div>
   <label class="${field.is_required() and 'field_req' or 'field_opt'}" for="${field.renderer.name}">${field.label_text or fieldset.prettify(field.key)}</label>
   ${field.render()}
@@ -121,8 +119,9 @@ document.getElementById("${field.renderer.name}").focus();
 </script>
 <% _focus_rendered = True %>\
 % endif
-
-% endif
+  % else:
+${field.render()}
+  % endif
 % endfor
 """.strip()
 
@@ -137,8 +136,6 @@ template_text_tempita = r"""
 
 {{for field in fieldset.render_fields.itervalues()}}
 {{if field.requires_label}}
-{{field.render()}}                                                                              
-{{else}}                                                                                       
 <div>                                                                                          
   <label class="{{field.is_required() and 'field_req' or 'field_opt'}}" for="{{field.renderer.name}}">{{field.label_text or fieldset.prettify(field.key)}}</label>
   {{field.render()}}                                                                            
@@ -155,7 +152,8 @@ document.getElementById("{{field.renderer.name}}").focus();
 </script>
 {{py:_focus_rendered = True}}
 {{endif}}
-
+{{else}}                                                                                       
+{{field.render()}}                                                                              
 {{endif}}                                                                                      
 {{endfor}}                                                                                     
 """.strip()
