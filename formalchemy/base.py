@@ -146,7 +146,9 @@ class ModelRenderer(object):
             class_mapper(cls)
         except:
             # does this class have raw Fields defined on it?
-            for key in cls.__dict__:
+            keys = cls.__dict__.keys() 
+            keys.sort(lambda a, b: cmp(a.lower(), b.lower())) # 2.3 support
+            for key in keys: 
                 field = cls.__dict__[key]
                 if isinstance(field, fields.Field):
                     if field.name:
