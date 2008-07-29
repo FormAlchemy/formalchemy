@@ -179,7 +179,11 @@ norder2 = NaturalOrder(user=njohn, quantity=5)
 session.commit()
 
 
-from forms import FieldSet as DefaultFieldSet, render_mako, render_tempita
+from forms import FieldSet as DefaultFieldSet, render_tempita
+try:
+    from forms import render_mako
+except ImportError:
+    pass
 from base import SimpleMultiDict
 from fields import Field, query_options
 from validators import ValidationError
@@ -193,9 +197,10 @@ class FieldSet(DefaultFieldSet):
         import fields
         kwargs = dict(fieldset=self, fields=fields)
         tempita = pretty_html(render_tempita(**kwargs))
-        mako = pretty_html(render_mako(**kwargs))
-        assert mako == tempita
-        return mako
+        if 'mako' in globals():
+            mako = pretty_html(render_mako(**kwargs))
+            assert mako == tempita
+        return tempita
 
 def configure_and_render(fs, **options):
     fs.configure(**options)

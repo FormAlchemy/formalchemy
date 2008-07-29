@@ -13,7 +13,8 @@ import helpers as h
 from sqlalchemy.orm import class_mapper
 from sqlalchemy.orm.attributes import ScalarAttributeImpl, ScalarObjectAttributeImpl, CollectionAttributeImpl
 from sqlalchemy.orm.properties import CompositeProperty
-from sqlalchemy.orm.exc import UnmappedClassError
+# from sqlalchemy.orm.exc import UnmappedClassError
+from sqlalchemy.exceptions import InvalidRequestError # 0.4 support
 import fatypes, validators
 
 __all__ = ['Field', 'FieldRenderer', 'query_options']
@@ -39,7 +40,7 @@ class FieldRenderer(object):
         clsname = self.field.model.__class__.__name__
         try:
             pk = _pk(self.field.model)
-        except UnmappedClassError:
+        except InvalidRequestError:
             pk = ''
         else:
             assert pk != ''
