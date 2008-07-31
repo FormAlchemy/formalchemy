@@ -2,45 +2,8 @@ from regression import *
 from tables import *
 
 __doc__ = """
->>> t = Table(bill)
->>> print pretty_html(t.render())
-<tbody>
- <tr>
-  <td class="table_label">
-   Email:
-  </td>
-  <td class="table_field">
-   bill@example.com
-  </td>
- </tr>
- <tr>
-  <td class="table_label">
-   Password:
-  </td>
-  <td class="table_field">
-   1234
-  </td>
- </tr>
- <tr>
-  <td class="table_label">
-   Name:
-  </td>
-  <td class="table_field">
-   Bill
-  </td>
- </tr>
- <tr>
-  <td class="table_label">
-   Orders:
-  </td>
-  <td class="table_field">
-   Quantity: 10
-  </td>
- </tr>
-</tbody>
-
->>> tc = Grid(User, [bill], readonly=True)
->>> print pretty_html(tc.render())
+>>> tc = Grid(User, [bill])
+>>> print pretty_html(configure_and_render(tc, readonly=True))
 <thead>
  <tr>
   <th>
@@ -74,9 +37,9 @@ __doc__ = """
  </tr>
 </tbody>
 
->>> tc = Grid(User, [bill, john], readonly=True)
+>>> tc = Grid(User, [bill, john])
 >>> tc.add(Field('link', type=types.String, value=lambda item: '<a href=%d>link</a>' % item.id))
->>> print pretty_html(tc.render())
+>>> print pretty_html(configure_and_render(tc, readonly=True))
 <thead>
  <tr>
   <th>

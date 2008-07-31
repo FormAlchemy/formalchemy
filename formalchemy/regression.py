@@ -179,9 +179,9 @@ norder2 = NaturalOrder(user=njohn, quantity=5)
 session.commit()
 
 
-from forms import FieldSet as DefaultFieldSet, render_tempita
+from forms import FieldSet as DefaultFieldSet, render_tempita, render_readonly
 try:
-    from forms import render_mako
+    import mako
 except ImportError:
     pass
 from base import SimpleMultiDict
@@ -194,13 +194,14 @@ def pretty_html(html):
 
 class FieldSet(DefaultFieldSet):
     def render(self):
-        import fields
-        kwargs = dict(fieldset=self, fields=fields)
-        tempita = pretty_html(render_tempita(**kwargs))
+        if self.readonly:
+            return pretty_html(DefaultFieldSet.render(self))
+        html = pretty_html(DefaultFieldSet.render(self))
         if 'mako' in globals():
-            mako = pretty_html(render_mako(**kwargs))
-            assert mako == tempita
-        return tempita
+            # FS will use mako by default, so test tempita for equivalence here
+            html_tempita = pretty_html(render_tempita(fieldset=self))
+            assert html == html_tempita
+        return html
 
 def configure_and_render(fs, **options):
     fs.configure(**options)
@@ -912,6 +913,46 @@ True
 >>> v.end.y
 40
 >>> session.rollback()
+
+>>> t = FieldSet(bill)
+>>> t.configure(readonly=True)
+>>> t.readonly
+True
+>>> print pretty_html(t.render())
+<tbody>
+ <tr>
+  <td class="field_readonly">
+   Email:
+  </td>
+  <td>
+   bill@example.com
+  </td>
+ </tr>
+ <tr>
+  <td class="field_readonly">
+   Password:
+  </td>
+  <td>
+   1234
+  </td>
+ </tr>
+ <tr>
+  <td class="field_readonly">
+   Name:
+  </td>
+  <td>
+   Bill
+  </td>
+ </tr>
+ <tr>
+  <td class="field_readonly">
+   Orders:
+  </td>
+  <td>
+   Quantity: 10
+  </td>
+ </tr>
+</tbody>
 """
 
 if __name__ == '__main__':

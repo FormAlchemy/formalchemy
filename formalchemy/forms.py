@@ -92,6 +92,19 @@ class AbstractFieldSet(base.EditableRenderer):
     errors = property(errors)
     
     
+template_text_readonly = r"""
+<tbody>
+{{for field in fieldset.render_fields.itervalues()}}
+  <tr>
+    <td class="field_readonly">{{field.label_text or fieldset.prettify(field.key)}}:</td>
+    <td>{{field.value_str()}}</td>
+  </tr>
+{{endfor}}
+</tbody>
+"""
+render_readonly = TempitaTemplate(template_text_readonly, name='template_readonly').substitute
+
+
 template_text_mako = r"""
 <% _focus_rendered = False %>\
 
@@ -216,6 +229,8 @@ class FieldSet(AbstractFieldSet):
             a reference to the `formalchemy.fields` module (you can of
             course perform other imports in your template, if it supports
             Python code blocks)
+            
+    You can also specify `_render_readonly` similarly to `_render`.
     
     You can also override these on a per-`FieldSet` basis:
     
@@ -226,12 +241,14 @@ class FieldSet(AbstractFieldSet):
     }}}
     """
     _render = staticmethod('render_mako' in locals() and render_mako or render_tempita)
+    _render_readonly = staticmethod(render_readonly)
     
     def __init__(self, *args, **kwargs):
         AbstractFieldSet.__init__(self, *args, **kwargs)
         self.focus = True
-
-    def configure(self, pk=False, exclude=[], include=[], options=[], global_validator=None, focus=True):
+        self.readonly = False
+        
+    def configure(self, pk=False, exclude=[], include=[], options=[], global_validator=None, focus=True, readonly=False):
         """ 
         Besides the options in `AbstractFieldSet.configure`,
         `FieldSet.configure` takes the `focus` parameter, which should be the
@@ -241,6 +258,17 @@ class FieldSet(AbstractFieldSet):
         """
         AbstractFieldSet.configure(self, pk, exclude, include, options, global_validator)
         self.focus = focus
+        self.readonly = readonly
+        
+    def validate(self):
+        if self.readonly:
+            raise Exception('Cannot validate a read-only FieldSet')
+        return AbstractFieldSet.validate(self)
+    
+    def sync(self):
+        if self.readonly:
+            raise Exception('Cannot sync a read-only FieldSet')
+        AbstractFieldSet.sync(self)
 
     def render(self):
         # We pass a reference to the 'fields' module because a relative import
@@ -249,4 +277,6 @@ class FieldSet(AbstractFieldSet):
         # (notably Django's) make it difficult to perform imports directly in
         # the template itself. If your templating weapon of choice does allow
         # it, feel free to perform such imports in the template.
+        if self.readonly:
+            return self._render_readonly(fieldset=self)
         return self._render(fieldset=self)

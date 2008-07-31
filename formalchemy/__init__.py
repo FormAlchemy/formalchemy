@@ -11,7 +11,7 @@ from formalchemy.validators import ValidationError
 import formalchemy.validators as validators
 import formalchemy.fatypes as types
 
-__all__ = ["FieldSet", "AbstractFieldSet", "Field", "FieldRenderer", "Table", "Grid", "form_data", "query_options", "ValidationError", "validators", "SimpleMultiDict", "types"]
+__all__ = ["FieldSet", "AbstractFieldSet", "Field", "FieldRenderer", "Grid", "form_data", "query_options", "ValidationError", "validators", "SimpleMultiDict", "types"]
 __version__ = "0.3.3"
 
 __doc__ = """

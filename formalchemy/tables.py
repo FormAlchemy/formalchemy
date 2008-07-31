@@ -10,21 +10,8 @@ import base, utils
 from tempita import Template as TempitaTemplate # must import after base
 
 
-__all__ = ["Table", "Grid"]
+__all__ = ["Grid"]
 
-
-# todo shouldn't this be CSS?
-template_single = r"""
-<tbody>
-{{for field in table.render_fields.itervalues()}}
-  <tr>
-    <td class="table_label">{{field.label_text or table.prettify(field.key)}}:</td>
-    <td class="table_field">{{field.value_str()}}</td>
-  </tr>
-{{endfor}}
-</tbody>
-"""
-render_single = TempitaTemplate(template_single, name='template_single_table').substitute
 
 template_grid_readonly = r"""
 <thead>
@@ -46,7 +33,7 @@ template_grid_readonly = r"""
 {{endfor}}
 </tbody>
 """
-render_grid_readonly = TempitaTemplate(template_grid_readonly, name='template_collection_table').substitute
+render_grid_readonly = TempitaTemplate(template_grid_readonly, name='template_grid_readonly').substitute
 
 template_grid = r"""
 <thead>
@@ -73,18 +60,7 @@ template_grid = r"""
 {{endfor}}
 </tbody>
 """
-render_grid = TempitaTemplate(template_grid, name='template_grid_table').substitute
-
-
-class Table(base.ModelRenderer):
-    """
-    The `Table` class renders tables from a single model, with the field labels
-    in column one, and the field values in column two.
-    """
-    _render = staticmethod(render_single)
-    
-    def render(self):
-        return self._render(table=self)
+render_grid = TempitaTemplate(template_grid, name='template_grid').substitute
 
 
 def _validate_iterable(o):
@@ -102,18 +78,18 @@ class Grid(base.EditableRenderer):
     _render = staticmethod(render_grid)
     _render_readonly = staticmethod(render_grid_readonly)
 
-    def __init__(self, cls, instances=[], session=None, data=None, readonly=False):
+    def __init__(self, cls, instances=[], session=None, data=None):
         from sqlalchemy.orm import class_mapper
         if not class_mapper(cls):
             raise Exception('Grid must be bound to an SA mapped class')
         base.EditableRenderer.__init__(self, cls, session, data)
         self.rows = instances
+        self.readonly = False
         self.errors = {}
+
+    def configure(self, pk=False, exclude=[], include=[], options=[], readonly=False):
+        base.EditableRenderer.configure(self, pk, exclude, include, options)
         self.readonly = readonly
-        if readonly:
-            self.render = lambda: self._render_readonly(collection=self)
-        else:
-            self.render = lambda: self._render(collection=self)
         
     def bind(self, instances, session=None, data=None):
         _validate_iterable(instances)
@@ -127,6 +103,11 @@ class Grid(base.EditableRenderer):
         base.EditableRenderer.rebind(self, self.model, session, data)
         if instances is not None:
             self.rows = instances
+            
+    def render(self):
+        if self.readonly:
+            return self._render_readonly(collection=self)
+        return self._render(collection=self)
 
     def set_active(self, instance, session=None):
         base.EditableRenderer.rebind(self, instance, session or self.session, self.data)
