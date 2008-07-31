@@ -186,6 +186,26 @@ class FieldSet(AbstractFieldSet):
     creating new instances) and can render a form for editing that instance,
     perform validation, and sync the form data back to the bound instance.
     
+    You can create a `FieldSet` from non-SQLAlchemy, new-style (inheriting
+    from `object`) classes, like this:
+    
+    {{{
+    class Manual(object):
+        a = Field()
+        b = Field(type=types.Integer).dropdown([('one', 1), ('two', 2)])
+    
+    fs = FieldSet(Manual)
+    }}}
+    
+    Field declaration is the same as for adding fields to a
+    SQLAlchemy-based `FieldSet`, except that you do not give the Field a
+    name (the attribute name is used).
+    
+    You can still validate and sync a non-SQLAlchemy class instance, but
+    obviously persisting any data post-sync is up to you.
+    
+    = Customization =
+
     There are three parts you can customize in a `FieldSet` subclass short
     of writing your own render method.  These are `default_renderers`, `prettify`, and
     `_render`.  As in,

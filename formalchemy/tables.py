@@ -24,7 +24,7 @@ template_grid_readonly = r"""
 
 <tbody>
 {{for row in collection.rows:}}
-  {{collection.set_active(row)}}
+  {{collection._set_active(row)}}
   <tr>
   {{for field in collection.render_fields.itervalues()}}
     <td>{{field.value_str()}}</td>
@@ -46,7 +46,7 @@ template_grid = r"""
 
 <tbody>
 {{for row in collection.rows:}}
-  {{collection.set_active(row)}}
+  {{collection._set_active(row)}}
   <tr>
   {{for field in collection.render_fields.itervalues()}}
     <td>
@@ -72,8 +72,43 @@ def _validate_iterable(o):
 
 class Grid(base.EditableRenderer):
     """
-    `Grid` is essentially an editable `TableCollection`, and must also
-    be bound to an iterable of instances of the same class.
+    Besides `FieldSet`, !FormAlchemy provides `Grid` for editing and
+    rendering multiple instances at once.  Most of what you know about
+    `FieldSet` applies to `Grid`, with the following differences to
+    accomodate being bound to multiple objects:
+    
+    == Binding ==
+    
+    The `Grid` constructor takes the following arguments:
+      * `cls`:
+            the class type that the `Grid` will render (NOT an instance)
+      * `instances=[]`:
+            the instances/rows to render
+      * `session=None`:
+            as in `FieldSet`
+      * `data=None`:
+            as in `FieldSet`
+    
+    `bind` and `rebind` take the last 3 arguments (`instances`, `session`,
+    and `data`); you may not specify a different class type than the one
+    given to the constructor.
+    
+    == Configuration ==
+    
+    The `Grid` `configure` method takes the same arguments as `FieldSet`
+    (`pk`, `exclude`, `include`, `options`, `readonly`), except there is
+    no `focus` argument.
+    
+    == Validation and Sync ==
+    
+    These are the same as in `FieldSet`, except that you can also call
+    `sync_one(instance)` to sync a single one of the instances that are
+    bound to the `Grid`.
+    
+    The `Grid` `errors` attribute is a dictionary keyed by bound instance,
+    whose value is similar to the `errors` from a `FieldSet`, that is, a
+    dictionary whose keys are `Field`s, and whose values are
+    `ValidationError` instances.
     """
     _render = staticmethod(render_grid)
     _render_readonly = staticmethod(render_grid_readonly)
@@ -109,7 +144,7 @@ class Grid(base.EditableRenderer):
             return self._render_readonly(collection=self)
         return self._render(collection=self)
 
-    def set_active(self, instance, session=None):
+    def _set_active(self, instance, session=None):
         base.EditableRenderer.rebind(self, instance, session or self.session, self.data)
 
     def validate(self):
@@ -120,7 +155,7 @@ class Grid(base.EditableRenderer):
         self.errors.clear()
         success = True
         for row in self.rows:
-            self.set_active(row)
+            self._set_active(row)
             row_errors = {}
             for field in self.render_fields.itervalues():
                 success = field._validate() and success
@@ -133,7 +168,7 @@ class Grid(base.EditableRenderer):
         # we want to allow the user to sync just rows w/o errors, so this is public
         if self.readonly:
             raise Exception('Cannot sync a read-only Grid')
-        self.set_active(row)
+        self._set_active(row)
         base.EditableRenderer.sync(self)
 
     def sync(self):
