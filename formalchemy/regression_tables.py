@@ -39,7 +39,7 @@ __doc__ = """
  </tr>
 </tbody>
 
->>> tc = TableCollection(User, [bill])
+>>> tc = Grid(User, [bill], readonly=True)
 >>> print pretty_html(tc.render())
 <thead>
  <tr>
@@ -74,7 +74,7 @@ __doc__ = """
  </tr>
 </tbody>
 
->>> tc = TableCollection(User, [bill, john])
+>>> tc = Grid(User, [bill, john], readonly=True)
 >>> tc.add(Field('link', type=types.String, value=lambda item: '<a href=%d>link</a>' % item.id))
 >>> print pretty_html(tc.render())
 <thead>
