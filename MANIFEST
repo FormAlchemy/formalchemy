@@ -1,10 +1,10 @@
 CHANGELOG.txt
 COPYRIGHT.txt
-INSTALL.txt
 README.txt
 setup.py
 formalchemy/__init__.py
 formalchemy/base.py
+formalchemy/fatypes.py
 formalchemy/fields.py
 formalchemy/forms.py
 formalchemy/helpers.py

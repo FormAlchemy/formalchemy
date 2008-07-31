@@ -1,4 +1,4 @@
-Please visit the FormAlchemy's homepage for more information:
+Please visit the FormAlchemy's homepage for documentation and more information:
 
   http://formalchemy.googlecode.com
 
