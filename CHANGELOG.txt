@@ -1,11 +1,16 @@
-FormAlchemy 0.5:
+FormAlchemy 0.5 (r379):
   * Composite field and custom type support
   * Joined table support
-  * Grid renderer (besides FieldSet)
-  * readonly support for FieldSet, Grid
+  * Grid (companion to FieldSet) renders and edits multiple instances
+    at once.
+  * readonly support for FieldSet (replacing undocumented Table), Grid
+    (replacing TableCollection)
   * FieldSet can render Fields from a non-mapped class (experimental)
-  * Saner (backwards-incompatible, but easy port) widget (FieldRenderer) API
-  * FieldSet.render_fields is now an OrderedDict like FieldSet.fields.  Use render_fields.[iter]values() to get an iterable like the old render_fields.
+  * Saner (backwards-incompatible, but easy port) widget
+    (FieldRenderer) API
+  * FieldSet.render_fields is now an OrderedDict like FieldSet.fields.
+    Use render_fields.[iter]values() to get an iterable like the old
+    render_fields.
   * Bug fixes
 
 FormAlchemy 0.3.1 (r329):
