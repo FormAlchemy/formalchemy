@@ -216,12 +216,6 @@ if not hasattr(__builtins__, 'sorted'):
         return L
 
 
-fs = FieldSet(User)
-fs2 = fs.bind(bill)
-
-# equality can tell an field bound to an instance is the same as one bound to a type
-fs.name == fs2.name
-
 __doc__ = r"""
 # some low-level testing first
 >>> fs = FieldSet(order1)
@@ -379,7 +373,7 @@ False
 >>> print fs.foo.dropdown(options=['one', 'two'], multiple=True).checkbox().render() 
 <input id="Two--foo" name="Two--foo" type="checkbox" value="one" />one<br /><input id="Two--foo" name="Two--foo" type="checkbox" value="two" />two
 
->>> fs = FieldSet(User, session)
+>>> fs = FieldSet(User)
 >>> print fs.render()
 <div>
  <label class="field_req" for="User--email">
@@ -417,6 +411,8 @@ document.getElementById("User--email").focus();
   </option>
  </select>
 </div>
+>>> FieldSet(User).render() == FieldSet(User, session).render()
+True
 
 >>> fs = FieldSet(bill)
 >>> print fs.orders.render()

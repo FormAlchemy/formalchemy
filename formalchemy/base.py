@@ -300,10 +300,14 @@ class ModelRenderer(object):
                 raise ValueError('Invalid SQLAlchemy session object %s' % session)
             self.session = session
         elif model:
-            try:
-                self.session = object_session(model)
-            except AttributeError:
-                pass # non-SA object
+            if 's' in locals():
+                # model is a temporary object, expunged from its session -- grab the existing reference
+                self.session = s
+            else:
+                try:
+                    self.session = object_session(model)
+                except AttributeError:
+                    pass # non-SA object
         if self.session:
             try:
                 o_session = object_session(self.model)
