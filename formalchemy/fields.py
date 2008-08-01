@@ -634,12 +634,12 @@ class AttributeField(AbstractField):
             # If the attribute is a foreign key, return the Column that this
             # attribute is mapped from -- e.g., .user -> .user_id. 
             return _foreign_keys(self._property)[0]
-        elif isinstance(self._impl, ScalarAttributeImpl):
+        elif isinstance(self._impl, ScalarAttributeImpl) or self._impl.__class__.__name__ == 'ProxyImpl': # ProxyImpl is a one-off class for each synonym, can't import it
             # normal property, mapped to a single column from the main table
             return self._property.columns[0]
         else:
             # collection -- use the mapped class's PK
-            assert isinstance(self._impl, CollectionAttributeImpl)
+            assert isinstance(self._impl, CollectionAttributeImpl), self._impl.__class__
             return self._property.mapper.primary_key[0]
     _column = property(_column)
     
