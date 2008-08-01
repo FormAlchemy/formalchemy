@@ -634,7 +634,7 @@ class AttributeField(AbstractField):
             # If the attribute is a foreign key, return the Column that this
             # attribute is mapped from -- e.g., .user -> .user_id. 
             return _foreign_keys(self._property)[0]
-        elif isinstance(self._impl, ScalarAttributeImpl) or self._impl.__class__.__name__ == 'ProxyImpl': # ProxyImpl is a one-off class for each synonym, can't import it
+        elif isinstance(self._impl, ScalarAttributeImpl) or self._impl.__class__.__name__ in ('ProxyImpl', '_ProxyImpl'): # 0.4 compatibility: ProxyImpl is a one-off class for each synonym, can't import it
             # normal property, mapped to a single column from the main table
             return self._property.columns[0]
         else:
