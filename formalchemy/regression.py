@@ -616,7 +616,7 @@ False
 >>> fs_1.errors
 {AttributeField(id): [ValidationError('Value is not an integer',)]}
 
->>> fs_u = FieldSet(User, data=SimpleMultiDict({'User--orders': []}))
+>>> fs_u = FieldSet(User, data={})
 >>> fs_u.configure(include=[fs_u.orders])
 >>> fs_u.validate()
 True

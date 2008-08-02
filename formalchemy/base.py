@@ -69,7 +69,9 @@ class SimpleMultiDict(dict):
         return v[0]
     def getall(self, key):
         v = dict.get(self, key)
-        if isinstance(v, basestring):
+        if v is None:
+            return []
+        elif isinstance(v, basestring):
             return [v]
         return v
 
