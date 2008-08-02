@@ -333,7 +333,7 @@ document.getElementById("Two--foo").focus();
 <input id="Two--foo" name="Two--foo" onblur="test()" type="text" />
 
 >>> cb = CheckBox()
->>> fs_cb = FieldSet(cb, data=SimpleMultiDict())
+>>> fs_cb = FieldSet(cb, data={})
 >>> print fs_cb.field.render()
 <input id="CheckBox--field" name="CheckBox--field" type="checkbox" value="True" />
 >>> print fs_cb.field.dropdown().render()
@@ -350,7 +350,7 @@ True
 >>> fs_cb.sync()
 >>> cb.field
 False
->>> fs_cb.rebind(data=SimpleMultiDict({'CheckBox--field': 'True'}))
+>>> fs_cb.rebind(data={'CheckBox--field': 'True'})
 >>> fs_cb.validate()
 True
 >>> fs_cb.sync()

@@ -85,8 +85,6 @@ class FieldRenderer(object):
         in the input element corresponding to self.name.
         """
         params = self.field.parent.data
-        if not (hasattr(params, 'getall') and hasattr(params, 'getone')):
-            raise Exception('unsupported params object.  currently only Paste-style multidicts are supported')
         if self.field.is_collection():
             return params.getall(self.name)
         return params.getone(self.name)

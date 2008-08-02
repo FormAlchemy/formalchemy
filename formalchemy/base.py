@@ -59,14 +59,19 @@ def prettify(text):
 
 class SimpleMultiDict(dict):
     """
-    Adds `getone`, `getall` methods to dict (that just call `get`).
-    Used where an empty multidict is needed.  Also useful for testing (just
-    take care to pass a list where you know getall will be used, i.e.,
-    when `field.is_collection` is true).
+    Adds `getone`, `getall` methods to dict.  Assumes that values are either
+    a string or a list of strings.
     """
-    getone = dict.get
+    def getone(self, key):
+        v = dict.get(self, key)
+        if v is None or isinstance(v, basestring):
+            return v
+        return v[0]
     def getall(self, key):
-        return self.get(key, [])
+        v = dict.get(self, key)
+        if isinstance(v, basestring):
+            return [v]
+        return v
 
 
 class ModelRenderer(object):
@@ -294,7 +299,17 @@ class ModelRenderer(object):
             if self.model and type(self.model) != type(model):
                 raise ValueError('You can only bind to another object of the same type you originally bound to (%s), not %s' % (type(self.model), type(model)))
             self.model = model
-        self.data = data
+
+        if data is None:
+            self.data = None
+        elif hasattr(data, 'getall') and hasattr(data, 'getone'):
+            self.data = data
+        else:
+            try:
+                self.data = SimpleMultiDict(data)
+            except:
+                raise Exception('unsupported data object %s.  currently only dicts and Paste multidicts are supported' % self.data)
+
         if session:
             if not isinstance(session, Session):
                 raise ValueError('Invalid SQLAlchemy session object %s' % session)
