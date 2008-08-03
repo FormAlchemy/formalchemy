@@ -292,12 +292,12 @@ class ModelRenderer(object):
                     raise Exception('%s appears to be a class, not an instance, but FormAlchemy cannot instantiate it' % model)
                 # take object out of session, if present
                 try:
-                    s = object_session(model)
+                    _obj_session = object_session(model)
                 except AttributeError:
                     pass # non-SA object; doesn't need session
                 else:
-                    if s:
-                        s.expunge(model)
+                    if _obj_session:
+                        _obj_session.expunge(model)
             if self.model and type(self.model) != type(model):
                 raise ValueError('You can only bind to another object of the same type you originally bound to (%s), not %s' % (type(self.model), type(model)))
             self.model = model
@@ -317,9 +317,9 @@ class ModelRenderer(object):
                 raise ValueError('Invalid SQLAlchemy session object %s' % session)
             self.session = session
         elif model:
-            if 's' in locals():
+            if '_obj_session' in locals():
                 # model is a temporary object, expunged from its session -- grab the existing reference
-                self.session = s
+                self.session = _obj_session
             else:
                 try:
                     self.session = object_session(model)
