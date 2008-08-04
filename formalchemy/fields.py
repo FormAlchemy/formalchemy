@@ -301,7 +301,8 @@ def query_options(query):
     
     This list is suitable for using as a value for `options` parameters.
     """
-    return [(str(item), _pk(item)) for item in query.all()]
+    fn = query.session.connection().engine.dialect.convert_unicode and unicode or str
+    return [(fn(item), _pk(item)) for item in query.all()]
 
 
 def _foreign_keys(property):
