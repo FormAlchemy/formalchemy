@@ -23,7 +23,7 @@ class One(Base):
 class Two(Base):
     __tablename__ = 'twos'
     id = Column('id', Integer, primary_key=True)
-    foo = Column('foo', Integer, nullable=True)
+    foo = Column('foo', Integer, default='133', nullable=True)
 
 class Three(Base):
     __tablename__ = 'threes'
@@ -216,6 +216,10 @@ if not hasattr(__builtins__, 'sorted'):
         return L
 
 
+two = Two()
+fs_2 = FieldSet(two, data=SimpleMultiDict({'Two--foo': ''}))
+fs_2.foo.value
+
 __doc__ = r"""
 # some low-level testing first
 >>> fs = FieldSet(order1)
@@ -264,7 +268,7 @@ document.getElementById("Two--id").focus();
  <label class="field_opt" for="Two--foo">
   Foo
  </label>
- <input id="Two--foo" name="Two--foo" type="text" />
+ <input id="Two--foo" name="Two--foo" type="text" value="133" />
 </div>
 
 >>> fs = FieldSet(Two)
@@ -273,7 +277,7 @@ document.getElementById("Two--id").focus();
  <label class="field_opt" for="Two--foo">
   Foo
  </label>
- <input id="Two--foo" name="Two--foo" type="text" />
+ <input id="Two--foo" name="Two--foo" type="text" value="133" />
 </div>
 <script type="text/javascript">
  //<![CDATA[
@@ -288,7 +292,7 @@ document.getElementById("Two--foo").focus();
  <label class="field_opt" for="Two--foo">
   A custom label
  </label>
- <input id="Two--foo" name="Two--foo" type="text" />
+ <input id="Two--foo" name="Two--foo" type="text" value="133" />
 </div>
 <script type="text/javascript">
  //<![CDATA[
@@ -303,7 +307,7 @@ document.getElementById("Two--foo").focus();
 >>> fs = FieldSet(Two) 
 >>> fs.configure(include=[fs.foo.hidden()])
 >>> print fs.render()
-<input id="Two--foo" name="Two--foo" type="hidden" />
+<input id="Two--foo" name="Two--foo" type="hidden" value="133" />
 
 >>> fs = FieldSet(Two)
 >>> fs.configure(include=[fs.foo.dropdown([('option1', 'value1'), ('option2', 'value2')])])
@@ -330,7 +334,7 @@ document.getElementById("Two--foo").focus();
 >>> fs = FieldSet(Two)
 >>> assert configure_and_render(fs, include=[fs.foo.dropdown([('option1', 'value1'), ('option2', 'value2')])]) == configure_and_render(fs, options=[fs.foo.dropdown([('option1', 'value1'), ('option2', 'value2')])]) 
 >>> print fs.foo.render(onblur='test()')
-<input id="Two--foo" name="Two--foo" onblur="test()" type="text" />
+<input id="Two--foo" name="Two--foo" onblur="test()" type="text" value="133" />
 
 >>> cb = CheckBox()
 >>> fs_cb = FieldSet(cb, data={})
@@ -425,7 +429,7 @@ True
 
 >>> fs = FieldSet(Two)
 >>> print fs.foo.render()
-<input id="Two--foo" name="Two--foo" type="text" />
+<input id="Two--foo" name="Two--foo" type="text" value="133" />
 
 >>> fs = FieldSet(Two)
 >>> print fs.foo.dropdown([('option1', 'value1'), ('option2', 'value2')]).render()
@@ -555,6 +559,8 @@ document.getElementById("OTOParent--oto_child_id").focus();
 # validation + sync
 >>> two = Two()
 >>> fs_2 = FieldSet(two, data=SimpleMultiDict({'Two--foo': ''}))
+>>> fs_2.foo.value # '' is deserialized to None, so default of 133 is used
+'133'
 >>> fs_2.validate()
 True
 >>> fs_2.configure(options=[fs_2.foo.required()], focus=None)
@@ -567,7 +573,7 @@ False
  <label class="field_req" for="Two--foo">
   Foo
  </label>
- <input id="Two--foo" name="Two--foo" type="text" />
+ <input id="Two--foo" name="Two--foo" type="text" value="133" />
  <span class="field_error">
   Please enter a value
  </span>
