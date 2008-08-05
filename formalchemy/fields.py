@@ -493,6 +493,11 @@ class AbstractField(object):
         if multiple:
             field.render_opts['size'] = size
         return field
+    def reset(self):
+        """
+        Return the field with all configuration changes reverted.
+        """
+        return deepcopy(self.parent._fields[self.name])
     
     def _get_renderer(self):
         for t in self.parent.default_renderers:

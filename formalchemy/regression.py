@@ -333,8 +333,17 @@ document.getElementById("Two--foo").focus();
 
 >>> fs = FieldSet(Two)
 >>> assert configure_and_render(fs, include=[fs.foo.dropdown([('option1', 'value1'), ('option2', 'value2')])]) == configure_and_render(fs, options=[fs.foo.dropdown([('option1', 'value1'), ('option2', 'value2')])]) 
->>> print fs.foo.render(onblur='test()')
-<input id="Two--foo" name="Two--foo" onblur="test()" type="text" value="133" />
+>>> print pretty_html(fs.foo.render(onblur='test()'))
+<select id="Two--foo" name="Two--foo" onblur="test()">
+ <option value="value1">
+  option1
+ </option>
+ <option value="value2">
+  option2
+ </option>
+</select>
+>>> print fs.foo.reset().render(onblur='test')
+<input id="Two--foo" name="Two--foo" onblur="test" type="text" value="133" />
 
 >>> cb = CheckBox()
 >>> fs_cb = FieldSet(cb, data={})
@@ -828,10 +837,10 @@ True
 # test attribute names
 >>> fs = FieldSet(One)
 >>> fs.add(Field('foo'))
->>> fs.foo == fs.fields['foo']
+>>> fs.foo == fs._fields['foo']
 True
 >>> fs.add(Field('add'))
->>> fs.add == fs.fields['add']
+>>> fs.add == fs._fields['add']
 False
 
 # change default renderer 
@@ -856,7 +865,7 @@ AttributeError: Do not set field attributes manually.  Use add() or configure() 
 
 # join
 >>> fs = FieldSet(Order__User)
->>> fs.fields.values()
+>>> fs._fields.values()
 [AttributeField(orders_id), AttributeField(orders_user_id), AttributeField(orders_quantity), AttributeField(users_id), AttributeField(users_email), AttributeField(users_password), AttributeField(users_name)]
 >>> fs.rebind(session.query(Order__User).filter_by(orders_id=1).one())
 >>> print configure_and_render(fs, focus=None)

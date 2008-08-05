@@ -245,13 +245,7 @@ class FieldSet(AbstractFieldSet):
     `Template.render` from a mako Template or `Template.substitute` from a
     Tempita Template.
     
-    `_render` should take as parameters:
-      * `fieldset`:
-            the `FieldSet` to render
-      * `fields`:
-            a reference to the `formalchemy.fields` module (you can of
-            course perform other imports in your template, if it supports
-            Python code blocks)
+    `_render` should take as a parameter the `FieldSet` to render.
             
     You can also specify `_render_readonly` similarly to `_render`.
     

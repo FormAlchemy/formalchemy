@@ -127,22 +127,23 @@ class ModelRenderer(object):
         fs2.render()
         }}}
         
-        The `fields` attribute is an OrderedDict of all the `Field`s the
-        ModelRenderer knows about, keyed by name. The order of the fields is
-        the order they were declared in the SQLAlchemy model class.
-        
         The `render_fields` attribute is an OrderedDict of all the `Field`s
-        that have been configured, also keyed by name. The order of the fields
-        is the order in `include`, or the order in `fields` if no `include` is
-        specified.
+        that have been configured, keyed by name. The order of the fields
+        is the order in `include`, or the order they were declared
+        in the SQLAlchemy model class if no `include` is specified.
+
+        The `_fields` attribute is an OrderedDict of all the `Field`s
+        the ModelRenderer knows about, keyed by name, in their
+        unconfigured state.  You should not normally need to access
+        `_fields` directly.
         
-        Note that although equivalent `Field`s (fields referring to the same
-        attribute on the SQLAlchemy model) will equate with the == operator,
-        the versions in `fields` are the original, unmodified ones, and the
-        versions in `render_fields` have all the transforms from `configure`
-        applied.
+        (Note that although equivalent `Field`s (fields referring to
+        the same attribute on the SQLAlchemy model) will equate with
+        the == operator, they are NOT necessarily the same `Field`
+        instance.  Stick to referencing `Field`s from their parent
+        `FieldSet` to always get the "right" instance.)
         """
-        self.fields = OrderedDict()
+        self._fields = OrderedDict()
         self._render_fields = OrderedDict()
         self.model = self.session = None
 
@@ -162,7 +163,7 @@ class ModelRenderer(object):
                         raise Exception('Fields in a non-mapped class have the same name as their attribute.  Do not manually give them a name.')
                     field.name = key
                     self.add(field)
-            if not self.fields:
+            if not self._fields:
                 raise Exception("not bound to a SA instance, and no manual Field definitions found")
         else:
             # SA class.
@@ -175,14 +176,14 @@ class ModelRenderer(object):
                     L.append(fields.AttributeField(iattr, self))
             L.sort(lambda a, b: cmp(not a.is_vanilla(), not b.is_vanilla())) # note, key= not used for 2.3 support
             for field in L:
-                self.fields[field.key] = field
+                self._fields[field.key] = field
                 
     def add(self, field):
         """Add a form Field.  By default, this Field will be included in the rendered form or table."""
         if not isinstance(field, fields.Field):
             raise ValueError('Can only add Field objects; got %s instead' % field)
         field.parent = self
-        self.fields[field.name] = field
+        self._fields[field.name] = field
                 
     def render_fields(self):
         """The set of attributes that will be rendered"""
@@ -270,7 +271,7 @@ class ModelRenderer(object):
         mr.__dict__ = dict(self.__dict__)
         # two steps so bind's error checking can work
         ModelRenderer.rebind(mr, model, session, data)
-        mr.fields = dict([(key, renderer.bind(mr)) for key, renderer in self.fields.iteritems()])
+        mr._fields = dict([(key, renderer.bind(mr)) for key, renderer in self._fields.iteritems()])
         if self._render_fields:
             mr._render_fields = OrderedDict([(field.name, field) for field in 
                                              [field.bind(mr) for field in self._render_fields.itervalues()]])
@@ -342,7 +343,7 @@ class ModelRenderer(object):
             field.sync()
 
     def _raw_fields(self):
-        return self.fields.values()
+        return self._fields.values()
     
     def _get_fields(self, pk=False, exclude=[], include=[], options=[]):
         if include and exclude:
@@ -378,12 +379,15 @@ class ModelRenderer(object):
     
     def __getattr__(self, attrname):
         try:
-            return self.fields[attrname]
+            return self.render_fields[attrname]
         except KeyError:
-            raise AttributeError(attrname)
+            try:
+                return self._fields[attrname]
+            except KeyError:
+                raise AttributeError(attrname)
         
     def __setattr__(self, attrname, value):
-        if attrname not in ('fields', '__dict__') and attrname in self.fields or isinstance(value, fields.AbstractField):
+        if attrname not in ('_fields', '__dict__') and attrname in self._fields or isinstance(value, fields.AbstractField):
             raise AttributeError('Do not set field attributes manually.  Use add() or configure() instead')
         object.__setattr__(self, attrname, value)
         
