@@ -68,6 +68,9 @@ class AbstractFieldSet(base.EditableRenderer):
         success = True
         for field in self.render_fields.itervalues():
             success = field._validate() and success
+        # run this _after_ the field validators, since each field validator
+        # resets its error list. we want to allow the global validator to add
+        # errors to individual fields.
         if self.validator:
             self._errors = []
             try:
