@@ -15,6 +15,7 @@ if __version__.split('.') < [0, 4, 1]:
 from sqlalchemy.orm.attributes import InstrumentedAttribute, ScalarAttributeImpl
 from sqlalchemy.orm import compile_mappers, object_session, class_mapper
 from sqlalchemy.orm.session import Session
+from sqlalchemy.orm.scoping import ScopedSession
 from sqlalchemy.util import OrderedDict
 
 import fields, utils, fatypes
@@ -314,7 +315,7 @@ class ModelRenderer(object):
                 raise Exception('unsupported data object %s.  currently only dicts and Paste multidicts are supported' % self.data)
 
         if session:
-            if not isinstance(session, Session):
+            if not isinstance(session, Session) and not isinstance(session, ScopedSession):
                 raise ValueError('Invalid SQLAlchemy session object %s' % session)
             self.session = session
         elif model:
