@@ -413,6 +413,8 @@ class AbstractField(object):
         for attr, value in kwattrs.iteritems():
             setattr(copied, attr, value)
         return copied
+    def with_renderer(self, r):
+        return self._modified(_renderer=r)
     def bind(self, parent):
         """Return a copy of this Field, bound to a different parent"""
         return self._modified(parent=parent)

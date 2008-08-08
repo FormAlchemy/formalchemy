@@ -1,3 +1,7 @@
+FormAlchemy 0.?:
+  * add Field.with_renderer
+  * fs.[field] returns the configured version of the field, not the unconfigured.  fs.fields renamed to fs._fields.  Added Field.reset() to deepcopy the unconfigured version.
+
 FormAlchemy 0.5.1 (r397):
   * Synonym support
   * Bug fixes

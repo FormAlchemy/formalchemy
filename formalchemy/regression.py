@@ -9,7 +9,7 @@ from sqlalchemy.orm import *
 from sqlalchemy.ext.declarative import declarative_base
 logging.getLogger('sqlalchemy').setLevel(logging.ERROR)
 
-from fields import Field, SelectFieldRenderer, FieldRenderer
+from fields import Field, SelectFieldRenderer, FieldRenderer, TextFieldRenderer
 import fatypes as types
 
 engine = create_engine('sqlite://')
@@ -804,11 +804,14 @@ True
 # test Field __hash__, __eq__
 >>> fs.foo == fs.foo.dropdown(options=[('1', 1), ('2', 2)])
 True
+
 >>> fs2 = FieldSet(One)
 >>> fs2.add(Field('foo', types.Integer, value=2))
 >>> fs2.configure(options=[fs2.foo.dropdown(options=[('1', 1), ('2', 2)])], focus=None)
 >>> fs.render() == fs2.render()
 True
+>>> print fs2.foo.with_renderer(FieldRenderer).render()
+<input id="One--foo" name="One--foo" type="text" value="2" />
 
 >>> fs_1 = FieldSet(One)
 >>> fs_1.add(Field('foo', types.Integer, value=[2, 3]).dropdown(options=[('1', 1), ('2', 2), ('3', 3)], multiple=True))
