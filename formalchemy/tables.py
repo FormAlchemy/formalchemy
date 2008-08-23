@@ -139,10 +139,10 @@ class Grid(base.EditableRenderer):
         if instances is not None:
             self.rows = instances
             
-    def render(self):
+    def render(self, **kwargs):
         if self.readonly:
-            return self._render_readonly(collection=self)
-        return self._render(collection=self)
+            return self._render_readonly(collection=self, **kwargs)
+        return self._render(collection=self, **kwargs)
 
     def _set_active(self, instance, session=None):
         base.EditableRenderer.rebind(self, instance, session or self.session, self.data)

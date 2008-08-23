@@ -392,7 +392,7 @@ class ModelRenderer(object):
             raise AttributeError('Do not set field attributes manually.  Use add() or configure() instead')
         object.__setattr__(self, attrname, value)
         
-    def render(self):
+    def render(self, **kwargs):
         raise NotImplementedError()
 
 

@@ -287,7 +287,7 @@ class FieldSet(AbstractFieldSet):
             raise Exception('Cannot sync a read-only FieldSet')
         AbstractFieldSet.sync(self)
 
-    def render(self):
+    def render(self, **kwargs):
         # We pass a reference to the 'fields' module because a relative import
         # in the template won't work in production, and an absolute import
         # makes testing more of a pain. Additionally, some templating systems
@@ -295,5 +295,5 @@ class FieldSet(AbstractFieldSet):
         # the template itself. If your templating weapon of choice does allow
         # it, feel free to perform such imports in the template.
         if self.readonly:
-            return self._render_readonly(fieldset=self)
-        return self._render(fieldset=self)
+            return self._render_readonly(fieldset=self, **kwargs)
+        return self._render(fieldset=self, **kwargs)
