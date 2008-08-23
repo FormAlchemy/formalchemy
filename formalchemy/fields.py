@@ -414,6 +414,12 @@ class AbstractField(object):
             setattr(copied, attr, value)
         return copied
     def with_renderer(self, r):
+        """
+        Return a copy of this Field, with a different renderer.
+        Used for one-off renderer changes; if you want to change the
+        renderer for all instances of a Field type, modify
+        FieldSet.default_renderers instead.
+        """
         return self._modified(_renderer=r)
     def bind(self, parent):
         """Return a copy of this Field, bound to a different parent"""
