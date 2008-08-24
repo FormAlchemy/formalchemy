@@ -207,6 +207,18 @@ def tag(name, open=False, **options):
     tag = '<%s%s%s' % (name, (options and tag_options(**options)) or '', (open and '>') or ' />')
     return tag
 
+def label(value, **kwargs):
+    """
+    Return a label tag
+
+        >>> print label('My label', for_='fieldname')
+        <label for="fieldname">My label</label>
+
+    """
+    if 'for_' in kwargs:
+        kwargs['for'] = kwargs.pop('for_')
+    return tag('label', open=True, **kwargs) + value + '</label>'
+
 def select(name, option_tags='', **options):
     """
     Creates a dropdown selection box

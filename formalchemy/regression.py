@@ -35,7 +35,11 @@ class CheckBox(Base):
     __tablename__ = 'checkboxes'
     id = Column('id', Integer, primary_key=True)
     field = Column('field', Boolean, nullable=False)
-    
+
+class Binaries(Base):
+    __tablename__ = 'binaries'
+    id = Column('id', Integer, primary_key=True)
+    file = Column('file', Binary, nullable=True)
 
 vertices = Table('vertices', Base.metadata, 
     Column('id', Integer, primary_key=True),

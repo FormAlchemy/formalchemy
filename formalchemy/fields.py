@@ -3,6 +3,7 @@
 # This module is part of FormAlchemy and is released under
 # the MIT License: http://www.opensource.org/licenses/mit-license.php
 
+import cgi
 import logging
 logger = logging.getLogger('formalchemy.' + __name__)
 
@@ -187,12 +188,39 @@ class BooleanFieldRenderer(FieldRenderer):
             return False
         return FieldRenderer.deserialize(self)
 
-
 class FileFieldRenderer(FieldRenderer):
-    def render(self, **kwargs):
-        # todo Do we need a value here ?
-        return h.file_field(self.name, **kwargs)
+    remove_label = 'Remove'
+    def __init__(self, *args, **kwargs):
+        super(FileFieldRenderer, self).__init__(*args, **kwargs)
+        # add an attribute to cache FieldStorage data
+        self._data = None
 
+    def render(self, **kwargs):
+        if self.field.value:
+            checkbox_name = '%s--remove' % self.name
+            return '%s %s %s' % (
+                   h.file_field(self.name, **kwargs),
+                   h.check_box(checkbox_name),
+                   h.label(self.remove_label, for_=checkbox_name))
+        else:
+            return h.file_field(self.name, **kwargs)
+
+    def deserialize(self):
+        data = super(FileFieldRenderer, self).deserialize()
+        if isinstance(data, cgi.FieldStorage):
+            if data.filename:
+                # FieldStorage can only be read once so we need to cache the
+                # value since FA call deserialize during validation and
+                # synchronisation
+                if self._data is None:
+                    self._data = data.file.read()
+                data = self._data
+            else:
+                data = None
+        checkbox_name = '%s--remove' % self.name
+        if not data and not self.field.parent.data.has_key(checkbox_name):
+            data = getattr(self.field.model, self.field.name)
+        return data is not None and data or ''
 
 class DateFieldRenderer(FieldRenderer):
     def _render(self, **kwargs):

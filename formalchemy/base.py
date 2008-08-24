@@ -5,6 +5,7 @@
 
 # TODO add doc section on recommended session setup
 
+import cgi
 import logging
 logger = logging.getLogger('formalchemy.' + __name__)
 
@@ -65,7 +66,7 @@ class SimpleMultiDict(dict):
     """
     def getone(self, key):
         v = dict.get(self, key)
-        if v is None or isinstance(v, basestring):
+        if v is None or isinstance(v, basestring) or isinstance(v, cgi.FieldStorage):
             return v
         return v[0]
     def getall(self, key):
