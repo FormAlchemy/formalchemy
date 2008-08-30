@@ -188,7 +188,10 @@ class ModelRenderer(object):
         self._fields[field.name] = field
                 
     def render_fields(self):
-        """The set of attributes that will be rendered, as a dict of {fieldname: Field} pairs"""
+        """
+        The set of attributes that will be rendered, as a (ordered)
+        dict of {fieldname: Field} pairs
+        """
         if not self._render_fields:
             self._render_fields = OrderedDict([(field.name, field) for field in self._get_fields()])
         return self._render_fields
