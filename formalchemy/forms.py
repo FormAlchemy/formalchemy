@@ -7,6 +7,7 @@ import logging
 logger = logging.getLogger('formalchemy.' + __name__)
 
 import base, fields
+from i18n import get_translator
 from validators import ValidationError
 
 from tempita import Template as TempitaTemplate # must import after base
@@ -16,7 +17,7 @@ __all__ = ['AbstractFieldSet', 'FieldSet', 'form_data']
 
 
 def form_data(fieldset, params):
-    """ 
+    """
     deprecated.  moved the "pull stuff out of a request object" stuff
     into relevant_data().  until this is removed it is a no-op.
     """
@@ -33,12 +34,12 @@ class AbstractFieldSet(base.EditableRenderer):
 
     `AbstractBaseSet` encorporates validation/errors logic and provides a default
     `configure` method.  It does *not* provide `render`.
-    
+
     You can write `render` by manually sticking strings together if that's what you want,
     but we recommend using a templating package for clarity and maintainability.
     !FormAlchemy includes the Tempita templating package as formalchemy.tempita;
-    see http://pythonpaste.org/tempita/ for documentation.  
-    
+    see http://pythonpaste.org/tempita/ for documentation.
+
     `formalchemy.forms.template_text_tempita` is the default template used by `FieldSet.`
     !FormAlchemy also includes a Mako version, `formalchemy.forms.template_text_mako`,
     and will use that instead if Mako is available.  The rendered HTML is identical
@@ -79,7 +80,7 @@ class AbstractFieldSet(base.EditableRenderer):
                 self._errors = e.args
                 success = False
         return success
-    
+
     def errors(self):
         """
         A dictionary of validation failures.  Always empty before `validate()` is run.
@@ -93,8 +94,8 @@ class AbstractFieldSet(base.EditableRenderer):
                             for field in self.render_fields.itervalues() if field.errors]))
         return errors
     errors = property(errors)
-    
-    
+
+
 template_text_readonly = r"""
 <tbody>
 {{for field in fieldset.render_fields.itervalues()}}
@@ -109,11 +110,14 @@ render_readonly = TempitaTemplate(template_text_readonly, name='template_readonl
 
 
 template_text_mako = r"""
-<% _focus_rendered = False %>\
+<%
+_ = F_
+_focus_rendered = False
+%>\
 
 % for error in fieldset.errors.get(None, []):
 <div class="fieldset_error">
-  ${error}
+  ${_(error)}
 </div>
 % endfor
 
@@ -123,7 +127,7 @@ template_text_mako = r"""
   <label class="${field.is_required() and 'field_req' or 'field_opt'}" for="${field.renderer.name}">${field.label_text or fieldset.prettify(field.key)}</label>
   ${field.render()}
   % for error in field.errors:
-  <span class="field_error">${error}</span>
+  <span class="field_error">${_(error)}</span>
   % endfor
 </div>
 
@@ -143,22 +147,23 @@ ${field.render()}
 
 template_text_tempita = r"""
 {{py:_focus_rendered = False}}
+{{py:_ = F_}}
 
 {{for error in fieldset.errors.get(None, [])}}
 <div class="fieldset_error">
-  {{error}}
+  {{_(error)}}
 </div>
 {{endfor}}
 
 {{for field in fieldset.render_fields.itervalues()}}
 {{if field.requires_label}}
-<div>                                                                                          
+<div>
   <label class="{{field.is_required() and 'field_req' or 'field_opt'}}" for="{{field.renderer.name}}">{{field.label_text or fieldset.prettify(field.key)}}</label>
-  {{field.render()}}                                                                            
+  {{field.render()}}
   {{for error in field.errors}}
-  <span class="field_error">{{error}}</span>
+  <span class="field_error">{{_(error)}}</span>
   {{endfor}}
-</div>                                                                                         
+</div>
 
 {{if (fieldset.focus == field or fieldset.focus is True) and not _focus_rendered}}
 <script type="text/javascript">
@@ -168,10 +173,10 @@ document.getElementById("{{field.renderer.name}}").focus();
 </script>
 {{py:_focus_rendered = True}}
 {{endif}}
-{{else}}                                                                                       
-{{field.render()}}                                                                              
-{{endif}}                                                                                      
-{{endfor}}                                                                                     
+{{else}}
+{{field.render()}}
+{{endif}}
+{{endfor}}
 """.strip()
 render_tempita = TempitaTemplate(template_text_tempita, name='fieldset_template').substitute
 
@@ -188,31 +193,31 @@ class FieldSet(AbstractFieldSet):
     A `FieldSet` is bound to a SQLAlchemy mapped instance (or class, for
     creating new instances) and can render a form for editing that instance,
     perform validation, and sync the form data back to the bound instance.
-    
+
     You can create a `FieldSet` from non-SQLAlchemy, new-style (inheriting
     from `object`) classes, like this:
-    
+
     {{{
     class Manual(object):
         a = Field()
         b = Field(type=types.Integer).dropdown([('one', 1), ('two', 2)])
-    
+
     fs = FieldSet(Manual)
     }}}
-    
+
     Field declaration is the same as for adding fields to a
     SQLAlchemy-based `FieldSet`, except that you do not give the Field a
     name (the attribute name is used).
-    
+
     You can still validate and sync a non-SQLAlchemy class instance, but
     obviously persisting any data post-sync is up to you.
-    
+
     = Customization =
 
     There are three parts you can customize in a `FieldSet` subclass short
     of writing your own render method.  These are `default_renderers`, `prettify`, and
     `_render`.  As in,
-    
+
     {{{
     class MyFieldSet(FieldSet):
         default_renderers = {
@@ -223,7 +228,7 @@ class FieldSet(AbstractFieldSet):
         prettify = staticmethod(myprettify)
         _render = staticmethod(myrender)
     }}}
-    
+
     `default_renderers` is a dict of callables returning a FieldRenderer.  Usually these
     will be FieldRenderer subclasses, but this is not required.  For instance,
     to make Booleans render as select fields with Yes/No options by default,
@@ -237,20 +242,20 @@ class FieldSet(AbstractFieldSet):
 
     FieldSet.default_renderers[types.Boolean] = BooleanSelectRenderer
     }}}
-    
+
     `prettify` is a function that, given an attribute name ('user_name')
     turns it into something usable as an HTML label ('User name').
-    
+
     `_render` should be a template rendering method, such as
     `Template.render` from a mako Template or `Template.substitute` from a
     Tempita Template.
-    
+
     `_render` should take as a parameter the `FieldSet` to render.
-            
+
     You can also specify `_render_readonly` similarly to `_render`.
-    
+
     You can also override these on a per-`FieldSet` basis:
-    
+
     {{{
     fs = FieldSet(...)
     fs.prettify = myprettify
@@ -259,29 +264,29 @@ class FieldSet(AbstractFieldSet):
     """
     _render = staticmethod('render_mako' in locals() and render_mako or render_tempita)
     _render_readonly = staticmethod(render_readonly)
-    
+
     def __init__(self, *args, **kwargs):
         AbstractFieldSet.__init__(self, *args, **kwargs)
         self.focus = True
         self.readonly = False
-        
+
     def configure(self, pk=False, exclude=[], include=[], options=[], global_validator=None, focus=True, readonly=False):
-        """ 
+        """
         Besides the options in `AbstractFieldSet.configure`,
         `FieldSet.configure` takes the `focus` parameter, which should be the
         attribute (e.g., `fs.orders`) whose rendered input element gets focus. Default value is
         True, meaning, focus the first element. False means do not focus at
-        all. 
+        all.
         """
         AbstractFieldSet.configure(self, pk, exclude, include, options, global_validator)
         self.focus = focus
         self.readonly = readonly
-        
+
     def validate(self):
         if self.readonly:
             raise Exception('Cannot validate a read-only FieldSet')
         return AbstractFieldSet.validate(self)
-    
+
     def sync(self):
         if self.readonly:
             raise Exception('Cannot sync a read-only FieldSet')
@@ -294,6 +299,7 @@ class FieldSet(AbstractFieldSet):
         # (notably Django's) make it difficult to perform imports directly in
         # the template itself. If your templating weapon of choice does allow
         # it, feel free to perform such imports in the template.
+        kwargs['F_'] = get_translator(kwargs.get('lang', None)).gettext
         if self.readonly:
             return self._render_readonly(fieldset=self, **kwargs)
         return self._render(fieldset=self, **kwargs)

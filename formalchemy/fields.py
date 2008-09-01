@@ -17,25 +17,26 @@ from sqlalchemy.orm.properties import CompositeProperty
 # from sqlalchemy.orm.exc import UnmappedClassError
 from sqlalchemy.exceptions import InvalidRequestError # 0.4 support
 import fatypes, validators
+from i18n import _
 
 __all__ = ['Field', 'FieldRenderer', 'query_options']
 
 
 class FieldRenderer(object):
     """
-    This should be the super class of all Renderer classes.  
-    
+    This should be the super class of all Renderer classes.
+
     Renderers generate the html corresponding to a single Field,
     and are also responsible for deserializing form data into
     Python objects.
 
-    Subclasses should override `render` and `deserialize`.  
+    Subclasses should override `render` and `deserialize`.
     See their docstrings for details.
     """
     def __init__(self, field):
         self.field = field
         assert isinstance(self.field, AbstractField)
-        
+
     def name(self):
         """Name of rendered input element"""
         clsname = self.field.model.__class__.__name__
@@ -49,7 +50,7 @@ class FieldRenderer(object):
             pk = ''
         return '%s-%s-%s' % (clsname, pk, self.field.name)
     name = property(name)
-        
+
     def _value(self):
         """Submitted value, or field value if none"""
         if self.field.parent.data is not None:
@@ -71,13 +72,13 @@ class FieldRenderer(object):
         """
         Returns the appropriate value to deserialize for field's
         datatype, from the user-submitted data.  Only called
-        internally, so, if you are overriding `deserialize`, 
+        internally, so, if you are overriding `deserialize`,
         you can use or ignore `_serialized_value` as you please.
-        
+
         This is broken out into a separate method so multi-input
         renderers can stitch their values back into a single one
         to have that can be handled by the default deserialize.
-        
+
         Do not attempt to deserialize here; return value should be a
         string (corresponding to the output of `str` for your data
         type), or for a collection type, a a list of strings.
@@ -132,7 +133,7 @@ class FieldRenderer(object):
                 return datetime.time(*[int(st) for st in data.split(':')])
             except:
                 raise validators.ValidationError('Invalid time')
-        
+
         if isinstance(self.field.type, fatypes.Date):
             return _date(data)
         if isinstance(self.field.type, fatypes.Time):
@@ -189,7 +190,7 @@ class BooleanFieldRenderer(FieldRenderer):
         return FieldRenderer.deserialize(self)
 
 class FileFieldRenderer(FieldRenderer):
-    remove_label = 'Remove'
+    remove_label = _('Remove')
     def __init__(self, *args, **kwargs):
         super(FileFieldRenderer, self).__init__(*args, **kwargs)
         # add an attribute to cache FieldStorage data
@@ -314,7 +315,7 @@ class SelectFieldRenderer(FieldRenderer):
         selected = kwargs.get('selected', None) or self._value
         return h.select(self.name, h.options_for_select(options, selected=selected), **kwargs)
 
-    
+
 def _pk(instance):
     # Return the value of this instance's primary key.
     column = class_mapper(type(instance)).primary_key[0]
@@ -326,7 +327,7 @@ def query_options(query):
     Return a list of tuples of `(item description, item pk)`
     for each item returned by the query, where `item description`
     is the result of str(item) and `item pk` is the item's primary key.
-    
+
     This list is suitable for using as a value for `options` parameters.
     """
     fn = query.session.connection().engine.dialect.convert_unicode and unicode or str
@@ -345,9 +346,9 @@ def _model_equal(a, b):
     if not isinstance(a, type):
         a = type(a)
     if not isinstance(b, type):
-        b = type(b)            
+        b = type(b)
     return a is b
-    
+
 
 class AbstractField(object):
     """
@@ -393,7 +394,7 @@ class AbstractField(object):
     def requires_label(self):
         return not isinstance(self.renderer, HiddenFieldRenderer)
     requires_label = property(requires_label)
-                        
+
     def is_raw_foreign_key(self):
         """True iff this Field is a raw foreign key"""
         return False
@@ -405,7 +406,7 @@ class AbstractField(object):
     def query(self, *args, **kwargs):
         """Perform a query in the parent's session"""
         return self.parent.session.query(*args, **kwargs)
-    
+
     def _validate(self):
         self.errors = []
 
@@ -430,7 +431,7 @@ class AbstractField(object):
     def is_required(self):
         """True iff this Field must be given a non-empty value"""
         return validators.required in self.validators
-    
+
     def model(self):
         return self.parent.model
     model = property(model)
@@ -453,7 +454,7 @@ class AbstractField(object):
         """Return a copy of this Field, bound to a different parent"""
         return self._modified(parent=parent)
     def validate(self, validator):
-        """ 
+        """
         Add the `validator` function to the list of validation
         routines to run when the `FieldSet`'s `validate` method is
         run. Validator functions take one parameter: the value to
@@ -518,7 +519,7 @@ class AbstractField(object):
         return field
     def dropdown(self, options=None, multiple=False, size=5):
         """
-        Render the field as an HTML select field.  
+        Render the field as an HTML select field.
         (With the `multiple` option this is not really a 'dropdown'.)
         """
         field = deepcopy(self)
@@ -534,13 +535,13 @@ class AbstractField(object):
         Return the field with all configuration changes reverted.
         """
         return deepcopy(self.parent._fields[self.name])
-    
+
     def _get_renderer(self):
         for t in self.parent.default_renderers:
             if not isinstance(t, basestring) and isinstance(self.type, t):
                 return self.parent.default_renderers[t]
         return FieldRenderer
-    
+
     def renderer(self):
         if self._renderer is None:
             self._renderer = self._get_renderer()
@@ -555,18 +556,18 @@ class AbstractField(object):
             self._renderer = self._renderer(self)
         return self._renderer
     renderer = property(renderer)
-    
+
     def render(self, **html_options):
         """
         Render this Field as HTML.
-        
+
         `html_options` are not used by the default template, but are
         provided to make more customization possible in custom templates
         """
         opts = dict(self.render_opts)
         opts.update(html_options)
-        if (isinstance(self.type, fatypes.Boolean) 
-            and not opts.get('options') 
+        if (isinstance(self.type, fatypes.Boolean)
+            and not opts.get('options')
             and self.renderer.__class__ in [self.parent.default_renderers['dropdown'], self.parent.default_renderers['radio']]):
             opts['options'] = [('Yes', True), ('No', False)]
         return self.renderer.render(readonly=self.modifier=='readonly', disabled=self.modifier=='disabled', **opts)
@@ -591,7 +592,7 @@ class Field(AbstractField):
         self.type = type()
         self.name = name
         self._value = value
-        
+
     def value(self):
         if self.parent.data is not None:
             v = self._deserialize()
@@ -601,14 +602,14 @@ class Field(AbstractField):
             return self._value(self.model)
         return self._value
     value = property(value)
-        
+
     def key(self):
         return self.name
     key = property(key)
 
     def is_collection(self):
         return self.render_opts.get('multiple', False)
-    
+
     def value_str(self):
         if self.is_collection():
             return [str(item) for item in self.value]
@@ -617,10 +618,10 @@ class Field(AbstractField):
     def sync(self):
         """Set the attribute's value in `model` to the value given in `data`"""
         self._value = self._deserialize()
-            
+
     def __repr__(self):
         return 'AttributeField(%s)' % self.name
-    
+
     def __eq__(self, other):
         # we override eq so that when we configure with options=[...], we can match the renders in options
         # with the ones that were generated at FieldSet creation time
@@ -648,16 +649,16 @@ class AttributeField(AbstractField):
         # smarter default "required" value
         if not self.is_collection() and not self._column.nullable:
             self.validators.append(validators.required)
-            
+
     def is_raw_foreign_key(self):
         try:
             return _foreign_keys(self._property.columns[0])
         except AttributeError:
             return False
-        
+
     def is_pk(self):
         return self._column.primary_key
-    
+
     def type(self):
         if self.is_composite():
             # this is a little confusing -- we need to return an _instance_ of
@@ -672,7 +673,7 @@ class AttributeField(AbstractField):
         # todo this does not allow handling composite attributes (PKs or FKs)
         if isinstance(self._impl, ScalarObjectAttributeImpl):
             # If the attribute is a foreign key, return the Column that this
-            # attribute is mapped from -- e.g., .user -> .user_id. 
+            # attribute is mapped from -- e.g., .user -> .user_id.
             return _foreign_keys(self._property)[0]
         elif isinstance(self._impl, ScalarAttributeImpl) or self._impl.__class__.__name__ in ('ProxyImpl', '_ProxyImpl'): # 0.4 compatibility: ProxyImpl is a one-off class for each synonym, can't import it
             # normal property, mapped to a single column from the main table
@@ -682,14 +683,14 @@ class AttributeField(AbstractField):
             assert isinstance(self._impl, CollectionAttributeImpl), self._impl.__class__
             return self._property.mapper.primary_key[0]
     _column = property(_column)
-    
+
     def key(self):
         """The name of the attribute in the class"""
         return self._impl.key
     key = property(key)
 
     def name(self):
-        """ 
+        """
         The name of the form input. usually the same as the column name, except for
         multi-valued SA relation properties. For example, for order.user,
         name will be 'user_id' (assuming that is indeed the name of the foreign
@@ -699,28 +700,28 @@ class AttributeField(AbstractField):
             return self.key
         return self._column.name
     name = property(name)
-    
+
     def is_collection(self):
         """True iff this is a multi-valued (one-to-many or many-to-many) SA relation"""
         return isinstance(self._impl, CollectionAttributeImpl)
-    
+
     def is_composite(self):
         return isinstance(self._property, CompositeProperty)
-    
+
     def is_vanilla(self):
         """True iff this is a simple scalar value mapped from a table"""
         return not (isinstance(self._impl, ScalarObjectAttributeImpl) or self.is_collection())
-    
+
     def collection_type(self):
         """The type of object in the collection (e.g., `User`).  Calling this is only valid when `is_collection()` is True"""
         return self._property.mapper.class_
-    
+
     def value(self):
         """
         The value of this Field: use the corresponding value in the bound `data`,
         if any; otherwise, use the value in the bound `model`.  If there is still no
         value, use the default defined on the corresponding `Column`.
-        
+
         For collections,
         a list of the primary key values of the items in the collection is returned.
         """
@@ -743,7 +744,7 @@ class AttributeField(AbstractField):
                 return arg
         return None
     value = property(value)
-    
+
     def value_str(self):
         """A string representation of `value` for use in non-editable contexts (so we don't check 'data')"""
         if self.is_collection():
@@ -751,11 +752,11 @@ class AttributeField(AbstractField):
             return ','.join([str(item) for item in L])
         else:
             return str(getattr(self.model, self.key))
-        
+
     def sync(self):
         """Set the attribute's value in `model` to the value given in `data`"""
         setattr(self.model, self.name, self._deserialize())
-            
+
     def __eq__(self, other):
         # we override eq so that when we configure with options=[...], we can match the renders in options
         # with the ones that were generated at FieldSet creation time
@@ -765,12 +766,12 @@ class AttributeField(AbstractField):
             return False
     def __hash__(self):
         return hash(self._impl)
-    
+
     def __repr__(self):
         return 'AttributeField(%s)' % self.key
-    
+
     # todo add .options method (for html_options)
-    
+
     def render(self, **html_options):
         if not self.is_vanilla() and not self.render_opts.get('options'):
             # todo this does not handle primaryjoin (/secondaryjoin) alternate join conditions

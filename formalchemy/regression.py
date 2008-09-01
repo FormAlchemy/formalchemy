@@ -203,7 +203,8 @@ class FieldSet(DefaultFieldSet):
         html = pretty_html(DefaultFieldSet.render(self))
         if 'mako' in globals():
             # FS will use mako by default, so test tempita for equivalence here
-            html_tempita = pretty_html(render_tempita(fieldset=self))
+            F_ = lambda s: s
+            html_tempita = pretty_html(render_tempita(fieldset=self, F_=F_))
             assert html == html_tempita
         return html
 

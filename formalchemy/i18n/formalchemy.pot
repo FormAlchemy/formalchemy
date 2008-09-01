@@ -1,0 +1,101 @@
+# Translations template for FormAlchemy.
+# Copyright (C) 2008 ORGANIZATION
+# This file is distributed under the same license as the FormAlchemy project.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2008.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: FormAlchemy 0.5.1\n"
+"Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
+"POT-Creation-Date: 2008-08-27 17:18+0200\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 0.9.2\n"
+
+#: formalchemy/fields.py:193
+msgid "Remove"
+msgstr ""
+
+#: formalchemy/validators.py:26
+msgid "Please select a value"
+msgstr ""
+
+#: formalchemy/validators.py:26
+msgid "Please enter a value"
+msgstr ""
+
+#: formalchemy/validators.py:40
+msgid "Value is not an integer"
+msgstr ""
+
+#: formalchemy/validators.py:51
+msgid "Value is not a number"
+msgstr ""
+
+#: formalchemy/validators.py:74
+msgid "Missing @ sign"
+msgstr ""
+
+#: formalchemy/validators.py:77
+msgid "Control characters present"
+msgstr ""
+
+#: formalchemy/validators.py:79
+msgid "Non-ASCII characters present"
+msgstr ""
+
+#: formalchemy/validators.py:83
+msgid "Recipient must be non-empty"
+msgstr ""
+
+#: formalchemy/validators.py:85
+msgid "Recipient must not end with '.'"
+msgstr ""
+
+#: formalchemy/validators.py:100
+msgid "Unterminated quoted section in recipient"
+msgstr ""
+
+#: formalchemy/validators.py:103
+msgid "Quoted section must be followed by '@' or '.'"
+msgstr ""
+
+#: formalchemy/validators.py:106
+msgid "Reserved character present in recipient"
+msgstr ""
+
+#: formalchemy/validators.py:111
+msgid "Domain must be non-empty"
+msgstr ""
+
+#: formalchemy/validators.py:113
+msgid "Domain must not end with '.'"
+msgstr ""
+
+#: formalchemy/validators.py:115
+msgid "Domain must not contain '..'"
+msgstr ""
+
+#: formalchemy/validators.py:117
+msgid "Reserved character present in domain"
+msgstr ""
+
+#: formalchemy/validators.py:127
+#, python-format
+msgid "Value must be no more than %d characters long"
+msgstr ""
+
+#: formalchemy/validators.py:136
+#, python-format
+msgid "Value must be at least %d characters long"
+msgstr ""
+
+#: formalchemy/validators.py:139
+msgid "Invalid input"
+msgstr ""
+
