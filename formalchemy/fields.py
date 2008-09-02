@@ -64,11 +64,6 @@ class FieldRenderer(object):
         """
         if kwargs.get('readonly', False):
             return self._value
-        if kwargs.get('disabled', False):
-            kwargs['disabled'] = 'disabled'
-        for k, v in kwargs.items():
-            if not isinstance(v, basestring):
-                del kwargs[k]
         return h.text_field(self.name, value=self._value, **kwargs)
     
     def _params(self):

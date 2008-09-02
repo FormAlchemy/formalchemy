@@ -174,6 +174,8 @@ def radio_button(name, value, checked=False, **options):
 
 def tag_options(**options):
     strip_unders(options)
+    if 'options' in options:
+        del options['options']
     cleaned_options = convert_booleans(dict([(x, y) for x, y in options.iteritems() if y is not None]))
     optionlist = ['%s="%s"' % (x, escape_once(y)) for x, y in cleaned_options.iteritems()]
     optionlist.sort()
