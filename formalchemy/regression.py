@@ -188,7 +188,6 @@ try:
     import mako
 except ImportError:
     pass
-from base import SimpleMultiDict
 from fields import Field, query_options
 from validators import ValidationError
 
@@ -222,7 +221,7 @@ if not hasattr(__builtins__, 'sorted'):
 
 
 two = Two()
-fs_2 = FieldSet(two, data=SimpleMultiDict({'Two--foo': ''}))
+fs_2 = FieldSet(two, data={'Two--foo': ''})
 fs_2.foo.value
 
 __doc__ = r"""
@@ -385,7 +384,7 @@ True
 >>> cb.field
 True
 >>> fs_cb.configure(options=[fs_cb.field.dropdown()])
->>> fs_cb.rebind(data=SimpleMultiDict({'CheckBox--field': 'False'}))
+>>> fs_cb.rebind(data={'CheckBox--field': 'False'})
 >>> fs_cb.sync()
 >>> cb.field
 False
@@ -582,7 +581,7 @@ document.getElementById("OTOParent--oto_child_id").focus();
 
 # validation + sync
 >>> two = Two()
->>> fs_2 = FieldSet(two, data=SimpleMultiDict({'Two--foo': ''}))
+>>> fs_2 = FieldSet(two, data={'Two--foo': ''})
 >>> fs_2.foo.value # '' is deserialized to None, so default of 133 is used
 '133'
 >>> fs_2.validate()
@@ -602,7 +601,7 @@ False
   Please enter a value
  </span>
 </div>
->>> fs_2.rebind(two, data=SimpleMultiDict({'Two--foo': 'asdf'}))
+>>> fs_2.rebind(two, data={'Two--foo': 'asdf'})
 >>> fs_2.data
 {'Two--foo': 'asdf'}
 >>> fs_2.validate()
@@ -619,7 +618,7 @@ False
   Value is not an integer
  </span>
 </div>
->>> fs_2.rebind(two, data=SimpleMultiDict({'Two--foo': '2'}))
+>>> fs_2.rebind(two, data={'Two--foo': '2'})
 >>> fs_2.data
 {'Two--foo': '2'}
 >>> fs_2.validate()
@@ -637,14 +636,14 @@ Exception: Primary key of model has changed since binding, probably due to sync(
 >>> session.rollback()
 
 >>> one = One()
->>> fs_1 = FieldSet(one, data=SimpleMultiDict({'One--id': '1'}))
+>>> fs_1 = FieldSet(one, data={'One--id': '1'})
 >>> fs_1.configure(pk=True)
 >>> fs_1.validate()
 True
 >>> fs_1.sync()
 >>> one.id
 1
->>> fs_1.rebind(one, data=SimpleMultiDict({'One-1-id': 'asdf'}))
+>>> fs_1.rebind(one, data={'One-1-id': 'asdf'})
 >>> fs_1.id.renderer.name
 'One-1-id'
 >>> fs_1.validate()
@@ -659,7 +658,7 @@ True
 >>> fs_u.sync()
 >>> fs_u.model.orders
 []
->>> fs_u.rebind(User, session, data=SimpleMultiDict({'User--orders': [str(order1.id), str(order2.id)]}))
+>>> fs_u.rebind(User, session, data={'User--orders': [str(order1.id), str(order2.id)]})
 >>> fs_u.validate()
 True
 >>> fs_u.sync()
@@ -667,7 +666,7 @@ True
 True
 >>> session.rollback()
 
->>> fs_3 = FieldSet(Three, data=SimpleMultiDict({'Three--foo': 'asdf', 'Three--bar': 'fdsa'}))
+>>> fs_3 = FieldSet(Three, data={'Three--foo': 'asdf', 'Three--bar': 'fdsa'})
 >>> fs_3.foo.value
 'asdf'
 >>> print fs_3.foo.textarea().render()
@@ -734,7 +733,7 @@ document.getElementById("NaturalOrder--quantity").focus();
   </option>
  </select>
 </div>
->>> fs_npk.rebind(norder2, session, data=SimpleMultiDict({'NaturalOrder-2-user_email': nbill.email}))
+>>> fs_npk.rebind(norder2, session, data={'NaturalOrder-2-user_email': nbill.email})
 >>> fs_npk.user_email.renderer.name
 'NaturalOrder-2-user_email'
 >>> fs_npk.sync()
@@ -775,7 +774,7 @@ True
  </label>
  <input id="One--foo" name="One--foo" type="text" value="2" />
 </div>
->>> fs.rebind(One, data=SimpleMultiDict({'One--foo': '4'}))
+>>> fs.rebind(One, data={'One--foo': '4'})
 >>> fs.sync()
 >>> fs.foo.value
 4
@@ -801,7 +800,7 @@ True
   </option>
  </select>
 </div>
->>> fs.rebind(Manual, data=SimpleMultiDict({'Manual--a': 'asdf'}))
+>>> fs.rebind(Manual, data={'Manual--a': 'asdf'})
 >>> print pretty_html(fs.a.render())
 <input id="Manual--a" name="Manual--a" type="text" value="asdf" />
 
@@ -853,7 +852,7 @@ True
   </option>
  </select>
 </div>
->>> fs_1.rebind(One, data=SimpleMultiDict({'One--foo': ['1', '2']}))
+>>> fs_1.rebind(One, data={'One--foo': ['1', '2']})
 >>> fs_1.sync()
 >>> fs_1.foo.value
 [1, 2]
@@ -917,7 +916,7 @@ AttributeError: Do not set field attributes manually.  Use add() or configure() 
  </label>
  <input id="Order__User-1-users_name" maxlength="30" name="Order__User-1-users_name" type="text" value="Bill" />
 </div>
->>> fs.rebind(session.query(Order__User).filter_by(orders_id=1).one(), data=SimpleMultiDict({'Order__User-1-orders_quantity': '5', 'Order__User-1-users_email': bill.email, 'Order__User-1-users_password': '5678', 'Order__User-1-users_name': 'Bill'}))
+>>> fs.rebind(session.query(Order__User).filter_by(orders_id=1).one(), data={'Order__User-1-orders_quantity': '5', 'Order__User-1-users_email': bill.email, 'Order__User-1-users_password': '5678', 'Order__User-1-users_name': 'Bill'})
 >>> fs.validate()
 True
 >>> fs.sync()
@@ -939,7 +938,7 @@ True
 >>> print pretty_html(fs.start.render())
 <input id="Vertex--start-x" name="Vertex--start-x" type="text" value="1" />
 <input id="Vertex--start-y" name="Vertex--start-y" type="text" value="2" />
->>> fs.rebind(v, data=SimpleMultiDict({'Vertex--start-x': '10', 'Vertex--start-y': '20', 'Vertex--end-x': '30', 'Vertex--end-y': '40'}))
+>>> fs.rebind(v, data={'Vertex--start-x': '10', 'Vertex--start-y': '20', 'Vertex--end-x': '30', 'Vertex--end-y': '40'})
 >>> fs.validate()
 True
 >>> fs.sync()

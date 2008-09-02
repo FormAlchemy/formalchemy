@@ -1797,7 +1797,7 @@ __doc__ = r"""
  </select>
 </span>
 
->>> fs.rebind(dt, data=SimpleMultiDict({'Dt--foo__day': 'DD', 'Dt--foo__month': '2', 'Dt--foo__year': '', 'Dt--bar__hour': 'HH', 'Dt--bar__minute': '6', 'Dt--bar__second': '8'}))
+>>> fs.rebind(dt, data={'Dt--foo__day': 'DD', 'Dt--foo__month': '2', 'Dt--foo__year': '', 'Dt--bar__hour': 'HH', 'Dt--bar__minute': '6', 'Dt--bar__second': '8'})
 >>> print pretty_html(fs.foo.render())
 <span id="Dt--foo">
  <select id="Dt--foo__month" name="Dt--foo__month">
@@ -2394,7 +2394,7 @@ __doc__ = r"""
  </select>
 </span>
 
->>> fs.rebind(dt, data=SimpleMultiDict({'Dt--foo__day': '11', 'Dt--foo__month': '2', 'Dt--foo__year': '1951', 'Dt--bar__hour': '4', 'Dt--bar__minute': '6', 'Dt--bar__second': '8', 'Dt--foobar__day': '11', 'Dt--foobar__month': '2', 'Dt--foobar__year': '1951', 'Dt--foobar__hour': '4', 'Dt--foobar__minute': '6', 'Dt--foobar__second': '8'}))
+>>> fs.rebind(dt, data={'Dt--foo__day': '11', 'Dt--foo__month': '2', 'Dt--foo__year': '1951', 'Dt--bar__hour': '4', 'Dt--bar__minute': '6', 'Dt--bar__second': '8', 'Dt--foobar__day': '11', 'Dt--foobar__month': '2', 'Dt--foobar__year': '1951', 'Dt--foobar__hour': '4', 'Dt--foobar__minute': '6', 'Dt--foobar__second': '8'})
 >>> fs.sync()
 >>> dt.foo
 datetime.date(1951, 2, 11)
@@ -2404,7 +2404,7 @@ datetime.time(4, 6, 8)
 datetime.datetime(1951, 2, 11, 4, 6, 8)
 >>> session.rollback()
 
->>> fs.rebind(dt, data=SimpleMultiDict({'Dt--foo__day': 'DD', 'Dt--foo__month': 'MM', 'Dt--foo__year': 'YYYY', 'Dt--bar__hour': 'HH', 'Dt--bar__minute': 'MM', 'Dt--bar__second': 'SS', 'Dt--foobar__day': 'DD', 'Dt--foobar__month': 'MM', 'Dt--foobar__year': '', 'Dt--foobar__hour': 'HH', 'Dt--foobar__minute': 'MM', 'Dt--foobar__second': 'SS'}))
+>>> fs.rebind(dt, data={'Dt--foo__day': 'DD', 'Dt--foo__month': 'MM', 'Dt--foo__year': 'YYYY', 'Dt--bar__hour': 'HH', 'Dt--bar__minute': 'MM', 'Dt--bar__second': 'SS', 'Dt--foobar__day': 'DD', 'Dt--foobar__month': 'MM', 'Dt--foobar__year': '', 'Dt--foobar__hour': 'HH', 'Dt--foobar__minute': 'MM', 'Dt--foobar__second': 'SS'})
 >>> fs.validate()
 True
 >>> fs.sync()
@@ -2416,19 +2416,19 @@ True
 True
 >>> session.rollback()
 
->>> fs.rebind(dt, data=SimpleMultiDict({'Dt--foo__day': '1', 'Dt--foo__month': 'MM', 'Dt--foo__year': 'YYYY', 'Dt--bar__hour': 'HH', 'Dt--bar__minute': 'MM', 'Dt--bar__second': 'SS', 'Dt--foobar__day': 'DD', 'Dt--foobar__month': 'MM', 'Dt--foobar__year': '', 'Dt--foobar__hour': 'HH', 'Dt--foobar__minute': 'MM', 'Dt--foobar__second': 'SS'}))
+>>> fs.rebind(dt, data={'Dt--foo__day': '1', 'Dt--foo__month': 'MM', 'Dt--foo__year': 'YYYY', 'Dt--bar__hour': 'HH', 'Dt--bar__minute': 'MM', 'Dt--bar__second': 'SS', 'Dt--foobar__day': 'DD', 'Dt--foobar__month': 'MM', 'Dt--foobar__year': '', 'Dt--foobar__hour': 'HH', 'Dt--foobar__minute': 'MM', 'Dt--foobar__second': 'SS'})
 >>> fs.validate()
 False
 >>> fs.errors
 {AttributeField(foo): [ValidationError('Invalid date',)]}
 
->>> fs.rebind(dt, data=SimpleMultiDict({'Dt--foo__day': 'DD', 'Dt--foo__month': 'MM', 'Dt--foo__year': 'YYYY', 'Dt--bar__hour': 'HH', 'Dt--bar__minute': '1', 'Dt--bar__second': 'SS', 'Dt--foobar__day': 'DD', 'Dt--foobar__month': 'MM', 'Dt--foobar__year': '', 'Dt--foobar__hour': 'HH', 'Dt--foobar__minute': 'MM', 'Dt--foobar__second': 'SS'}))
+>>> fs.rebind(dt, data={'Dt--foo__day': 'DD', 'Dt--foo__month': 'MM', 'Dt--foo__year': 'YYYY', 'Dt--bar__hour': 'HH', 'Dt--bar__minute': '1', 'Dt--bar__second': 'SS', 'Dt--foobar__day': 'DD', 'Dt--foobar__month': 'MM', 'Dt--foobar__year': '', 'Dt--foobar__hour': 'HH', 'Dt--foobar__minute': 'MM', 'Dt--foobar__second': 'SS'})
 >>> fs.validate()
 False
 >>> fs.errors
 {AttributeField(bar): [ValidationError('Invalid time',)]}
 
->>> fs.rebind(dt, data=SimpleMultiDict({'Dt--foo__day': 'DD', 'Dt--foo__month': 'MM', 'Dt--foo__year': 'YYYY', 'Dt--bar__hour': 'HH', 'Dt--bar__minute': 'MM', 'Dt--bar__second': 'SS', 'Dt--foobar__day': '11', 'Dt--foobar__month': '2', 'Dt--foobar__year': '1951', 'Dt--foobar__hour': 'HH', 'Dt--foobar__minute': 'MM', 'Dt--foobar__second': 'SS'}))
+>>> fs.rebind(dt, data={'Dt--foo__day': 'DD', 'Dt--foo__month': 'MM', 'Dt--foo__year': 'YYYY', 'Dt--bar__hour': 'HH', 'Dt--bar__minute': 'MM', 'Dt--bar__second': 'SS', 'Dt--foobar__day': '11', 'Dt--foobar__month': '2', 'Dt--foobar__year': '1951', 'Dt--foobar__hour': 'HH', 'Dt--foobar__minute': 'MM', 'Dt--foobar__second': 'SS'})
 >>> fs.validate()
 False
 >>> fs.errors
