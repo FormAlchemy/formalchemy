@@ -1,4 +1,5 @@
 FormAlchemy ?:
+  * Allow to render a field with a custom renderer in readonly mode
   * sync will save model to session, if necessary
   * i18n support (gael.pasgrimaud)
   * add file upload support (gael.pasgrimaud)
