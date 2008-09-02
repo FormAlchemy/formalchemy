@@ -87,7 +87,7 @@ If the field has a value then we add a check box to remove it
 
 Now submit form with empty value
 
-    >>> fs.rebind(data={'Three--bar':'', 'Three--foo':''})
+    >>> fs.rebind(data={'Three--bar':''})
     >>> fs.validate()
     True
     >>> fs.sync()
@@ -99,7 +99,7 @@ The field value dos not change
 
 Try to remove it by checking the checkbox
 
-    >>> fs.rebind(record, data={'Three--bar':'', 'Three--bar--remove':'1', 'Three--foo':''})
+    >>> fs.rebind(data={'Three--bar':'', 'Three--bar--remove':'1'})
     >>> fs.validate()
     True
     >>> fs.sync()
@@ -121,7 +121,7 @@ We need tests data
     var test = null;
     <BLANKLINE>
 
-    >>> fs.rebind(record, data=data)
+    >>> fs.rebind(data=data)
     >>> if fs.validate(): fs.sync()
 
 We get the file, yeah.
@@ -135,7 +135,7 @@ Now submit form with empty value
     >>> data = get_fields(EMPTY_DATA)
     >>> print data.getfirst('Binaries--file')
     <BLANKLINE>
-    >>> fs.rebind(record, data=data)
+    >>> fs.rebind(data=data)
     >>> if fs.validate(): fs.sync()
 
 The field value dos not change
@@ -149,7 +149,7 @@ Remove file
     >>> data = get_fields(REMOVE_DATA)
     >>> print data.getfirst('Binaries--file')
     <BLANKLINE>
-    >>> fs.rebind(record, data=data)
+    >>> fs.rebind(data=data)
     >>> if fs.validate(): fs.sync()
 
 The field value dos not change
