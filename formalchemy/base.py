@@ -149,6 +149,8 @@ class ModelRenderer(object):
         self._render_fields = OrderedDict()
         self.model = self.session = None
 
+        if not model:
+            raise Exception('model parameter may not be None')
         ModelRenderer.rebind(self, model, session, data)
         
         cls = isinstance(self.model, type) and self.model or type(self.model)
@@ -307,6 +309,7 @@ class ModelRenderer(object):
             if self.model and type(self.model) != type(model):
                 raise ValueError('You can only bind to another object of the same type you originally bound to (%s), not %s' % (type(self.model), type(model)))
             self.model = model
+            self._bound_pk = fields._pk(model)
 
         if data is None:
             self.data = None

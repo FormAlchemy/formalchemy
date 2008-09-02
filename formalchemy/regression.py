@@ -355,9 +355,10 @@ document.getElementById("Two--foo").focus();
 0
 >>> fs_1 = FieldSet(One, data={})
 >>> fs_1.sync()
->>> session.commit()
+>>> session.flush()
 >>> print session.query(One).count()
 1
+>>> session.rollback()
 
 >>> cb = CheckBox()
 >>> fs_cb = FieldSet(cb, data={})
@@ -628,6 +629,12 @@ True
 >>> fs_2.sync()
 >>> two.foo
 2
+>>> session.flush()
+>>> print fs_2.render() #doctest: +ELLIPSIS
+Traceback (most recent call last):
+...
+Exception: Primary key of model has changed since binding, probably due to sync()ing a new instance.  You can solve this by either binding to a model with the original primary key again, or by binding data to None.
+>>> session.rollback()
 
 >>> one = One()
 >>> fs_1 = FieldSet(one, data=SimpleMultiDict({'One--id': '1'}))

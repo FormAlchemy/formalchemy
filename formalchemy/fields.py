@@ -40,12 +40,8 @@ class FieldRenderer(object):
     def name(self):
         """Name of rendered input element"""
         clsname = self.field.model.__class__.__name__
-        try:
-            pk = _pk(self.field.model)
-        except InvalidRequestError:
-            pk = ''
-        else:
-            assert pk != ''
+        pk = _pk(self.field.model)
+        assert pk != ''
         if pk is None:
             pk = ''
         return '%s-%s-%s' % (clsname, pk, self.field.name)
@@ -318,7 +314,10 @@ class SelectFieldRenderer(FieldRenderer):
 
 def _pk(instance):
     # Return the value of this instance's primary key.
-    column = class_mapper(type(instance)).primary_key[0]
+    try:
+        column = class_mapper(type(instance)).primary_key[0]
+    except InvalidRequestError:
+        return None
     return getattr(instance, column.key)
 
 
