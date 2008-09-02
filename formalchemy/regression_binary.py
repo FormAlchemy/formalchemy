@@ -87,7 +87,7 @@ If the field has a value then we add a check box to remove it
 
 Now submit form with empty value
 
-    >>> fs.rebind(record, data={'Three--bar':''})
+    >>> fs.rebind(data={'Three--bar':'', 'Three--foo':''})
     >>> fs.validate()
     True
     >>> fs.sync()
@@ -99,7 +99,7 @@ The field value dos not change
 
 Try to remove it by checking the checkbox
 
-    >>> fs.rebind(record, data={'Three--bar':'', 'Three--bar--remove':'1'})
+    >>> fs.rebind(record, data={'Three--bar':'', 'Three--bar--remove':'1', 'Three--foo':''})
     >>> fs.validate()
     True
     >>> fs.sync()
