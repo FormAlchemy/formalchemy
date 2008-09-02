@@ -4,7 +4,7 @@ from StringIO import StringIO
 from fields import FileFieldRenderer
 from regression import *
 
-BOUNDARY='--testdata'
+BOUNDARY='testdata'
 ENVIRON = {
         'REQUEST_METHOD':'POST',
         'CONTENT_TYPE': 'multipart/form-data;boundary="%s"' % BOUNDARY
@@ -26,7 +26,7 @@ Content-Type: application/x-javascript
 REMOVE_DATA = '''--%s
 Content-Disposition: form-data; name="Binaries--file--remove"
 1
---%s--
+--%s
 Content-Disposition: form-data; name="Binaries--file"; filename=""
 Content-Type: application/x-javascript
 
@@ -92,7 +92,7 @@ Now submit form with empty value
     True
     >>> fs.sync()
 
-The field value dos not change
+The field value does not change
 
     >>> print record.bar
     /path/to/file
@@ -114,7 +114,7 @@ Also check that this work with cgi.FieldStorage
     >>> record = Binaries()
     >>> fs = FieldSet(record)
 
-We need tests data
+We need test data
 
     >>> data = get_fields(TEST_DATA)
     >>> print data.getfirst('Binaries--file')
@@ -133,8 +133,6 @@ We get the file, yeah.
 Now submit form with empty value
 
     >>> data = get_fields(EMPTY_DATA)
-    >>> print data.getfirst('Binaries--file')
-    <BLANKLINE>
     >>> fs.rebind(data=data)
     >>> if fs.validate(): fs.sync()
 
@@ -147,8 +145,6 @@ The field value dos not change
 Remove file
 
     >>> data = get_fields(REMOVE_DATA)
-    >>> print data.getfirst('Binaries--file')
-    <BLANKLINE>
     >>> fs.rebind(data=data)
     >>> if fs.validate(): fs.sync()
 

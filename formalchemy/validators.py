@@ -1,5 +1,5 @@
 # todo pass field and value (so exception can refer to field name, for instance)
-from formalchemy.i18n import _
+from i18n import _
 
 if 'any' not in locals():
     # pre-2.5 support
