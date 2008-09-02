@@ -62,7 +62,14 @@ class FieldRenderer(object):
         input element and id.  `self._value` may also be useful if
         you are not rendering multiple input elements.
         """
-        return h.text_field(self.name, value=self._value)
+        if kwargs.get('readonly', False):
+            return self._value
+        if kwargs.get('disabled', False):
+            kwargs['disabled'] = 'disabled'
+        for k, v in kwargs.items():
+            if not isinstance(v, basestring):
+                del kwargs[k]
+        return h.text_field(self.name, value=self._value, **kwargs)
     
     def _params(self):
         return self.field.parent.data
@@ -155,7 +162,10 @@ class TextFieldRenderer(FieldRenderer):
     length = property(length)
 
     def render(self, **kwargs):
-        return h.text_field(self.name, value=self._value, maxlength=self.length, **kwargs)
+        length = self.length
+        if length and 'maxlength' not in kwargs:
+            kwargs['maxlength'] = str(length)
+        return FieldRenderer.render(self, **kwargs)
 
 
 class IntegerFieldRenderer(FieldRenderer):
@@ -571,11 +581,13 @@ class AbstractField(object):
         """
         opts = dict(self.render_opts)
         opts.update(html_options)
+        opts['readonly'] = opts.get('readonly') or self.modifier=='readonly'
+        opts['disabled'] = opts.get('disabled') or self.modifier=='disabled'
         if (isinstance(self.type, fatypes.Boolean)
             and not opts.get('options')
             and self.renderer.__class__ in [self.parent.default_renderers['dropdown'], self.parent.default_renderers['radio']]):
             opts['options'] = [('Yes', True), ('No', False)]
-        return self.renderer.render(readonly=self.modifier=='readonly', disabled=self.modifier=='disabled', **opts)
+        return self.renderer.render(**opts)
 
     def _deserialize(self):
         return self.renderer.deserialize()
@@ -616,6 +628,8 @@ class Field(AbstractField):
         return self.render_opts.get('multiple', False)
 
     def value_str(self):
+        if self._renderer is not None:
+            return self.render()
         if self.is_collection():
             return [str(item) for item in self.value]
         return str(self.value)
@@ -752,6 +766,8 @@ class AttributeField(AbstractField):
 
     def value_str(self):
         """A string representation of `value` for use in non-editable contexts (so we don't check 'data')"""
+        if self._renderer is not None:
+            return self.render()
         if self.is_collection():
             L = getattr(self.model, self.key)
             return ','.join([str(item) for item in L])
