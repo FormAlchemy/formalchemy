@@ -133,6 +133,8 @@ We get the file, yeah.
 Now submit form with empty value
 
     >>> data = get_fields(EMPTY_DATA)
+    >>> print data.getfirst('Binaries--file')
+    <BLANKLINE>
     >>> fs.rebind(record, data=data)
     >>> if fs.validate(): fs.sync()
 
@@ -145,6 +147,8 @@ The field value dos not change
 Remove file
 
     >>> data = get_fields(REMOVE_DATA)
+    >>> print data.getfirst('Binaries--file')
+    <BLANKLINE>
     >>> fs.rebind(record, data=data)
     >>> if fs.validate(): fs.sync()
 

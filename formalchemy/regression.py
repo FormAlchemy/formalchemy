@@ -360,14 +360,15 @@ document.getElementById("Two--foo").focus();
 >>> session.rollback()
 
 >>> cb = CheckBox()
->>> fs_cb = FieldSet(cb, data={})
->>> print fs_cb.field.render()
-<input id="CheckBox--field" name="CheckBox--field" type="checkbox" value="True" />
+>>> fs_cb = FieldSet(cb)
 >>> print fs_cb.field.dropdown().render()
 <select id="CheckBox--field" name="CheckBox--field"><option value="True">Yes</option>
 <option value="False">No</option></select>
+>>> fs_cb.rebind(data={})
+>>> print fs_cb.field.render()
+<input id="CheckBox--field" name="CheckBox--field" type="checkbox" value="True" />
 >>> fs_cb.field.renderer #doctest: +ELLIPSIS
-<formalchemy.fields.BooleanFieldRenderer object at ...>
+<formalchemy.fields.CheckBoxFieldRenderer object at ...>
 >>> fs_cb.field.renderer._serialized_value() == None
 True
 >>> fs_cb.validate()
@@ -733,7 +734,7 @@ document.getElementById("NaturalOrder--quantity").focus();
   </option>
  </select>
 </div>
->>> fs_npk.rebind(norder2, session, data={'NaturalOrder-2-user_email': nbill.email})
+>>> fs_npk.rebind(norder2, session, data={'NaturalOrder-2-user_email': nbill.email, 'NaturalOrder-2-quantity': str(norder2.quantity)})
 >>> fs_npk.user_email.renderer.name
 'NaturalOrder-2-user_email'
 >>> fs_npk.sync()

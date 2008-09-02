@@ -49,7 +49,7 @@ class FieldRenderer(object):
 
     def _value(self):
         """Submitted value, or field value if none"""
-        if self.field.parent.data is not None:
+        if self._params is not None:
             v = self._serialized_value()
         else:
             v = None
@@ -63,6 +63,10 @@ class FieldRenderer(object):
         you are not rendering multiple input elements.
         """
         return h.text_field(self.name, value=self._value)
+    
+    def _params(self):
+        return self.field.parent.data
+    _params = property(_params)
 
     def _serialized_value(self):
         """
@@ -82,10 +86,9 @@ class FieldRenderer(object):
         The default _serialized_value returns the submitted value(s)
         in the input element corresponding to self.name.
         """
-        params = self.field.parent.data
         if self.field.is_collection():
-            return params.getall(self.name)
-        return params.getone(self.name)
+            return self._params.getall(self.name)
+        return self._params.getone(self.name)
 
     def deserialize(self):
         """
@@ -177,9 +180,13 @@ class HiddenFieldRenderer(FieldRenderer):
         return h.hidden_field(self.name, value=self._value, **kwargs)
 
 
-class BooleanFieldRenderer(FieldRenderer):
+class CheckBoxFieldRenderer(FieldRenderer):
     def render(self, **kwargs):
         return h.check_box(self.name, True, checked=self._value, **kwargs)
+    def _serialized_value(self):
+        if self.name not in self._params:
+            return None
+        return FieldRenderer._serialized_value(self)
     def deserialize(self):
         if self._serialized_value() is None:
             return False
@@ -188,9 +195,8 @@ class BooleanFieldRenderer(FieldRenderer):
 class FileFieldRenderer(FieldRenderer):
     remove_label = _('Remove')
     def __init__(self, *args, **kwargs):
-        super(FileFieldRenderer, self).__init__(*args, **kwargs)
-        # add an attribute to cache FieldStorage data
-        self._data = None
+        FieldRenderer.__init__(self, *args, **kwargs)
+        self._data = None # caches FieldStorage data
 
     def render(self, **kwargs):
         if self.field.value:
@@ -203,7 +209,7 @@ class FileFieldRenderer(FieldRenderer):
             return h.file_field(self.name, **kwargs)
 
     def deserialize(self):
-        data = super(FileFieldRenderer, self).deserialize()
+        data = FieldRenderer.deserialize(self)
         if isinstance(data, cgi.FieldStorage):
             if data.filename:
                 # FieldStorage can only be read once so we need to cache the
@@ -215,13 +221,13 @@ class FileFieldRenderer(FieldRenderer):
             else:
                 data = None
         checkbox_name = '%s--remove' % self.name
-        if not data and not self.field.parent.data.has_key(checkbox_name):
+        if not data and not self._params.has_key(checkbox_name):
             data = getattr(self.field.model, self.field.name)
         return data is not None and data or ''
 
 class DateFieldRenderer(FieldRenderer):
     def _render(self, **kwargs):
-        data = self.field.parent.data
+        data = self._params
         import calendar
         month_options = [('Month', 'MM')] + [(calendar.month_name[i], str(i)) for i in xrange(1, 13)]
         day_options = [('Day', 'DD')] + [(i, str(i)) for i in xrange(1, 32)]
@@ -243,12 +249,12 @@ class DateFieldRenderer(FieldRenderer):
         return h.content_tag('span', self._render(**kwargs), id=self.name)
 
     def _serialized_value(self):
-        return '-'.join([self.field.parent.data.getone(self.name + '__' + subfield) for subfield in ['year', 'month', 'day']])
+        return '-'.join([self._params.getone(self.name + '__' + subfield) for subfield in ['year', 'month', 'day']])
 
 
 class TimeFieldRenderer(FieldRenderer):
     def _render(self, **kwargs):
-        data = self.field.parent.data
+        data = self._params
         hour_options = ['HH'] + [(i, str(i)) for i in xrange(24)]
         minute_options = ['MM' ] + [(i, str(i)) for i in xrange(60)]
         second_options = ['SS'] + [(i, str(i)) for i in xrange(60)]
@@ -265,7 +271,7 @@ class TimeFieldRenderer(FieldRenderer):
         return h.content_tag('span', self._render(**kwargs), id=self.name)
 
     def _serialized_value(self):
-        return ':'.join([self.field.parent.data.getone(self.name + '__' + subfield) for subfield in ['hour', 'minute', 'second']])
+        return ':'.join([self._params.getone(self.name + '__' + subfield) for subfield in ['hour', 'minute', 'second']])
 
 
 class DateTimeFieldRendererRenderer(DateFieldRenderer, TimeFieldRenderer):

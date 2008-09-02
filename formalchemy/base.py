@@ -65,8 +65,8 @@ class SimpleMultiDict(dict):
     a string or a list of strings.
     """
     def getone(self, key):
-#         if key not in self:
-#             raise KeyError()
+        if key not in self:
+            raise KeyError(key)
         v = dict.get(self, key)
         if v is None or isinstance(v, basestring) or isinstance(v, cgi.FieldStorage):
             return v
@@ -413,7 +413,7 @@ class EditableRenderer(ModelRenderer):
     default_renderers = {
         fatypes.String: fields.TextFieldRenderer,
         fatypes.Integer: fields.IntegerFieldRenderer,
-        fatypes.Boolean: fields.BooleanFieldRenderer,
+        fatypes.Boolean: fields.CheckBoxFieldRenderer,
         fatypes.DateTime: fields.DateTimeFieldRendererRenderer,
         fatypes.Date: fields.DateFieldRenderer,
         fatypes.Time: fields.TimeFieldRenderer,
