@@ -293,13 +293,7 @@ class FieldSet(AbstractFieldSet):
         AbstractFieldSet.sync(self)
 
     def render(self, **kwargs):
-        # We pass a reference to the 'fields' module because a relative import
-        # in the template won't work in production, and an absolute import
-        # makes testing more of a pain. Additionally, some templating systems
-        # (notably Django's) make it difficult to perform imports directly in
-        # the template itself. If your templating weapon of choice does allow
-        # it, feel free to perform such imports in the template.
-        kwargs['F_'] = get_translator(kwargs.get('lang', None)).gettext
+        kwargs['F_'] = get_translator(kwargs.get('lang', None)).gettext # tempita pukes if we pass this as `_`
         if self.readonly:
             return self._render_readonly(fieldset=self, **kwargs)
         return self._render(fieldset=self, **kwargs)
