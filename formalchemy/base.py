@@ -344,8 +344,12 @@ class ModelRenderer(object):
         """
         Sync (copy to the corresponding attributes) the data passed to the constructor or `bind` to the `model`.
         """
+        if self.data is None:
+            raise Exception("No data bound; cannot sync")
         for field in self.render_fields.itervalues():
             field.sync()
+        if self.session and object_session(self.model) is None:
+            self.session.save(self.model)
 
     def _raw_fields(self):
         return self._fields.values()

@@ -350,6 +350,15 @@ document.getElementById("Two--foo").focus();
 >>> print fs.foo.reset().render(onblur='test')
 <input id="Two--foo" name="Two--foo" onblur="test" type="text" value="133" />
 
+# test sync
+>>> print session.query(One).count()
+0
+>>> fs_1 = FieldSet(One, data={})
+>>> fs_1.sync()
+>>> session.commit()
+>>> print session.query(One).count()
+1
+
 >>> cb = CheckBox()
 >>> fs_cb = FieldSet(cb, data={})
 >>> print fs_cb.field.render()

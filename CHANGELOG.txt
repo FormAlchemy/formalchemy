@@ -1,4 +1,5 @@
 FormAlchemy ?:
+  * sync will save model to session, if necessary
   * i18n support (gael.pasgrimaud)
   * add file upload support (gael.pasgrimaud)
   * add Field.with_renderer
