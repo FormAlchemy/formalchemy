@@ -1,6 +1,10 @@
-FormAlchemy 0.?:
+FormAlchemy ?:
+  * i18n support (gael.pasgrimaud)
+  * add file upload support (gael.pasgrimaud)
   * add Field.with_renderer
   * fs.[field] returns the configured version of the field, not the unconfigured.  fs.fields renamed to fs._fields.  Added Field.reset() to deepcopy the unconfigured version.
+  * add **kwargs to FieldSet and Grid render methods, which are passed on to the template.  this allows easy custom template use w/o having to subclass.  (lbruno)
+  * bug fixes
 
 FormAlchemy 0.5.1 (r397):
   * Synonym support
