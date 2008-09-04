@@ -101,7 +101,7 @@ template_text_readonly = r"""
 {{for field in fieldset.render_fields.itervalues()}}
   <tr>
     <td class="field_readonly">{{field.label_text or fieldset.prettify(field.key)}}:</td>
-    <td>{{field.value_str()}}</td>
+    <td>{{field.render_readonly()}}</td>
   </tr>
 {{endfor}}
 </tbody>

@@ -1020,7 +1020,7 @@ True
  </tr>
 </tbody>
 >>> t.model.a = 'test'
->>> print pretty_html(t.a.value_str())
+>>> print pretty_html(t.a.render_readonly())
 test
 """
 

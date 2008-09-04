@@ -56,18 +56,34 @@ class FieldRenderer(object):
         return v or self.field.value
     _value = property(_value)
 
+    def raw_value(self):
+        """return the field raw value
+        """
+        return self.field.raw_value
+    raw_value = property(raw_value)
+
     def render(self, **kwargs):
         """
         Render the field.  Use `self.name` to get a unique name for the
         input element and id.  `self._value` may also be useful if
         you are not rendering multiple input elements.
-        
+
         This default implementation is one of last resort, only
         used if !FormAlchemy failed to find a better renderer.
         Subclasses should not call this method.
         """
         return h.text_field(self.name, value=self._value, **kwargs)
-    
+
+    def render_readonly(self, **kwargs):
+        """render a string representation of the field value
+        """
+        value = self.raw_value
+        if value is None:
+            return ''
+        elif isinstance(value, list):
+            return ', '.join([str(item) for item in value])
+        return str(self.raw_value)
+
     def _params(self):
         return self.field.parent.data
     _params = property(_params)
@@ -583,6 +599,17 @@ class AbstractField(object):
             opts['options'] = [('Yes', True), ('No', False)]
         return self.renderer.render(**opts)
 
+    def render_readonly(self, **html_options):
+        """
+        Render this Field as HTML for read only mode.
+
+        `html_options` are not used by the default template, but are
+        provided to make more customization possible in custom templates
+        """
+        opts = dict(self.render_opts)
+        opts.update(html_options)
+        return self.renderer.render_readonly(**opts)
+
     def _deserialize(self):
         return self.renderer.deserialize()
 
@@ -632,10 +659,11 @@ class Field(AbstractField):
         # todo 1.0 checkboxes are also multiple
         return self.render_opts.get('multiple', False)
 
-    def value_str(self):
+    def raw_value(self):
         if self.is_collection():
-            return ', '.join([str(item) for item in self.value])
-        return str(self.value or '')
+            return [item for item in self.value]
+        return self.value
+    raw_value = property(raw_value)
 
     def sync(self):
         """Set the attribute's value in `model` to the value given in `data`"""
@@ -768,13 +796,13 @@ class AttributeField(AbstractField):
         return None
     value = property(value)
 
-    def value_str(self):
-        """A string representation of `value` for use in non-editable contexts (so we don't check 'data')"""
+    def raw_value(self):
         if self.is_collection():
             L = getattr(self.model, self.key)
-            return ', '.join([str(item) for item in L])
+            return [item for item in L]
         else:
-            return str(getattr(self.model, self.key) or '')
+            return getattr(self.model, self.key)
+    raw_value = property(raw_value)
 
     def sync(self):
         """Set the attribute's value in `model` to the value given in `data`"""

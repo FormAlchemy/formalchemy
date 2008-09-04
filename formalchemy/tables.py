@@ -27,7 +27,7 @@ template_grid_readonly = r"""
   {{collection._set_active(row)}}
   <tr>
   {{for field in collection.render_fields.itervalues()}}
-    <td>{{field.value_str()}}</td>
+    <td>{{field.render_readonly()}}</td>
   {{endfor}}
   </tr>
 {{endfor}}
