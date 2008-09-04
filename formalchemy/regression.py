@@ -799,12 +799,6 @@ True
 >>> print pretty_html(fs.a.render())
 <input id="Manual--a" name="Manual--a" type="text" value="asdf" />
 
->>> print pretty_html(fs.a.render(readonly=True))
-asdf
-
->>> print pretty_html(fs.a.render(disabled=True))
-<input disabled="disabled" id="Manual--a" name="Manual--a" type="text" value="asdf" />
-
 >>> fs = FieldSet(One)
 >>> fs.add(Field('foo', types.Integer, value=2).dropdown(options=[('1', 1), ('2', 2)]))
 >>> print configure_and_render(fs, focus=None)
@@ -995,46 +989,6 @@ True
   </td>
  </tr>
 </tbody>
-
->>> t = FieldSet(bill)
->>> t.configure(options=[t.email.with_renderer(TextFieldRenderer)] ,readonly=True)
->>> print t.render()
-<tbody>
- <tr>
-  <td class="field_readonly">
-   Email:
-  </td>
-  <td>
-   <input id="User-1-email" maxlength="40" name="User-1-email" type="text" value="bill@example.com" />
-  </td>
- </tr>
- <tr>
-  <td class="field_readonly">
-   Password:
-  </td>
-  <td>
-   1234
-  </td>
- </tr>
- <tr>
-  <td class="field_readonly">
-   Name:
-  </td>
-  <td>
-   Bill
-  </td>
- </tr>
- <tr>
-  <td class="field_readonly">
-   Orders:
-  </td>
-  <td>
-   Quantity: 10
-  </td>
- </tr>
-</tbody>
-
-
 """
 
 if __name__ == '__main__':

@@ -62,8 +62,6 @@ class FieldRenderer(object):
         input element and id.  `self._value` may also be useful if
         you are not rendering multiple input elements.
         """
-        if kwargs.get('readonly', False):
-            return self._value
         return h.text_field(self.name, value=self._value, **kwargs)
     
     def _params(self):
@@ -157,10 +155,7 @@ class TextFieldRenderer(FieldRenderer):
     length = property(length)
 
     def render(self, **kwargs):
-        length = self.length
-        if length and 'maxlength' not in kwargs:
-            kwargs['maxlength'] = str(length)
-        return FieldRenderer.render(self, **kwargs)
+        return h.text_field(self.name, value=self._value, maxlength=self.length, **kwargs)
 
 
 class IntegerFieldRenderer(FieldRenderer):
@@ -630,8 +625,6 @@ class Field(AbstractField):
         return self.render_opts.get('multiple', False)
 
     def value_str(self):
-        if self._renderer is not None:
-            return self.render()
         if self.is_collection():
             return [str(item) for item in self.value]
         return str(self.value)
@@ -769,8 +762,6 @@ class AttributeField(AbstractField):
 
     def value_str(self):
         """A string representation of `value` for use in non-editable contexts (so we don't check 'data')"""
-        if self._renderer is not None:
-            return self.render()
         if self.is_collection():
             L = getattr(self.model, self.key)
             return ','.join([str(item) for item in L])
