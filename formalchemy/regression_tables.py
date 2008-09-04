@@ -37,9 +37,9 @@ __doc__ = """
  </tr>
 </tbody>
 
->>> tc = Grid(User, [bill, john])
->>> tc.add(Field('link', type=types.String, value=lambda item: '<a href=%d>link</a>' % item.id))
->>> print pretty_html(configure_and_render(tc, readonly=True))
+>>> tc2 = Grid(User, [bill, john])
+>>> tc2.add(Field('link', type=types.String, value=lambda item: '<a href=%d>link</a>' % item.id))
+>>> print pretty_html(configure_and_render(tc2, readonly=True))
 <thead>
  <tr>
   <th>
@@ -90,7 +90,7 @@ __doc__ = """
    John
   </td>
   <td>
-   Quantity: 5
+   Quantity: 5, Quantity: 6
   </td>
   <td>
    <a href="2">
@@ -138,6 +138,9 @@ __doc__ = """
     <option value="2">
      Quantity: 5
     </option>
+    <option value="3">
+     Quantity: 6
+    </option>
    </select>
   </td>
  </tr>
@@ -159,12 +162,15 @@ __doc__ = """
     <option value="2" selected="selected">
      Quantity: 5
     </option>
+    <option value="3" selected="selected">
+     Quantity: 6
+    </option>
    </select>
   </td>
  </tr>
 </tbody>
 
->>> g = g.bind([bill, john], data={'User-1-email': 'bill_@example.com', 'User-1-password': '1234_', 'User-1-name': 'Bill_', 'User-1-orders': '1', 'User-2-email': 'john_@example.com', 'User-2-password': '5678_', 'User-2-name': 'John_', 'User-2-orders': '2', })
+>>> g = g.bind([bill, john], data={'User-1-email': 'bill_@example.com', 'User-1-password': '1234_', 'User-1-name': 'Bill_', 'User-1-orders': '1', 'User-2-email': 'john_@example.com', 'User-2-password': '5678_', 'User-2-name': 'John_', 'User-2-orders': ['2', '3'], })
 >>> g.validate()
 True
 >>> g.sync()
@@ -174,7 +180,7 @@ True
 True
 >>> session.rollback()
 
->>> g.rebind(data={'User-1-email': '', 'User-1-password': '1234_', 'User-1-name': 'Bill_', 'User-1-orders': '1', 'User-2-email': 'john_@example.com', 'User-2-password': '5678_', 'User-2-name': 'John_', 'User-2-orders': '2', })
+>>> g.rebind(data={'User-1-email': '', 'User-1-password': '1234_', 'User-1-name': 'Bill_', 'User-1-orders': '1', 'User-2-email': 'john_@example.com', 'User-2-password': '5678_', 'User-2-name': 'John_', 'User-2-orders': ['2', '3'], })
 >>> g.validate()
 False
 >>> g.errors[bill]

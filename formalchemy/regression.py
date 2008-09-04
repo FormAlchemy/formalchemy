@@ -13,7 +13,7 @@ from fields import Field, SelectFieldRenderer, FieldRenderer, TextFieldRenderer
 import fatypes as types
 
 engine = create_engine('sqlite://')
-Session = scoped_session(sessionmaker(autoflush=True, bind=engine))
+Session = scoped_session(sessionmaker(autoflush=False, bind=engine))
 Base = declarative_base(engine, mapper=Session.mapper)
 
 class One(Base):
@@ -170,6 +170,7 @@ john = User(email='john@example.com',
             name='John')
 order1 = Order(user=bill, quantity=10)
 order2 = Order(user=john, quantity=5)
+order3 = Order(user=john, quantity=6)
 
 nbill = NaturalUser(email='nbill@example.com', 
                     password='1234',
@@ -433,6 +434,9 @@ document.getElementById("User--email").focus();
   <option value="2">
    Quantity: 5
   </option>
+  <option value="3">
+   Quantity: 6
+  </option>
  </select>
 </div>
 >>> FieldSet(User).render() == FieldSet(User, session).render()
@@ -441,9 +445,10 @@ True
 >>> fs = FieldSet(bill)
 >>> print fs.orders.render()
 <select id="User-1-orders" multiple="multiple" name="User-1-orders" size="5"><option value="1" selected="selected">Quantity: 10</option>
-<option value="2">Quantity: 5</option></select>
+<option value="2">Quantity: 5</option>
+<option value="3">Quantity: 6</option></select>
 >>> print fs.orders.radio().render()
-<input id="User-1-orders_1" name="User-1-orders" type="radio" value="1" />Quantity: 10<br /><input id="User-1-orders_2" name="User-1-orders" type="radio" value="2" />Quantity: 5
+<input id="User-1-orders_1" name="User-1-orders" type="radio" value="1" />Quantity: 10<br /><input id="User-1-orders_2" name="User-1-orders" type="radio" value="2" />Quantity: 5<br /><input id="User-1-orders_3" name="User-1-orders" type="radio" value="3" />Quantity: 6
 >>> print fs.orders.radio(options=query_options(session.query(Order).filter_by(id=1))).render()
 <input id="User-1-orders_1" name="User-1-orders" type="radio" value="1" />Quantity: 10
 
@@ -951,8 +956,8 @@ True
 >>> session.rollback()
 
 # readonly tests
->>> t = FieldSet(bill)
->>> bill.name = None
+>>> t = FieldSet(john)
+>>> john.name = None
 >>> t.configure(readonly=True)
 >>> t.readonly
 True
@@ -963,7 +968,7 @@ True
    Email:
   </td>
   <td>
-   bill@example.com
+   john@example.com
   </td>
  </tr>
  <tr>
@@ -971,7 +976,7 @@ True
    Password:
   </td>
   <td>
-   1234
+   5678
   </td>
  </tr>
  <tr>
@@ -986,10 +991,12 @@ True
    Orders:
   </td>
   <td>
-   Quantity: 10
+   Quantity: 5, Quantity: 6
   </td>
  </tr>
 </tbody>
+>>> session.rollback()
+>>> session.refresh(john)
 
 >>> t = FieldSet(Manual)
 >>> t.configure(readonly=True)
