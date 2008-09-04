@@ -163,7 +163,7 @@ class ModelRenderer(object):
             for key in keys: 
                 field = cls.__dict__[key]
                 if isinstance(field, fields.Field):
-                    if field.name:
+                    if field.name and field.name != key:
                         raise Exception('Fields in a non-mapped class have the same name as their attribute.  Do not manually give them a name.')
                     field.name = key
                     self.add(field)

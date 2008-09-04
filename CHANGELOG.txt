@@ -1,10 +1,12 @@
-FormAlchemy ?:
-  * sync will save model to session, if necessary
+FormAlchemy 1.0:
   * i18n support (gael.pasgrimaud)
-  * add file upload support (gael.pasgrimaud)
-  * add Field.with_renderer
-  * fs.[field] returns the configured version of the field, not the unconfigured.  fs.fields renamed to fs._fields.  Added Field.reset() to deepcopy the unconfigured version.
+  * file upload support (gael.pasgrimaud)
   * add **kwargs to FieldSet and Grid render methods, which are passed on to the template.  this allows easy custom template use w/o having to subclass.  (lbruno)
+  * added sanity checks to disallow getting into an inconsistent state.  notably, binding to an object that belongs to a session but does NOT have a primary key set is not allowed.  workaround: bind to the class, and FA will instantiate it and take it out of the session [until sync()].  Then you can pull that instance out as the .model attribute.
+  * sync() will save model to session, if necessary
+  * add Field.with_renderer
+  * allow manually-added fields to pull their value from the bound model
+  * fs.[field] returns the configured version of the field, not the unconfigured.  fs.fields renamed to fs._fields.  Added Field.reset() to deepcopy the unconfigured version.
   * bug fixes
 
 FormAlchemy 0.5.1 (r397):

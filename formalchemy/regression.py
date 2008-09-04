@@ -152,7 +152,7 @@ mapper(User2, users2, properties={'address': relation(Address)})
 
 class Manual(object):
     a = Field()
-    b = Field(type=types.Integer).dropdown([('one', 1), ('two', 2)])
+    b = Field(type=types.Integer).dropdown([('one', 1), ('two', 2)], multiple=True)
 
 
 class Order__User(Base):
@@ -786,7 +786,7 @@ True
  <label class="field_opt" for="Manual--b">
   B
  </label>
- <select id="Manual--b" name="Manual--b">
+ <select id="Manual--b" multiple="multiple" name="Manual--b" size="5">
   <option value="1">
    one
   </option>
@@ -795,7 +795,7 @@ True
   </option>
  </select>
 </div>
->>> fs.rebind(Manual, data={'Manual--a': 'asdf'})
+>>> fs.rebind(data={'Manual--a': 'asdf'})
 >>> print pretty_html(fs.a.render())
 <input id="Manual--a" name="Manual--a" type="text" value="asdf" />
 
@@ -950,11 +950,12 @@ True
 40
 >>> session.rollback()
 
+# readonly tests
 >>> t = FieldSet(bill)
 >>> t.configure(readonly=True)
 >>> t.readonly
 True
->>> print pretty_html(t.render())
+>>> print t.render()
 <tbody>
  <tr>
   <td class="field_readonly">
@@ -989,6 +990,31 @@ True
   </td>
  </tr>
 </tbody>
+
+>>> t = FieldSet(Manual)
+>>> t.configure(readonly=True)
+>>> t.model.b = [1, 2]
+>>> print t.render()
+<tbody>
+ <tr>
+  <td class="field_readonly">
+   A:
+  </td>
+  <td>
+  </td>
+ </tr>
+ <tr>
+  <td class="field_readonly">
+   B:
+  </td>
+  <td>
+   1, 2
+  </td>
+ </tr>
+</tbody>
+>>> t.model.a = 'test'
+>>> print pretty_html(t.a.value_str())
+test
 """
 
 if __name__ == '__main__':

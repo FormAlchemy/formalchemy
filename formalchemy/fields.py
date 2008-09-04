@@ -615,6 +615,10 @@ class Field(AbstractField):
             v = self._deserialize()
             if v is not None:
                 return v
+        try:
+            return self.model.__dict__[self.name]
+        except KeyError:
+            pass
         if callable(self._value):
             return self._value(self.model)
         return self._value
@@ -630,8 +634,8 @@ class Field(AbstractField):
 
     def value_str(self):
         if self.is_collection():
-            return [str(item) for item in self.value]
-        return str(self.value)
+            return ', '.join([str(item) for item in self.value])
+        return str(self.value or '')
 
     def sync(self):
         """Set the attribute's value in `model` to the value given in `data`"""
@@ -768,7 +772,7 @@ class AttributeField(AbstractField):
         """A string representation of `value` for use in non-editable contexts (so we don't check 'data')"""
         if self.is_collection():
             L = getattr(self.model, self.key)
-            return ','.join([str(item) for item in L])
+            return ', '.join([str(item) for item in L])
         else:
             return str(getattr(self.model, self.key))
 
