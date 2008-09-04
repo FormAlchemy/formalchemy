@@ -178,9 +178,22 @@ class IntegerFieldRenderer(FieldRenderer):
 
 
 class PasswordFieldRenderer(TextFieldRenderer):
+    """Render a password field
+
+        >>> from regression import *
+        >>> fs = FieldSet(One)
+        >>> fs.add(
+        ...    Field(name='passwd').with_renderer(PasswordFieldRenderer))
+        >>> print fs.passwd.render()
+        <input id="One--passwd" name="One--passwd" type="password" />
+
+        >>> print fs.passwd.render_readonly()
+        ******
+    """
     def render(self, **kwargs):
         return h.password_field(self.name, value=self._value, maxlength=self.length, **kwargs)
-
+    def render_readonly(self):
+        return '*'*6
 
 class TextAreaFieldRenderer(FieldRenderer):
     def render(self, **kwargs):
@@ -222,8 +235,8 @@ class FileFieldRenderer(FieldRenderer):
         else:
             return h.file_field(self.name, **kwargs)
 
-    def human_size(self):
-        """return human readable size of data
+    def readable_size(self):
+        """return human readable size for the binary data
         """
         value = self.field.raw_value
         if value is None:
@@ -238,10 +251,10 @@ class FileFieldRenderer(FieldRenderer):
         return '%0.02f KB' % (length / 1024.0)
 
     def render_readonly(self, **kwargs):
-        """default render only return the binary size but you can overide it to
-        whatever you want
+        """render only the binary size in a human readable format but you can
+        override it to whatever you want
         """
-        return self.human_size()
+        return self.readable_size()
 
     def deserialize(self):
         data = FieldRenderer.deserialize(self)
@@ -261,6 +274,21 @@ class FileFieldRenderer(FieldRenderer):
         return data is not None and data or ''
 
 class DateFieldRenderer(FieldRenderer):
+    """Render a date field
+
+        >>> from regression import *
+        >>> from datetime import datetime
+        >>> date = datetime(2000, 12, 31, 9, 00)
+        >>> fs = FieldSet(One)
+        >>> fs.add(Field(name='date', type=types.Date, value=date))
+        >>> print fs.date.render_readonly()
+        2000-12-31
+
+    """
+    format = '%Y-%m-%d'
+    def render_readonly(self, **kwargs):
+        value = self.field.raw_value
+        return value and value.strftime(self.format) or ''
     def _render(self, **kwargs):
         data = self._params
         import calendar
@@ -288,6 +316,21 @@ class DateFieldRenderer(FieldRenderer):
 
 
 class TimeFieldRenderer(FieldRenderer):
+    """Render a time field
+
+        >>> from regression import *
+        >>> from datetime import datetime
+        >>> date = datetime(2000, 12, 31, 9, 03, 30)
+        >>> fs = FieldSet(One)
+        >>> fs.add(Field(name='date', type=types.Time, value=date))
+        >>> print fs.date.render_readonly()
+        09:03:30
+
+    """
+    format = '%H:%M:%S'
+    def render_readonly(self, **kwargs):
+        value = self.field.raw_value
+        return value and value.strftime(self.format) or ''
     def _render(self, **kwargs):
         data = self._params
         hour_options = ['HH'] + [(i, str(i)) for i in xrange(24)]
@@ -310,6 +353,18 @@ class TimeFieldRenderer(FieldRenderer):
 
 
 class DateTimeFieldRendererRenderer(DateFieldRenderer, TimeFieldRenderer):
+    """Render a date time field
+
+        >>> from regression import *
+        >>> from datetime import datetime
+        >>> date = datetime(2000, 12, 31, 9, 03, 30)
+        >>> fs = FieldSet(One)
+        >>> fs.add(Field(name='date', type=types.DateTime, value=date))
+        >>> print fs.date.render_readonly()
+        2000-12-31 09:03:30
+
+    """
+    format = '%Y-%m-%d %H:%M:%S'
     def render(self, **kwargs):
         return h.content_tag('span', DateFieldRenderer._render(self, **kwargs) + ' ' + TimeFieldRenderer._render(self, **kwargs), id=self.name)
 
