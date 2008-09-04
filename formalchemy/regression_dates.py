@@ -605,8 +605,9 @@ __doc__ = r"""
  </select>
 </span>
 
->>> dt = Dt(foo=datetime.date(2008, 6, 3), bar=datetime.time(14, 16, 18), foobar=datetime.datetime(2008, 6, 3, 14, 16, 18))
->>> fs = FieldSet(dt)
+>>> fs = FieldSet(Dt)
+>>> dt = fs.model
+>>> dt.foo = datetime.date(2008, 6, 3);  dt.bar=datetime.time(14, 16, 18);  dt.foobar=datetime.datetime(2008, 6, 3, 14, 16, 18)
 >>> print pretty_html(fs.foo.render())
 <span id="Dt--foo">
  <select id="Dt--foo__month" name="Dt--foo__month">

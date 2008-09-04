@@ -82,7 +82,7 @@ class VertexFieldRenderer(FieldRenderer):
         return Point(*[int(i) for i in data])
     
 
-# todo: test a CustomBoolean, using a TypeDecorator --
+# todo? test a CustomBoolean, using a TypeDecorator --
 # http://www.sqlalchemy.org/docs/04/types.html#types_custom
 # probably need to add _renderer attr and check
 # isinstance(getattr(myclass, '_renderer', type(myclass)), Boolean)
@@ -220,10 +220,6 @@ if not hasattr(__builtins__, 'sorted'):
         return L
 
 
-two = Two()
-fs_2 = FieldSet(two, data={'Two--foo': ''})
-fs_2.foo.value
-
 __doc__ = r"""
 # some low-level testing first
 >>> fs = FieldSet(order1)
@@ -359,8 +355,7 @@ document.getElementById("Two--foo").focus();
 1
 >>> session.rollback()
 
->>> cb = CheckBox()
->>> fs_cb = FieldSet(cb)
+>>> fs_cb = FieldSet(CheckBox)
 >>> print fs_cb.field.dropdown().render()
 <select id="CheckBox--field" name="CheckBox--field"><option value="True">Yes</option>
 <option value="False">No</option></select>
@@ -376,6 +371,7 @@ True
 >>> fs_cb.errors
 {}
 >>> fs_cb.sync()
+>>> cb = fs_cb.model
 >>> cb.field
 False
 >>> fs_cb.rebind(data={'CheckBox--field': 'True'})
@@ -581,8 +577,7 @@ document.getElementById("OTOParent--oto_child_id").focus();
 </script>
 
 # validation + sync
->>> two = Two()
->>> fs_2 = FieldSet(two, data={'Two--foo': ''})
+>>> fs_2 = FieldSet(Two, data={'Two--foo': ''})
 >>> fs_2.foo.value # '' is deserialized to None, so default of 133 is used
 '133'
 >>> fs_2.validate()
@@ -602,7 +597,7 @@ False
   Please enter a value
  </span>
 </div>
->>> fs_2.rebind(two, data={'Two--foo': 'asdf'})
+>>> fs_2.rebind(data={'Two--foo': 'asdf'})
 >>> fs_2.data
 {'Two--foo': 'asdf'}
 >>> fs_2.validate()
@@ -619,7 +614,7 @@ False
   Value is not an integer
  </span>
 </div>
->>> fs_2.rebind(two, data={'Two--foo': '2'})
+>>> fs_2.rebind(data={'Two--foo': '2'})
 >>> fs_2.data
 {'Two--foo': '2'}
 >>> fs_2.validate()
@@ -627,7 +622,7 @@ True
 >>> fs_2.errors
 {}
 >>> fs_2.sync()
->>> two.foo
+>>> fs_2.model.foo
 2
 >>> session.flush()
 >>> print fs_2.render() #doctest: +ELLIPSIS
@@ -636,15 +631,14 @@ Traceback (most recent call last):
 Exception: Primary key of model has changed since binding, probably due to sync()ing a new instance.  You can solve this by either binding to a model with the original primary key again, or by binding data to None.
 >>> session.rollback()
 
->>> one = One()
->>> fs_1 = FieldSet(one, data={'One--id': '1'})
+>>> fs_1 = FieldSet(One, data={'One--id': '1'})
 >>> fs_1.configure(pk=True)
 >>> fs_1.validate()
 True
 >>> fs_1.sync()
->>> one.id
+>>> fs_1.model.id
 1
->>> fs_1.rebind(one, data={'One-1-id': 'asdf'})
+>>> fs_1.rebind(data={'One-1-id': 'asdf'})
 >>> fs_1.id.renderer.name
 'One-1-id'
 >>> fs_1.validate()
@@ -938,14 +932,17 @@ True
 >>> print pretty_html(fs.start.render())
 <input id="Vertex--start-x" name="Vertex--start-x" type="text" value="" />
 <input id="Vertex--start-y" name="Vertex--start-y" type="text" value="" />
->>> v = Vertex()
+>>> fs.rebind(Vertex)
+>>> v = fs.model
 >>> v.start = Point(1,2)
 >>> v.end = Point(3,4)
->>> fs.rebind(v)
 >>> print pretty_html(fs.start.render())
 <input id="Vertex--start-x" name="Vertex--start-x" type="text" value="1" />
 <input id="Vertex--start-y" name="Vertex--start-y" type="text" value="2" />
->>> fs.rebind(v, data={'Vertex--start-x': '10', 'Vertex--start-y': '20', 'Vertex--end-x': '30', 'Vertex--end-y': '40'})
+>>> fs.rebind(v) # this exercises a session bugfix
+>>> fs.session == session
+True
+>>> fs.rebind(data={'Vertex--start-x': '10', 'Vertex--start-y': '20', 'Vertex--end-x': '30', 'Vertex--end-y': '40'})
 >>> fs.validate()
 True
 >>> fs.sync()

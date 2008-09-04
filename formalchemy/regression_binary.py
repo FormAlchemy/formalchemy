@@ -44,8 +44,8 @@ Notice that those tests assume that the FileFieldRenderer work with Binary type
 
 Configure a fieldset with a file field
 
-    >>> record = Three()
-    >>> fs = FieldSet(record)
+    >>> fs = FieldSet(Three)
+    >>> record = fs.model
     >>> fs.configure(include=[fs.bar.with_renderer(FileFieldRenderer)])
     >>> isinstance(fs.bar.renderer, FileFieldRenderer)
     True
@@ -111,8 +111,8 @@ The field value is removed
 
 Also check that this work with cgi.FieldStorage
 
-    >>> record = Binaries()
-    >>> fs = FieldSet(record)
+    >>> fs = FieldSet(Binaries)
+    >>> record = fs.model
 
 We need test data
 

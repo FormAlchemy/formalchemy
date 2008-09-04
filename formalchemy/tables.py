@@ -5,7 +5,7 @@
 
 import helpers as h
 
-import base, utils
+import base
 
 from tempita import Template as TempitaTemplate # must import after base
 

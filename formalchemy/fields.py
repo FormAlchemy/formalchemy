@@ -239,7 +239,7 @@ class DateFieldRenderer(FieldRenderer):
         mm_name = self.name + '__month'
         dd_name = self.name + '__day'
         yyyy_name = self.name + '__year'
-        # todo fix: "or ''"
+        # todo 1.0 fix: "or ''"
         mm = (data is not None and mm_name in data) and data[mm_name] or str(self._value and self._value.month)
         dd = (data is not None and dd_name in data) and data[dd_name] or str(self._value and self._value.day)
         # could be blank so don't use and/or construct
@@ -594,13 +594,19 @@ class Field(AbstractField):
     def __init__(self, name=None, type=fatypes.String, value=None):
         """
           * `name`: field name
-          * `type`: data type, from sqlalchemy.types (Boolean, Integer, String)
+          * `type`: data type, from formalchemy.types (Boolean, Integer, String, etc.)
+            or the corresponding native type (`bool`, `int`, `unicode`), or a custom
+            type for which you have added a renderer.  Achtung!  
+            `str` corresponds to `Binary`, since Python < 3.0 does not otherwise
+            distinguish between the two!
           * `value`: default value.  If value is a callable, it will be passed
             the current bound model instance when the value is read.  This allows
             creating a Field whose value depends on the model once, then
             binding different instances to it later.
         """
+        # todo 1.0 actually allow native types?
         AbstractField.__init__(self, None) # parent will be set by ModelRenderer.add
+        # todo 1.0 raise exception in render if type is unrecognized
         self.type = type()
         self.name = name
         self._value = value
@@ -674,6 +680,7 @@ class AttributeField(AbstractField):
         return self._column.primary_key
 
     def type(self):
+        # todo 1.0 call type()
         if self.is_composite():
             # this is a little confusing -- we need to return an _instance_ of
             # the correct type, which for composite values will be the value
@@ -684,7 +691,7 @@ class AttributeField(AbstractField):
     type = property(type)
 
     def _column(self):
-        # todo this does not allow handling composite attributes (PKs or FKs)
+        # todo 2.0 this does not allow handling composite attributes (PKs or FKs)
         if isinstance(self._impl, ScalarObjectAttributeImpl):
             # If the attribute is a foreign key, return the Column that this
             # attribute is mapped from -- e.g., .user -> .user_id.
@@ -786,11 +793,11 @@ class AttributeField(AbstractField):
     def __repr__(self):
         return 'AttributeField(%s)' % self.key
 
-    # todo add .options method (for html_options)
+    # todo? add .options method (for html_options)
 
     def render(self, **html_options):
         if not self.is_vanilla() and not self.render_opts.get('options'):
-            # todo this does not handle primaryjoin (/secondaryjoin) alternate join conditions
+            # todo 2.0 this does not handle primaryjoin (/secondaryjoin) alternate join conditions
             fk_cls = self.collection_type()
             fk_pk = class_mapper(fk_cls).primary_key[0]
             q = self.parent.session.query(fk_cls).order_by(fk_pk)

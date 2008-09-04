@@ -1,4 +1,9 @@
-# todo pass field and value (so exception can refer to field name, for instance)
+# Copyright (C) 2007 Alexandre Conrad, aconrad(dot.)tlv(at@)magic(dot.)fr
+#
+# This module is part of FormAlchemy and is released under
+# the MIT License: http://www.opensource.org/licenses/mit-license.php
+
+# todo 2.0 pass field and value (so exception can refer to field name, for instance)
 from i18n import _
 
 if 'any' not in locals():

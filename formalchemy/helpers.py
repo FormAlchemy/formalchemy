@@ -279,7 +279,6 @@ def options_for_select(container, selected=None):
             name = value = elem
             n = v = html_escape(elem)
         
-        #TODO: run timeit for this against content_tag('option', n, value=v, selected=value in selected)
         if value in selected:
             options.append('<option value="%s" selected="selected">%s</option>' % (v, n))
         else :

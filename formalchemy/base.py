@@ -3,8 +3,6 @@
 # This module is part of FormAlchemy and is released under
 # the MIT License: http://www.opensource.org/licenses/mit-license.php
 
-# TODO add doc section on recommended session setup
-
 import cgi
 import logging
 logger = logging.getLogger('formalchemy.' + __name__)
@@ -19,7 +17,7 @@ from sqlalchemy.orm.session import Session
 from sqlalchemy.orm.scoping import ScopedSession
 from sqlalchemy.util import OrderedDict
 
-import fields, utils, fatypes
+import fields, fatypes
 
 # put tempita on the path
 import sys, os
@@ -294,6 +292,7 @@ class ModelRenderer(object):
            * if `session` is not specified, FA tries to re-guess session from the model
            * if data is not specified, it is rebound to None.
         """
+        original_model = model
         if model:
             if isinstance(model, type):
                 try:
@@ -308,6 +307,15 @@ class ModelRenderer(object):
                 else:
                     if _obj_session:
                         _obj_session.expunge(model)
+            elif object_session(model):
+                # for instances of mapped classes, require that the instance have a PK already
+                try:
+                    class_mapper(type(model))
+                except:
+                    pass
+                else:
+                    if fields._pk(model) is None:
+                        raise Exception('Mapped instances to be bound either have a primary key set or not be in a Session.  When  creating a new object, bind the class instead [i.e., bind(User), not bind(User())]')
             if self.model and type(self.model) != type(model):
                 raise ValueError('You can only bind to another object of the same type you originally bound to (%s), not %s' % (type(self.model), type(model)))
             self.model = model
@@ -329,21 +337,26 @@ class ModelRenderer(object):
             self.session = session
         elif model:
             if '_obj_session' in locals():
-                # model is a temporary object, expunged from its session -- grab the existing reference
+                # model may be a temporary object, expunged from its session -- grab the existing reference
                 self.session = _obj_session
             else:
                 try:
-                    self.session = object_session(model)
+                    o_session = object_session(model)
                 except AttributeError:
                     pass # non-SA object
-        if self.session:
+                else:
+                    if o_session:
+                        self.session = o_session
+        # if we didn't just instantiate (in which case object_session will be None), 
+        # the session should be the same as the object_session
+        if self.session and model == original_model:
             try:
                 o_session = object_session(self.model)
             except AttributeError:
                 pass # non-SA object
             else:
                 if o_session and self.session is not o_session:
-                    raise Exception('Thou shalt not rebind to different session than the one the model belongs to')
+                    raise Exception('You may not explicitly bind to a session when your model already belongs to a different one')
 
     def sync(self):
         """
