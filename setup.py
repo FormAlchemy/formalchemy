@@ -11,6 +11,7 @@ args = dict(name='FormAlchemy',
       url='http://formalchemy.googlecode.com',
       download_url='http://code.google.com/p/formalchemy/downloads/list',
       packages=['formalchemy', 'formalchemy.tempita'],
+      package_data={'formalchemy': ['i18n/*/LC_MESSAGES/formalchemy.mo']},
       classifiers=[
           'Development Status :: 3 - Alpha',
           'Intended Audience :: Developers',
