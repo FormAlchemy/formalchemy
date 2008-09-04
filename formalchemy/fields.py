@@ -61,6 +61,10 @@ class FieldRenderer(object):
         Render the field.  Use `self.name` to get a unique name for the
         input element and id.  `self._value` may also be useful if
         you are not rendering multiple input elements.
+        
+        This default implementation is one of last resort, only
+        used if !FormAlchemy failed to find a better renderer.
+        Subclasses should not call this method.
         """
         return h.text_field(self.name, value=self._value, **kwargs)
     
