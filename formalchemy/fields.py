@@ -56,12 +56,6 @@ class FieldRenderer(object):
         return v or self.field.value
     _value = property(_value)
 
-    def raw_value(self):
-        """return the field raw value
-        """
-        return self.field.raw_value
-    raw_value = property(raw_value)
-
     def render(self, **kwargs):
         """
         Render the field.  Use `self.name` to get a unique name for the
@@ -77,12 +71,12 @@ class FieldRenderer(object):
     def render_readonly(self, **kwargs):
         """render a string representation of the field value
         """
-        value = self.raw_value
+        value = self.field.raw_value
         if value is None:
             return ''
-        elif isinstance(value, list):
+        if isinstance(value, list):
             return ', '.join([str(item) for item in value])
-        return str(self.raw_value)
+        return str(value)
 
     def _params(self):
         return self.field.parent.data
@@ -660,8 +654,6 @@ class Field(AbstractField):
         return self.render_opts.get('multiple', False)
 
     def raw_value(self):
-        if self.is_collection():
-            return [item for item in self.value]
         return self.value
     raw_value = property(raw_value)
 
