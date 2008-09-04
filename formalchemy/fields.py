@@ -222,6 +222,27 @@ class FileFieldRenderer(FieldRenderer):
         else:
             return h.file_field(self.name, **kwargs)
 
+    def human_size(self):
+        """return human readable size of data
+        """
+        value = self.field.raw_value
+        if value is None:
+            return '0 KB'
+        length = len(value)
+        if length == 0:
+            return '0 KB'
+        if length <= 1024:
+            return '1 KB'
+        if length > 1048576:
+            return '%0.02f MB' % (length / 1048576.0)
+        return '%0.02f KB' % (length / 1024.0)
+
+    def render_readonly(self, **kwargs):
+        """default render only return the binary size but you can overide it to
+        whatever you want
+        """
+        return self.human_size()
+
     def deserialize(self):
         data = FieldRenderer.deserialize(self)
         if isinstance(data, cgi.FieldStorage):

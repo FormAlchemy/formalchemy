@@ -148,9 +148,23 @@ Remove file
     >>> fs.rebind(data=data)
     >>> if fs.validate(): fs.sync()
 
-The field value dos not change
+The field value is now empty
 
     >>> print record.file
     <BLANKLINE>
+
+See what append in read only mode
+
+    >>> record.file = 'e'*1000
+    >>> print fs.file.render_readonly()
+    1 KB
+
+    >>> record.file = 'e'*1000*1024
+    >>> print fs.file.render_readonly()
+    1000.00 KB
+
+    >>> record.file = 'e'*2*1024*1024
+    >>> print fs.file.render_readonly()
+    2.00 MB
 
 """
