@@ -952,6 +952,7 @@ True
 
 # readonly tests
 >>> t = FieldSet(bill)
+>>> bill.name = None
 >>> t.configure(readonly=True)
 >>> t.readonly
 True
@@ -978,7 +979,6 @@ True
    Name:
   </td>
   <td>
-   Bill
   </td>
  </tr>
  <tr>

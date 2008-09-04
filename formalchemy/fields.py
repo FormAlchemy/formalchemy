@@ -774,7 +774,7 @@ class AttributeField(AbstractField):
             L = getattr(self.model, self.key)
             return ', '.join([str(item) for item in L])
         else:
-            return str(getattr(self.model, self.key))
+            return str(getattr(self.model, self.key) or '')
 
     def sync(self):
         """Set the attribute's value in `model` to the value given in `data`"""
