@@ -789,11 +789,12 @@ class AttributeField(AbstractField):
     value = property(value)
 
     def raw_value(self):
-        if self.is_collection():
-            L = getattr(self.model, self.key)
-            return [item for item in L]
-        else:
-            return getattr(self.model, self.key)
+        """
+        raw value from model.  different from `.value`, because for reference types,
+        `.value` will return the foreign key ID.  This will return the actual object 
+        referenced instead.
+        """
+        return getattr(self.model, self.key)
     raw_value = property(raw_value)
 
     def sync(self):
