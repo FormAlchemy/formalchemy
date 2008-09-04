@@ -629,8 +629,7 @@ class Field(AbstractField):
         return self.render_opts.get('multiple', False)
 
     def value_str(self):
-        if self._renderer is not None:
-            return self.render()
+        """field value, as a string.  Used by read-only render modes."""
         if self.is_collection():
             return [str(item) for item in self.value]
         return str(self.value)
