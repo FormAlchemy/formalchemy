@@ -998,7 +998,7 @@ True
 
 >>> t = FieldSet(bill)
 >>> t.configure(options=[t.email.with_renderer(TextFieldRenderer)] ,readonly=True)
->>> print pretty_html(t.render())
+>>> print t.render()
 <tbody>
  <tr>
   <td class="field_readonly">
