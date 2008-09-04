@@ -626,10 +626,12 @@ class Field(AbstractField):
     key = property(key)
 
     def is_collection(self):
+        # todo 1.0 checkboxes are also multiple
         return self.render_opts.get('multiple', False)
 
     def value_str(self):
-        """field value, as a string.  Used by read-only render modes."""
+        if self._renderer is not None:
+            return self.render()
         if self.is_collection():
             return [str(item) for item in self.value]
         return str(self.value)
