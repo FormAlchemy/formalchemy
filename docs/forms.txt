@@ -3,9 +3,20 @@
 
 .. automodule:: formalchemy.forms
 
+AbstractFieldSet class
+----------------------
+
 .. autoclass:: AbstractFieldSet
    :members:
 
+FieldSet class
+--------------
+
 .. autoclass:: FieldSet
    :members:
+
+Usage
+-----
+
+todo
 

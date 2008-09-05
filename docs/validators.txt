@@ -148,3 +148,31 @@ Validators
   ...
   ValidationError: Reserved character present in domain
 
+Custom validator
+----------------
+
+You can write your own validator::
+
+  >>> def negative(value):
+  ...     if isinstance(value, int) and value < 0:
+  ...         return True
+  ...     raise ValidationError('Value must be greater than 0')
+
+Then bind it to a field::
+
+  >>> from formalchemy.tests import *
+  >>> from formalchemy import fatypes
+  >>> fs = FieldSet(One)
+  >>> fs.add(Field('number', type=fatypes.Integer))
+  >>> fs.configure(include=[fs.number.validate(negative)])
+
+Then it should work::  
+
+  >>> fs.rebind(One, data={'One--number': '-2'})
+  >>> fs.validate()
+  True
+
+  >>> fs.rebind(One, data={'One--number': '2'})
+  >>> fs.validate()
+  False
+
