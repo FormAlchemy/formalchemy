@@ -3,14 +3,11 @@
 
 .. automodule:: formalchemy.fields
 
-Import `FormAlchemy` fields and renderers::
+.. Commented imports
 
-    >>> from formalchemy.fields import *
-
-Stuff need for testing::
-
-    >>> from formalchemy.tests import *
-    >>> from datetime import datetime
+   >>> from formalchemy.fields import *
+   >>> from formalchemy.tests import *
+   >>> from datetime import datetime
 
 Fields
 ------

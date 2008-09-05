@@ -7,8 +7,9 @@
 
 .. automodule:: formalchemy.validators
 
-To validate data, you must bind it to your `FieldSet` along with the
-SQLAlchemy model.  Normally, you will retrieve `data` from a dict::
+To validate data, you must bind it to your :class:`~formalchemy.forms.FieldSet`
+along with the SQLAlchemy model.  Normally, you will retrieve `data` from a
+dict::
 
   >>> from formalchemy.tests import User, bill
   >>> from formalchemy.forms import FieldSet, form_data
@@ -26,9 +27,9 @@ is run.  Dictionary keys are attributes; values are lists of messages
 given to `ValidationException`.  Global errors (not specific to a
 single attribute) are under the key `None`.
 
-Rendering a `FieldSet` with errors will result in error messages
-being displayed inline.  Here's what this looks like for a required
-field that was not supplied with a value::
+Rendering a :class:`~formalchemy.forms.FieldSet` with errors will result in
+error messages being displayed inline.  Here's what this looks like for a
+required field that was not supplied with a value::
 
   <div>
    <label class="field_req" for="foo">
@@ -207,8 +208,8 @@ Function generators
   >>> pattern = re.compile('[A-Z]+$', re.I)
   >>> regex(pattern)('abc')
 
-Custom validator
-----------------
+Write your own validator
+------------------------
 
 You can write your own validator::
 
@@ -219,9 +220,9 @@ You can write your own validator::
 
 Then bind it to a field::
 
-  >>> from formalchemy import fatypes
+  >>> from formalchemy import types
   >>> fs = FieldSet(One)
-  >>> fs.add(Field('number', type=fatypes.Integer))
+  >>> fs.add(Field('number', type=types.Integer))
   >>> fs.configure(include=[fs.number.validate(negative)])
 
 Then it should work::  
