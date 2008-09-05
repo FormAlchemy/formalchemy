@@ -23,7 +23,7 @@ __all__ = ['Field', 'FieldRenderer', 'query_options',
            'TextFieldRenderer', 'TextAreaFieldRenderer',
            'PasswordFieldRenderer', 'HiddenFieldRenderer',
            'DateFieldRenderer', 'TimeFieldRenderer',
-           'DateTimeFieldRendererRenderer',
+           'DateTimeFieldRenderer',
            'CheckBoxFieldRenderer', 'CheckBoxSet']
 
 class FieldRenderer(object):
@@ -347,7 +347,7 @@ class TimeFieldRenderer(FieldRenderer):
         return ':'.join([self._params.getone(self.name + '__' + subfield) for subfield in ['hour', 'minute', 'second']])
 
 
-class DateTimeFieldRendererRenderer(DateFieldRenderer, TimeFieldRenderer):
+class DateTimeFieldRenderer(DateFieldRenderer, TimeFieldRenderer):
     """Render a date time field
     """
     format = '%Y-%m-%d %H:%M:%S'

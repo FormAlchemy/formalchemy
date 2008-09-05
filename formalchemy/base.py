@@ -427,7 +427,7 @@ class EditableRenderer(ModelRenderer):
         fatypes.String: fields.TextFieldRenderer,
         fatypes.Integer: fields.IntegerFieldRenderer,
         fatypes.Boolean: fields.CheckBoxFieldRenderer,
-        fatypes.DateTime: fields.DateTimeFieldRendererRenderer,
+        fatypes.DateTime: fields.DateTimeFieldRenderer,
         fatypes.Date: fields.DateFieldRenderer,
         fatypes.Time: fields.TimeFieldRenderer,
         fatypes.Binary: fields.FileFieldRenderer,

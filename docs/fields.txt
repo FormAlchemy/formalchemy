@@ -27,95 +27,320 @@ Fields
 Renderers
 ---------
 
+FieldRenderer
+*************
+
 .. autoclass:: FieldRenderer
    :members:
+
+TextFieldRenderer
+*****************
 
 .. autoclass:: TextFieldRenderer
    :members:
 
+Render a string field::
+
     >>> fs = FieldSet(One)
-    >>> fs.add(Field(name='text', value='a value'))
+    >>> fs.add(Field(name='text', type=types.String, value='a value'))
+
+Edit mode::
+
     >>> print fs.text.render()
     <input id="One--text" name="One--text" type="text" value="a value" />
 
+Read only mode::
+
     >>> print fs.text.render_readonly()
     a value
+
+IntegerFieldRenderer
+********************
 
 .. autoclass:: IntegerFieldRenderer
    :members:
 
+PasswordFieldRenderer
+*********************
+
 .. autoclass:: PasswordFieldRenderer
    :members:
 
+Render a string field::
+
     >>> fs = FieldSet(One)
     >>> fs.add(Field(name='passwd').with_renderer(PasswordFieldRenderer))
+
+Edit mode::
+
     >>> print fs.passwd.render()
     <input id="One--passwd" name="One--passwd" type="password" />
+
+Read only mode::
 
     >>> print fs.passwd.render_readonly()
     ******
 
+TextAreaFieldRenderer
+*********************
+
 .. autoclass:: TextAreaFieldRenderer
    :members:
 
+Render a string field::
+
     >>> fs = FieldSet(One)
     >>> fs.add(Field(name='text',value='a value').with_renderer(TextAreaFieldRenderer))
+
+Edit mode::
+
     >>> print fs.text.render()
     <textarea id="One--text" name="One--text">a value</textarea>
+
+Read only mode::
 
     >>> print fs.text.render_readonly()
     a value
 
+HiddenFieldRenderer
+*******************
+
 .. autoclass:: HiddenFieldRenderer
    :members:
 
+Render a string field::
+
     >>> fs = FieldSet(One)
     >>> fs.add(Field(name='text', value='h').with_renderer(HiddenFieldRenderer))
+
+Edit mode::
+
     >>> print fs.text.render()
     <input id="One--text" name="One--text" type="hidden" value="h" />
+
+Read only mode::
 
     >>> print fs.text.render_readonly()
     <BLANKLINE>
 
+CheckBoxFieldRenderer
+*********************
+
 .. autoclass:: CheckBoxFieldRenderer
    :members:
+
+FileFieldRenderer
+*****************
 
 .. autoclass:: FileFieldRenderer
    :members:
 
+DateFieldRenderer
+*****************
+
 .. autoclass:: DateFieldRenderer
    :members:
+
+Render a date field::
 
     >>> date = datetime(2000, 12, 31, 9, 00)
     >>> fs = FieldSet(One)
     >>> fs.add(Field(name='date', type=types.Date, value=date))
+
+Edit mode::
+
+    >>> print pretty_html(fs.date.render())  #doctest: +ELLIPSIS
+    <span id="One--date">
+     <select id="One--date__month" name="One--date__month">
+      <option value="MM">
+       Month
+      </option>
+      <option value="1">
+       January
+      </option>
+    ...
+      <option value="12" selected="selected">
+       December
+      </option>
+     </select>
+     <select id="One--date__day" name="One--date__day">
+      <option value="DD">
+       Day
+      </option>
+      <option value="1">
+       1
+      </option>
+    ...
+      <option value="31" selected="selected">
+       31
+      </option>
+     </select>
+     <input id="One--date__year" maxlength="4" name="One--date__year" size="4" type="text" value="2000" />
+    </span>
+
+Read only mode::
+
     >>> print fs.date.render_readonly()
     2000-12-31
 
 .. autoclass:: TimeFieldRenderer
    :members:
 
-    >>> date = datetime(2000, 12, 31, 9, 03, 30)
+Render a time field::
+
+    >>> time = datetime(2000, 12, 31, 9, 03, 30).time()
     >>> fs = FieldSet(One)
-    >>> fs.add(Field(name='date', type=types.Time, value=date))
-    >>> print fs.date.render_readonly()
+    >>> fs.add(Field(name='time', type=types.Time, value=time))
+
+Edit mode::
+
+    >>> print pretty_html(fs.time.render())  #doctest: +ELLIPSIS
+    <span id="One--time">
+     <select id="One--time__hour" name="One--time__hour">
+      <option value="HH">
+       HH
+      </option>
+      <option value="0">
+       0
+      </option>
+    ...
+      <option value="9" selected="selected">
+       9
+      </option>
+    ...
+      <option value="23">
+       23
+      </option>
+     </select>
+     :
+     <select id="One--time__minute" name="One--time__minute">
+      <option value="MM">
+       MM
+      </option>
+      <option value="0">
+       0
+      </option>
+    ...
+      <option value="3" selected="selected">
+       3
+      </option>
+    ...
+      <option value="59">
+       59
+      </option>
+     </select>
+     :
+     <select id="One--time__second" name="One--time__second">
+      <option value="SS">
+       SS
+      </option>
+      <option value="0">
+       0
+      </option>
+    ...
+      <option value="30" selected="selected">
+       30
+      </option>
+    ...
+      <option value="59">
+       59
+      </option>
+     </select>
+    </span>
+
+Read only mode::
+
+    >>> print fs.time.render_readonly()
     09:03:30
 
-.. autoclass:: DateTimeFieldRendererRenderer
+DateTimeFieldRenderer
+*********************
+
+.. autoclass:: DateTimeFieldRenderer
    :members:
 
-    >>> date = datetime(2000, 12, 31, 9, 03, 30)
+Render a datetime field::
+
+    >>> datetime = datetime(2000, 12, 31, 9, 03, 30)
     >>> fs = FieldSet(One)
-    >>> fs.add(Field(name='date', type=types.DateTime, value=date))
-    >>> print fs.date.render_readonly()
+    >>> fs.add(Field(name='datetime', type=types.DateTime, value=datetime))
+
+Edit mode::
+
+    >>> print pretty_html(fs.datetime.render())  #doctest: +ELLIPSIS
+    <span id="One--datetime">
+     <select id="One--datetime__month" name="One--datetime__month">
+      <option value="MM">
+       Month
+      </option>
+    ...
+      <option value="12" selected="selected">
+       December
+      </option>
+     </select>
+     <select id="One--datetime__day" name="One--datetime__day">
+      <option value="DD">
+       Day
+      </option>
+    ...
+      <option value="31" selected="selected">
+       31
+      </option>
+     </select>
+     <input id="One--datetime__year" maxlength="4" name="One--datetime__year" size="4" type="text" value="2000" />
+     <select id="One--datetime__hour" name="One--datetime__hour">
+      <option value="HH">
+       HH
+      </option>
+    ...
+      <option value="9" selected="selected">
+       9
+      </option>
+    ...
+     </select>
+     :
+     <select id="One--datetime__minute" name="One--datetime__minute">
+      <option value="MM">
+       MM
+      </option>
+    ...
+      <option value="3" selected="selected">
+       3
+      </option>
+    ...
+     </select>
+     :
+     <select id="One--datetime__second" name="One--datetime__second">
+      <option value="SS">
+       SS
+      </option>
+    ...
+      <option value="30" selected="selected">
+       30
+      </option>
+    ...
+     </select>
+    </span>
+
+Read only mode::
+
+    >>> print fs.datetime.render_readonly()
     2000-12-31 09:03:30
 
+RadioSet
+********
 
 .. autoclass:: RadioSet
    :members:
 
+CheckBoxSet
+***********
+
 .. autoclass:: CheckBoxSet
    :members:
+
+SelectFieldRenderer
+*******************
 
 .. autoclass:: SelectFieldRenderer
    :members:
@@ -143,7 +368,7 @@ Then bind it to a field::
   >>> fs.add(Field('link', value='http://www.formalchemy.org'))
   >>> fs.configure(include=[fs.link.with_renderer(LinkFieldRenderer)])
 
-Here is the result for edit mode::  
+Here is the result for edit mode::
 
   >>> print fs.render()
   <div>
@@ -159,7 +384,7 @@ Here is the result for edit mode::
   </script>
 
 
-And for read only mode::  
+And for read only mode::
 
   >>> fs.readonly = True
   >>> print fs.render()
