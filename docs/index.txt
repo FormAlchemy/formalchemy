@@ -5,12 +5,12 @@
 Welcome to FormAlchemy's documentation!
 =======================================
 
-Contents:
-
 .. toctree::
    :maxdepth: 2
 
    forms
+   tables
+   fields
    validators
 
 Indices and tables

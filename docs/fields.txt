@@ -3,6 +3,15 @@
 
 .. automodule:: formalchemy.fields
 
+Import `FormAlchemy` fields and renderers::
+
+    >>> from formalchemy.fields import *
+
+Stuff need for testing::
+
+    >>> from formalchemy.tests import *
+    >>> from datetime import datetime
+
 Fields
 ------
 
@@ -24,17 +33,49 @@ Renderers
 .. autoclass:: TextFieldRenderer
    :members:
 
+    >>> fs = FieldSet(One)
+    >>> fs.add(Field(name='text', value='a value'))
+    >>> print fs.text.render()
+    <input id="One--text" name="One--text" type="text" value="a value" />
+
+    >>> print fs.text.render_readonly()
+    a value
+
 .. autoclass:: IntegerFieldRenderer
    :members:
 
 .. autoclass:: PasswordFieldRenderer
    :members:
 
+    >>> fs = FieldSet(One)
+    >>> fs.add(Field(name='passwd').with_renderer(PasswordFieldRenderer))
+    >>> print fs.passwd.render()
+    <input id="One--passwd" name="One--passwd" type="password" />
+
+    >>> print fs.passwd.render_readonly()
+    ******
+
 .. autoclass:: TextAreaFieldRenderer
    :members:
 
+    >>> fs = FieldSet(One)
+    >>> fs.add(Field(name='text',value='a value').with_renderer(TextAreaFieldRenderer))
+    >>> print fs.text.render()
+    <textarea id="One--text" name="One--text">a value</textarea>
+
+    >>> print fs.text.render_readonly()
+    a value
+
 .. autoclass:: HiddenFieldRenderer
    :members:
+
+    >>> fs = FieldSet(One)
+    >>> fs.add(Field(name='text', value='h').with_renderer(HiddenFieldRenderer))
+    >>> print fs.text.render()
+    <input id="One--text" name="One--text" type="hidden" value="h" />
+
+    >>> print fs.text.render_readonly()
+    <BLANKLINE>
 
 .. autoclass:: CheckBoxFieldRenderer
    :members:
@@ -45,11 +86,30 @@ Renderers
 .. autoclass:: DateFieldRenderer
    :members:
 
+    >>> date = datetime(2000, 12, 31, 9, 00)
+    >>> fs = FieldSet(One)
+    >>> fs.add(Field(name='date', type=types.Date, value=date))
+    >>> print fs.date.render_readonly()
+    2000-12-31
+
 .. autoclass:: TimeFieldRenderer
    :members:
 
+    >>> date = datetime(2000, 12, 31, 9, 03, 30)
+    >>> fs = FieldSet(One)
+    >>> fs.add(Field(name='date', type=types.Time, value=date))
+    >>> print fs.date.render_readonly()
+    09:03:30
+
 .. autoclass:: DateTimeFieldRendererRenderer
    :members:
+
+    >>> date = datetime(2000, 12, 31, 9, 03, 30)
+    >>> fs = FieldSet(One)
+    >>> fs.add(Field(name='date', type=types.DateTime, value=date))
+    >>> print fs.date.render_readonly()
+    2000-12-31 09:03:30
+
 
 .. autoclass:: RadioSet
    :members:
@@ -59,5 +119,4 @@ Renderers
 
 .. autoclass:: SelectFieldRenderer
    :members:
-
 

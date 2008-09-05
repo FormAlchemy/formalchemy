@@ -19,8 +19,12 @@ from sqlalchemy.exceptions import InvalidRequestError # 0.4 support
 import fatypes, validators
 from i18n import _
 
-__all__ = ['Field', 'FieldRenderer', 'query_options']
-
+__all__ = ['Field', 'FieldRenderer', 'query_options',
+           'TextFieldRenderer', 'TextAreaFieldRenderer',
+           'PasswordFieldRenderer', 'HiddenFieldRenderer',
+           'DateFieldRenderer', 'TimeFieldRenderer',
+           'DateTimeFieldRendererRenderer',
+           'CheckBoxFieldRenderer', 'CheckBoxSet']
 
 class FieldRenderer(object):
     """
@@ -164,16 +168,7 @@ class FieldRenderer(object):
 
 
 class TextFieldRenderer(FieldRenderer):
-    """render a field as a text field::
-
-        >>> from formalchemy.tests import *
-        >>> fs = FieldSet(One)
-        >>> fs.add(Field(name='text', value='a value'))
-        >>> print fs.text.render()
-        <input id="One--text" name="One--text" type="text" value="a value" />
-
-        >>> print fs.text.render_readonly()
-        a value
+    """render a field as a text field
     """
     def length(self):
         return self.field.type.length
@@ -191,16 +186,7 @@ class IntegerFieldRenderer(FieldRenderer):
 
 
 class PasswordFieldRenderer(TextFieldRenderer):
-    """Render a password field::
-
-        >>> from formalchemy.tests import *
-        >>> fs = FieldSet(One)
-        >>> fs.add(Field(name='passwd').with_renderer(PasswordFieldRenderer))
-        >>> print fs.passwd.render()
-        <input id="One--passwd" name="One--passwd" type="password" />
-
-        >>> print fs.passwd.render_readonly()
-        ******
+    """Render a password field
     """
     def render(self, **kwargs):
         return h.password_field(self.name, value=self._value, maxlength=self.length, **kwargs)
@@ -208,17 +194,7 @@ class PasswordFieldRenderer(TextFieldRenderer):
         return '*'*6
 
 class TextAreaFieldRenderer(FieldRenderer):
-    """render a field as a textarea::
-
-        >>> from formalchemy.tests import *
-        >>> fs = FieldSet(One)
-        >>> fs.add(Field(name='text',
-        ...              value='a value').with_renderer(TextAreaFieldRenderer))
-        >>> print fs.text.render()
-        <textarea id="One--text" name="One--text">a value</textarea>
-
-        >>> print fs.text.render_readonly()
-        a value
+    """render a field as a textarea
     """
     def render(self, **kwargs):
         if isinstance(kwargs.get('size'), tuple):
@@ -227,17 +203,7 @@ class TextAreaFieldRenderer(FieldRenderer):
 
 
 class HiddenFieldRenderer(FieldRenderer):
-    """render a field as an hidden field::
-
-        >>> from formalchemy.tests import *
-        >>> fs = FieldSet(One)
-        >>> fs.add(Field(name='text',
-        ...              value='a value').with_renderer(HiddenFieldRenderer))
-        >>> print fs.text.render()
-        <input id="One--text" name="One--text" type="hidden" value="a value" />
-
-        >>> print fs.text.render_readonly()
-        <BLANKLINE>
+    """render a field as an hidden field
     """
     def render(self, **kwargs):
         return h.hidden_field(self.name, value=self._value, **kwargs)
@@ -317,15 +283,6 @@ class FileFieldRenderer(FieldRenderer):
 
 class DateFieldRenderer(FieldRenderer):
     """Render a date field
-
-        >>> from tests import *
-        >>> from datetime import datetime
-        >>> date = datetime(2000, 12, 31, 9, 00)
-        >>> fs = FieldSet(One)
-        >>> fs.add(Field(name='date', type=types.Date, value=date))
-        >>> print fs.date.render_readonly()
-        2000-12-31
-
     """
     format = '%Y-%m-%d'
     def render_readonly(self, **kwargs):
@@ -359,15 +316,6 @@ class DateFieldRenderer(FieldRenderer):
 
 class TimeFieldRenderer(FieldRenderer):
     """Render a time field
-
-        >>> from tests import *
-        >>> from datetime import datetime
-        >>> date = datetime(2000, 12, 31, 9, 03, 30)
-        >>> fs = FieldSet(One)
-        >>> fs.add(Field(name='date', type=types.Time, value=date))
-        >>> print fs.date.render_readonly()
-        09:03:30
-
     """
     format = '%H:%M:%S'
     def render_readonly(self, **kwargs):
@@ -396,15 +344,6 @@ class TimeFieldRenderer(FieldRenderer):
 
 class DateTimeFieldRendererRenderer(DateFieldRenderer, TimeFieldRenderer):
     """Render a date time field
-
-        >>> from tests import *
-        >>> from datetime import datetime
-        >>> date = datetime(2000, 12, 31, 9, 03, 30)
-        >>> fs = FieldSet(One)
-        >>> fs.add(Field(name='date', type=types.DateTime, value=date))
-        >>> print fs.date.render_readonly()
-        2000-12-31 09:03:30
-
     """
     format = '%Y-%m-%d %H:%M:%S'
     def render(self, **kwargs):

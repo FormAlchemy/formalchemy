@@ -72,39 +72,29 @@ def _validate_iterable(o):
 
 class Grid(base.EditableRenderer):
     """
-    Besides `FieldSet`, !FormAlchemy provides `Grid` for editing and
+    Besides `FieldSet`, `FormAlchemy` provides `Grid` for editing and
     rendering multiple instances at once.  Most of what you know about
     `FieldSet` applies to `Grid`, with the following differences to
     accomodate being bound to multiple objects:
-    
-    == Binding ==
-    
+
     The `Grid` constructor takes the following arguments:
+
       * `cls`:
             the class type that the `Grid` will render (NOT an instance)
+
       * `instances=[]`:
             the instances/rows to render
+
       * `session=None`:
             as in `FieldSet`
+
       * `data=None`:
             as in `FieldSet`
-    
+
     `bind` and `rebind` take the last 3 arguments (`instances`, `session`,
     and `data`); you may not specify a different class type than the one
     given to the constructor.
-    
-    == Configuration ==
-    
-    The `Grid` `configure` method takes the same arguments as `FieldSet`
-    (`pk`, `exclude`, `include`, `options`, `readonly`), except there is
-    no `focus` argument.
-    
-    == Validation and Sync ==
-    
-    These are the same as in `FieldSet`, except that you can also call
-    `sync_one(instance)` to sync a single one of the instances that are
-    bound to the `Grid`.
-    
+
     The `Grid` `errors` attribute is a dictionary keyed by bound instance,
     whose value is similar to the `errors` from a `FieldSet`, that is, a
     dictionary whose keys are `Field`s, and whose values are
@@ -123,22 +113,30 @@ class Grid(base.EditableRenderer):
         self.errors = {}
 
     def configure(self, pk=False, exclude=[], include=[], options=[], readonly=False):
+        """The `Grid` `configure` method takes the same arguments as `FieldSet`
+        (`pk`, `exclude`, `include`, `options`, `readonly`), except there is
+        no `focus` argument.
+        """
         base.EditableRenderer.configure(self, pk, exclude, include, options)
         self.readonly = readonly
-        
+
     def bind(self, instances, session=None, data=None):
+        """bind to instances
+        """
         _validate_iterable(instances)
         mr = base.EditableRenderer.bind(self, self.model, session, data)
         mr.rows = instances
         return mr
 
     def rebind(self, instances=None, session=None, data=None):
+        """rebind to instances
+        """
         if instances is not None:
             _validate_iterable(instances)
         base.EditableRenderer.rebind(self, self.model, session, data)
         if instances is not None:
             self.rows = instances
-            
+
     def render(self, **kwargs):
         if self.readonly:
             return self._render_readonly(collection=self, **kwargs)
@@ -148,6 +146,8 @@ class Grid(base.EditableRenderer):
         base.EditableRenderer.rebind(self, instance, session or self.session, self.data)
 
     def validate(self):
+        """These are the same as in `FieldSet`
+        """
         if self.data is None:
             raise Exception('Cannot validate without binding data')
         if self.readonly:
@@ -163,8 +163,11 @@ class Grid(base.EditableRenderer):
                     row_errors[field] = field.errors
             self.errors[row] = row_errors
         return success
-    
+
     def sync_one(self, row):
+        """Use to sync a single one of the instances that are
+        bound to the `Grid`.
+        """
         # we want to allow the user to sync just rows w/o errors, so this is public
         if self.readonly:
             raise Exception('Cannot sync a read-only Grid')
@@ -172,5 +175,7 @@ class Grid(base.EditableRenderer):
         base.EditableRenderer.sync(self)
 
     def sync(self):
+        """These are the same as in `FieldSet`
+        """
         for row in self.rows:
             self.sync_one(row)
