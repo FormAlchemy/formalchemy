@@ -120,3 +120,60 @@ Renderers
 .. autoclass:: SelectFieldRenderer
    :members:
 
+Custom renderer
+---------------
+
+You can write your own renderer::
+
+
+    >>> class LinkFieldRenderer(FieldRenderer):
+    ...     def render(self, **kwargs):
+    ...         """render html for edit mode"""
+    ...         return FieldRenderer.render(self, **kwargs)
+    ...     def render_readonly(self, **kwargs):
+    ...         """render html for read only mode"""
+    ...         kwargs = {'value':self.field.raw_value}
+    ...         return '<a href="%(value)s">%(value)s</a>' % kwargs
+
+Then bind it to a field::
+
+
+  >>> from formalchemy.tests import *
+  >>> fs = FieldSet(One)
+  >>> fs.add(Field('link', value='http://www.formalchemy.org'))
+  >>> fs.configure(include=[fs.link.with_renderer(LinkFieldRenderer)])
+
+Here is the result for edit mode::  
+
+  >>> print fs.render()
+  <div>
+   <label class="field_opt" for="One--link">
+    Link
+   </label>
+   <input id="One--link" name="One--link" type="text" value="http://www.formalchemy.org" />
+  </div>
+  <script type="text/javascript">
+   //<![CDATA[
+  document.getElementById("One--link").focus();
+  //]]>
+  </script>
+
+
+And for read only mode::  
+
+  >>> fs.readonly = True
+  >>> print fs.render()
+  <tbody>
+   <tr>
+    <td class="field_readonly">
+     Link:
+    </td>
+    <td>
+     <a href="http://www.formalchemy.org">
+      http://www.formalchemy.org
+     </a>
+    </td>
+   </tr>
+  </tbody>
+
+
