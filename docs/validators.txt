@@ -176,3 +176,12 @@ Then it should work::
   >>> fs.validate()
   False
 
+The `FieldSet.errors` and `Field.errors` attributes contain your custom error
+message::
+
+  >>> fs.errors
+  {AttributeField(number): ['Value must be greater than 0']}
+
+  >>> fs.number.errors
+  ['Value must be greater than 0']
+
