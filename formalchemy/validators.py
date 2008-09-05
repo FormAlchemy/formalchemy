@@ -21,6 +21,8 @@ if 'any' not in locals():
         return False
 
 class ValidationError(Exception):
+    """an exception raised when the validation failed
+    """
     def message(self):
         return self.args[0]
     message = property(message)

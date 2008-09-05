@@ -3,6 +3,17 @@
 
 .. automodule:: formalchemy.validators
 
+Exception
+---------
+
+All validators raise a `ValidationError` if the validation failed.
+
+.. exception:: ValidationError
+
+
+Validators
+----------
+
 `FormAlchemy` came with a set of validators::
 
   >>> from formalchemy.validators import *
