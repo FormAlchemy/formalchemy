@@ -1,175 +1,95 @@
 Quick tutorial
 ==============
 
-You need a `SQLAlchemy` mapper::
+To get started, you only need to know about one class, `FieldSet`, and a
+handful of methods:
 
-    >>> from sqlalchemy import *
-    >>> from sqlalchemy.orm import *
-    >>> from formalchemy import FieldSet
+* `render`: returns a string containing the form input html
+* `validate`: true if the form passes its validations; otherwise, false
+* `sync`: syncs the model instance that was bound to the input data
 
-    >>> meta = MetaData()
+This quickstart illustrates these four methods. For full details on
+customizing `FieldSet` behavior, see FormAlchemyDocumentation03.
 
-    >>> user_table = Table('users', meta,
-    ...     Column('id', Integer, primary_key=True),
-    ...     Column('email', Unicode(40), unique=True, nullable=False),
-    ...     Column('password', Unicode(20), nullable=False),
-    ...     Column('first_name', Unicode(20)),
-    ...     Column('last_name', Unicode(20)),
-    ...     Column('description', Unicode),
-    ...     Column('active', Boolean, default=True),
-    ... )
+We'll start with two simple SQLAlchemy models with a one-to-many relationship
+(each User can have many Orders)::
 
-    >>> class User(object):
-    ...     pass
+  >>> from sqlalchemy import *
+  >>> from sqlalchemy.orm import *
+  >>> from sqlalchemy.ext.declarative import declarative_base
+  >>> engine = create_engine('sqlite://')
+  >>> Session = scoped_session(sessionmaker(autoflush=True, bind=engine))
+  >>> Base = declarative_base(engine, mapper=Session.mapper)
 
-    >>> mapper(User, user_table) #doctest: +ELLIPSIS
-    <Mapper at ... User>
+  >>> class Order(Base):
+  ...     __tablename__ = 'orders'
+  ...     id = Column('id', Integer, primary_key=True)
+  ...     user_id = Column('user_id', Integer, ForeignKey('users.id'), nullable=False)
+  ...     quantity = Column('quantity', Integer, nullable=False)
+  ...     def __str__(self):
+  ...        return 'Quantity: %s' % self.quantity
 
-    >>> user = User()
+  >>> class User(Base):
+  ...     __tablename__ = 'users'
+  ...     id = Column('id', Integer, primary_key=True)
+  ...     name = Column('name', Unicode(30))
+  ...     orders = relation(Order, backref='user')
+  ...     def __str__(self):
+  ...         return self.name
 
-Ok, this is **very basic** `SQLAlchemy` stuff. If you don't understand the
-code, please visit `SQLAlchemy's documentation
-<http://www.sqlalchemy.org/docs>`_ first.
+  >>> Base.metadata.create_all()
+  >>> session = Session()
 
-Let's have a quick look at the columns we have declared in `user_table`:
+  >>> bill = User(name='Bill')
+  >>> john = User(name='John')
+  >>> order1 = Order(user=bill, quantity=10)
+  >>> session.commit()
 
-* `id` - the table's primary key.
+Now, let's render a form for editing the order we've created::
 
-* `email` - a required 40 characters limited field.
-
-* `password` - a required 20 characters field.
-
-* `first_name` - an optional 20 characters field.
-
-* `last_name` - an optional 20 characters field.
-
-* `description` - an optional non-limited characters field.
-
-* `active` - a boolean field that defaults to True.
-
-Now the fun and easy part::
-
-    >>> print FieldSet(user).render().strip()
-    <div>
-      <label class="field_req" for="User--email">Email</label>
-      <input id="User--email" maxlength="40" name="User--email" type="text" />
-    </div>
-    <script type="text/javascript">
-    //<![CDATA[
-    document.getElementById("User--email").focus();
-    //]]>
-    </script>
-    <div>
-      <label class="field_req" for="User--password">Password</label>
-      <input id="User--password" maxlength="20" name="User--password" type="text" />
-    </div>
-    <div>
-      <label class="field_opt" for="User--first_name">First name</label>
-      <input id="User--first_name" maxlength="20" name="User--first_name" type="text" />
-    </div>
-    <div>
-      <label class="field_opt" for="User--last_name">Last name</label>
-      <input id="User--last_name" maxlength="20" name="User--last_name" type="text" />
-    </div>
-    <div>
-      <label class="field_opt" for="User--description">Description</label>
-      <input id="User--description" name="User--description" type="text" />
-    </div>
-    <div>
-      <label class="field_opt" for="User--active">Active</label>
-      <input checked="checked" id="User--active" name="User--active" type="checkbox" value="True" />
-    </div>
-
-Nice! As you can see, `FielSet` was instantiated passing it the `user` SQLAlchemy mapped class as argument and the `render()` method was called on the fly, thus generating some HTML code.
-
-Now let's have a closer look at the generated HTML.
-
-First, we can see that no HTML <form> tags are present. Just HTML <label> and <input> fields. It is the programmer's responsability to wrap formalchemy's output in his own HTML <form> tags.
-
-Each field is structured as followed::
-
+  >>> from formalchemy import FieldSet
+  >>> from formalchemy.tests import pretty_html # obviously unnecessary in production
+  >>> fs = FieldSet(order1)
+  >>> print pretty_html(fs.render())
   <div>
-    <label [attributes]>Column's name</label>
-    <input [attributes] />
+   <label class="field_req" for="Order-1-quantity">
+    Quantity
+   </label>
+   <input id="Order-1-quantity" name="Order-1-quantity" type="text" value="10" />
+  </div>
+  <script type="text/javascript">
+   //<![CDATA[
+  document.getElementById("Order-1-quantity").focus();
+  //]]>
+  </script>
+  <div>
+   <label class="field_req" for="Order-1-user_id">
+    User
+   </label>
+   <select id="Order-1-user_id" name="Order-1-user_id">
+    <option value="1" selected="selected">
+     Bill
+    </option>
+    <option value="2">
+     John
+    </option>
+   </select>
   </div>
 
-Notice that:
+Note how the options for the User input are automatically loaded from the
+database.
 
-* non-nullable columns (required) had their <label> tag set with a
-  `class="field_req"`.
+Now let's process some user input. In a real application, you'd get the post
+data from your request object; here we'll just hardcode some::
 
-* nullable columns (optional) had their <label> tag set `class="field_opt"`.
+  >>> from formalchemy import SimpleMultiDict
+  >>> fs = FieldSet(order1, data=SimpleMultiDict({'Order-1-quantity': '7', 'Order-1-user_id': '2'}))
+  >>> if fs.validate():
+  ...     fs.sync()
 
-* Unicode columns with limited character length have their <input> tag set
-  with a `maxlength` attribute holding the appropriate column's length.
+  >>> order1.quantity
+  7
+  >>> order1.user_id
+  2
+  >>> session.commit()
 
-* column names have been formated to nice human readable text: "first_name"
-  -> "First name".
-
-* the Boolean column has its <input> tag set as `type="checkbox"`.
-
-* it also has its default state set as `checked` as declared in the
-   `user_table`.
-
-Great! But this is `FormAlchemy`'s default behaviour. What if we want to change
-the output to fit our needs better. `FormAlchemy` states to be "customizable"
-as well.
-
-So let's change `FormAlchemy`'s behaviour taking these in consideration:
-
-  * don't generate the `id` field, as parimary keys are generally handled by
-    the database itself, not the user.
-
-  * have the `password` field masked (i.e., a series of asterisks).
-
-  * don't generate the `active` neither, we don't want the user to touch that.
-
-This is just a matter of setting a few options the `render()` method.
-
-Here we go::
-
-    >>> fs = FieldSet(user)
-    >>> fs.configure(
-    ...     pk=False,
-    ...     options=[fs.password.password()],
-    ...     exclude=[fs.active]
-    ... )
-    >>> print fs.render().strip()
-    <div>
-      <label class="field_req" for="User--email">Email</label>
-      <input id="User--email" maxlength="40" name="User--email" type="text" />
-    </div>
-    <script type="text/javascript">
-    //<![CDATA[
-    document.getElementById("User--email").focus();
-    //]]>
-    </script>
-    <div>
-      <label class="field_req" for="User--password">Password</label>
-      <input id="User--password" maxlength="20" name="User--password" type="password" />
-    </div>
-    <div>
-      <label class="field_opt" for="User--first_name">First name</label>
-      <input id="User--first_name" maxlength="20" name="User--first_name" type="text" />
-    </div>
-    <div>
-      <label class="field_opt" for="User--last_name">Last name</label>
-      <input id="User--last_name" maxlength="20" name="User--last_name" type="text" />
-    </div>
-    <div>
-      <label class="field_opt" for="User--description">Description</label>
-      <input id="User--description" name="User--description" type="text" />
-    </div>
-
-That's it! The options passed to `configure()` pretty much speaks by itself:
-
-* `pk=False`: don't generate primary keys.
-
-* `options`: A list of fields to with configure options like `.password()`
-
-* `exclude`: a list of one or more fields to be excluded from the HTML.
-  We could have `id` in here, but `pk=False` it better suited.
-
-And there is much more you can do with `FormAlchemy`'s possibilities, e.g.,
-configuring `FormAlchemy`'s behaviour directly from your SQLAlchemy mapped
-class. 

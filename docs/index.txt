@@ -64,3 +64,19 @@ Full Documentation
    :maxdepth: 3
 
    doc
+
+FormAlchemy's current state
+===========================
+
+FormAlchemy is in alpha stage and the API is in constant
+evolution. We think it's useful enough to release, but your code may
+break from one version to another until FormAlchemy 1.0 is released.
+
+Copyright and License
+=====================
+
+Copyright (C) 2007 Alexandre Conrad, aconard(dot.)tlv(at@)magic(dot.)fr
+
+FormAlchemy is released under the 
+`MIT License` <http://www.opensource.org/licenses/mit-license.php>`_.
+
