@@ -5,18 +5,62 @@
 Welcome to FormAlchemy's documentation!
 =======================================
 
-.. toctree::
-   :maxdepth: 2
+Introduction
+------------
 
-   forms
-   tables
-   fields
-   validators
+FormAlchemy greatly speeds development with SQLAlchemy mapped classes (models) in a HTML forms environment.
 
-Indices and tables
+FormAlchemy eliminates boilerplate by autogenerating HTML input fields from a given model. FormAlchemy will try to figure out what kind of HTML code should be returned by introspecting the model's properties and generate ready-to-use HTML code that will fit the developer's application.
+
+Of course, FormAlchemy can't figure out everything, i.e, the developer might want to display only a few columns from the given model. Thus, FormAlchemy is also highly customizable.
+
+Features
+--------
+
+  * Generates HTML form fields from `SQLAlchemy <http://www.sqlalchemy.org/>`_
+    mapped classes or manually added Fields
+
+  * Works with declarative or classic mapper definitions
+
+  * Render and edits single objects or collections (grids)
+
+  * Handles `object relationships
+    <http://www.sqlalchemy.org/docs/05/ormtutorial.html#datamapping_relation>`_ 
+    (including many-to-many), not just simple data types
+
+  * `Synonym <http://www.sqlalchemy.org/docs/05/mappers.html#advdatamapping_mapper_overriding>`_
+    support
+
+  * `Composite and custom type
+    <http://www.sqlalchemy.org/docs/05/mappers.html#advdatamapping_mapper_composite>`_
+    support
+
+  * Pre-fills input fields with current or default value
+
+  * Highly customizable HTML output
+
+  * Validates input and displays errors in-line
+
+  * Syncs model instances with input data
+
+  * Easy-to-use, extensible API
+
+  * SQLAlchemy 0.4 (0.4.5 or later) and 0.5 compatible 
+
+Limitations
+-----------
+
+  * Currently, `FormAlchemy` only handles single-valued (not composite)
+    primary and foreign keys
+
+.. include:: installation.txt
+
+.. include:: quickstart.txt
+
+Full Documentation
 ==================
 
-* :ref:`genindex`
-* :ref:`modindex`
-* :ref:`search`
+.. toctree::
+   :maxdepth: 3
 
+   doc
