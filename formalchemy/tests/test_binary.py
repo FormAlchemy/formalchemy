@@ -1,8 +1,8 @@
 import cgi
 from StringIO import StringIO
 
-from fields import FileFieldRenderer
-from regression import *
+from formalchemy.fields import FileFieldRenderer
+from formalchemy.tests import *
 
 BOUNDARY='testdata'
 ENVIRON = {

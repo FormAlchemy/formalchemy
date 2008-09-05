@@ -194,16 +194,15 @@ class FieldSet(AbstractFieldSet):
     creating new instances) and can render a form for editing that instance,
     perform validation, and sync the form data back to the bound instance.
 
-    You can create a `FieldSet` from non-SQLAlchemy, new-style (inheriting
-    from `object`) classes, like this:
+    You can create a `FieldSet` from non-SQLAlchemy, new-style (inheriting from
+    `object`) classes, like this::
 
-    {{{
-    class Manual(object):
-        a = Field()
-        b = Field(type=types.Integer).dropdown([('one', 1), ('two', 2)])
-
-    fs = FieldSet(Manual)
-    }}}
+        >>> from formalchemy import fatypes as types
+        >>> from formalchemy.fields import Field
+        >>> class Manual(object):
+        ...    a = Field()
+        ...    b = Field(type=types.Integer).dropdown([('one', 1), ('two', 2)])
+        >>> fs = FieldSet(Manual)
 
     Field declaration is the same as for adding fields to a
     SQLAlchemy-based `FieldSet`, except that you do not give the Field a
@@ -212,36 +211,38 @@ class FieldSet(AbstractFieldSet):
     You can still validate and sync a non-SQLAlchemy class instance, but
     obviously persisting any data post-sync is up to you.
 
-    = Customization =
+    Customization
 
     There are three parts you can customize in a `FieldSet` subclass short
     of writing your own render method.  These are `default_renderers`, `prettify`, and
-    `_render`.  As in,
+    `_render`.  As in::
 
-    {{{
-    class MyFieldSet(FieldSet):
-        default_renderers = {
-            types.String: fields.TextFieldRenderer,
-            types.Integer: fields.IntegerFieldRenderer,
-            # ...
-        }
-        prettify = staticmethod(myprettify)
-        _render = staticmethod(myrender)
-    }}}
+        >>> def myprettify(value):
+        ...     return value
+
+        >>> def myrender(**kwargs):
+        ...     return template % kwargs
+
+        >>> class MyFieldSet(FieldSet):
+        ...     default_renderers = {
+        ...         types.String: fields.TextFieldRenderer,
+        ...         types.Integer: fields.IntegerFieldRenderer,
+        ...         # ...
+        ...     }
+        ...     prettify = staticmethod(myprettify)
+        ...     _render = staticmethod(myrender)
 
     `default_renderers` is a dict of callables returning a FieldRenderer.  Usually these
     will be FieldRenderer subclasses, but this is not required.  For instance,
     to make Booleans render as select fields with Yes/No options by default,
-    you could write:
+    you could write::
 
-    {{{
-    class BooleanSelectRenderer(fields.SelectFieldRenderer):
-        def render(self, **kwargs):
-            kwargs['options'] = [('Yes', True), ('No', False)]
-            return fields.SelectFieldRenderer.render(self, **kwargs)
+        >>> class BooleanSelectRenderer(fields.SelectFieldRenderer):
+        ...     def render(self, **kwargs):
+        ...         kwargs['options'] = [('Yes', True), ('No', False)]
+        ...         return fields.SelectFieldRenderer.render(self, **kwargs)
 
     FieldSet.default_renderers[types.Boolean] = BooleanSelectRenderer
-    }}}
 
     `prettify` is a function that, given an attribute name ('user_name')
     turns it into something usable as an HTML label ('User name').
@@ -254,13 +255,12 @@ class FieldSet(AbstractFieldSet):
 
     You can also specify `_render_readonly` similarly to `_render`.
 
-    You can also override these on a per-`FieldSet` basis:
+    You can also override these on a per-`FieldSet` basis::
 
-    {{{
-    fs = FieldSet(...)
-    fs.prettify = myprettify
-    ...
-    }}}
+        >>> from formalchemy.tests import One
+        >>> fs = FieldSet(One)
+        >>> fs.prettify = myprettify
+
     """
     _render = staticmethod('render_mako' in locals() and render_mako or render_tempita)
     _render_readonly = staticmethod(render_readonly)

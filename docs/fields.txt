@@ -1,0 +1,63 @@
+:mod:`formalchemy.fields` -- Fields and Renderers
+=================================================
+
+.. automodule:: formalchemy.fields
+
+Fields
+------
+
+.. autoclass:: AbstractField
+   :members:
+
+.. autoclass:: Field
+   :members:
+
+.. autoclass:: AttributeField
+   :members:
+
+Renderers
+---------
+
+.. autoclass:: FieldRenderer
+   :members:
+
+.. autoclass:: TextFieldRenderer
+   :members:
+
+.. autoclass:: IntegerFieldRenderer
+   :members:
+
+.. autoclass:: PasswordFieldRenderer
+   :members:
+
+.. autoclass:: TextAreaFieldRenderer
+   :members:
+
+.. autoclass:: HiddenFieldRenderer
+   :members:
+
+.. autoclass:: CheckBoxFieldRenderer
+   :members:
+
+.. autoclass:: FileFieldRenderer
+   :members:
+
+.. autoclass:: DateFieldRenderer
+   :members:
+
+.. autoclass:: TimeFieldRenderer
+   :members:
+
+.. autoclass:: DateTimeFieldRendererRenderer
+   :members:
+
+.. autoclass:: RadioSet
+   :members:
+
+.. autoclass:: CheckBoxSet
+   :members:
+
+.. autoclass:: SelectFieldRenderer
+   :members:
+
+

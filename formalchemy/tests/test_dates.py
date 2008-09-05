@@ -1,5 +1,4 @@
-from regression import *
-    
+from formalchemy.tests import *
 import datetime
 
 class Dt(Base):

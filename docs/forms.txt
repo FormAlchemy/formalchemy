@@ -1,0 +1,11 @@
+:mod:`formalchemy.forms` -- Form generation
+===========================================
+
+.. automodule:: formalchemy.forms
+
+.. autoclass:: AbstractFieldSet
+   :members:
+
+.. autoclass:: FieldSet
+   :members:
+

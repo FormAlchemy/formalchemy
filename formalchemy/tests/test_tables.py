@@ -1,7 +1,6 @@
-from regression import *
-from tables import *
-
 __doc__ = """
+>>> from formalchemy.tests import *
+>>> from formalchemy.tables import *
 >>> tc = Grid(User, [bill])
 >>> print pretty_html(configure_and_render(tc, readonly=True))
 <thead>
@@ -201,14 +200,11 @@ True
 >>> g.rebind(User)
 Traceback (most recent call last):
 ...
-Exception: instances must be an iterable, not <class 'formalchemy.regression.User'>
+Exception: instances must be an iterable, not <class 'formalchemy.tests.User'>
 >>> g = g.bind(User)
 Traceback (most recent call last):
 ...
-Exception: instances must be an iterable, not <class 'formalchemy.regression.User'>
+Exception: instances must be an iterable, not <class 'formalchemy.tests.User'>
 
 """
 
-if __name__ == '__main__':
-    import doctest
-    doctest.testmod()
