@@ -33,19 +33,19 @@ code, please visit `SQLAlchemy's documentation
 
 Let's have a quick look at the columns we have declared in `user_table`:
 
-  * `id` - the table's primary key.
+* `id` - the table's primary key.
 
-  * `email` - a required 40 characters limited field.
+* `email` - a required 40 characters limited field.
 
-  * `password` - a required 20 characters field.
+* `password` - a required 20 characters field.
 
-  * `first_name` - an optional 20 characters field.
+* `first_name` - an optional 20 characters field.
 
-  * `last_name` - an optional 20 characters field.
+* `last_name` - an optional 20 characters field.
 
-  * `description` - an optional non-limited characters field.
+* `description` - an optional non-limited characters field.
 
-  * `active` - a boolean field that defaults to True.
+* `active` - a boolean field that defaults to True.
 
 Now the fun and easy part::
 
@@ -95,21 +95,21 @@ Each field is structured as followed::
 
 Notice that:
 
-  * non-nullable columns (required) had their <label> tag set with a
-    `class="field_req"`.
+* non-nullable columns (required) had their <label> tag set with a
+  `class="field_req"`.
 
-  * nullable columns (optional) had their <label> tag set `class="field_opt"`.
+* nullable columns (optional) had their <label> tag set `class="field_opt"`.
 
-  * Unicode columns with limited character length have their <input> tag set
-    with a `maxlength` attribute holding the appropriate column's length.
+* Unicode columns with limited character length have their <input> tag set
+  with a `maxlength` attribute holding the appropriate column's length.
 
-  * column names have been formated to nice human readable text: "first_name"
-    -> "First name".
+* column names have been formated to nice human readable text: "first_name"
+  -> "First name".
 
-  * the Boolean column has its <input> tag set as `type="checkbox"`.
+* the Boolean column has its <input> tag set as `type="checkbox"`.
 
-  * it also has its default state set as `checked` as declared in the
-     `user_table`.
+* it also has its default state set as `checked` as declared in the
+   `user_table`.
 
 Great! But this is `FormAlchemy`'s default behaviour. What if we want to change
 the output to fit our needs better. `FormAlchemy` states to be "customizable"
@@ -163,12 +163,12 @@ Here we go::
 
 That's it! The options passed to `configure()` pretty much speaks by itself:
 
-  * `pk=False`: don't generate primary keys.
+* `pk=False`: don't generate primary keys.
 
-  * `options`: A list of fields to with configure options like `.password()`
+* `options`: A list of fields to with configure options like `.password()`
 
-  * `exclude`: a list of one or more fields to be excluded from the HTML.
-   We could have `id` in here, but `pk=False` it better suited.
+* `exclude`: a list of one or more fields to be excluded from the HTML.
+  We could have `id` in here, but `pk=False` it better suited.
 
 And there is much more you can do with `FormAlchemy`'s possibilities, e.g.,
 configuring `FormAlchemy`'s behaviour directly from your SQLAlchemy mapped
