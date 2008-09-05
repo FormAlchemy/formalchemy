@@ -31,7 +31,7 @@ class Three(Base):
     id = Column('id', Integer, primary_key=True)
     foo = Column('foo', Text, nullable=True)
     bar = Column('bar', Text, nullable=True)
-    
+
 class CheckBox(Base):
     __tablename__ = 'checkboxes'
     id = Column('id', Integer, primary_key=True)
@@ -42,7 +42,7 @@ class Binaries(Base):
     id = Column('id', Integer, primary_key=True)
     file = Column('file', Binary, nullable=True)
 
-vertices = Table('vertices', Base.metadata, 
+vertices = Table('vertices', Base.metadata,
     Column('id', Integer, primary_key=True),
     Column('x1', Integer),
     Column('y1', Integer),
@@ -55,7 +55,7 @@ class Point(object):
         self.x = x
         self.y = y
     def __composite_values__(self):
-        return [self.x, self.y]            
+        return [self.x, self.y]
     def __eq__(self, other):
         return other.x == self.x and other.y == self.y
     def __ne__(self, other):
@@ -81,7 +81,7 @@ class VertexFieldRenderer(FieldRenderer):
     def deserialize(self):
         data = self.field.parent.data.getone(self.name + '-x'), self.field.parent.data.getone(self.name + '-y')
         return Point(*[int(i) for i in data])
-    
+
 
 # todo? test a CustomBoolean, using a TypeDecorator --
 # http://www.sqlalchemy.org/docs/04/types.html#types_custom
@@ -93,7 +93,7 @@ class OTOChild(Base):
     __tablename__ = 'one_to_one_child'
     id = Column('id', Integer, primary_key=True)
     baz = Column('foo', Text, nullable=False)
-    
+
 class OTOParent(Base):
     __tablename__ = 'one_to_one_parent'
     id = Column('id', Integer, primary_key=True)
@@ -107,7 +107,7 @@ class Order(Base):
     quantity = Column('quantity', Integer, nullable=False)
     def __str__(self):
         return 'Quantity: %s' % self.quantity
-    
+
 class User(Base):
     __tablename__ = 'users'
     id = Column('id', Integer, primary_key=True)
@@ -117,7 +117,7 @@ class User(Base):
     orders = relation(Order, backref='user')
     def __str__(self):
         return self.name
-    
+
 class NaturalOrder(Base):
     __tablename__ = 'natural_orders'
     id = Column('id', Integer, primary_key=True)
@@ -125,7 +125,7 @@ class NaturalOrder(Base):
     quantity = Column('quantity', Integer, nullable=False)
     def __str__(self):
         return 'Quantity: %s' % self.quantity
-    
+
 class NaturalUser(Base):
     __tablename__ = 'natural_users'
     email = Column('email', Unicode(40), primary_key=True)
@@ -163,20 +163,20 @@ Base.metadata.create_all()
 
 session = Session()
 
-bill = User(email='bill@example.com', 
+bill = User(email='bill@example.com',
             password='1234',
             name='Bill')
-john = User(email='john@example.com', 
+john = User(email='john@example.com',
             password='5678',
             name='John')
 order1 = Order(user=bill, quantity=10)
 order2 = Order(user=john, quantity=5)
 order3 = Order(user=john, quantity=6)
 
-nbill = NaturalUser(email='nbill@example.com', 
+nbill = NaturalUser(email='nbill@example.com',
                     password='1234',
                     name='Natural Bill')
-njohn = NaturalUser(email='njohn@example.com', 
+njohn = NaturalUser(email='njohn@example.com',
                     password='5678',
                     name='Natural John')
 norder1 = NaturalOrder(user=nbill, quantity=10)
@@ -198,7 +198,7 @@ def pretty_html(html):
     return soup.prettify().strip()
 
 class FieldSet(DefaultFieldSet):
-    def render(self):
+    def render(self, lang=None):
         if self.readonly:
             return pretty_html(DefaultFieldSet.render(self))
         html = pretty_html(DefaultFieldSet.render(self))
@@ -208,6 +208,8 @@ class FieldSet(DefaultFieldSet):
             html_tempita = pretty_html(render_tempita(fieldset=self, F_=F_))
             assert html == html_tempita
         return html
+
+original_renderers = FieldSet.default_renderers.copy()
 
 def configure_and_render(fs, **options):
     fs.configure(**options)
@@ -222,4 +224,9 @@ if not hasattr(__builtins__, 'sorted'):
         return L
 
 
-
+import fake_module
+fake_module.__dict__.update({
+        'fs': FieldSet(User),
+        })
+import sys
+sys.modules['library'] = fake_module

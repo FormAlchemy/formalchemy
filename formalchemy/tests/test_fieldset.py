@@ -1,6 +1,8 @@
 __doc__ = r"""
 >>> from formalchemy.tests import *
 
+>>> FieldSet.default_renderers = original_renderers.copy()
+
 # some low-level testing first
 
 >>> fs = FieldSet(order1)

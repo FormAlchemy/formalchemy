@@ -3,6 +3,49 @@
 
 .. automodule:: formalchemy.validators
 
+To validate data, you must bind it to your `FieldSet` along with the
+SQLAlchemy model.  Normally, you will retrieve `data` from a dict::
+
+  >>> from formalchemy.tests import User, bill
+  >>> from formalchemy.forms import FieldSet, form_data
+  >>> fs = FieldSet(User)
+  >>> fs.configure(include=[fs.name]) # we only use the name field here
+  >>> fs.rebind(bill, data={'User-1-name': 'Sam'})
+
+Validation is performed simply by invoking `fs.validate()`, which
+returns True if validation was successful, and False otherwise.
+Validation functions are added with the `validate` method, described above.
+
+If validation fails, `fs.errors` will be populated.  `errors` is a
+dictionary of validation failures, and is always empty before `validate()`
+is run.  Dictionary keys are attributes; values are lists of messages
+given to `ValidationException`.  Global errors (not specific to a
+single attribute) are under the key `None`.
+
+Rendering a `FieldSet` with errors will result in error messages
+being displayed inline.  Here's what this looks like for a required
+field that was not supplied with a value::
+
+  <div>
+   <label class="field_req" for="foo">
+    Foo
+   </label>
+   <input id="foo" name="foo" type="text" value="" />
+   <span class="field_error">
+    Please enter a value
+   </span>
+  </div>
+
+If validation succeeds, you can have `FormAlchemy` put the submitted
+data back into the bound model object with `fs.sync`.  (If you bound to
+a class instead of an object, the class will be instantiated for you.)
+The object will be placed into the current session, if one exists::
+
+  >>> if fs.validate(): fs.sync()
+  >>> print bill.name
+  Sam
+
+
 Exception
 ---------
 
@@ -10,13 +53,22 @@ All validators raise a `ValidationError` if the validation failed.
 
 .. exception:: ValidationError
 
-
 Validators
 ----------
 
-`FormAlchemy` came with a set of validators::
+`formalchemy.validators` contains two types of functions: validation functions
+that can be used directly, and validation function _generators_ that _return_ a
+validation function satisfying some conditon.  E.g., `validators.maxlength(30)`
+will return a validation function that can then be passed to `validate`.
 
   >>> from formalchemy.validators import *
+
+Validation Functions
+********************
+
+A validation function is simply a function that, given a value, raises 
+a ValidationError if it is invalid.
+
 
 .. autofunction:: integer
 
@@ -61,41 +113,6 @@ Validators
   Traceback (most recent call last):
   ...
   ValidationError: Please enter a value
-
-.. autofunction:: minlength
-
-  >>> minlength(0)('a')
-  Traceback (most recent call last):
-  ...
-  ValueError: Invalid minimum length
-  >>> minlength(2)('a')
-  Traceback (most recent call last):
-  ...
-  ValidationError: Value must be at least 2 characters long
-  >>> minlength(2)('ab')
-
-.. autofunction:: maxlength
-
-  >>> maxlength(0)('a')
-  Traceback (most recent call last):
-  ...
-  ValueError: Invalid maximum length
-  >>> maxlength(1)('a')
-  >>> maxlength(1)('ab')
-  Traceback (most recent call last):
-  ...
-  ValidationError: Value must be no more than 1 characters long
-
-.. autofunction:: regex
-
-  >>> regex('[A-Z]+$')('ASDF')
-  >>> regex('[A-Z]+$')('abc')
-  Traceback (most recent call last):
-  ...
-  ValidationError: Invalid input
-  >>> import re
-  >>> pattern = re.compile('[A-Z]+$', re.I)
-  >>> regex(pattern)('abc')
 
 .. autofunction:: email
 
@@ -147,6 +164,44 @@ Validators
   Traceback (most recent call last):
   ...
   ValidationError: Reserved character present in domain
+
+Function generators
+*******************
+
+.. autofunction:: minlength
+
+  >>> minlength(0)('a')
+  Traceback (most recent call last):
+  ...
+  ValueError: Invalid minimum length
+  >>> minlength(2)('a')
+  Traceback (most recent call last):
+  ...
+  ValidationError: Value must be at least 2 characters long
+  >>> minlength(2)('ab')
+
+.. autofunction:: maxlength
+
+  >>> maxlength(0)('a')
+  Traceback (most recent call last):
+  ...
+  ValueError: Invalid maximum length
+  >>> maxlength(1)('a')
+  >>> maxlength(1)('ab')
+  Traceback (most recent call last):
+  ...
+  ValidationError: Value must be no more than 1 characters long
+
+.. autofunction:: regex
+
+  >>> regex('[A-Z]+$')('ASDF')
+  >>> regex('[A-Z]+$')('abc')
+  Traceback (most recent call last):
+  ...
+  ValidationError: Invalid input
+  >>> import re
+  >>> pattern = re.compile('[A-Z]+$', re.I)
+  >>> regex(pattern)('abc')
 
 Custom validator
 ----------------

@@ -4,10 +4,12 @@ Modules contents
 .. toctree::
    :maxdepth: 2
 
+   old
    forms
    tables
    fields
    validators
+   internationalisation
 
 
 Indices and tables

@@ -348,8 +348,84 @@ SelectFieldRenderer
 Custom renderer
 ---------------
 
-You can write your own renderer::
+You can write your own `FieldRenderer` s to customize the widget (input
+element[s]) used to edit different types of fields...
 
+1. Subclass `FieldRenderer`.
+
+   1.  Override `render` to return a string containing the HTML input
+       elements desired.  Use `self.name` to get a unique name and id for the
+       input element.  `self._value` may also be useful if you are not
+       rendering multiple input elements.
+
+   2.  If you are rendering a custom type (any class you defined yourself),
+       you will need to override `deserialize` as well.  `render`	turns the
+       user-submitted data into a Python value.  (The raw data will be
+       available in self.field.parent.data, or you can use
+       `_serialized_value` if it is convenient.)  For SQLAlchemy collections,
+       return a list of primary keys, and `FormAlchemy` will take care of
+       turning that into a list of objects.  For manually added collections,
+       return a list of values.
+
+   3.  If you are rendering a builtin type with multiple input elements,
+       override `_serialized_value` to return a single string combining the
+       multiple input pieces.  See the source for DateFieldRenderer for an
+       example.
+
+2. Update `FieldSet.default_renderers`.  `default_renderers` is a dict of
+   callables returning a FieldRenderer.  Usually these will be FieldRenderer
+   subclasses, but this is not required.  The default contents of
+   default_renderers is::
+
+      default_renderers = {
+          types.String: fields.TextFieldRenderer,
+          types.Integer: fields.IntegerFieldRenderer,
+          types.Boolean: fields.BooleanFieldRenderer,
+          types.DateTime: fields.DateTimeFieldRendererRenderer,
+          types.Date: fields.DateFieldRenderer,
+          types.Time: fields.TimeFieldRenderer,
+          types.Binary: fields.FileFieldRenderer,
+          'dropdown': fields.SelectFieldRenderer,
+          'checkbox': fields.CheckBoxSet,
+          'radio': fields.RadioSet,
+          'password': fields.PasswordFieldRenderer,
+          'textarea': fields.TextAreaFieldRenderer,
+      }
+
+For instance, to make `Boolean` s render as select fields with Yes/No
+options by default, you could write::
+
+    >>> from formalchemy.fields import SelectFieldRenderer
+    >>> class BooleanSelectRenderer(SelectFieldRenderer):
+    ...     def render(self, **kwargs):
+    ...         kwargs['options'] = [('Yes', True), ('No', False)]
+    ...         return SelectFieldRenderer.render(self, **kwargs)
+
+    >>> FieldSet.default_renderers[types.Boolean] = BooleanSelectRenderer
+
+Of course, you can subclass `FieldSet` if you don't want to change the defaults globally.
+
+One more example, this one to use the 
+`JQuery UI DatePicker <[http://docs.jquery.com/UI/Datepicker>`_
+to render `Date` objects::
+
+    >>> from formalchemy.fields import FieldRenderer
+    >>> class DatePickerFieldRenderer(FieldRenderer):
+    ...     def render(self):
+    ...         value= self.value if self.value else ''
+    ...         vars = dict(name=self.name, value=value)
+    ...         return """
+    ...            <input id="%(name)s" name="%(name)s"
+    ...                   type="text" value="%(value)s">
+    ...            <script type="text/javascript">
+    ...              $('#%(name)s').datepicker({dateFormat: 'yy-mm-dd'})
+    ...            </script>
+    ...         """ % vars
+
+(Obviously the page template will need to add references to the jquery library
+and css.)
+
+Another example to rander a link field::
 
     >>> class LinkFieldRenderer(FieldRenderer):
     ...     def render(self, **kwargs):
@@ -360,8 +436,7 @@ You can write your own renderer::
     ...         kwargs = {'value':self.field.raw_value}
     ...         return '<a href="%(value)s">%(value)s</a>' % kwargs
 
-Then bind it to a field::
-
+Then bind it to a specific field::
 
   >>> from formalchemy.tests import *
   >>> fs = FieldSet(One)

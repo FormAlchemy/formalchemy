@@ -1,0 +1,43 @@
+:mod:`formalchemy.i18n` -- Internationalisation
+================================================
+
+.. automodule:: formalchemy.i18n
+
+Internationalisation
+====================
+
+`FormAlchemy` is able to render error messages in your own language. You just
+need to provide a `lang` attribute to the render method::
+
+  >>> from library import fs
+  >>> html_fr = fs.render(lang='fr')
+
+If you use `Pylons` the language is retrieved from `pylons.i18n.get_lang()` so
+the `lang` attribute become optional.
+
+At the moment only the french translation is available.
+
+You have to checkout the source
+(http://code.google.com/p/formalchemy/source/checkout) and install
+`FormAlchemy` in develop mode to add a new translation::
+
+  $ cd FormAlchemy && python setup.py develop
+
+Then install Babel with easy_install::
+
+  $ easy_install Babel
+
+You are now able to initialize a new catalog
+
+  $ python setup.py init_catalog -l <lang>
+
+Where `<lang>` is your language code. This will generate a new file named
+`formalchemy/i18n/<lang>/LC_MESSAGES/formalchemy.po`
+
+Replace all the `msgstr` in the new `.po` file with your translated messages
+and compile the catalogs::
+
+  $ python setup.py compile_catalog
+
+Now the new language is avalaible. Last step, send your `.po` to the [http://groups.google.com/group/formalchemy project list] !
+
