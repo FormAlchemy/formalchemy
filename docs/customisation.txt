@@ -1,0 +1,43 @@
+Other customizations
+====================
+
+Customization: CSS
+------------------
+
+`FormAlchemy` uses the following CSS classes:
+
+- `fieldset_error`: class for a div containing a "global" error
+
+- `field_error`: class for a span containing an error from a single `Field`
+
+- `field_req`: class for a label for a required field
+
+- `field_opt`: class for a label for an optional field
+
+- `field_readonly`: class for the td of the 'label' for a field in a readonly
+  `FieldSet` table
+
+- `grid_error`: class for a span containing an error from a single `Field` in a
+  `Grid`
+
+Here is some basic CSS for aligning your forms nicely::
+
+  label {
+      float: left;
+      text-align: right;
+      margin-right: 1em;
+      width: 10em;
+  }
+
+  form div {
+      margin: 0.5em;
+      float: left;
+      width: 100%;
+  }
+
+  form input[type="submit"] {
+      margin-top: 1em;
+      margin-left: 9em;
+  }
+
+

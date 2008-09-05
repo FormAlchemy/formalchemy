@@ -1,6 +1,10 @@
 :mod:`formalchemy.validators` -- Validation stuff
 =================================================
 
+.. Commented imports
+
+  >>> from formalchemy.tests import *
+
 .. automodule:: formalchemy.validators
 
 To validate data, you must bind it to your `FieldSet` along with the
@@ -215,7 +219,6 @@ You can write your own validator::
 
 Then bind it to a field::
 
-  >>> from formalchemy.tests import *
   >>> from formalchemy import fatypes
   >>> fs = FieldSet(One)
   >>> fs.add(Field('number', type=fatypes.Integer))

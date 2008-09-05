@@ -1,0 +1,35 @@
+:mod:`formalchemy` -- Imports
+=============================
+
+.. automodule:: formalchemy
+
+All `FormAlchemy`'s objects live under the `formalchemy` package
+
+:mod:`~formalchemy.forms` related classes::
+
+  >>> from formalchemy import FieldSet, Field
+
+Helper functions::
+
+  >>> from formalchemy import query_options
+
+:mod:`~formalchemy.validators`::
+
+  >>> from formalchemy import validators, ValidationError
+
+For manual Field definition::
+
+  >>> from formalchemy import types
+
+:mod:`~formalchemy.tables` for collection rendering::
+
+  >>> from formalchemy import Grid
+
+Advanced :mod:`~formalchemy.fields` customization::
+
+  >>> from formalchemy import FieldRenderer, AbstractFieldSet
+
+The above imports are equivalent to::
+
+  >>> from formalchemy import *
+

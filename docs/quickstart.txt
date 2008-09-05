@@ -45,12 +45,19 @@ We'll start with two simple SQLAlchemy models with a one-to-many relationship
   >>> order1 = Order(user=bill, quantity=10)
   >>> session.commit()
 
-Now, let's render a form for editing the order we've created::
+Now, let's render a form for editing the order we've created.
+First we need to import the FieldSet class::
 
   >>> from formalchemy import FieldSet
-  >>> from formalchemy.tests import pretty_html # obviously unnecessary in production
+
+.. Use the test class
+
+  >>> from formalchemy.tests import FieldSet
+
+Then bind it to a mapper and render it::
+
   >>> fs = FieldSet(order1)
-  >>> print pretty_html(fs.render())
+  >>> print fs.render()
   <div>
    <label class="field_req" for="Order-1-quantity">
     Quantity

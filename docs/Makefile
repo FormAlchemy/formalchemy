@@ -41,6 +41,9 @@ pickle:
 
 web: pickle
 
+serve: html
+	../bin/paster serve ../sphinx.ini
+
 htmlhelp:
 	mkdir -p _build/htmlhelp _build/doctrees
 	$(SPHINXBUILD) -b htmlhelp $(ALLSPHINXOPTS) _build/htmlhelp

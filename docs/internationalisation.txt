@@ -3,13 +3,16 @@
 
 .. automodule:: formalchemy.i18n
 
+.. Commented imports
+
+  >>> from library import fs
+
 Internationalisation
 ====================
 
 `FormAlchemy` is able to render error messages in your own language. You just
 need to provide a `lang` attribute to the render method::
 
-  >>> from library import fs
   >>> html_fr = fs.render(lang='fr')
 
 If you use `Pylons` the language is retrieved from `pylons.i18n.get_lang()` so

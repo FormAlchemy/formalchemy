@@ -1,7 +1,63 @@
-:mod:`formalchemy.tables` -- Tables
-===========================================
+:mod:`formalchemy.tables` -- Rendering collections
+==================================================
 
 .. automodule:: formalchemy.tables
+
+Besides :class:`~formalchemy.forms.FieldSet`, `FormAlchemy` provides `Grid` for editing and
+rendering multiple instances at once.  Most of what you know about
+:class:`~formalchemy.forms.FieldSet` applies to `Grid`, with the following differences to
+accomodate being bound to multiple objects:
+
+Binding
+-------
+
+The `Grid` constructor takes the following arguments:
+
+
+- `cls`: 
+      the class type that the `Grid` will render (NOT an instance)
+
+- `instances=[]`: 
+      the instances/rows to render
+
+- `session=None`:
+      as in :class:`~formalchemy.forms.FieldSet`
+
+- `data=None`: 
+      as in :class:`~formalchemy.forms.FieldSet`
+
+`bind` and `rebind` take the last 3 arguments (`instances`, `session`,
+and `data`); you may not specify a different class type than the one
+given to the constructor.
+
+Configuration
+-------------
+
+The `Grid` `configure` method takes the same arguments as :class:`~formalchemy.forms.FieldSet`
+(`pk`, `exclude`, `include`, `options`, `readonly`), except there is
+no `focus` argument.
+
+Validation and Sync
+-------------------
+
+These are the same as in :class:`~formalchemy.forms.FieldSet`, except that you can also call
+`sync_one(instance)` to sync a single one of the instances that are
+bound to the `Grid`.
+
+The `Grid` `errors` attribute is a dictionary keyed by bound instance,
+whose value is similar to the `errors` from a :class:`~formalchemy.forms.FieldSet`, that is, a
+dictionary whose keys are `Field`s, and whose values are
+`ValidationError` instances.
+
+Customizing Grid
+----------------
+
+Overriding `Grid` rendering is similar to :class:`~formalchemy.forms.FieldSet`.  The differences are:
+
+  * The default templates take a `collection` parameter instead of `fieldset`, which is the instance of `Grid` to render
+  * The instances given to the collection are available in `collection.rows`; to access the fields of each single row, call `_set_active(row)`, then access `render_fields`.
+
+The default templates are `formalchemy.tables.template_grid_readonly` and `formalchemy.tables.template_grid`.
 
 The Grid class
 --------------
