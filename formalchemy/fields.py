@@ -78,6 +78,11 @@ class FieldRenderer(object):
         value = self.field.raw_value
         if value is None:
             return ''
+        if isinstance(value, basestring):
+            # FIXME this is a bad way to handle UnicodeEncodeError
+            # FA need to implement a default charset and try to encode value
+            # there
+            return value
         if isinstance(value, list):
             return ', '.join([str(item) for item in value])
         return str(value)
