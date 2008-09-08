@@ -378,16 +378,23 @@ class RadioSet(FieldRenderer):
     """render a field as radio
     """
     widget = staticmethod(h.radio_button)
+    
+    def _is_checked(self, choice_value):
+        return self._value == choice_value
 
     def render(self, options, **kwargs):
         self.radios = []
         for choice_name, choice_value in _extract_options(options):
-            radio = self.widget(self.name, choice_value, checked=self._value == choice_value, **kwargs)
+            radio = self.widget(self.name, choice_value, checked=self._is_checked(choice_value), **kwargs)
             self.radios.append(radio + choice_name)
         return h.tag("br").join(self.radios)
 
+
 class CheckBoxSet(RadioSet):
     widget = staticmethod(h.check_box)
+
+    def _is_checked(self, choice_value):
+        return choice_value in self._value
 
 
 class SelectFieldRenderer(FieldRenderer):

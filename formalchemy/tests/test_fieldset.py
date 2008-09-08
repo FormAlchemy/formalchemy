@@ -225,14 +225,29 @@ document.getElementById("User--email").focus();
 True
 
 >>> fs = FieldSet(bill)
->>> print fs.orders.render()
-<select id="User-1-orders" multiple="multiple" name="User-1-orders" size="5"><option value="1" selected="selected">Quantity: 10</option>
-<option value="2">Quantity: 5</option>
-<option value="3">Quantity: 6</option></select>
->>> print fs.orders.radio().render()
-<input id="User-1-orders_1" name="User-1-orders" type="radio" value="1" />Quantity: 10<br /><input id="User-1-orders_2" name="User-1-orders" type="radio" value="2" />Quantity: 5<br /><input id="User-1-orders_3" name="User-1-orders" type="radio" value="3" />Quantity: 6
->>> print fs.orders.radio(options=query_options(session.query(Order).filter_by(id=1))).render()
-<input id="User-1-orders_1" name="User-1-orders" type="radio" value="1" />Quantity: 10
+>>> print pretty_html(fs.orders.render())
+<select id="User-1-orders" multiple="multiple" name="User-1-orders" size="5">
+ <option value="1" selected="selected">
+  Quantity: 10
+ </option>
+ <option value="2">
+  Quantity: 5
+ </option>
+ <option value="3">
+  Quantity: 6
+ </option>
+</select>
+>>> print pretty_html(fs.orders.checkbox().render())
+<input checked="checked" id="User-1-orders" name="User-1-orders" type="checkbox" value="1" />
+Quantity: 10
+<br />
+<input id="User-1-orders" name="User-1-orders" type="checkbox" value="2" />
+Quantity: 5
+<br />
+<input id="User-1-orders" name="User-1-orders" type="checkbox" value="3" />
+Quantity: 6
+>>> print fs.orders.checkbox(options=query_options(session.query(Order).filter_by(id=1))).render()
+<input checked="checked" id="User-1-orders" name="User-1-orders" type="checkbox" value="1" />Quantity: 10
 
 >>> fs = FieldSet(Two)
 >>> print fs.foo.render()
