@@ -881,15 +881,7 @@ class AttributeField(AbstractField):
         if self.parent.data is not None:
             v = self._deserialize()
         else:
-            try:
-                v = getattr(self.model, self.name)
-            except AttributeError:
-                i = getattr(self.model, self.attribute_name)
-                # this is need when model is a class
-                if not isinstance(i, InstrumentedAttribute):
-                    v = i
-                else:
-                    v = None
+            v = getattr(self.model, self.attribute_name)
         if self.is_collection():
             return [_pk(item) for item in v]
         if v is not None:

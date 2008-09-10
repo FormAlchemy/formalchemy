@@ -1,6 +1,7 @@
 FormAlchemy 1.0:
   * i18n support (gael.pasgrimaud)
   * file upload support (gael.pasgrimaud)
+  * synonym support (gael.pasgrimaud)
   * add **kwargs to FieldSet and Grid render methods, which are passed on to the template.  this allows easy custom template use w/o having to subclass.  (lbruno)
   * added sanity checks to disallow getting into an inconsistent state.  notably, binding to an object that belongs to a session but does NOT have a primary key set is not allowed.  workaround: bind to the class, and FA will instantiate it and take it out of the session [until sync()].  Then you can pull that instance out as the .model attribute.
   * sync() will save model to session, if necessary
