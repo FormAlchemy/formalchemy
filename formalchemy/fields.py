@@ -717,10 +717,6 @@ class Field(AbstractField):
         self.name = name
         self._value = value
 
-    def attribute_name(self):
-        return self.name
-    attribute_name = property(attribute_name)
-
     def value(self):
         if self.parent.data is not None:
             v = self._deserialize()
@@ -821,54 +817,30 @@ class AttributeField(AbstractField):
         """
         The name of the attribute in the class.
         
-        >>> from formalchemy.tests import FieldSet, Aliases
-        >>> fs = FieldSet(Aliases)
-        >>> print fs.text.key
-        text
+        >>> from formalchemy.tests import FieldSet, Order
+        >>> fs = FieldSet(Order)
+        >>> print fs.user.key
+        user
         """
         return self._impl.key
     key = property(key)
 
     def name(self):
         """
-        The name of the form input. usually the same as the column name, except for
+        The name of the form input. usually the same as the key, except for
         multi-valued SA relation properties. For example, for order.user,
         name will be 'user_id' (assuming that is indeed the name of the foreign
         key to users), but for user.orders, name will be 'orders'.
 
-        >>> from formalchemy.tests import FieldSet, Aliases
-        >>> fs = FieldSet(Aliases)
-        >>> print fs.text.name
-        row_text
+        >>> from formalchemy.tests import FieldSet, Order
+        >>> fs = FieldSet(Order)
+        >>> print fs.user.name
+        user_id
         """
-        if self.is_collection() or self.is_composite():
+        if self.is_collection() or self.is_composite() or not hasattr(self.model, self._column.name):
             return self.key
         return self._column.name
     name = property(name)
-
-    def attribute_name(self):
-        """
-        return the *real* attribute name.
-        This allow to use aliases in mappers like::
-
-            id = Column('UGLY_NAMED_ID', primary_key=True)
-
-        >>> from formalchemy.tests import FieldSet, Aliases
-        >>> fs = FieldSet(Aliases)
-        >>> print fs.text.attribute_name
-        text
-        """
-        if hasattr(self.model, self.name):
-            return self.name
-        else:
-            cls = self.model.__class__
-            for k in self.model._sa_class_manager.keys():
-                props = getattr(cls, k).property
-                if hasattr(props, 'columns'):
-                    if props.columns[0] is self._column:
-                        return k
-        return self.name
-    attribute_name = property(attribute_name)
 
     def is_collection(self):
         """True iff this is a multi-valued (one-to-many or many-to-many) SA relation"""
@@ -897,7 +869,10 @@ class AttributeField(AbstractField):
         if self.parent.data is not None:
             v = self._deserialize()
         else:
-            v = getattr(self.model, self.attribute_name)
+            try:
+                v = getattr(self.model, self.name)
+            except AttributeError:
+                v = getattr(self.model, self.key)
         if self.is_collection():
             return [_pk(item) for item in v]
         if v is not None:
@@ -920,12 +895,12 @@ class AttributeField(AbstractField):
         `.value` will return the foreign key ID.  This will return the actual object 
         referenced instead.
         """
-        return getattr(self.model, self.attribute_name)
+        return getattr(self.model, self.name)
     raw_value = property(raw_value)
 
     def sync(self):
         """Set the attribute's value in `model` to the value given in `data`"""
-        setattr(self.model, self.attribute_name, self._deserialize())
+        setattr(self.model, self.name, self._deserialize())
 
     def __eq__(self, other):
         # we override eq so that when we configure with options=[...], we can match the renders in options

@@ -5,8 +5,7 @@ from formalchemy.tests import *
 def test_aliases():
     fs = FieldSet(Aliases)
     fs.bind(Aliases)
-    assert fs.id.name == 'row_id'
-    assert fs.id.attribute_name == 'id'
+    assert fs.id.name == 'id'
 
 def test_render_aliases(self):
     """
@@ -15,14 +14,14 @@ def test_render_aliases(self):
     >>> fs = FieldSet(Aliases)
     >>> print fs.render()
     <div>
-     <label class="field_opt" for="Aliases--row_text">
+     <label class="field_opt" for="Aliases--text">
       Text
      </label>
-     <input id="Aliases--row_text" name="Aliases--row_text" type="text" />
+     <input id="Aliases--text" name="Aliases--text" type="text" />
     </div>
     <script type="text/javascript">
      //<![CDATA[
-    document.getElementById("Aliases--row_text").focus();
+    document.getElementById("Aliases--text").focus();
     //]]>
     </script>
     """

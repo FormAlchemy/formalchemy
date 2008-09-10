@@ -195,7 +195,7 @@ class ModelRenderer(object):
         dict of {fieldname: Field} pairs
         """
         if not self._render_fields:
-            self._render_fields = OrderedDict([(field.attribute_name, field) for field in self._get_fields()])
+            self._render_fields = OrderedDict([(field.name, field) for field in self._get_fields()])
         return self._render_fields
     render_fields = property(render_fields)
 
@@ -262,7 +262,7 @@ class ModelRenderer(object):
         fs.configure(include=[fs.name, fs.options.checkbox()])
         }}}
         """
-        self._render_fields = OrderedDict([(field.attribute_name, field) for field in self._get_fields(pk, exclude, include, options)])
+        self._render_fields = OrderedDict([(field.name, field) for field in self._get_fields(pk, exclude, include, options)])
 
     def bind(self, model, session=None, data=None):
         """
@@ -280,7 +280,7 @@ class ModelRenderer(object):
         ModelRenderer.rebind(mr, model, session, data)
         mr._fields = dict([(key, renderer.bind(mr)) for key, renderer in self._fields.iteritems()])
         if self._render_fields:
-            mr._render_fields = OrderedDict([(field.attribute_name, field) for field in
+            mr._render_fields = OrderedDict([(field.name, field) for field in
                                              [field.bind(mr) for field in self._render_fields.itervalues()]])
         return mr
 
