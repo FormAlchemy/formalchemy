@@ -159,6 +159,11 @@ class Manual(object):
 class Order__User(Base):
     __table__ = join(Order.__table__, User.__table__).alias('__orders__users')
 
+class Aliases(Base):
+    __tablename__ = 'table_with_aliases'
+    id = Column('row_id', Integer, primary_key=True)
+    text = Column('row_text', Text)
+
 Base.metadata.create_all()
 
 session = Session()

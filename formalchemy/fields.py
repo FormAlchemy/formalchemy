@@ -12,7 +12,7 @@ import datetime
 
 import helpers as h
 from sqlalchemy.orm import class_mapper
-from sqlalchemy.orm.attributes import ScalarAttributeImpl, ScalarObjectAttributeImpl, CollectionAttributeImpl
+from sqlalchemy.orm.attributes import ScalarAttributeImpl, ScalarObjectAttributeImpl, CollectionAttributeImpl, InstrumentedAttribute
 from sqlalchemy.orm.properties import CompositeProperty
 # from sqlalchemy.orm.exc import UnmappedClassError
 from sqlalchemy.exceptions import InvalidRequestError # 0.4 support
@@ -411,7 +411,20 @@ def _pk(instance):
         column = class_mapper(type(instance)).primary_key[0]
     except InvalidRequestError:
         return None
-    return getattr(instance, column.key)
+    attr = getattr(instance, column.key, None)
+    if attr is None:
+        # FIXME: this is not clean but the only way i've found to retrieve the
+        # real attribute name of the primary key.
+        # This is needed when you use something like:
+        #    id = Column('UGLY_NAMED_ID', primary_key=True)
+        # It's a *really* needed feature
+        cls = instance.__class__
+        for k in instance._sa_class_manager.keys():
+            props = getattr(cls, k).property
+            if hasattr(props, 'columns'):
+                if props.columns[0] is column:
+                    attr = getattr(instance, k)
+    return attr
 
 
 def query_options(query):
@@ -817,6 +830,26 @@ class AttributeField(AbstractField):
         return self._column.name
     name = property(name)
 
+    def attribute_name(self):
+        """
+        return the *real* attribute name.
+        This allow to use aliases in mappers like::
+
+            id = Column('UGLY_NAMED_ID', primary_key=True)
+
+        """
+        if hasattr(self.model, self.name):
+            return self.name
+        else:
+            cls = self.model.__class__
+            for k in self.model._sa_class_manager.keys():
+                props = getattr(cls, k).property
+                if hasattr(props, 'columns'):
+                    if props.columns[0] is self._column:
+                        return k
+        return self.key
+    attribute_name = property(attribute_name)
+
     def is_collection(self):
         """True iff this is a multi-valued (one-to-many or many-to-many) SA relation"""
         return isinstance(self._impl, CollectionAttributeImpl)
@@ -844,7 +877,15 @@ class AttributeField(AbstractField):
         if self.parent.data is not None:
             v = self._deserialize()
         else:
-            v = getattr(self.model, self.name)
+            try:
+                v = getattr(self.model, self.name)
+            except AttributeError:
+                i = getattr(self.model, self.attribute_name)
+                # this is need when model is a class
+                if not isinstance(i, InstrumentedAttribute):
+                    v = i
+                else:
+                    v = None
         if self.is_collection():
             return [_pk(item) for item in v]
         if v is not None:
@@ -867,12 +908,12 @@ class AttributeField(AbstractField):
         `.value` will return the foreign key ID.  This will return the actual object 
         referenced instead.
         """
-        return getattr(self.model, self.key)
+        return getattr(self.model, self.attribute_name)
     raw_value = property(raw_value)
 
     def sync(self):
         """Set the attribute's value in `model` to the value given in `data`"""
-        setattr(self.model, self.name, self._deserialize())
+        setattr(self.model, self.attribute_name, self._deserialize())
 
     def __eq__(self, other):
         # we override eq so that when we configure with options=[...], we can match the renders in options
