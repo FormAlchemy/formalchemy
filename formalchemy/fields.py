@@ -818,7 +818,14 @@ class AttributeField(AbstractField):
     _column = property(_column)
 
     def key(self):
-        """The name of the attribute in the class"""
+        """
+        The name of the attribute in the class.
+        
+        >>> from formalchemy.tests import FieldSet, Aliases
+        >>> fs = FieldSet(Aliases)
+        >>> print fs.text.key
+        text
+        """
         return self._impl.key
     key = property(key)
 
@@ -828,6 +835,11 @@ class AttributeField(AbstractField):
         multi-valued SA relation properties. For example, for order.user,
         name will be 'user_id' (assuming that is indeed the name of the foreign
         key to users), but for user.orders, name will be 'orders'.
+
+        >>> from formalchemy.tests import FieldSet, Aliases
+        >>> fs = FieldSet(Aliases)
+        >>> print fs.text.name
+        row_text
         """
         if self.is_collection() or self.is_composite():
             return self.key
@@ -841,6 +853,10 @@ class AttributeField(AbstractField):
 
             id = Column('UGLY_NAMED_ID', primary_key=True)
 
+        >>> from formalchemy.tests import FieldSet, Aliases
+        >>> fs = FieldSet(Aliases)
+        >>> print fs.text.attribute_name
+        text
         """
         if hasattr(self.model, self.name):
             return self.name
