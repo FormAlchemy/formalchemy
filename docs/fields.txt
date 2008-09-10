@@ -409,7 +409,7 @@ to render `Date` objects::
     >>> from formalchemy.fields import FieldRenderer
     >>> class DatePickerFieldRenderer(FieldRenderer):
     ...     def render(self):
-    ...         value= self.value if self.value else ''
+    ...         value= self.value and self.value or ''
     ...         vars = dict(name=self.name, value=value)
     ...         return """
     ...            <input id="%(name)s" name="%(name)s"
