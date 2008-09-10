@@ -717,6 +717,10 @@ class Field(AbstractField):
         self.name = name
         self._value = value
 
+    def attribute_name(self):
+        return self.name
+    attribute_name = property(attribute_name)
+
     def value(self):
         if self.parent.data is not None:
             v = self._deserialize()
@@ -847,7 +851,7 @@ class AttributeField(AbstractField):
                 if hasattr(props, 'columns'):
                     if props.columns[0] is self._column:
                         return k
-        return self.key
+        return self.name
     attribute_name = property(attribute_name)
 
     def is_collection(self):

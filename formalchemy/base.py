@@ -158,9 +158,9 @@ class ModelRenderer(object):
             class_mapper(cls)
         except:
             # does this class have raw Fields defined on it?
-            keys = cls.__dict__.keys() 
+            keys = cls.__dict__.keys()
             keys.sort(lambda a, b: cmp(a.lower(), b.lower())) # 2.3 support
-            for key in keys: 
+            for key in keys:
                 field = cls.__dict__[key]
                 if isinstance(field, fields.Field):
                     if field.name and field.name != key:
@@ -181,24 +181,24 @@ class ModelRenderer(object):
             L.sort(lambda a, b: cmp(not a.is_vanilla(), not b.is_vanilla())) # note, key= not used for 2.3 support
             for field in L:
                 self._fields[field.key] = field
-                
+
     def add(self, field):
         """Add a form Field.  By default, this Field will be included in the rendered form or table."""
         if not isinstance(field, fields.Field):
             raise ValueError('Can only add Field objects; got %s instead' % field)
         field.parent = self
         self._fields[field.name] = field
-                
+
     def render_fields(self):
         """
         The set of attributes that will be rendered, as a (ordered)
         dict of {fieldname: Field} pairs
         """
         if not self._render_fields:
-            self._render_fields = OrderedDict([(field.name, field) for field in self._get_fields()])
+            self._render_fields = OrderedDict([(field.attribute_name, field) for field in self._get_fields()])
         return self._render_fields
     render_fields = property(render_fields)
-                
+
     def configure(self, pk=False, exclude=[], include=[], options=[]):
         """
         The `configure` method specifies a set of attributes to be rendered.
@@ -207,7 +207,7 @@ class ModelRenderer(object):
         rendered.  For example, if an `Order` has a `user_id` FK and a `user`
         relation based on it, `user` will be rendered (as a select box of
         `User`s, by default) but `user_id` will not.
-        
+
         Parameters:
           * `pk=False`:
                 set to True to include primary key columns
@@ -227,49 +227,49 @@ class ModelRenderer(object):
                 the attribute (e.g., `fs.orders`) whose rendered input element
                 gets focus. Default value is True, meaning, focus the first
                 element. False means do not focus at all.
-        
+
         Only one of {`include`, `exclude`} may be specified.
-        
+
         Note that there is no option to include foreign keys.  This is
         deliberate.  Use `include` if you really need to manually edit FKs.
-        
+
         If `include` is specified, fields will be rendered in the order given
         in `include`.  Otherwise, fields will be rendered in alphabetical
         order.
-        
+
         Examples: given a `FieldSet` `fs` bound to a `User` instance as a
         model with primary key `id` and attributes `name` and `email`, and a
         relation `orders` of related Order objects, the default will be to
         render `name`, `email`, and `orders`. To render the orders list as
         checkboxes instead of a select, you could specify
-        
+
         {{{
         fs.configure(options=[fs.orders.checkbox()])
         }}}
-        
+
         To render only name and email,
-        
+
         {{{
         fs.configure(include=[fs.name, fs.email])
         # or
         fs.configure(exclude=[fs.options])
         }}}
-        
+
         Of course, you can include modifications to a field in the `include`
         parameter, such as here, to render name and options-as-checkboxes:
-          
+
         {{{
         fs.configure(include=[fs.name, fs.options.checkbox()])
         }}}
         """
-        self._render_fields = OrderedDict([(field.name, field) for field in self._get_fields(pk, exclude, include, options)])
+        self._render_fields = OrderedDict([(field.attribute_name, field) for field in self._get_fields(pk, exclude, include, options)])
 
     def bind(self, model, session=None, data=None):
-        """ 
+        """
         Return a copy of this FieldSet or Table, bound to the given
         `model`, `session`, and `data`. The parameters to this method are the
         same as in the constructor.
-        
+
         Often you will create and `configure` a FieldSet or Table at application
         startup, then `bind` specific instances to it for actual editing or display.
         """
@@ -280,10 +280,10 @@ class ModelRenderer(object):
         ModelRenderer.rebind(mr, model, session, data)
         mr._fields = dict([(key, renderer.bind(mr)) for key, renderer in self._fields.iteritems()])
         if self._render_fields:
-            mr._render_fields = OrderedDict([(field.name, field) for field in 
+            mr._render_fields = OrderedDict([(field.attribute_name, field) for field in
                                              [field.bind(mr) for field in self._render_fields.itervalues()]])
         return mr
-    
+
     def rebind(self, model=None, session=None, data=None):
         """
         Like `bind`, but acts on this instance.  No return value.
