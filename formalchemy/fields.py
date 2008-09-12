@@ -705,17 +705,13 @@ class Field(AbstractField):
     def __init__(self, name=None, type=fatypes.String, value=None):
         """
           * `name`: field name
-          * `type`: data type, from formalchemy.types (Boolean, Integer, String, etc.)
-            or the corresponding native type (`bool`, `int`, `unicode`), or a custom
-            type for which you have added a renderer.  Achtung!  
-            `str` corresponds to `Binary`, since Python < 3.0 does not otherwise
-            distinguish between the two!
+          * `type`: data type, from formalchemy.types (Boolean, Integer, String, etc.),
+            or a custom type for which you have added a renderer.
           * `value`: default value.  If value is a callable, it will be passed
             the current bound model instance when the value is read.  This allows
             creating a Field whose value depends on the model once, then
             binding different instances to it later.
         """
-        # todo 1.0 actually allow native types?
         AbstractField.__init__(self, None) # parent will be set by ModelRenderer.add
         # todo 1.0 raise exception in render if type is unrecognized
         self.type = type()
@@ -795,7 +791,6 @@ class AttributeField(AbstractField):
         return self._column.primary_key
 
     def type(self):
-        # todo 1.0 call type()
         if self.is_composite():
             # this is a little confusing -- we need to return an _instance_ of
             # the correct type, which for composite values will be the value
