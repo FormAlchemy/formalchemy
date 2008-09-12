@@ -744,8 +744,7 @@ class Field(AbstractField):
     key = property(key)
 
     def is_collection(self):
-        # todo 1.0 checkboxes are also multiple
-        return self.render_opts.get('multiple', False)
+        return self.render_opts.get('multiple', False) or isinstance(self.renderer, self.parent.default_renderers['checkbox'])
 
     def raw_value(self):
         return self.value
