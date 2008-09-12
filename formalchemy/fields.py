@@ -723,6 +723,9 @@ class Field(AbstractField):
             if v is not None:
                 return v
         try:
+            # this is NOT the same as getattr -- getattr will return the class's
+            # value for the attribute name, which for a manually added Field will
+            # be the Field object.  So force looking in the instance __dict__ only.
             return self.model.__dict__[self.name]
         except KeyError:
             pass
