@@ -285,6 +285,12 @@ class FileFieldRenderer(FieldRenderer):
         if not data and not self._params.has_key(checkbox_name):
             data = getattr(self.field.model, self.field.name)
         return data is not None and data or ''
+    
+# for when and/or is not safe b/c first might eval to false
+def _ternary(condition, first, second):
+    if condition:
+        return first()
+    return second()
 
 class DateFieldRenderer(FieldRenderer):
     """Render a date field
@@ -301,9 +307,8 @@ class DateFieldRenderer(FieldRenderer):
         mm_name = self.name + '__month'
         dd_name = self.name + '__day'
         yyyy_name = self.name + '__year'
-        # todo 1.0 fix: "or ''"
-        mm = (data is not None and mm_name in data) and data[mm_name] or str(self._value and self._value.month)
-        dd = (data is not None and dd_name in data) and data[dd_name] or str(self._value and self._value.day)
+        mm = _ternary((data is not None and mm_name in data), lambda: data[mm_name],  lambda: str(self._value and self._value.month))
+        dd = _ternary((data is not None and dd_name in data), lambda: data[dd_name], lambda: str(self._value and self._value.day))
         # could be blank so don't use and/or construct
         if data is not None and yyyy_name in data:
             yyyy = data[yyyy_name]
@@ -334,9 +339,9 @@ class TimeFieldRenderer(FieldRenderer):
         hh_name = self.name + '__hour'
         mm_name = self.name + '__minute'
         ss_name = self.name + '__second'
-        hh = (data is not None and hh_name in data) and data[hh_name] or str(self._value and self._value.hour)
-        mm = (data is not None and mm_name in data) and data[mm_name] or str(self._value and self._value.minute)
-        ss = (data is not None and ss_name in data) and data[ss_name] or str(self._value and self._value.second)
+        hh = _ternary((data is not None and hh_name in data), lambda: data[hh_name], lambda: str(self._value and self._value.hour))
+        mm = _ternary((data is not None and mm_name in data), lambda: data[mm_name], lambda: str(self._value and self._value.minute))
+        ss = _ternary((data is not None and ss_name in data), lambda: data[ss_name], lambda: str(self._value and self._value.second))
         return h.select(hh_name, h.options_for_select(hour_options, selected=hh), **kwargs) \
                + ':' + h.select(mm_name, h.options_for_select(minute_options, selected=mm), **kwargs) \
                + ':' + h.select(ss_name, h.options_for_select(second_options, selected=ss), **kwargs)
