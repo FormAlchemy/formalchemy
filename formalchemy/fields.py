@@ -65,12 +65,8 @@ class FieldRenderer(object):
         Render the field.  Use `self.name` to get a unique name for the
         input element and id.  `self._value` may also be useful if
         you are not rendering multiple input elements.
-
-        This default implementation is one of last resort, only
-        used if !FormAlchemy failed to find a better renderer.
-        Subclasses should not call this method.
         """
-        return h.text_field(self.name, value=self._value, **kwargs)
+        raise NotImplementedError()
 
     def render_readonly(self, **kwargs):
         """render a string representation of the field value
@@ -650,7 +646,7 @@ class AbstractField(object):
         for t in self.parent.default_renderers:
             if not isinstance(t, basestring) and isinstance(self.type, t):
                 return self.parent.default_renderers[t]
-        return FieldRenderer
+        raise Exception('No renderer found for type %s' % type)
 
     def renderer(self):
         if self._renderer is None:
@@ -713,7 +709,6 @@ class Field(AbstractField):
             binding different instances to it later.
         """
         AbstractField.__init__(self, None) # parent will be set by ModelRenderer.add
-        # todo 1.0 raise exception in render if type is unrecognized
         self.type = type()
         self.name = name
         self._value = value

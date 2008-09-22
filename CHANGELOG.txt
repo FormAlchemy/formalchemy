@@ -8,6 +8,7 @@ FormAlchemy 1.0:
   * add Field.with_renderer
   * allow manually-added fields to pull their value from the bound model
   * fs.[field] returns the configured version of the field, not the unconfigured.  fs.fields renamed to fs._fields.  Added Field.reset() to deepcopy the unconfigured version.
+  * explicit renderers required for custom types (FieldRenderer.render removed)
   * bug fixes
 
 FormAlchemy 0.5.1 (r397):
