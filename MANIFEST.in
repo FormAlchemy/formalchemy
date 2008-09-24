@@ -1,3 +1,9 @@
 include *.txt
 include docs/*.txt
+exclude docs/*.py
+exclude docs/Makefile
+exclude *.cfg
+exclude *.ini
+exclude bootstrap.py
+exclude RELEASE_NOTES.txt
 recursive-include formalchemy/i18n *
