@@ -1,76 +1,175 @@
-FormAlchemy 1.0:
-  * i18n support (gael.pasgrimaud)
-  * file upload support (gael.pasgrimaud)
-  * mapper property alias support (gael.pasgrimaud)
-  * add **kwargs to FieldSet and Grid render methods, which are passed on to the template.  this allows easy custom template use w/o having to subclass.  (lbruno)
-  * added sanity checks to disallow getting into an inconsistent state.  notably, binding to an object that belongs to a session but does NOT have a primary key set is not allowed.  workaround: bind to the class, and FA will instantiate it and take it out of the session [until sync()].  Then you can pull that instance out as the .model attribute.
-  * sync() will save model to session, if necessary
-  * add Field.with_renderer
-  * allow manually-added fields to pull their value from the bound model
-  * fs.[field] returns the configured version of the field, not the unconfigured.  fs.fields renamed to fs._fields.  Added Field.reset() to deepcopy the unconfigured version.
-  * explicit renderers required for custom types (FieldRenderer.render removed)
-  * new documentation located at http://docs.formalchemy.org (gael.pasgrimaud)
-  * bug fixes
+1.0
+---
 
-FormAlchemy 0.5.1 (r397):
-  * Synonym support
-  * Bug fixes
+* i18n support (gael.pasgrimaud)
 
-FormAlchemy 0.5 (r379):
-  * Composite field and custom type support
-  * Joined table support
-  * Grid (companion to FieldSet) renders and edits multiple instances
-    at once.
-  * readonly support for FieldSet (replacing undocumented Table), Grid
-    (replacing TableCollection)
-  * FieldSet can render Fields from a non-mapped class (experimental)
-  * Saner (backwards-incompatible, but easy port) widget
-    (FieldRenderer) API
-  * FieldSet.render_fields is now an OrderedDict like FieldSet.fields.
-    Use render_fields.[iter]values() to get an iterable like the old
-    render_fields.
-  * Bug fixes
+* file upload support (gael.pasgrimaud)
 
-FormAlchemy 0.3.1 (r329):
-  * Bug fixes
-  * Much better DateTime support
-  * Extensible widget API (want to use your favorite date picker instead?  No problem.)
-    - `FieldRenderer` is now part of "from formalchemy import *" for use here
-  * Minor changes to template API (details in documentation).  Does not affect you unless you already wrote a custom template
-  * order fields by declared order as much as possible, instead of alphabetical, when include= is absent
-  * Validator suite fleshed out (minlength, maxlength, regex, email, currency)
-  * Added doc sections on widget API and validation functions
+* mapper property alias support (gael.pasgrimaud)
 
-FormAlchemy 0.3:
-  * Completely new API, based on Fields instead of column names
-  * Support manually added Fields, not just attributes from the SA model
-  * Relations (a FK will be rendered with a dropdown of related objects)
-  * Validation + sync
-  * Template-based rendering for greater customizibility.  Tempita is included; Mako is detected and used if present
-  * WebHelpers is no longer a dependency; the small parts FA needs have been moved into helpers.py.  (This was prompted by WebHelpers 0.6 breaking backwards compatibility in nontrivial ways.)
-  * Pervasive docstrings
-  * Preliminary SA 0.5 support
-  * Regression test suite
+* add `**kwargs` to FieldSet and Grid render methods, which are passed on to the
+  template.  this allows easy custom template use w/o having to subclass.
+  (lbruno)
 
-FormAlchemy 0.2:
-  * Added 'disable', 'disable_pk', 'disable_fk' options.
-  * Fixed a bug where 'readonly*' options only worked for 'password' fields.
-  * Added 'date', 'time' and 'datetime' options for date/time fields formatting.
-  * Added 'bool_as_radio' option.
-  * Added a hack to force browsers to POST unckecked checkboxes.
-  * Fixed a bug where 'opts' from the 'dropdown' option is no longer rendered as an attribute of the <select> tag.
-  * Fixed a compatibility issue with SQLAlchemy 0.4.1. The 'foreign_key' Column attribute is now 'foreign_keys'.
-  * Added 'fieldset' option.
-  * Added 'include' option. Patch from Adam Gomaa.
-  * Added 'textarea' option. Additionnal patch provided by Adam Gomaa for passing native tuple of intergers as `size` argument value.
-  * Added new experimental, little customizable, 'TableItem' and 'TableCollection'. TableItem renders a table from a bound model. TableCollection renders a table from a collection of items that are of the same class than the bound model: TableCollection(bind=client, collection=client_list). The bound model can be a non-instantiated mapped class.
-  * Removed NullType type column detection for now, as it seems to be a SA 0.4 only thing. What would a NullType HTML field represent anyway?
-  * FieldSet now returns fields embedded in <fieldset> HTML tags.
-  * Implemented the 'legend' option for FieldSet to provide an optional and customizable <legend> tag. FieldSet uses the bound model's class name as the legend by default. The legend can be customized by passing a string to the 'legend' option: `legend='My legend'`. The fieldset can be legend-less by passing `legend=False`.
-  * Big core changes. Splitted the single formalchemy.py module into a formalchemy package. More classes, more flexibility. Plus, we're now using model-level and column-level rendering engines: 'ModelRenderer' and 'FieldRenderer'.
-  * 'ModelRender' and 'FieldRender' allows you to render a whole model (like FieldSet, but without the fieldset/legend tags) or a single column.
-  * FieldSet now uses 'ModelRenderer'.
-  * Added new experimental, little customizable, non-form related, 'TableItem' and 'TableCollection'. TableItem renders a table from a bound model. TableCollection renders a table from a collection of items that are of the same class than the bound model: TableCollection(bind=client, collection=client_list). The bound model can be a non-instantiated mapped class.
+* added sanity checks to disallow getting into an inconsistent state.  notably,
+  binding to an object that belongs to a session but does NOT have a primary
+  key set is not allowed.  workaround: bind to the class, and FA will
+  instantiate it and take it out of the session [until sync()].  Then you can
+  pull that instance out as the .model attribute.
 
-FormAlchemy 0.1, r56:
-  * Initial release.
+* sync() will save model to session, if necessary
+
+* add Field.with_renderer
+
+* allow manually-added fields to pull their value from the bound model
+
+* fs.[field] returns the configured version of the field, not the unconfigured.  fs.fields renamed to fs._fields.  Added Field.reset() to deepcopy the unconfigured version.
+
+* explicit renderers required for custom types (FieldRenderer.render removed)
+
+* new `documentation <http://docs.formalchemy.org>`_ (gael.pasgrimaud)
+
+* bug fixes
+
+0.5.1
+-----
+
+* Synonym support
+
+* Bug fixes
+
+0.5
+---
+
+* Composite field and custom type support
+
+* Joined table support
+
+* Grid (companion to FieldSet) renders and edits multiple instances
+  at once.
+
+* readonly support for FieldSet (replacing undocumented Table), Grid
+  (replacing TableCollection)
+
+* FieldSet can render Fields from a non-mapped class (experimental)
+
+* Saner (backwards-incompatible, but easy port) widget
+  (FieldRenderer) API
+
+* FieldSet.render_fields is now an OrderedDict like FieldSet.fields.
+  Use render_fields.[iter]values() to get an iterable like the old
+  render_fields.
+
+* Bug fixes
+
+0.3.1
+-----
+
+* Bug fixes
+
+* Much better DateTime support
+
+* Extensible widget API (want to use your favorite date picker instead?  No problem.)
+
+* `FieldRenderer` is now part of `from formalchemy import *` for use here
+
+* Minor changes to template API (details in documentation).  Does not affect
+  you unless you already wrote a custom template
+
+* order fields by declared order as much as possible, instead of alphabetical,
+  when include= is absent
+
+* Validator suite fleshed out (minlength, maxlength, regex, email, currency)
+
+* Added doc sections on widget API and validation functions
+
+0.3
+---
+
+* Completely new API, based on Fields instead of column names
+
+* Support manually added Fields, not just attributes from the SA model
+
+* Relations (a FK will be rendered with a dropdown of related objects)
+
+* Validation + sync
+
+* Template-based rendering for greater customizibility.  Tempita is included;
+  Mako is detected and used if present
+
+* WebHelpers is no longer a dependency; the small parts FA needs have been
+  moved into helpers.py.  (This was prompted by WebHelpers 0.6 breaking
+  backwards compatibility in nontrivial ways.)
+
+* Pervasive docstrings
+
+* Preliminary SA 0.5 support
+
+* Regression test suite
+
+
+0.2
+---
+
+* Added 'disable', 'disable_pk', 'disable_fk' options.
+
+* Fixed a bug where 'readonly*' options only worked for 'password' fields.
+
+* Added 'date', 'time' and 'datetime' options for date/time fields formatting.
+
+* Added 'bool_as_radio' option.
+
+* Added a hack to force browsers to POST unckecked checkboxes.
+
+* Fixed a bug where 'opts' from the 'dropdown' option is no longer rendered as
+  an attribute of the <select> tag.
+
+* Fixed a compatibility issue with SQLAlchemy 0.4.1. The 'foreign_key' Column
+  attribute is now 'foreign_keys'.
+
+* Added 'fieldset' option.
+
+* Added 'include' option. Patch from Adam Gomaa.
+
+* Added 'textarea' option. Additionnal patch provided by Adam Gomaa for passing
+  native tuple of intergers as `size` argument value.
+
+* Added new experimental, little customizable, 'TableItem' and
+  'TableCollection'. TableItem renders a table from a bound model.
+  TableCollection renders a table from a collection of items that are of the
+  same class than the bound model: TableCollection(bind=client,
+  collection=client_list). The bound model can be a non-instantiated mapped
+  class.
+
+* Removed NullType type column detection for now, as it seems to be a SA 0.4
+  only thing. What would a NullType HTML field represent anyway?
+
+* FieldSet now returns fields embedded in <fieldset> HTML tags.
+
+* Implemented the 'legend' option for FieldSet to provide an optional and
+  customizable <legend> tag. FieldSet uses the bound model's class name as the
+  legend by default. The legend can be customized by passing a string to the
+  'legend' option: `legend='My legend'`. The fieldset can be legend-less by
+  passing `legend=False`.
+
+* Big core changes. Splitted the single formalchemy.py module into a
+  formalchemy package. More classes, more flexibility. Plus, we're now using
+  model-level and column-level rendering engines: 'ModelRenderer' and
+  'FieldRenderer'.
+
+* 'ModelRender' and 'FieldRender' allows you to render a whole model (like
+  FieldSet, but without the fieldset/legend tags) or a single column.
+
+* FieldSet now uses 'ModelRenderer'.
+
+* Added new experimental, little customizable, non-form related, 'TableItem'
+  and 'TableCollection'. TableItem renders a table from a bound model.
+  TableCollection renders a table from a collection of items that are of the
+  same class than the bound model: TableCollection(bind=client,
+  collection=client_list). The bound model can be a non-instantiated mapped
+  class.
+
+0.1
+---
+
+* Initial release.
