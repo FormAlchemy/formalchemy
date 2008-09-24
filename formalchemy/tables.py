@@ -79,17 +79,13 @@ class Grid(base.EditableRenderer):
 
     The `Grid` constructor takes the following arguments:
 
-      * `cls`:
-            the class type that the `Grid` will render (NOT an instance)
+    * `cls`: the class type that the `Grid` will render (NOT an instance)
 
-      * `instances=[]`:
-            the instances/rows to render
+    * `instances=[]`: the instances/rows to render
 
-      * `session=None`:
-            as in `FieldSet`
+    * `session=None`: as in `FieldSet`
 
-      * `data=None`:
-            as in `FieldSet`
+    * `data=None`: as in `FieldSet`
 
     `bind` and `rebind` take the last 3 arguments (`instances`, `session`,
     and `data`); you may not specify a different class type than the one
