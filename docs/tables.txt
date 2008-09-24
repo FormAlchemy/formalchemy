@@ -8,27 +8,12 @@ rendering multiple instances at once.  Most of what you know about
 :class:`~formalchemy.forms.FieldSet` applies to `Grid`, with the following differences to
 accomodate being bound to multiple objects:
 
-Binding
--------
+The Grid class
+--------------
 
-The `Grid` constructor takes the following arguments:
+.. autoclass:: Grid
+   :members:
 
-
-- `cls`: 
-      the class type that the `Grid` will render (NOT an instance)
-
-- `instances=[]`: 
-      the instances/rows to render
-
-- `session=None`:
-      as in :class:`~formalchemy.forms.FieldSet`
-
-- `data=None`: 
-      as in :class:`~formalchemy.forms.FieldSet`
-
-`bind` and `rebind` take the last 3 arguments (`instances`, `session`,
-and `data`); you may not specify a different class type than the one
-given to the constructor.
 
 Configuration
 -------------
@@ -59,27 +44,29 @@ Overriding `Grid` rendering is similar to :class:`~formalchemy.forms.FieldSet`. 
 
 The default templates are `formalchemy.tables.template_grid_readonly` and `formalchemy.tables.template_grid`.
 
-The Grid class
---------------
-
-.. autoclass:: Grid
-   :members:
-
 Usage
 -----
 
 You need some imports::
 
-  >>> from formalchemy.tests import *
   >>> from formalchemy.tables import *
+
+.. Hidden code needed for testing
+
+  >>> from formalchemy.tests import *
+  >>> from formalchemy.tables import Grid as Base
+  >>> class Grid(Base):
+  ...     def render(self):
+  ...         return pretty_html(Base.render(self))
 
 Then you can initialize a `Grid` and bind it to a list of row instance::  
 
   >>> tc = Grid(User, [bill])
+  >>> tc.configure(readonly=True)
 
 This will render instances as an html table::
 
-  >>> print pretty_html(configure_and_render(tc, readonly=True))
+  >>> print tc.render()
   <thead>
    <tr>
     <th>
@@ -117,7 +104,8 @@ You can also add a field to the `Grid` manually::
 
   >>> tc2 = Grid(User, [bill, john])
   >>> tc2.add(Field('link', type=types.String, value=lambda item: '<a href=%d>link</a>' % item.id))
-  >>> print pretty_html(configure_and_render(tc2, readonly=True))
+  >>> tc2.configure(readonly=True)
+  >>> print tc2.render()
   <thead>
    <tr>
     <th>
@@ -182,7 +170,7 @@ You can also rebind a existing `Grid`::
 
   >>> g = Grid(User)
   >>> g.rebind([bill, john]) # explicitly test rebind
-  >>> print pretty_html(g.render())
+  >>> print g.render()
   <thead>
    <tr>
     <th>
