@@ -1,0 +1,20 @@
+How to release FormAlchemy
+==========================
+
+Boostrap a buildout env::
+
+  $ python bootstrap.py
+  $ ./bin/buildout
+
+Compile .mo files and create the tarball::
+
+  $ ./bin/python setup.py make_dist
+
+Register the package on Pypi::
+
+  $ ./bin/python setup.py register
+
+If you want to upload the tarball on Pypi then use::
+
+  $ ./bin/python setup.py make_dist register upload
+
