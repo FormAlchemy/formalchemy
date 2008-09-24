@@ -1,5 +1,11 @@
 
-long_description = open('README.txt').read().strip()
+long_description = open('README.txt').read().strip() +\
+                   '\n\n' +\
+                   open('docs/quickstart.txt').read().strip() +\
+                   '\n\n' +\
+                   'Changes\n' +\
+                   '=======\n\n' +\
+                   open('CHANGELOG.txt').read().strip()
 
 args = dict(name='FormAlchemy',
       license='MIT License',
