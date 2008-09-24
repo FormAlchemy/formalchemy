@@ -1,6 +1,14 @@
 Installation
 ============
 
+Installing using `easy_install`
+-------------------------------
+
+Just run::
+
+  $ easy_install FormAlchemy
+
+
 Installing from tarball/zip archive
 -----------------------------------
 
@@ -12,28 +20,15 @@ Then run::
   $ cd FormAlchemy-0.1
   $ python setup.py install
 
-Installing using `easy_install`
--------------------------------
-
-Just run::
-
-  $ easy_install FormAlchemy
-
-Usage
------
-
-You can now use `FormAlchemy` in your project::
-
-  >>> import formalchemy
 
 Working with trunk
 ------------------
 
-You can checkout the latest trunk using svn::
+You can check out the latest trunk using svn::
 
   svn checkout http://formalchemy.googlecode.com/svn/trunk/ formalchemy
 
-Or have it directly installed via `easy_install`::
+Or via `easy_install`::
 
   easy_install http://formalchemy.googlecode.com/svn/trunk/
 
