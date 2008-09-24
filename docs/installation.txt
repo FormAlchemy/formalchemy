@@ -12,7 +12,7 @@ Just run::
 Installing from tarball/zip archive
 -----------------------------------
 
-Download `FormAlchemy`'s latest version from the `download <[http://code.google.com/p/formalchemy/downloads/list>`_ page.
+Download `FormAlchemy`'s latest version from the `download <http://code.google.com/p/formalchemy/downloads/list>`_ page.
 
 Then run::
 

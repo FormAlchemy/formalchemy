@@ -7,9 +7,6 @@
 
   >>> from library import fs
 
-Internationalisation
-====================
-
 `FormAlchemy` is able to render error messages in your own language. You just
 need to provide a `lang` attribute to the render method::
 
