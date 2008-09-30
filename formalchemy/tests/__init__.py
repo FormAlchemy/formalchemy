@@ -228,6 +228,9 @@ if not hasattr(__builtins__, 'sorted'):
         L.sort(lambda a, b: cmp(key(a), key(b)))
         return L
 
+class ImgRenderer(TextFieldRenderer):
+    def render(self, *args, **kwargs):
+        return '<img src="%s">' % self._value
 
 import fake_module
 fake_module.__dict__.update({

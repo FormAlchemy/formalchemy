@@ -503,6 +503,12 @@ False
  <input id="Three--bar" name="Three--bar" type="text" value="fdsa" />
 </div>
 
+# custom renderer
+>>> fs_3 = FieldSet(Three, data={'Three--foo': 'http://example.com/image.png'})
+>>> fs_3.configure(include=[fs_3.foo.with_renderer(ImgRenderer)])
+>>> print fs_3.foo.render()
+<img src="http://example.com/image.png">
+
 # natural PKs
 >>> fs_npk = FieldSet(NaturalOrder, session)
 >>> print fs_npk.render()
