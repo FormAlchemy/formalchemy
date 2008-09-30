@@ -109,7 +109,8 @@ class Grid(base.EditableRenderer):
         self.errors = {}
 
     def configure(self, pk=False, exclude=[], include=[], options=[], readonly=False):
-        """The `Grid` `configure` method takes the same arguments as `FieldSet`
+        """
+        The `Grid` `configure` method takes the same arguments as `FieldSet`
         (`pk`, `exclude`, `include`, `options`, `readonly`), except there is
         no `focus` argument.
         """
@@ -117,16 +118,14 @@ class Grid(base.EditableRenderer):
         self.readonly = readonly
 
     def bind(self, instances, session=None, data=None):
-        """bind to instances
-        """
+        """bind to instances"""
         _validate_iterable(instances)
         mr = base.EditableRenderer.bind(self, self.model, session, data)
         mr.rows = instances
         return mr
 
     def rebind(self, instances=None, session=None, data=None):
-        """rebind to instances
-        """
+        """rebind to instances"""
         if instances is not None:
             _validate_iterable(instances)
         base.EditableRenderer.rebind(self, self.model, session, data)
@@ -142,8 +141,7 @@ class Grid(base.EditableRenderer):
         base.EditableRenderer.rebind(self, instance, session or self.session, self.data)
 
     def validate(self):
-        """These are the same as in `FieldSet`
-        """
+        """These are the same as in `FieldSet`"""
         if self.data is None:
             raise Exception('Cannot validate without binding data')
         if self.readonly:
@@ -161,7 +159,8 @@ class Grid(base.EditableRenderer):
         return success
 
     def sync_one(self, row):
-        """Use to sync a single one of the instances that are
+        """
+        Use to sync a single one of the instances that are
         bound to the `Grid`.
         """
         # we want to allow the user to sync just rows w/o errors, so this is public
@@ -171,7 +170,6 @@ class Grid(base.EditableRenderer):
         base.EditableRenderer.sync(self)
 
     def sync(self):
-        """These are the same as in `FieldSet`
-        """
+        """These are the same as in `FieldSet`"""
         for row in self.rows:
             self.sync_one(row)
