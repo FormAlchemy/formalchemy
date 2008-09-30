@@ -120,6 +120,15 @@ class Grid(base.EditableRenderer):
     def bind(self, instances, session=None, data=None):
         """bind to instances"""
         _validate_iterable(instances)
+        if not session:
+            i = iter(instances)
+            try:
+                instance = i.next()
+            except StopIteration:
+                pass
+            else:
+                from sqlalchemy.orm import object_session
+                session = object_session(instance)
         mr = base.EditableRenderer.bind(self, self.model, session, data)
         mr.rows = instances
         return mr
