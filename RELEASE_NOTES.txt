@@ -2,7 +2,8 @@ How to release FormAlchemy
 ==========================
 
 Boostrap a buildout env::
-
+  
+  $ wget http://svn.zope.org/*checkout*/zc.buildout/trunk/bootstrap/bootstrap.py
   $ python bootstrap.py
   $ ./bin/buildout
 
