@@ -2,8 +2,9 @@ __doc__ = r"""
 >>> from formalchemy.tests import *
 >>> from formalchemy import Grid
 
+Explicitly test rebind + render:
 >>> g = Grid(User)
->>> g.rebind([bill, john]) # explicitly test rebind
+>>> g.rebind([bill, john])
 >>> print pretty_html(g.render())
 <thead>
  <tr>
@@ -72,6 +73,21 @@ __doc__ = r"""
  </tr>
 </tbody>
 
+Test rendering extra field:
+>>> g = Grid(User)
+>>> g.add(Field('edit', types.String, 'fake edit link'))
+>>> g._set_active(john)
+>>> print g.edit.render()
+<input id="User-2-edit" name="User-2-edit" type="text" value="fake edit link" />
+
+And extra field w/ callable value:
+>>> g = Grid(User)
+>>> g.add(Field('edit', types.String, lambda o: 'fake edit link for %s' % o.id))
+>>> g._set_active(john)
+>>> print g.edit.render()
+<input id="User-2-edit" name="User-2-edit" type="text" value="fake edit link for 2" />
+
+Text syncing:
 >>> g = Grid(User, [john, bill])
 >>> g.rebind(data={'User-1-email': '', 'User-1-password': '1234_', 'User-1-name': 'Bill_', 'User-1-orders': '1', 'User-2-email': 'john_@example.com', 'User-2-password': '5678_', 'User-2-name': 'John_', 'User-2-orders': ['2', '3'], })
 >>> g.validate()
@@ -85,7 +101,6 @@ False
 >>> session.refresh(john)
 >>> john.email == 'john_@example.com'
 True
-
 >>> session.rollback()
 
 Test preventing user from binding to the wrong kind of object:
