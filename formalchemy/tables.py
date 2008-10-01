@@ -17,7 +17,7 @@ template_grid_readonly = r"""
 <thead>
   <tr>
     {{for field in collection.render_fields.itervalues()}}
-      <th>{{field.label_text or collection.prettify(field.key)}}:</td>
+      <th>{{field.label_text or collection.prettify(field.key)}}</td>
     {{endfor}}
   </tr>
 </thead>
@@ -39,7 +39,7 @@ template_grid = r"""
 <thead>
   <tr>
     {{for field in collection.render_fields.itervalues()}}
-      <th>{{field.label_text or collection.prettify(field.key)}}:</td>
+      <th>{{field.label_text or collection.prettify(field.key)}}</td>
     {{endfor}}
   </tr>
 </thead>
