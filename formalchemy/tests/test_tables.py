@@ -8,16 +8,16 @@ __doc__ = r"""
 <thead>
  <tr>
   <th>
-   Email:
+   Email
   </th>
   <th>
-   Password:
+   Password
   </th>
   <th>
-   Name:
+   Name
   </th>
   <th>
-   Orders:
+   Orders
   </th>
  </tr>
 </thead>

@@ -70,16 +70,16 @@ This will render instances as an html table::
   <thead>
    <tr>
     <th>
-     Email:
+     Email
     </th>
     <th>
-     Password:
+     Password
     </th>
     <th>
-     Name:
+     Name
     </th>
     <th>
-     Orders:
+     Orders
     </th>
    </tr>
   </thead>
@@ -109,19 +109,19 @@ You can also add a field to the `Grid` manually::
   <thead>
    <tr>
     <th>
-     Email:
+     Email
     </th>
     <th>
-     Password:
+     Password
     </th>
     <th>
-     Name:
+     Name
     </th>
     <th>
-     Orders:
+     Orders
     </th>
     <th>
-     Link:
+     Link
     </th>
    </tr>
   </thead>
