@@ -88,6 +88,7 @@ True
 
 >>> session.rollback()
 
+Test preventing user from binding to the wrong kind of object:
 >>> g = g.bind([john])
 >>> g.rows == [john]
 True
@@ -99,6 +100,14 @@ Exception: instances must be an iterable, not <class 'formalchemy.tests.User'>
 Traceback (most recent call last):
 ...
 Exception: instances must be an iterable, not <class 'formalchemy.tests.User'>
+
+Simulate creating a grid in a different thread than it's used in:
+>>> _Session = sessionmaker(bind=engine)
+>>> _old_session = _Session()
+>>> assert _old_session != object_session(john)
+>>> g = Grid(User, session=_old_session)
+>>> g2 = g.bind([john])
+>>> _ = g2.render()
 """
 
 if __name__ == '__main__':
