@@ -246,7 +246,7 @@ Quantity: 5
 <br />
 <input id="User-1-orders" name="User-1-orders" type="checkbox" value="3" />
 Quantity: 6
->>> print fs.orders.checkbox(options=query_options(session.query(Order).filter_by(id=1))).render()
+>>> print fs.orders.checkbox(options=session.query(Order).filter_by(id=1)).render()
 <input checked="checked" id="User-1-orders" name="User-1-orders" type="checkbox" value="1" />Quantity: 10
 
 >>> fs = FieldSet(Two)

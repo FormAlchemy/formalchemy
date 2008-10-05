@@ -195,7 +195,7 @@ try:
     import mako
 except ImportError:
     pass
-from formalchemy.fields import Field, query_options
+from formalchemy.fields import Field
 from formalchemy.validators import ValidationError
 
 def pretty_html(html):

@@ -11,7 +11,7 @@ from copy import copy, deepcopy
 import datetime
 
 import helpers as h
-from sqlalchemy.orm import class_mapper
+from sqlalchemy.orm import class_mapper, Query
 from sqlalchemy.orm.attributes import ScalarAttributeImpl, ScalarObjectAttributeImpl, CollectionAttributeImpl, InstrumentedAttribute
 from sqlalchemy.orm.properties import CompositeProperty
 # from sqlalchemy.orm.exc import UnmappedClassError
@@ -19,7 +19,7 @@ from sqlalchemy.exceptions import InvalidRequestError # 0.4 support
 import fatypes, validators
 from i18n import _
 
-__all__ = ['Field', 'FieldRenderer', 'query_options',
+__all__ = ['Field', 'FieldRenderer',
            'TextFieldRenderer', 'TextAreaFieldRenderer',
            'PasswordFieldRenderer', 'HiddenFieldRenderer',
            'DateFieldRenderer', 'TimeFieldRenderer',
@@ -428,17 +428,34 @@ def _pk(instance):
     return attr
 
 
-def query_options(query):
+def _query_options(L):
     """
     Return a list of tuples of `(item description, item pk)`
-    for each item returned by the query, where `item description`
+    for each item in the iterable L, where `item description`
     is the result of str(item) and `item pk` is the item's primary key.
-
-    This list is suitable for using as a value for `options` parameters.
     """
-    fn = query.session.connection().engine.dialect.convert_unicode and unicode or str
-    return [(fn(item), _pk(item)) for item in query.all()]
+    return [(unicode(item), _pk(item)) for item in L]
 
+
+def _normalized_options(options):
+    """ 
+    If `options` is an SA query or an iterable of SA instances, it will be
+    turned into a list of `(item description, item value)` pairs. Otherwise, a
+    copy of the original options will be returned with no further validation.
+    """
+    if isinstance(options, Query):
+        options = options.all()
+    i = iter(options)
+    try:
+        first = i.next()
+    except StopIteration:
+        return []
+    try:
+        class_mapper(type(first))
+    except:
+        return list(options)
+    return _query_options(options)
+    
 
 def _foreign_keys(property):
     # 0.4/0.5 compatibility fn
@@ -613,6 +630,8 @@ class AbstractField(object):
         field._renderer = lambda: self.parent.default_renderers['radio']
         if options is None:
             options = self.render_opts.get('options')
+        else:
+            options = _normalized_options(options)
         field.render_opts = {'options': options}
         return field
     def checkbox(self, options=None):
@@ -621,6 +640,8 @@ class AbstractField(object):
         field._renderer = lambda: field.parent.default_renderers['checkbox']
         if options is None:
             options = self.render_opts.get('options')
+        else:
+            options = _normalized_options(options)
         field.render_opts = {'options': options}
         return field
     def dropdown(self, options=None, multiple=False, size=5):
@@ -632,6 +653,8 @@ class AbstractField(object):
         field._renderer = lambda: field.parent.default_renderers['dropdown']
         if options is None:
             options = self.render_opts.get('options')
+        else:
+            options = _normalized_options(options)
         field.render_opts = {'multiple': multiple, 'options': options}
         if multiple:
             field.render_opts['size'] = size
@@ -920,7 +943,7 @@ class AttributeField(AbstractField):
             fk_cls = self.collection_type()
             fk_pk = class_mapper(fk_cls).primary_key[0]
             q = self.parent.session.query(fk_cls).order_by(fk_pk)
-            self.render_opts['options'] = query_options(q)
+            self.render_opts['options'] = _query_options(q)
             logger.debug('options for %s are %s' % (self.name, self.render_opts['options']))
         if self.is_collection() and isinstance(self.renderer, self.parent.default_renderers['dropdown']):
             self.render_opts['multiple'] = True

@@ -9,10 +9,6 @@ All `FormAlchemy`'s objects live under the `formalchemy` package
 
   >>> from formalchemy import FieldSet, Field
 
-Helper functions::
-
-  >>> from formalchemy import query_options
-
 :mod:`~formalchemy.validators`::
 
   >>> from formalchemy import validators, ValidationError
