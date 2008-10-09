@@ -81,7 +81,7 @@ class Grid(base.EditableRenderer):
 
     * `cls`: the class type that the `Grid` will render (NOT an instance)
 
-    * `instances=[]`: the instances/rows to render
+    * `instances=[]`: the instances to render as grid rows
 
     * `session=None`: as in `FieldSet`
 

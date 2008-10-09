@@ -1,8 +1,6 @@
 
 long_description = open('README.txt').read().strip() +\
                    '\n\n' +\
-                   open('docs/quickstart.txt').read().strip() +\
-                   '\n\n' +\
                    'Changes\n' +\
                    '=======\n\n' +\
                    open('CHANGELOG.txt').read().strip()
@@ -12,8 +10,8 @@ args = dict(name='FormAlchemy',
       version='1.0',
       description='FormAlchemy greatly speeds development with SQLAlchemy mapped classes (models) in a HTML forms environment.',
       long_description=long_description,
-      author='Alexandre Conrad',
-      author_email='aconard at go2france dot com',
+      author='Alexandre Conrad, Jonathan Ellis, Gaël Pasgrimaud',
+      author_email='formalchemy@googlegroups.com',
       url='http://formalchemy.googlecode.com',
       download_url='http://code.google.com/p/formalchemy/downloads/list',
       packages=['formalchemy', 'formalchemy.tempita'],
