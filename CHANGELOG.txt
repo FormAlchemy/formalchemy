@@ -12,7 +12,8 @@
   (lbruno)
 
 * removed query_options.  Just pass the query as the argument to the options
-  parameter, and FA will turn it into (description, value) pairs.
+  parameter, and FA will turn it into (description, value) pairs.  FA will
+  also accept an iterable of objects as a value to the options parameter.
 
 * unicode(object) is used as the default option description, not str(object).
   (Before, unicode was only used if the engine had convert_unicode turned on.)

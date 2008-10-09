@@ -149,9 +149,13 @@ Field Modification
       Render the field as an HTML select field.  
       (With the `multiple` option this is not really a 'dropdown'.)
         
-Methods taking an `options` parameter expect either an iterable of
-(description, value) or a dictionary whose keys are descriptions and whose
-values are the values to associate with them.
+Methods taking an `options` parameter will accept several ways of
+specifying those options:
+
+- an iterable of SQLAlchemy objects; `str()` of each object will be the description, and the primary key the value
+- a SQLAlchemy query; the query will be executed with `all()` and the objects returned evaluated as above
+- an iterable of (description, value) pairs
+- a dictionary of {description: value} pairs
 
 Options can be "chained" indefinitely because each modification returns a new
 :mod:`Field <formalchemy.fields>` instance, so you can write::
