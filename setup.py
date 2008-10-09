@@ -18,7 +18,7 @@ args = dict(name='FormAlchemy',
       packages=['formalchemy', 'formalchemy.tempita'],
       package_data={'formalchemy': ['i18n/*/LC_MESSAGES/formalchemy.mo']},
       classifiers=[
-          'Development Status :: 3 - Alpha',
+          'Development Status :: 5 - Production/Stable',
           'Intended Audience :: Developers',
           'License :: OSI Approved :: MIT License',
           'Natural Language :: English',
