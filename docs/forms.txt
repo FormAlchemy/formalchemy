@@ -14,7 +14,7 @@ A note on Sessions
 ------------------
 
 `FormAlchemy` can save you the most time if you use 
-`contextual Sessions <http://www.sqlalchemy.org/docs/05/session.html#unitofwork_contextual>`.
+contextual Sessions: http://www.sqlalchemy.org/docs/05/session.html#unitofwork_contextual.
 Otherwise, you will have to manually pass Session objects when you bind
 :class:`~formalchemy.forms.FieldSet` and :class:`~formalchemy.tables.Grid`
 instances to your data.
