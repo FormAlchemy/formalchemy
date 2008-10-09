@@ -370,8 +370,7 @@ element[s]) used to edit different types of fields...
        example.
 
 2. Update `FieldSet.default_renderers`.  `default_renderers` is a dict of
-   callables returning a FieldRenderer.  Usually these will be FieldRenderer
-   subclasses, but this is not required.  The default contents of
+   FieldRenderer subclasses. The default contents of
    default_renderers is::
 
       default_renderers = {
@@ -473,5 +472,3 @@ And for read only mode::
     </td>
    </tr>
   </tbody>
-
-

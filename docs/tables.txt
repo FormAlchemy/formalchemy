@@ -14,6 +14,22 @@ The Grid class
 .. autoclass:: Grid
    :members:
 
+Creating
+--------
+
+The `Grid` constructor takes parameters (`cls`, `instances=[]`, `session=None`, `data=None`).
+A significant difference from :class:`~formalchemy.forms.FieldSet` is that the first argument
+must _always_ be a mapped class, e.g., `User`.  `instances` is the objects to render,
+which must all be of the given type.  The other parameters are the same as in 
+:class:`~formalchemy.forms.FieldSet`.
+
+Binding
+-------
+
+`Grid` `bind` and `rebind` methods are similar to those methods in
+:class:`~formalchemy.forms.FieldSet`, except they take an iterable `instances`
+instead of an instance `model`.  Thus, the full signature is
+(`instances`, `session=None`, `data=None`).
 
 Configuration
 -------------

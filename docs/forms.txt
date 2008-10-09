@@ -13,9 +13,11 @@ Configuring and rendering forms
 A note on Sessions
 ------------------
 
-`FormAlchemy` can save you the most time if you use contextual Sessions.
+`FormAlchemy` can save you the most time if you use 
+`contextual Sessions <http://www.sqlalchemy.org/docs/05/session.html#unitofwork_contextual>`.
 Otherwise, you will have to manually pass Session objects when you bind
-:class:`~formalchemy.forms.FieldSet` and `Grid` instances to your data.
+:class:`~formalchemy.forms.FieldSet` and :class:`~formalchemy.tables.Grid`
+instances to your data.
 
 
 Binding
@@ -359,6 +361,7 @@ not give the Field a name (the attribute name is used).
 You can still validate and sync a non-SQLAlchemy class instance, but
 obviously persisting any data post-sync is up to you.
 
+
 Advanced Customization: Form Templates
 ======================================
 
@@ -406,7 +409,6 @@ per-:class:`~formalchemy.forms.FieldSet` basis::
   fs._render = ...
 
 The default template is `formalchemy.forms.template_text_tempita`.
-
 
 
 Really advanced customization
