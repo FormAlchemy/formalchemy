@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 
 long_description = open('README.txt').read().strip() +\
                    '\n\n' +\
