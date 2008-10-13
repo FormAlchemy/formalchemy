@@ -139,9 +139,17 @@ document.getElementById("Two--foo").focus();
 >>> session.rollback()
 
 >>> fs_cb = FieldSet(CheckBox)
->>> print fs_cb.field.dropdown().render()
-<select id="CheckBox--field" name="CheckBox--field"><option value="True">Yes</option>
-<option value="False">No</option></select>
+>>> print pretty_html(fs_cb.field.dropdown().render())
+<select id="CheckBox--field" name="CheckBox--field">
+ <option value="True">
+  Yes
+ </option>
+ <option value="False">
+  No
+ </option>
+</select>
+
+# test no checkbox/radio submitted
 >>> fs_cb.rebind(data={})
 >>> print fs_cb.field.render()
 <input id="CheckBox--field" name="CheckBox--field" type="checkbox" value="True" />
@@ -149,6 +157,13 @@ document.getElementById("Two--foo").focus();
 <formalchemy.fields.CheckBoxFieldRenderer object at ...>
 >>> fs_cb.field.renderer._serialized_value() == None
 True
+>>> print pretty_html(fs_cb.field.radio().render())
+<input id="CheckBox--field_true" name="CheckBox--field" type="radio" value="True" />
+Yes
+<br />
+<input id="CheckBox--field_false" name="CheckBox--field" type="radio" value="False" />
+No
+
 >>> fs_cb.validate()
 True
 >>> fs_cb.errors

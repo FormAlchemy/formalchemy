@@ -380,6 +380,11 @@ class RadioSet(FieldRenderer):
     """
     widget = staticmethod(h.radio_button)
     
+    def _serialized_value(self):
+        if self.name not in self._params:
+            return None
+        return FieldRenderer._serialized_value(self)
+
     def _is_checked(self, choice_value):
         return self._value == choice_value
 
