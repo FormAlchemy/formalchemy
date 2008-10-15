@@ -7,9 +7,10 @@ import cgi
 import logging
 logger = logging.getLogger('formalchemy.' + __name__)
 
+MIN_SA_VERSION = '0.4.5'
 from sqlalchemy import __version__
-if __version__.split('.') < [0, 4, 1]:
-    raise ImportError('Version 0.4.1 or later of SQLAlchemy required')
+if __version__.split('.') < MIN_SA_VERSION.split('.'):
+    raise ImportError('Version %s or later of SQLAlchemy required' % MIN_SA_VERSION)
 
 from sqlalchemy.orm.attributes import InstrumentedAttribute, ScalarAttributeImpl
 from sqlalchemy.orm import compile_mappers, object_session, class_mapper
