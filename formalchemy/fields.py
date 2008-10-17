@@ -73,6 +73,10 @@ class FieldRenderer(object):
         value = self.field.raw_value
         if value is None:
             return ''
+        if self.field.is_scalar_relation():
+            q = self.field.parent.session.query(self.field.relation_type())
+            v = q.get(value)
+            return unicode(v)
         if isinstance(value, basestring):
             # FIXME this is a bad way to handle UnicodeEncodeError
             # FA need to implement a default charset and try to encode value
@@ -403,8 +407,7 @@ class CheckBoxSet(RadioSet):
 
 
 class SelectFieldRenderer(FieldRenderer):
-    """render a field as select
-    """
+    """render a field as select"""
     def render(self, options, **kwargs):
         selected = kwargs.get('selected', None) or self._value
         return h.select(self.name, h.options_for_select(options, selected=selected), **kwargs)
@@ -416,8 +419,9 @@ def _pk(instance):
         column = class_mapper(type(instance)).primary_key[0]
     except InvalidRequestError:
         return None
-    attr = getattr(instance, column.key, None)
-    if attr is None:
+    try:
+        attr = getattr(instance, column.key)
+    except AttributeError:
         # FIXME: this is not clean but the only way i've found to retrieve the
         # real attribute name of the primary key.
         # This is needed when you use something like:
@@ -429,6 +433,7 @@ def _pk(instance):
             if hasattr(props, 'columns'):
                 if props.columns[0] is column:
                     attr = getattr(instance, k)
+                    break
     return attr
 
 
@@ -765,6 +770,9 @@ class Field(AbstractField):
         return self.render_opts.get('multiple', False) or isinstance(self.renderer, self.parent.default_renderers['checkbox'])
     
     def is_relation(self):
+        return False
+
+    def is_scalar_relation(self):
         return False
 
     def raw_value(self):

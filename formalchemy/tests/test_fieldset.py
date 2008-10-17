@@ -814,6 +814,10 @@ True
 >>> session.rollback()
 >>> session.refresh(john)
 
+>>> fs_or = FieldSet(order1)
+>>> print fs_or.user.render_readonly()
+Bill
+
 >>> t = FieldSet(Manual)
 >>> t.configure(readonly=True)
 >>> t.model.b = [1, 2]
