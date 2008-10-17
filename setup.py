@@ -1,10 +1,20 @@
 # -*- coding: utf-8 -*-
+import xml.sax.saxutils
+import os
 
-long_description = open('README.txt').read().strip() +\
+def read(*rnames):
+    text = open(os.path.join(os.path.dirname(__file__), *rnames)).read()
+    text = unicode(text, 'utf-8').encode('ascii', 'xmlcharrefreplace')
+    return xml.sax.saxutils.escape(text)
+
+long_description = '.. contents::\n\n' +\
+                   'Description\n' +\
+                   '===========\n\n' +\
+                   read('README.txt') +\
                    '\n\n' +\
                    'Changes\n' +\
                    '=======\n\n' +\
-                   open('CHANGELOG.txt').read().strip()
+                   read('CHANGELOG.txt')
 
 args = dict(name='FormAlchemy',
       license='MIT License',
