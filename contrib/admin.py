@@ -58,7 +58,7 @@ for key, obj in model_module.__dict__.iteritems():
         model_grids[key] = Grid(obj)
 # add Edit link to grids
 for modelname, grid in model_grids.iteritems():
-    def get_link(item):
+    def get_link(item, modelname=modelname):
         return '<a href="%s">edit</a>' % (h.url_for(controller='admin',
                                                   modelname=modelname,
                                                   action='details',
