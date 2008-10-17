@@ -764,6 +764,9 @@ class Field(AbstractField):
 
     def is_collection(self):
         return self.render_opts.get('multiple', False) or isinstance(self.renderer, self.parent.default_renderers['checkbox'])
+    
+    def is_vanilla(self):
+        return True
 
     def raw_value(self):
         return self.value
@@ -879,7 +882,11 @@ class AttributeField(AbstractField):
         return not (isinstance(self._impl, ScalarObjectAttributeImpl) or self.is_collection())
 
     def collection_type(self):
-        """The type of object in the collection (e.g., `User`).  Calling this is only valid when `is_collection()` is True"""
+        """
+        The type of object in the collection (e.g., `User`).  
+        Calling this is only valid when `is_vanilla()` is False
+        (i.e., the field corresponds to a relation)
+        """
         return self._property.mapper.class_
 
     def value(self):
