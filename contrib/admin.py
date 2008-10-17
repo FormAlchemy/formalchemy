@@ -1,4 +1,4 @@
-APP_NAME = 'f50pylons' # set this to your application name
+APP_NAME = 'contribtest' # set this to your application name
 
 ## LIMITATIONS
 ## normal FA restrictions (single PK, default constructor)
@@ -50,6 +50,8 @@ for key, obj in model_module.__dict__.iteritems():
         class_mapper(obj)
     except UnmappedClassError:
         continue
+    if not isinstance(obj, type):
+        continue
     if key not in model_fieldsets:
         model_fieldsets[key] = FieldSet(obj)
     if key not in model_grids:
@@ -57,7 +59,7 @@ for key, obj in model_module.__dict__.iteritems():
 # add Edit link to grids
 for modelname, grid in model_grids.iteritems():
     def get_link(item):
-        return '<a href="%s">edit</a>' % (h.url_for(controller='generic',
+        return '<a href="%s">edit</a>' % (h.url_for(controller='admin',
                                                   modelname=modelname,
                                                   action='details',
                                                   id=_pk(item)))
@@ -65,13 +67,10 @@ for modelname, grid in model_grids.iteritems():
     grid.add(Field('edit', types.String, get_link))
     grid.configure(include=old_include + [grid.edit], readonly=True)
 
-# todo r/m
-log.debug('pic renderer is %s' % model_grids['Event'].picture._renderer)
-
 # templates
 css = """
 <style type="text/css">
-.generic-flash {
+.admin-flash {
     font-size:16pt; 
     font-weight: bold;
     background-color: #00FF00;
@@ -116,13 +115,13 @@ th {
 _flash_snippet = """
 <%
  from pylons import session
- flashes = session.get('_generic_flashes', [])
+ flashes = session.get('_admin_flashes', [])
  if flashes:
-   session['_generic_flashes'] = []
+   session['_admin_flashes'] = []
    session.save()
 %>
 % for flash in flashes:
-  <div class='generic-flash'>${flash}</div>
+  <div class='admin-flash'>${flash}</div>
 % endfor
 """
 
@@ -149,12 +148,21 @@ list_mako = """
 """ + css + _flash_snippet + """
   </head>
   <body>
+    <h1>Related types</h1>
+      <ul>
+      % for field in c.grid._fields.itervalues():
+        % if not field.is_vanilla():
+          <% clsname = field.collection_type().__name__ %>
+          <li><a href="${h.url_for(modelname=clsname)}">${clsname}</a></li>
+        % endif
+      % endfor
+      </ul>
     <h1>Existing objects</h1>
     <table>
       ${c.grid.render()}
     </table>
     <h1>New object</h1>
-    <a href="${h.url_for(action="details")}">Create form</a>
+    <a href="${h.url_for(action='details')}">Create form</a>
   </body>
 </html>
 """
@@ -178,7 +186,7 @@ details_template = Template(details_mako)
 
 def flash(msg):
     """Add 'msg' to the users flashest list in the users session"""
-    flashes = session.setdefault('_generic_flashes', [])
+    flashes = session.setdefault('_admin_flashes', [])
     flashes.append(msg)
     session.save()
 
@@ -192,7 +200,7 @@ def _class_session(model):
     return S
 
 
-class GenericController(BaseController):
+class AdminController(BaseController):
     def index(self):
         c.modelnames = sorted(model_grids.keys())
         return index_template.render(c=c, h=h)
