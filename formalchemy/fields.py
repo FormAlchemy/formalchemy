@@ -69,8 +69,7 @@ class FieldRenderer(object):
         raise NotImplementedError()
 
     def render_readonly(self, **kwargs):
-        """render a string representation of the field value
-        """
+        """render a string representation of the field value"""
         value = self.field.raw_value
         if value is None:
             return ''
@@ -765,8 +764,8 @@ class Field(AbstractField):
     def is_collection(self):
         return self.render_opts.get('multiple', False) or isinstance(self.renderer, self.parent.default_renderers['checkbox'])
     
-    def is_vanilla(self):
-        return True
+    def is_relation(self):
+        return False
 
     def raw_value(self):
         return self.value
@@ -877,15 +876,14 @@ class AttributeField(AbstractField):
     def is_composite(self):
         return isinstance(self._property, CompositeProperty)
 
-    def is_vanilla(self):
+    def is_relation(self):
         """True iff this is a simple scalar value mapped from a table"""
-        return not (isinstance(self._impl, ScalarObjectAttributeImpl) or self.is_collection())
+        return isinstance(self._impl, ScalarObjectAttributeImpl) or self.is_collection()
 
     def collection_type(self):
         """
         The type of object in the collection (e.g., `User`).  
-        Calling this is only valid when `is_vanilla()` is False
-        (i.e., the field corresponds to a relation)
+        Calling this is only valid when `is_relation()` is True.
         """
         return self._property.mapper.class_
 
@@ -950,7 +948,7 @@ class AttributeField(AbstractField):
     # todo? add .options method (for html_options)
 
     def render(self, **html_options):
-        if not self.is_vanilla() and not self.render_opts.get('options'):
+        if self.is_relation() and not self.render_opts.get('options'):
             # todo 2.0 this does not handle primaryjoin (/secondaryjoin) alternate join conditions
             fk_cls = self.collection_type()
             fk_pk = class_mapper(fk_cls).primary_key[0]

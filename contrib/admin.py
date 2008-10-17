@@ -151,7 +151,7 @@ list_mako = """
     <h1>Related types</h1>
       <ul>
       % for field in c.grid._fields.itervalues():
-        % if not field.is_vanilla():
+        % if field.is_relation():
           <% clsname = field.collection_type().__name__ %>
           <li><a href="${h.url_for(modelname=clsname)}">${clsname}</a></li>
         % endif

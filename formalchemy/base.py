@@ -179,7 +179,7 @@ class ModelRenderer(object):
                     logger.warn('ignoring multi-column property %s' % iattr.impl.key)
                 else:
                     L.append(fields.AttributeField(iattr, self))
-            L.sort(lambda a, b: cmp(not a.is_vanilla(), not b.is_vanilla())) # note, key= not used for 2.3 support
+            L.sort(lambda a, b: cmp(a.is_relation(), b.is_relation())) # note, key= not used for 2.3 support
             for field in L:
                 self._fields[field.key] = field
 
