@@ -877,8 +877,12 @@ class AttributeField(AbstractField):
         return isinstance(self._property, CompositeProperty)
 
     def is_relation(self):
-        """True iff this is a simple scalar value mapped from a table"""
-        return isinstance(self._impl, ScalarObjectAttributeImpl) or self.is_collection()
+        """True iff this field represents a mapped SA relation"""
+        return self.is_scalar_relation() or self.is_collection()
+
+    def is_scalar_relation(self):
+        """True iff this is the 'one' end of a one-to-many relation"""
+        return isinstance(self._impl, ScalarObjectAttributeImpl)
 
     def relation_type(self):
         """
@@ -962,7 +966,7 @@ class AttributeField(AbstractField):
         return AbstractField.render(self, **html_options)
 
     def _get_renderer(self):
-        if isinstance(self._impl, ScalarObjectAttributeImpl) or self.is_collection():
+        if self.is_relation():
             return self.parent.default_renderers['dropdown']
         return AbstractField._get_renderer(self)
 
