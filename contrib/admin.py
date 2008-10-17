@@ -152,7 +152,7 @@ list_mako = """
       <ul>
       % for field in c.grid._fields.itervalues():
         % if field.is_relation():
-          <% clsname = field.collection_type().__name__ %>
+          <% clsname = field.relation_type().__name__ %>
           <li><a href="${h.url_for(modelname=clsname)}">${clsname}</a></li>
         % endif
       % endfor

@@ -880,7 +880,7 @@ class AttributeField(AbstractField):
         """True iff this is a simple scalar value mapped from a table"""
         return isinstance(self._impl, ScalarObjectAttributeImpl) or self.is_collection()
 
-    def collection_type(self):
+    def relation_type(self):
         """
         The type of object in the collection (e.g., `User`).  
         Calling this is only valid when `is_relation()` is True.
@@ -950,7 +950,7 @@ class AttributeField(AbstractField):
     def render(self, **html_options):
         if self.is_relation() and not self.render_opts.get('options'):
             # todo 2.0 this does not handle primaryjoin (/secondaryjoin) alternate join conditions
-            fk_cls = self.collection_type()
+            fk_cls = self.relation_type()
             fk_pk = class_mapper(fk_cls).primary_key[0]
             q = self.parent.session.query(fk_cls).order_by(fk_pk)
             self.render_opts['options'] = _query_options(q)
@@ -968,6 +968,6 @@ class AttributeField(AbstractField):
 
     def _deserialize(self):
         if self.is_collection():
-            return [self.query(self.collection_type()).get(pk)
+            return [self.query(self.relation_type()).get(pk)
                     for pk in self.renderer.deserialize()]
         return self.renderer.deserialize()
