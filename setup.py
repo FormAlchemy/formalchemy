@@ -8,7 +8,7 @@ long_description = open('README.txt').read().strip() +\
 
 args = dict(name='FormAlchemy',
       license='MIT License',
-      version='1.0',
+      version='1.0.1',
       description='FormAlchemy greatly speeds development with SQLAlchemy mapped classes (models) in a HTML forms environment.',
       long_description=long_description,
       author='Alexandre Conrad, Jonathan Ellis, Gaël Pasgrimaud',
