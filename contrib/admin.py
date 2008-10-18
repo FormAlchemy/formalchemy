@@ -1,9 +1,8 @@
-APP_NAME = 'contribtest' # set this to your application name
-
 ## LIMITATIONS
 ## normal FA restrictions (single PK, default constructor)
 ## must use Session.mapper (either w/ declarative or traditional table/class duology)
 
+# standard pylons controller imports
 import logging
 log = logging.getLogger(__name__)
 
@@ -12,6 +11,12 @@ from pylons import tmpl_context as c
 from pylons.controllers.util import redirect_to, url_for
 import pylons.controllers.util as h
 
+# figure out what application we're in, assuming we're in app/controllers
+import os.path
+APP_NAME = __file__.split(os.path.sep)[-3]
+log.debug('guessed application: ' + APP_NAME)
+
+# import base from the current app
 try:
     _basename = '%s.lib.base' % APP_NAME
     _base = __import__(_basename, fromlist=['%s.lib' % APP_NAME])
@@ -56,16 +61,18 @@ for key, obj in model_module.__dict__.iteritems():
         model_fieldsets[key] = FieldSet(obj)
     if key not in model_grids:
         model_grids[key] = Grid(obj)
-# add Edit link to grids
+# add Edit + Delete link to grids
 for modelname, grid in model_grids.iteritems():
-    def get_link(item, modelname=modelname):
-        return '<a href="%s">edit</a>' % (h.url_for(controller='admin',
-                                                  modelname=modelname,
-                                                  action='details',
-                                                  id=_pk(item)))
+    def get_linker(action, modelname=modelname):
+        return lambda item: '<a href="%s">%s</a>' % (h.url_for(controller='admin',
+                                                               modelname=modelname,
+                                                               action=action,
+                                                               id=_pk(item)),
+                                                     action)
     old_include = grid.render_fields.values() # grab this now, or .add will change it if user didn't call configure yet
-    grid.add(Field('edit', types.String, get_link))
-    grid.configure(include=old_include + [grid.edit], readonly=True)
+    for action in ['edit', 'delete']:
+        grid.add(Field(action, types.String, get_linker(action)))
+    grid.configure(include=old_include + [grid.edit, grid.delete], readonly=True)
 
 # templates
 css = """
@@ -162,13 +169,13 @@ list_mako = """
       ${c.grid.render()}
     </table>
     <h1>New object</h1>
-    <a href="${h.url_for(action='details')}">Create form</a>
+    <a href="${h.url_for(action='edit')}">Create form</a>
   </body>
 </html>
 """
 list_template = Template(list_mako)
 
-details_mako = """
+edit_mako = """
 <html>
   <head>
 """ + css + _flash_snippet + """
@@ -181,7 +188,7 @@ details_mako = """
   </body>
 </html>
 """
-details_template = Template(details_mako)
+edit_template = Template(edit_mako)
 
 
 def flash(msg):
@@ -212,7 +219,7 @@ class AdminController(BaseController):
         c.grid = grid.bind(instances)
         return list_template.render(c=c, h=h)
 
-    def details(self, modelname, id=None):
+    def edit(self, modelname, id=None):
         fs = model_fieldsets[modelname]
         S = _class_session(fs.model.__class__)
         if id:
@@ -226,11 +233,21 @@ class AdminController(BaseController):
             if c.fs.validate():
                 c.fs.sync()
                 S.commit()
-                flash(id == None and 'created' or 'modified')
+                S.refresh(c.fs.model)
+                flash('%s %s %s' 
+                      % (id == None and 'Created' or 'Modified',
+                         modelname,
+                         _pk(c.fs.model)))
                 redirect_to(url_for(action='list'))
-        return details_template.render(c=c, h=h)
+        return edit_template.render(c=c, h=h)
 
     def delete(self, modelname, id):
-        raise NotImplementedError()
-
-# todo add logging
+        fs = model_fieldsets[modelname]
+        S = _class_session(fs.model.__class__)
+        instance = S.query(fs.model.__class__).get(id)
+        key = _pk(instance)
+        S.delete(instance)
+        S.commit()
+        flash('Deleted %s %s'
+              % (modelname, key))
+        redirect_to(url_for(action='list'))
