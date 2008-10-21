@@ -1,0 +1,45 @@
+:mod:`formalchemy.ext.pylons` -- Pylons extensions
+==================================================
+
+.. automodule:: formalchemy.ext.pylons
+
+Administration interface
+------------------------
+
+Generate a controller in your application::
+
+  $ paster controller admin
+
+Add those lines in `config/routing.py`::
+
+  from formalchemy.ext.pylons import maps
+  ...
+
+  def make_map():
+      """Create, configure and return the routes Mapper"""
+      ...
+
+      # CUSTOM ROUTES HERE
+      maps.admin_map(map, 'fa')
+
+      ...
+
+Then edit your `controllers/admin.py`::   
+
+  import logging
+
+  from admin.lib.base import *
+  from admin import model
+  from admin.model import meta
+  from formalchemy.ext.pylons.admin import FormalchemyAdminController
+
+  log = logging.getLogger(__name__)
+
+  class FaController(BaseController):
+      model = model # where your SQLAlchemy mappers are
+      forms = forms # where FormAlchemy fieldsets are
+      meta = meta   # where your threaded Session is
+
+  FaController = FormalchemyAdminController(FaController)
+
+Then go to the `/admin` url.  

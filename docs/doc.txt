@@ -12,6 +12,14 @@ Modules contents
    internationalisation
    customisation
 
+Extensions
+==========
+
+.. toctree::
+   :maxdepth: 2
+   :glob:
+   ext/*
+
 
 Indices and tables
 ==================

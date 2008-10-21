@@ -7,25 +7,12 @@ import logging
 log = logging.getLogger(__name__)
 
 from pylons import request, response, session
-from pylons import tmpl_context as c
+try:
+    from pylons import tmpl_context as c
+except:
+    from pylons import c
 from pylons.controllers.util import redirect_to, url_for
 import pylons.controllers.util as h
-
-# figure out what application we're in, assuming we're in app/controllers
-import os.path
-APP_NAME = __file__.split(os.path.sep)[-3]
-log.debug('guessed application: ' + APP_NAME)
-
-# import base from the current app
-try:
-    _basename = '%s.lib.base' % APP_NAME
-    _base = __import__(_basename, fromlist=['%s.lib' % APP_NAME])
-except ImportError:
-    raise Exception('Invalid app name %s (unable to import %s)'
-                    % (APP_NAME, _basename))
-log.debug('imported base from ' + _base.__file__)
-BaseController = _base.BaseController
-render = _base.render
 
 from sqlalchemy.orm.exc import UnmappedClassError
 from sqlalchemy.orm import class_mapper, object_session
@@ -34,45 +21,6 @@ from formalchemy.fields import _pk
 from mako.template import Template
 
 
-# sort forms by type
-model_module = __import__('%s.model' % APP_NAME, fromlist=[APP_NAME])
-try:
-    forms = __import__('%s.forms' % APP_NAME, fromlist=[APP_NAME])
-except ImportError:
-    class Empty(object): pass
-    forms = Empty()
-# dicts key off of strings rather than the model types themselves,
-# because this makes it easier to just put the right string in the route.
-model_fieldsets = dict((form.model.__class__.__name__, form)
-                       for form in forms.__dict__.itervalues()
-                       if isinstance(form, FieldSet))
-model_grids = dict((form.model.__class__.__name__, form)
-                   for form in forms.__dict__.itervalues()
-                   if isinstance(form, Grid))
-# generate missing forms, grids
-for key, obj in model_module.__dict__.iteritems():
-    try:
-        class_mapper(obj)
-    except UnmappedClassError:
-        continue
-    if not isinstance(obj, type):
-        continue
-    if key not in model_fieldsets:
-        model_fieldsets[key] = FieldSet(obj)
-    if key not in model_grids:
-        model_grids[key] = Grid(obj)
-# add Edit + Delete link to grids
-for modelname, grid in model_grids.iteritems():
-    def get_linker(action, modelname=modelname):
-        return lambda item: '<a href="%s">%s</a>' % (h.url_for(controller='admin',
-                                                               modelname=modelname,
-                                                               action=action,
-                                                               id=_pk(item)),
-                                                     action)
-    old_include = grid.render_fields.values() # grab this now, or .add will change it if user didn't call configure yet
-    for action in ['edit', 'delete']:
-        grid.add(Field(action, types.String, get_linker(action)))
-    grid.configure(include=old_include + [grid.edit, grid.delete], readonly=True)
 
 # templates
 css = """
@@ -203,30 +151,81 @@ def _class_session(model):
     # to throw away, just so we can get its session.
     instance = model()
     S = object_session(instance)
-    S.expunge(instance)
+    try:
+        S.expunge(instance)
+    except:
+        pass
     return S
 
+def get_forms(controller, model_module, forms):
+    """scan model and forms
+    """
+    if forms is not None:
+        model_fieldsets = dict((form.model.__class__.__name__, form)
+                               for form in forms.__dict__.itervalues()
+                               if isinstance(form, FieldSet))
+        model_grids = dict((form.model.__class__.__name__, form)
+                           for form in forms.__dict__.itervalues()
+                           if isinstance(form, Grid))
+    else:
+        model_fieldsets = dict()
+        model_grids = dict()
 
-class AdminController(BaseController):
+    # generate missing forms, grids
+    for key, obj in model_module.__dict__.iteritems():
+        try:
+            class_mapper(obj)
+        except UnmappedClassError:
+            continue
+        if not isinstance(obj, type):
+            continue
+        if key not in model_fieldsets:
+            model_fieldsets[key] = FieldSet(obj)
+        if key not in model_grids:
+            model_grids[key] = Grid(obj)
+    # add Edit + Delete link to grids
+    for modelname, grid in model_grids.iteritems():
+        def get_linker(action, modelname=modelname):
+            return lambda item: '<a href="%s">%s</a>' % (h.url_for(controller=controller,
+                                                                   modelname=modelname,
+                                                                   action=action,
+                                                                   id=_pk(item)),
+                                                         action)
+        old_include = grid.render_fields.values() # grab this now, or .add will change it if user didn't call configure yet
+        for action in ['edit', 'delete']:
+            grid.add(Field(action, types.String, get_linker(action)))
+        grid.configure(include=old_include + [grid.edit, grid.delete], readonly=True)
+
+    return {'_model_fieldsets':model_fieldsets, '_model_grids':model_grids}
+
+
+class AdminController(object):
+    """Base class to generate administration interface in Pylons"""
+
+    def _session(self):
+        return getattr(self.meta, 'Session')
+    _session = property(_session)
+
     def index(self):
-        c.modelnames = sorted(model_grids.keys())
+        c.modelnames = sorted(self._model_grids.keys())
         return index_template.render(c=c, h=h)
 
     def list(self, modelname):
-        grid = model_grids[modelname]
-        S = _class_session(grid.model.__class__)
+        grid = self._model_grids[modelname]
+        S = self._session
         instances = S.query(grid.model.__class__).all()
         c.grid = grid.bind(instances)
         return list_template.render(c=c, h=h)
 
     def edit(self, modelname, id=None):
-        fs = model_fieldsets[modelname]
-        S = _class_session(fs.model.__class__)
+        fs = self._model_fieldsets[modelname]
+        S = self._session
         if id:
             instance = S.query(fs.model.__class__).get(id)
             c.fs = fs.bind(instance)
         else:
             c.fs = fs.bind(fs.model.__class__)
+            S.save(c.fs.model)
         if request.method == 'POST':
             c.fs.rebind(c.fs.model, data=request.params)
             log.debug('saving %s w/ %s' % (c.fs.model.id, request.POST))
@@ -234,7 +233,7 @@ class AdminController(BaseController):
                 c.fs.sync()
                 S.commit()
                 S.refresh(c.fs.model)
-                flash('%s %s %s' 
+                flash('%s %s %s'
                       % (id == None and 'Created' or 'Modified',
                          modelname,
                          _pk(c.fs.model)))
@@ -242,8 +241,8 @@ class AdminController(BaseController):
         return edit_template.render(c=c, h=h)
 
     def delete(self, modelname, id):
-        fs = model_fieldsets[modelname]
-        S = _class_session(fs.model.__class__)
+        fs = self._model_fieldsets[modelname]
+        S = self._session
         instance = S.query(fs.model.__class__).get(id)
         key = _pk(instance)
         S.delete(instance)
@@ -251,3 +250,11 @@ class AdminController(BaseController):
         flash('Deleted %s %s'
               % (modelname, key))
         redirect_to(url_for(action='list'))
+
+def FormalchemyAdminController(klass):
+    """Generate a controller class from a Pylons BaseController"""
+    controller = klass.__name__.lower().split('controller')[0]
+    kwargs = get_forms(controller, klass.model, klass.forms)
+    log.info(kwargs)
+    return type(klass.__name__, (klass, AdminController), kwargs)
+
