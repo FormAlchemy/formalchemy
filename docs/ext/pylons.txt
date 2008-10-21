@@ -20,7 +20,7 @@ Add those lines in `config/routing.py`::
       ...
 
       # CUSTOM ROUTES HERE
-      maps.admin_map(map, 'fa')
+      maps.admin_map(map, 'admin')
 
       ...
 
@@ -35,11 +35,11 @@ Then edit your `controllers/admin.py`::
 
   log = logging.getLogger(__name__)
 
-  class FaController(BaseController):
+  class AdminController(BaseController):
       model = model # where your SQLAlchemy mappers are
       forms = forms # where FormAlchemy fieldsets are
       meta = meta   # where your threaded Session is
 
-  FaController = FormalchemyAdminController(FaController)
+  AdminController = FormalchemyAdminController(AdminController)
 
 Then go to the `/admin` url.  
