@@ -28,9 +28,9 @@ Then edit your `controllers/admin.py`::
 
   import logging
 
-  from admin.lib.base import *
-  from admin import model
-  from admin.model import meta
+  from yourapp.lib.base import *
+  from yourapp import model
+  from yourapp.model import meta
   from formalchemy.ext.pylons.admin import FormalchemyAdminController
 
   log = logging.getLogger(__name__)
