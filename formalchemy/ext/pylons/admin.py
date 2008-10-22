@@ -1,7 +1,3 @@
-## LIMITATIONS
-## normal FA restrictions (single PK, default constructor)
-## must use Session.mapper (either w/ declarative or traditional table/class duology)
-
 # standard pylons controller imports
 import logging
 log = logging.getLogger(__name__)
@@ -15,11 +11,13 @@ from pylons.controllers.util import redirect_to, url_for
 import pylons.controllers.util as h
 
 from sqlalchemy.orm.exc import UnmappedClassError
-from sqlalchemy.orm import class_mapper, object_session
+from sqlalchemy.orm import class_mapper
 from formalchemy import *
 from formalchemy.fields import _pk
 from mako.template import Template
 
+
+__all__ = ['FormAlchemyAdminController']
 
 
 # templates
@@ -89,7 +87,7 @@ index_mako = """
     <h1>Models</h1>
     <ul>
     % for modelname in c.modelnames:
-      <li><a href="${h.url_for(modelname=modelname, action="list")}">${modelname}</a></li>
+      <li><a href="${h.url_for(controller='admin', modelname=modelname, action='list')}">${modelname}</a></li>
     % endfor
     </ul>
   </body>
@@ -108,7 +106,7 @@ list_mako = """
       % for field in c.grid._fields.itervalues():
         % if field.is_relation():
           <% clsname = field.relation_type().__name__ %>
-          <li><a href="${h.url_for(modelname=clsname)}">${clsname}</a></li>
+          <li><a href="${h.url_for(controller='admin', modelname=clsname, action='list')}">${clsname}</a></li>
         % endif
       % endfor
       </ul>
@@ -117,7 +115,7 @@ list_mako = """
       ${c.grid.render()}
     </table>
     <h1>New object</h1>
-    <a href="${h.url_for(action='edit')}">Create form</a>
+    <a href="${h.url_for(controller='admin', modelname=c.modelname, action='edit')}">Create form</a>
   </body>
 </html>
 """
@@ -146,20 +144,8 @@ def flash(msg):
     session.save()
 
 
-def _class_session(model):
-    # there isn't a clean way to get this from SA directly, so create an object
-    # to throw away, just so we can get its session.
-    instance = model()
-    S = object_session(instance)
-    try:
-        S.expunge(instance)
-    except:
-        pass
-    return S
-
 def get_forms(controller, model_module, forms):
-    """scan model and forms
-    """
+    """scan model and forms"""
     if forms is not None:
         model_fieldsets = dict((form.model.__class__.__name__, form)
                                for form in forms.__dict__.itervalues()
@@ -202,59 +188,58 @@ def get_forms(controller, model_module, forms):
 class AdminController(object):
     """Base class to generate administration interface in Pylons"""
 
-    def _session(self):
-        return getattr(self.meta, 'Session')
-    _session = property(_session)
-
     def index(self):
         c.modelnames = sorted(self._model_grids.keys())
         return index_template.render(c=c, h=h)
 
     def list(self, modelname):
+        c.modelname = modelname
         grid = self._model_grids[modelname]
-        S = self._session
+        S = self.Session()
         instances = S.query(grid.model.__class__).all()
         c.grid = grid.bind(instances)
         return list_template.render(c=c, h=h)
 
     def edit(self, modelname, id=None):
         fs = self._model_fieldsets[modelname]
-        S = self._session
+        S = self.Session()
         if id:
             instance = S.query(fs.model.__class__).get(id)
             c.fs = fs.bind(instance)
         else:
             c.fs = fs.bind(fs.model.__class__)
-            S.save(c.fs.model)
         if request.method == 'POST':
-            c.fs.rebind(c.fs.model, data=request.params)
+            c.fs = c.fs.bind(data=request.params)
             log.debug('saving %s w/ %s' % (c.fs.model.id, request.POST))
             if c.fs.validate():
                 c.fs.sync()
-                S.commit()
+                S.flush()
                 S.refresh(c.fs.model)
+                S.commit()
                 flash('%s %s %s'
                       % (id == None and 'Created' or 'Modified',
                          modelname,
                          _pk(c.fs.model)))
-                redirect_to(url_for(action='list'))
+                redirect_to(url_for(controller='admin', modelname=modelname, action='list', id=None))
         return edit_template.render(c=c, h=h)
 
     def delete(self, modelname, id):
         fs = self._model_fieldsets[modelname]
-        S = self._session
+        S = self.Session()
         instance = S.query(fs.model.__class__).get(id)
         key = _pk(instance)
         S.delete(instance)
         S.commit()
         flash('Deleted %s %s'
               % (modelname, key))
-        redirect_to(url_for(action='list'))
+        redirect_to(url_for(controller='admin', modelname=modelname, action='list', id=None))
 
-def FormalchemyAdminController(klass):
-    """Generate a controller class from a Pylons BaseController"""
-    controller = klass.__name__.lower().split('controller')[0]
-    kwargs = get_forms(controller, klass.model, klass.forms)
-    log.info(kwargs)
-    return type(klass.__name__, (klass, AdminController), kwargs)
-
+def FormAlchemyAdminController(cls):
+    """
+    Generate a controller that is a subclass of `AdminController`
+    and the Pylons BaseController `cls`
+    """
+    controller = cls.__name__.lower().split('controller')[0]
+    kwargs = get_forms(controller, cls.model, cls.forms)
+    log.info('creating admin controller with args %s' % kwargs)
+    return type(cls.__name__, (cls, AdminController), kwargs)
