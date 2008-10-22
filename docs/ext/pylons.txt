@@ -10,9 +10,28 @@ Generate a controller in your application::
 
   $ paster controller admin
 
-Add those lines in `config/routing.py`::
+Edit your `controllers/admin.py`, replacing `yourapp` with your application name::
+
+  import logging
+
+  from yourapp.lib.base import *
+  from yourapp import model
+  from yourapp.model.meta import Session
+  from formalchemy.ext.pylons.admin import FormAlchemyAdminController
+
+  log = logging.getLogger(__name__)
+
+  class AdminController(BaseController):
+      model = model # where your SQLAlchemy mappers are
+      forms = None # module containing FormAlchemy fieldsets definitions
+      Session = Session # Session factory
+
+  AdminController = FormAlchemyAdminController(AdminController)
+
+Add these lines in `config/routing.py`::
 
   from formalchemy.ext.pylons import maps
+  from yourapp.controllers.admin import AdminController
   ...
 
   def make_map():
@@ -20,26 +39,18 @@ Add those lines in `config/routing.py`::
       ...
 
       # CUSTOM ROUTES HERE
-      maps.admin_map(map, 'admin')
+      maps.admin_map(map, AdminController, 'admin')
 
       ...
 
-Then edit your `controllers/admin.py`::   
+Now you can go to the `/admin/` url.
 
-  import logging
+To customize the forms used, create a module `yourapp.forms` and specify that
+as the forms module in AdminController.  In this module, create 
+:class:`~formalchemy.forms.FieldSet` (for create and edit forms)
+and :class:`~formalchemy.tables.Grid` (for object lists) 
+instances for the models you wish to customize.  (The `Grid`s will
+automatically get edit and delete links added, and be made readonly.)
 
-  from yourapp.lib.base import *
-  from yourapp import model
-  from yourapp.model import meta
-  from formalchemy.ext.pylons.admin import FormalchemyAdminController
+See http://docs.formalchemy.org/forms.html for details on form customization.
 
-  log = logging.getLogger(__name__)
-
-  class AdminController(BaseController):
-      model = model # where your SQLAlchemy mappers are
-      forms = forms # where FormAlchemy fieldsets are
-      meta = meta   # where your threaded Session is
-
-  AdminController = FormalchemyAdminController(AdminController)
-
-Then go to the `/admin` url.  
