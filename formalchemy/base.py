@@ -265,7 +265,7 @@ class ModelRenderer(object):
         """
         self._render_fields = OrderedDict([(field.name, field) for field in self._get_fields(pk, exclude, include, options)])
 
-    def bind(self, model, session=None, data=None):
+    def bind(self, model=None, session=None, data=None):
         """
         Return a copy of this FieldSet or Table, bound to the given
         `model`, `session`, and `data`. The parameters to this method are the
@@ -274,6 +274,12 @@ class ModelRenderer(object):
         Often you will create and `configure` a FieldSet or Table at application
         startup, then `bind` specific instances to it for actual editing or display.
         """
+        if not (model or session or data):
+            raise Exception('must specify at least one of {model, session, data}')
+        if not model:
+            if not self.model:
+                raise Exception('model must be specified when none is already set')
+            model = fields._pk(self.model) is None and type(self.model) or self.model
         # copy.copy causes a stacktrace on python 2.5.2/OSX + pylons.  unable to reproduce w/ simpler sample.
         mr = object.__new__(self.__class__)
         mr.__dict__ = dict(self.__dict__)
