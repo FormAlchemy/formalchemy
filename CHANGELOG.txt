@@ -1,3 +1,10 @@
+1.0.2
+-----
+
+* formalchemy.ext.pylons.admin added; see http://docs.formalchemy.org/current/ext/pylons.html
+* model argument now optional for FieldSet.bind
+
+
 1.0.1
 -----
 
