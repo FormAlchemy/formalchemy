@@ -322,7 +322,7 @@ class ModelRenderer(object):
                     pass
                 else:
                     if fields._pk(model) is None:
-                        raise Exception('Mapped instances to be bound either have a primary key set or not be in a Session.  When  creating a new object, bind the class instead [i.e., bind(User), not bind(User())]')
+                        raise Exception('Mapped instances to be bound must either have a primary key set or not be in a Session.  When creating a new object, bind the class instead [i.e., bind(User), not bind(User())]')
             if self.model and type(self.model) != type(model):
                 raise ValueError('You can only bind to another object of the same type you originally bound to (%s), not %s' % (type(self.model), type(model)))
             self.model = model
