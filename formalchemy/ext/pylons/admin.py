@@ -189,10 +189,12 @@ class AdminController(object):
     """Base class to generate administration interface in Pylons"""
 
     def index(self):
+        """List model types"""
         c.modelnames = sorted(self._model_grids.keys())
         return index_template.substitute(c=c, h=h)
 
     def list(self, modelname):
+        """List instances of a model type"""
         c.modelname = modelname
         grid = self._model_grids[modelname]
         S = self.Session()
@@ -201,6 +203,7 @@ class AdminController(object):
         return list_template.substitute(c=c, h=h)
 
     def edit(self, modelname, id=None):
+        """Edit (or create, if `id` is None) an instance of the given model type"""
         fs = self._model_fieldsets[modelname]
         S = self.Session()
         if id:
@@ -224,6 +227,7 @@ class AdminController(object):
         return edit_template.substitute(c=c, h=h)
 
     def delete(self, modelname, id):
+        """Delete an instance of the given model type"""
         fs = self._model_fieldsets[modelname]
         S = self.Session()
         instance = S.query(fs.model.__class__).get(id)

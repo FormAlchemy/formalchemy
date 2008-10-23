@@ -21,12 +21,12 @@ Edit your `controllers/admin.py`, replacing `yourapp` with your application name
 
   log = logging.getLogger(__name__)
 
-  class AdminController(BaseController):
+  class AdminControllerBase(BaseController):
       model = model # where your SQLAlchemy mappers are
       forms = None # module containing FormAlchemy fieldsets definitions
       Session = Session # Session factory
 
-  AdminController = FormAlchemyAdminController(AdminController)
+  AdminController = FormAlchemyAdminController(AdminControllerBase)
 
 Add these lines in `config/routing.py`::
 
@@ -45,7 +45,19 @@ Add these lines in `config/routing.py`::
 
 Now you can go to the `/admin/` url.
 
-To customize the forms used, create a module `yourapp.forms` and specify that
+FormAlchemyAdminController creates a new class having `AdminControllerBase`
+and the FA admin controller as its parent classes, in that order.  
+So you can do simple customization just by overriding the admin controller
+methods (`index`, `list`, `edit`, `delete`) in `AdminControllerBase`, e.g.,
+
+  class AdminControllerBase(BaseController):
+  ...
+      @auth_required
+      def edit(self, *args, **kwargs):
+          return super(AdminControllerBase, self).edit(*args, **kwargs)
+
+To customize the forms used to list and edit your objects, 
+create a module `yourapp.forms` and specify that
 as the forms module in AdminController.  In this module, create 
 :class:`~formalchemy.forms.FieldSet` (for create and edit forms)
 and :class:`~formalchemy.tables.Grid` (for object lists) 
