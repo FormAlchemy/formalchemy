@@ -624,14 +624,14 @@ class AbstractField(object):
         """Render the field as a password input, hiding its value."""
         field = deepcopy(self)
         field._renderer = lambda: self.parent.default_renderers['password']
-        field.render_opts={}
+        field.render_opts = {}
         return field
     def textarea(self, size=None):
         """Render the field as a textarea.  Size must be a string (`"25x10"`) or tuple (`25, 10`)."""
         field = deepcopy(self)
         field._renderer = lambda: self.parent.default_renderers['textarea']
         if size:
-            field.render_opts={'size': size}
+            field.render_opts = {'size': size}
         return field
     def radio(self, options=None):
         """Render the field as a set of radio buttons."""
