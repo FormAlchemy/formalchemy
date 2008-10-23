@@ -14,7 +14,7 @@ from sqlalchemy.orm.exc import UnmappedClassError
 from sqlalchemy.orm import class_mapper
 from formalchemy import *
 from formalchemy.fields import _pk
-from mako.template import Template
+from formalchemy.tempita import Template
 
 
 __all__ = ['FormAlchemyAdminController']
@@ -66,16 +66,16 @@ th {
 """
 
 _flash_snippet = """
-<%
- from pylons import session
- flashes = session.get('_admin_flashes', [])
- if flashes:
+{{py:
+from pylons import session
+flashes = session.get('_admin_flashes', [])
+if flashes:
    session['_admin_flashes'] = []
    session.save()
-%>
-% for flash in flashes:
-  <div class='admin-flash'>${flash}</div>
-% endfor
+}}
+{{for flash in flashes}}
+  <div class='admin-flash'>{{flash}}</div>
+{{endfor}}
 """
 
 index_mako = """
@@ -86,9 +86,9 @@ index_mako = """
   <body>
     <h1>Models</h1>
     <ul>
-    % for modelname in c.modelnames:
-      <li><a href="${h.url_for(controller='admin', modelname=modelname, action='list')}">${modelname}</a></li>
-    % endfor
+    {{for modelname in c.modelnames}}
+      <li><a href="{{h.url_for(controller='admin', modelname=modelname, action='list')}}">{{modelname}}</a></li>
+    {{endfor}}
     </ul>
   </body>
 </html>
@@ -103,19 +103,19 @@ list_mako = """
   <body>
     <h1>Related types</h1>
       <ul>
-      % for field in c.grid._fields.itervalues():
-        % if field.is_relation():
-          <% clsname = field.relation_type().__name__ %>
-          <li><a href="${h.url_for(controller='admin', modelname=clsname, action='list')}">${clsname}</a></li>
-        % endif
-      % endfor
+      {{for field in c.grid._fields.itervalues()}}
+        {{if field.is_relation()}}
+          {{py:clsname = field.relation_type().__name__}}
+          <li><a href="{{h.url_for(controller='admin', modelname=clsname, action='list')}}">{{clsname}}</a></li>
+        {{endif}}
+      {{endfor}}
       </ul>
     <h1>Existing objects</h1>
     <table>
-      ${c.grid.render()}
+      {{c.grid.render()}}
     </table>
     <h1>New object</h1>
-    <a href="${h.url_for(controller='admin', modelname=c.modelname, action='edit')}">Create form</a>
+    <a href="{{h.url_for(controller='admin', modelname=c.modelname, action='edit')}}">Create form</a>
   </body>
 </html>
 """
@@ -128,7 +128,7 @@ edit_mako = """
   </head>
   <body>
     <form method="post">
-      ${c.fs.render()}
+      {{c.fs.render()}}
       <input type="submit">
     </form>
   </body>
@@ -190,7 +190,7 @@ class AdminController(object):
 
     def index(self):
         c.modelnames = sorted(self._model_grids.keys())
-        return index_template.render(c=c, h=h)
+        return index_template.substitute(c=c, h=h)
 
     def list(self, modelname):
         c.modelname = modelname
@@ -198,7 +198,7 @@ class AdminController(object):
         S = self.Session()
         instances = S.query(grid.model.__class__).all()
         c.grid = grid.bind(instances)
-        return list_template.render(c=c, h=h)
+        return list_template.substitute(c=c, h=h)
 
     def edit(self, modelname, id=None):
         fs = self._model_fieldsets[modelname]
@@ -221,7 +221,7 @@ class AdminController(object):
                          modelname,
                          _pk(c.fs.model)))
                 redirect_to(url_for(controller='admin', modelname=modelname, action='list', id=None))
-        return edit_template.render(c=c, h=h)
+        return edit_template.substitute(c=c, h=h)
 
     def delete(self, modelname, id):
         fs = self._model_fieldsets[modelname]
