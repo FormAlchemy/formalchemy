@@ -48,10 +48,11 @@ Now you can go to the `/admin/` url.
 FormAlchemyAdminController creates a new class having `AdminControllerBase`
 and the FA admin controller as its parent classes, in that order.  
 So you can do simple customization just by overriding the admin controller
-methods (`index`, `list`, `edit`, `delete`) in `AdminControllerBase`, e.g.,
+methods (`index`, `list`, `edit`, `delete`) in `AdminControllerBase`, e.g.,::
 
   class AdminControllerBase(BaseController):
-  ...
+      ...
+
       @auth_required
       def edit(self, *args, **kwargs):
           return super(AdminControllerBase, self).edit(*args, **kwargs)
