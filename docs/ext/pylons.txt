@@ -4,10 +4,10 @@
 .. automodule:: formalchemy.ext.pylons
 
 Administration interface
-------------------------
+========================
 
 Setup
-=====
+-----
 
 First, generate a controller in your application::
 
@@ -50,7 +50,7 @@ All done!  Now you can go to the `/admin/` url.
 
 
 Customization
-=============
+-------------
 
 `FormAlchemyAdminController` creates a new class having `AdminControllerBase`
 and the internal FA admin controller (formalchemy.ext.pylons.AdminController) 
