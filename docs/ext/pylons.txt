@@ -6,11 +6,14 @@
 Administration interface
 ------------------------
 
-Generate a controller in your application::
+Setup
+=====
+
+First, generate a controller in your application::
 
   $ paster controller admin
 
-Edit your `controllers/admin.py`, replacing `yourapp` with your application name::
+Next, edit your `controllers/admin.py`, replacing `yourapp` with your application name::
 
   import logging
 
@@ -43,12 +46,17 @@ Add these lines in `config/routing.py`::
 
       ...
 
-Now you can go to the `/admin/` url.
+All done!  Now you can go to the `/admin/` url.
 
-FormAlchemyAdminController creates a new class having `AdminControllerBase`
+
+Customization
+=============
+
+`FormAlchemyAdminController` creates a new class having `AdminControllerBase`
 and the FA admin controller as its parent classes, in that order.  
 So you can do simple customization just by overriding the admin controller
-methods (`index`, `list`, `edit`, `delete`) in `AdminControllerBase`, e.g.,::
+methods (`index`, `list`, `edit`, `delete` -- create is just edit with `id=None`) 
+in `AdminControllerBase`, e.g.,::
 
   class AdminControllerBase(BaseController):
       ...
@@ -65,5 +73,4 @@ and :class:`~formalchemy.tables.Grid` (for object lists)
 instances for the models you wish to customize.  (The `Grids` will
 automatically get edit and delete links added, and be made readonly.)
 
-See http://docs.formalchemy.org/forms.html for details on form customization.
-
+See http://docs.formalchemy.org/forms.html for details on form configuration.
