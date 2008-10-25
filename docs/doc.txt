@@ -3,6 +3,7 @@ Modules contents
 
 .. toctree::
    :maxdepth: 2
+   :glob:
 
    formalchemy
    forms

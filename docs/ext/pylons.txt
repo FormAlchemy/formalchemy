@@ -62,7 +62,7 @@ create a module `yourapp.forms` and specify that
 as the forms module in AdminController.  In this module, create 
 :class:`~formalchemy.forms.FieldSet` (for create and edit forms)
 and :class:`~formalchemy.tables.Grid` (for object lists) 
-instances for the models you wish to customize.  (The `Grid`s will
+instances for the models you wish to customize.  (The `Grids` will
 automatically get edit and delete links added, and be made readonly.)
 
 See http://docs.formalchemy.org/forms.html for details on form customization.
