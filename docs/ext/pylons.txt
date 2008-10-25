@@ -53,8 +53,10 @@ Customization
 =============
 
 `FormAlchemyAdminController` creates a new class having `AdminControllerBase`
-and the FA admin controller as its parent classes, in that order.  
-So you can do simple customization just by overriding the admin controller
+and the internal FA admin controller (formalchemy.ext.pylons.AdminController) 
+as its parent classes, in that order.  
+
+So, you can do simple customization just by overriding the admin controller
 methods (`index`, `list`, `edit`, `delete` -- create is just edit with `id=None`) 
 in `AdminControllerBase`, e.g.,::
 
