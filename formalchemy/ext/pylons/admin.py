@@ -13,18 +13,22 @@ import pylons.controllers.util as h
 from sqlalchemy.orm.exc import UnmappedClassError
 from sqlalchemy.orm import class_mapper
 from formalchemy import *
+from formalchemy.i18n import _, get_translator
 from formalchemy.fields import _pk
 from formalchemy.tempita import Template
 
 
 __all__ = ['FormAlchemyAdminController']
 
+# misc labels
+_('Edit')
+_('Delete')
 
 # templates
 css = """
 <style type="text/css">
 .admin-flash {
-    font-size:16pt; 
+    font-size:16pt;
     font-weight: bold;
     background-color: #00FF00;
 }
@@ -84,10 +88,10 @@ index_mako = """
 """ + css + _flash_snippet + """
   </head>
   <body>
-    <h1>Models</h1>
+    <h1>{{F_('"""+_('Models')+"""')}}</h1>
     <ul>
     {{for modelname in c.modelnames}}
-      <li><a href="{{h.url_for(controller='admin', modelname=modelname, action='list')}}">{{modelname}}</a></li>
+      <li><a href="{{h.url_for(modelname=modelname, action='list')}}">{{modelname}}</a></li>
     {{endfor}}
     </ul>
   </body>
@@ -101,21 +105,23 @@ list_mako = """
 """ + css + _flash_snippet + """
   </head>
   <body>
-    <h1>Related types</h1>
+    <h1>{{F_('"""+_('Related types')+"""')}}</h1>
       <ul>
       {{for field in c.grid._fields.itervalues()}}
         {{if field.is_relation()}}
           {{py:clsname = field.relation_type().__name__}}
-          <li><a href="{{h.url_for(controller='admin', modelname=clsname, action='list')}}">{{clsname}}</a></li>
+          <li><a href="{{h.url_for(modelname=clsname, action='list')}}">{{clsname}}</a></li>
         {{endif}}
       {{endfor}}
       </ul>
-    <h1>Existing objects</h1>
+    <h1>{{F_('"""+_('Existing objects')+"""')}}</h1>
     <table>
       {{c.grid.render()}}
     </table>
-    <h1>New object</h1>
-    <a href="{{h.url_for(controller='admin', modelname=c.modelname, action='edit')}}">Create form</a>
+    <h1>{{F_('"""+_('New object')+"""')}}</h1>
+    <a href="{{h.url_for(modelname=c.modelname, action='edit')}}">
+    {{F_('"""+_('Create form')+"""')}}
+    </a>
   </body>
 </html>
 """
@@ -172,11 +178,13 @@ def get_forms(controller, model_module, forms):
     # add Edit + Delete link to grids
     for modelname, grid in model_grids.iteritems():
         def get_linker(action, modelname=modelname):
-            return lambda item: '<a href="%s">%s</a>' % (h.url_for(controller=controller,
-                                                                   modelname=modelname,
-                                                                   action=action,
-                                                                   id=_pk(item)),
-                                                         action)
+            _ = get_translator().gettext
+            label = action == 'edit' and _('edit') or _('delete')
+            return lambda item: '<a href="%s">%s</a>' % (
+                                h.url_for(modelname=modelname,
+                                action=action,
+                                id=_pk(item)),
+                                get_translator().gettext(action))
         old_include = grid.render_fields.values() # grab this now, or .add will change it if user didn't call configure yet
         for action in ['edit', 'delete']:
             grid.add(Field(action, types.String, get_linker(action)))
@@ -190,20 +198,23 @@ class AdminController(object):
 
     def index(self):
         """List model types"""
+        F_ = get_translator().gettext
         c.modelnames = sorted(self._model_grids.keys())
-        return index_template.substitute(c=c, h=h)
+        return index_template.substitute(c=c, h=h, F_=F_)
 
     def list(self, modelname):
         """List instances of a model type"""
+        F_ = get_translator().gettext
         c.modelname = modelname
         grid = self._model_grids[modelname]
         S = self.Session()
         instances = S.query(grid.model.__class__).all()
         c.grid = grid.bind(instances)
-        return list_template.substitute(c=c, h=h)
+        return list_template.substitute(c=c, h=h, F_=F_)
 
     def edit(self, modelname, id=None):
         """Edit (or create, if `id` is None) an instance of the given model type"""
+        F_ = get_translator().gettext
         fs = self._model_fieldsets[modelname]
         S = self.Session()
         if id:
@@ -217,26 +228,30 @@ class AdminController(object):
             if c.fs.validate():
                 c.fs.sync()
                 S.flush()
-                S.refresh(c.fs.model)
+                if not id:
+                    # needed if the object does not exist in db
+                    S.save(c.fs.model)
+                    message = _('Created %s %s')
+                else:
+                    S.refresh(c.fs.model)
+                    message = _('Modified %s %s')
                 S.commit()
-                flash('%s %s %s'
-                      % (id == None and 'Created' or 'Modified',
-                         modelname,
-                         _pk(c.fs.model)))
-                redirect_to(url_for(controller='admin', modelname=modelname, action='list', id=None))
-        return edit_template.substitute(c=c, h=h)
+                flash(F_(message % (modelname,
+                                    _pk(c.fs.model))))
+                redirect_to(url_for(modelname=modelname, action='list', id=None))
+        return edit_template.substitute(c=c, h=h, F_=F_)
 
     def delete(self, modelname, id):
         """Delete an instance of the given model type"""
+        F_ = get_translator().gettext
         fs = self._model_fieldsets[modelname]
         S = self.Session()
         instance = S.query(fs.model.__class__).get(id)
         key = _pk(instance)
         S.delete(instance)
         S.commit()
-        flash('Deleted %s %s'
-              % (modelname, key))
-        redirect_to(url_for(controller='admin', modelname=modelname, action='list', id=None))
+        flash(F_(_('Deleted %s %s') % (modelname, key)))
+        redirect_to(url_for(modelname=modelname, action='list', id=None))
 
 def FormAlchemyAdminController(cls):
     """

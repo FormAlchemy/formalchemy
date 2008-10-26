@@ -5,7 +5,8 @@
 
 import helpers as h
 
-import base
+from formalchemy import base
+from formalchemy.i18n import get_translator
 
 from tempita import Template as TempitaTemplate # must import after base
 
@@ -17,7 +18,7 @@ template_grid_readonly = r"""
 <thead>
   <tr>
     {{for field in collection.render_fields.itervalues()}}
-      <th>{{field.label_text or collection.prettify(field.key)}}</td>
+      <th>{{F_(field.label_text or collection.prettify(field.key))}}</td>
     {{endfor}}
   </tr>
 </thead>
@@ -39,7 +40,7 @@ template_grid = r"""
 <thead>
   <tr>
     {{for field in collection.render_fields.itervalues()}}
-      <th>{{field.label_text or collection.prettify(field.key)}}</td>
+      <th>{{F_(field.label_text or collection.prettify(field.key))}}</td>
     {{endfor}}
   </tr>
 </thead>
@@ -142,6 +143,7 @@ class Grid(base.EditableRenderer):
             self.rows = instances
 
     def render(self, **kwargs):
+        kwargs['F_'] = get_translator(kwargs.get('lang', None)).gettext # tempita pukes if we pass this as `_`
         if self.readonly:
             return self._render_readonly(collection=self, **kwargs)
         return self._render(collection=self, **kwargs)

@@ -2,7 +2,7 @@
 import logging
 log = logging.getLogger(__name__)
 
-def admin_map(map, cls, url):
+def admin_map(map, cls, url='admin'):
     """connect the admin controller `cls` under the given `url`"""
     cname = cls.__name__.lower().split('controller')[0]
     log.info('connecting %s to %s' % (url, cname))

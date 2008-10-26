@@ -6,9 +6,9 @@
 #, fuzzy
 msgid ""
 msgstr ""
-"Project-Id-Version: FormAlchemy 0.5.1\n"
+"Project-Id-Version: FormAlchemy 1.0.2\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2008-08-27 17:18+0200\n"
+"POT-Creation-Date: 2008-10-26 18:05+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -17,85 +17,136 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Generated-By: Babel 0.9.2\n"
 
-#: formalchemy/fields.py:193
+#: formalchemy/fields.py:235
 msgid "Remove"
 msgstr ""
 
-#: formalchemy/validators.py:26
+#: formalchemy/validators.py:35
 msgid "Please select a value"
 msgstr ""
 
-#: formalchemy/validators.py:26
+#: formalchemy/validators.py:35
 msgid "Please enter a value"
 msgstr ""
 
-#: formalchemy/validators.py:40
+#: formalchemy/validators.py:49
 msgid "Value is not an integer"
 msgstr ""
 
-#: formalchemy/validators.py:51
+#: formalchemy/validators.py:60
 msgid "Value is not a number"
 msgstr ""
 
-#: formalchemy/validators.py:74
+#: formalchemy/validators.py:83
 msgid "Missing @ sign"
 msgstr ""
 
-#: formalchemy/validators.py:77
+#: formalchemy/validators.py:86
 msgid "Control characters present"
 msgstr ""
 
-#: formalchemy/validators.py:79
+#: formalchemy/validators.py:88
 msgid "Non-ASCII characters present"
 msgstr ""
 
-#: formalchemy/validators.py:83
+#: formalchemy/validators.py:92
 msgid "Recipient must be non-empty"
 msgstr ""
 
-#: formalchemy/validators.py:85
+#: formalchemy/validators.py:94
 msgid "Recipient must not end with '.'"
 msgstr ""
 
-#: formalchemy/validators.py:100
+#: formalchemy/validators.py:109
 msgid "Unterminated quoted section in recipient"
 msgstr ""
 
-#: formalchemy/validators.py:103
+#: formalchemy/validators.py:112
 msgid "Quoted section must be followed by '@' or '.'"
 msgstr ""
 
-#: formalchemy/validators.py:106
+#: formalchemy/validators.py:115
 msgid "Reserved character present in recipient"
 msgstr ""
 
-#: formalchemy/validators.py:111
+#: formalchemy/validators.py:120
 msgid "Domain must be non-empty"
 msgstr ""
 
-#: formalchemy/validators.py:113
+#: formalchemy/validators.py:122
 msgid "Domain must not end with '.'"
 msgstr ""
 
-#: formalchemy/validators.py:115
+#: formalchemy/validators.py:124
 msgid "Domain must not contain '..'"
 msgstr ""
 
-#: formalchemy/validators.py:117
+#: formalchemy/validators.py:126
 msgid "Reserved character present in domain"
-msgstr ""
-
-#: formalchemy/validators.py:127
-#, python-format
-msgid "Value must be no more than %d characters long"
 msgstr ""
 
 #: formalchemy/validators.py:136
 #, python-format
+msgid "Value must be no more than %d characters long"
+msgstr ""
+
+#: formalchemy/validators.py:145
+#, python-format
 msgid "Value must be at least %d characters long"
 msgstr ""
 
-#: formalchemy/validators.py:139
+#: formalchemy/validators.py:148
 msgid "Invalid input"
+msgstr ""
+
+#: formalchemy/ext/pylons/admin.py:24
+msgid "Edit"
+msgstr ""
+
+#: formalchemy/ext/pylons/admin.py:25
+msgid "Delete"
+msgstr ""
+
+#: formalchemy/ext/pylons/admin.py:91
+msgid "Models"
+msgstr ""
+
+#: formalchemy/ext/pylons/admin.py:108
+msgid "Related types"
+msgstr ""
+
+#: formalchemy/ext/pylons/admin.py:117
+msgid "Existing objects"
+msgstr ""
+
+#: formalchemy/ext/pylons/admin.py:121
+msgid "New object"
+msgstr ""
+
+#: formalchemy/ext/pylons/admin.py:123
+msgid "Create form"
+msgstr ""
+
+#: formalchemy/ext/pylons/admin.py:182
+msgid "edit"
+msgstr ""
+
+#: formalchemy/ext/pylons/admin.py:182
+msgid "delete"
+msgstr ""
+
+#: formalchemy/ext/pylons/admin.py:234
+#, python-format
+msgid "Created %s %s"
+msgstr ""
+
+#: formalchemy/ext/pylons/admin.py:237
+#, python-format
+msgid "Modified %s %s"
+msgstr ""
+
+#: formalchemy/ext/pylons/admin.py:253
+#, python-format
+msgid "Deleted %s %s"
 msgstr ""
 

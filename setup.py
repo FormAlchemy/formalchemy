@@ -2,8 +2,8 @@
 import xml.sax.saxutils
 import os
 
-def read(*rnames):
-    text = open(os.path.join(os.path.dirname(__file__), *rnames)).read()
+def read(filename):
+    text = open(filename).read()
     text = unicode(text, 'utf-8').encode('ascii', 'xmlcharrefreplace')
     return xml.sax.saxutils.escape(text)
 
