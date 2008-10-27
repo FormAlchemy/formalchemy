@@ -1,9 +1,13 @@
 1.0.2
 -----
 
-* formalchemy.ext.pylons.admin added; see http://docs.formalchemy.org/ext/pylons.html
+* formalchemy.ext.pylons.admin added; see
+  http://docs.formalchemy.org/ext/pylons.html
+
 * model argument now optional for FieldSet.bind
 
+* add storage_path attribute to FileFieldRenderer to allow to store binaries
+  data on file system.
 
 1.0.1
 -----
