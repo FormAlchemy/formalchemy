@@ -1,5 +1,9 @@
+import os
 import cgi
+import shutil
+import tempfile
 from StringIO import StringIO
+from nose import with_setup
 
 from formalchemy.fields import FileFieldRenderer
 from formalchemy.tests import *
@@ -33,6 +37,10 @@ Content-Type: application/x-javascript
 --%s--
 ''' % (BOUNDARY, BOUNDARY, BOUNDARY)
 
+TEMPDIR = tempfile.mkdtemp()
+
+class StorageFieldRenderer(FileFieldRenderer):
+    storage_path = TEMPDIR
 
 def get_fields(data):
     return cgi.FieldStorage(fp=StringIO(data), environ=ENVIRON)
@@ -168,3 +176,34 @@ See what append in read only mode
     2.00 MB
 
 """
+
+def setup_tempdir():
+    if not os.path.isdir(TEMPDIR):
+        os.makedirs(TEMPDIR)
+
+def teardown_tempdir():
+    if os.path.isdir(TEMPDIR):
+        shutil.rmtree(TEMPDIR)
+
+@with_setup(setup_tempdir, teardown_tempdir)
+def test_file_storage():
+    fs = FieldSet(Binaries)
+    record = fs.model
+    fs.configure(include=[fs.file.with_renderer(StorageFieldRenderer)])
+
+    assert 'test.js' not in fs.render()
+
+    data = get_fields(TEST_DATA)
+    fs.rebind(data=data)
+    assert fs.validate() is True
+    fs.sync()
+    assert fs.file.value == 'test.js'
+    filepath = fs.file._renderer.get_filepath()
+    assert filepath == os.path.join(TEMPDIR, 'test.js')
+
+    view = fs.file.render_readonly()
+    assert '<a href="/files/test.js">test.js</a>' in view, view
+    assert '1 KB' in view, view
+
+    assert '>test.js<' in fs.file.render(), fs.render()
+

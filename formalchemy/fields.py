@@ -3,6 +3,7 @@
 # This module is part of FormAlchemy and is released under
 # the MIT License: http://www.opensource.org/licenses/mit-license.php
 
+import os
 import cgi
 import logging
 logger = logging.getLogger('formalchemy.' + __name__)
@@ -229,21 +230,49 @@ class CheckBoxFieldRenderer(FieldRenderer):
             return False
         return FieldRenderer.deserialize(self)
 
+
 class FileFieldRenderer(FieldRenderer):
     """render a file input field
     """
     remove_label = _('Remove')
+    storage_path = None
+    url_path = '/files'
+    tag = '<br /><a href="%(url)s">%(filename)s</a>'
     def __init__(self, *args, **kwargs):
         FieldRenderer.__init__(self, *args, **kwargs)
         self._data = None # caches FieldStorage data
 
+    def get_filepath(self):
+        if self.storage_path:
+            filepath = os.path.join(self.storage_path, self.field.value)
+            if os.path.isfile(filepath):
+                return filepath
+        return None
+
+    def get_urlpath(self):
+        if self.get_filepath():
+            if self.url_path.endswith('/'):
+                path = self.url_path[:-1]
+            else:
+                path = self.url_path
+            return '/'.join([self.url_path, self.field.value])
+        return None
+
     def render(self, **kwargs):
         if self.field.value:
             checkbox_name = '%s--remove' % self.name
-            return '%s %s %s' % (
-                   h.file_field(self.name, **kwargs),
-                   h.check_box(checkbox_name),
-                   h.label(self.remove_label, for_=checkbox_name))
+            if self.get_filepath():
+                # value can be a sub path
+                filename=h.normalize_filename(self.field.value)
+                tag = self.tag % dict(url=self.get_urlpath(),
+                                      filename=filename)
+            else:
+                tag = ''
+            return '%s %s %s%s' % (
+                       h.file_field(self.name, **kwargs),
+                       h.check_box(checkbox_name),
+                       h.label(self.remove_label, for_=checkbox_name),
+                       tag)
         else:
             return h.file_field(self.name, **kwargs)
 
@@ -253,7 +282,12 @@ class FileFieldRenderer(FieldRenderer):
         value = self.field.raw_value
         if value is None:
             return '0 KB'
-        length = len(value)
+        filepath = self.get_filepath()
+        if filepath:
+            length = len(open(filepath).read())
+        else:
+            length = len(value)
+
         if length == 0:
             return '0 KB'
         if length <= 1024:
@@ -266,6 +300,11 @@ class FileFieldRenderer(FieldRenderer):
         """render only the binary size in a human readable format but you can
         override it to whatever you want
         """
+        if self.storage_path:
+            filename=h.normalize_filename(self.field.value)
+            tag = self.tag % dict(url=self.get_urlpath(),
+                                   filename=filename)
+            return '%s (%s)' % (tag, self.readable_size())
         return self.readable_size()
 
     def deserialize(self):
@@ -276,7 +315,15 @@ class FileFieldRenderer(FieldRenderer):
                 # value since FA call deserialize during validation and
                 # synchronisation
                 if self._data is None:
-                    self._data = data.file.read()
+                    if self.storage_path:
+                        filename = h.normalize_filename(data.filename)
+                        filepath = os.path.join(self.storage_path, filename)
+                        fd = open(filepath, 'wb')
+                        fd.write(data.file.read())
+                        fd.close()
+                        self._data = filename
+                    else:
+                        self._data = data.file.read()
                 data = self._data
             else:
                 data = None
@@ -284,7 +331,21 @@ class FileFieldRenderer(FieldRenderer):
         if not data and not self._params.has_key(checkbox_name):
             data = getattr(self.field.model, self.field.name)
         return data is not None and data or ''
-    
+
+class ImageFieldRenderer(FieldRenderer):
+    """render an image input field
+    """
+    tag = '<br /><img src="%(url)s" />'
+
+    def render_readonly(self, **kwargs):
+        """render the image tag
+        """
+        assert os.path.isdir(self.storage_path), \
+                'You must specify a storage_path to use ImageFieldRenderer'
+        filename=h.normalize_filename(self.field.value)
+        return self.tag % dict(url=self.get_urlpath(),
+                               filename=filename)
+
 # for when and/or is not safe b/c first might eval to false
 def _ternary(condition, first, second):
     if condition:
