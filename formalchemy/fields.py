@@ -325,17 +325,6 @@ class FileFieldRenderer(FieldRenderer):
             data = getattr(self.field.model, self.field.name)
         return data is not None and data or ''
 
-class ImageFieldRenderer(FieldRenderer):
-    """render an image input field"""
-    tag = '<br /><img src="%(url)s" />'
-
-    def render_readonly(self, **kwargs):
-        """render the image tag"""
-        assert os.path.isdir(self.storage_path), \
-                'You must specify a storage_path to use ImageFieldRenderer'
-        filename=h.normalize_filename(self.field.value)
-        return self.tag % dict(url=self.get_urlpath(),
-                               filename=filename)
 
 # for when and/or is not safe b/c first might eval to false
 def _ternary(condition, first, second):
