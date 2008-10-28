@@ -3,6 +3,7 @@
 # This module is part of FormAlchemy and is released under
 # the MIT License: http://www.opensource.org/licenses/mit-license.php
 
+import os
 import cgi
 import logging
 logger = logging.getLogger('formalchemy.' + __name__)
@@ -229,6 +230,7 @@ class FileFieldRenderer(FieldRenderer):
     def __init__(self, *args, **kwargs):
         FieldRenderer.__init__(self, *args, **kwargs)
         self._data = None # caches FieldStorage data
+        self._filename = None
 
     def render(self, **kwargs):
         if self.field.value:
@@ -240,12 +242,14 @@ class FileFieldRenderer(FieldRenderer):
         else:
             return h.file_field(self.name, **kwargs)
 
-    def readable_size(self):
-        """return human readable size for the binary data"""
+    def get_size(self):
         value = self.field.raw_value
         if value is None:
-            return '0 KB'
-        length = len(value)
+            return 0
+        return len(value)
+
+    def readable_size(self):
+        length = self.get_size()
         if length == 0:
             return '0 KB'
         if length <= 1024:
@@ -269,6 +273,7 @@ class FileFieldRenderer(FieldRenderer):
                 # value since FA call deserialize during validation and
                 # synchronisation
                 if self._data is None:
+                    self._filename = data.filename
                     self._data = data.file.read()
                 data = self._data
             else:

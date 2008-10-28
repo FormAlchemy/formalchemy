@@ -9,7 +9,7 @@ msgstr ""
 "Project-Id-Version: FormAlchemy 0.5.1\n"
 "Report-Msgid-Bugs-To: formalchemy@googlegroups.com\n"
 "POT-Creation-Date: 2008-08-27 12:33+0200\n"
-"PO-Revision-Date: 2008-10-28 16:25+0100\n"
+"PO-Revision-Date: 2008-10-28 23:35+0100\n"
 "Last-Translator: gael@gawel.org\n"
 "Language-Team: fr <formalchemy@googlegroups.com>\n"
 "Plural-Forms: nplurals=2; plural=(n > 1)\n"
@@ -18,7 +18,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Generated-By: Babel 0.9.2\n"
 
-#: formalchemy/fields.py:237
+#: formalchemy/fields.py:229
 msgid "Remove"
 msgstr "Supprimer"
 
@@ -100,9 +100,19 @@ msgstr "La valeur doit contenir au moins %d caractères"
 msgid "Invalid input"
 msgstr "Valeur non valide"
 
+#: formalchemy/ext/fsblob.py:26
+#, python-format
+msgid "Invalid file extension. Must be %s, "
+msgstr "Extension de fichier invalide. Doit être %s"
+
+#: formalchemy/ext/fsblob.py:42
+#, python-format
+msgid "Invalid image file. Must be %s, "
+msgstr "Image invalide. Doit être au format %s"
+
 #: formalchemy/ext/pylons/admin.py:25
 msgid "Edit"
-msgstr "Editer"
+msgstr "Éditer"
 
 #: formalchemy/ext/pylons/admin.py:26
 msgid "Delete"

@@ -1,0 +1,52 @@
+:mod:`formalchemy.ext.fsblob` -- File system renderer
+=====================================================
+
+.. automodule:: formalchemy.ext.fsblob
+
+Renderers
+---------
+
+.. autoclass:: FileFieldRenderer
+   :members:
+
+.. autoclass:: ImageFieldRenderer
+   :members:
+
+
+Usage
+-----
+
+You must override the `storage_path` attribute::
+
+    >>> from formalchemy.ext.fsblob import FileFieldRenderer as Base
+    >>> class FileFieldRenderer(Base):
+    ...     storage_path = '/var/share/my_app_file'
+
+Then use it like all :mod:`~formalchemy.fields`
+
+Validators
+----------
+
+Work like all :mod:`~formalchemy.validators`.
+
+.. autofunction:: file_extension
+
+    >>> validator = file_extension(extensions=['txt'])
+    >>> validator('my image.txt')
+
+    >>> validator('my image.png') # doctest: +ELLIPSIS
+    Traceback (most recent call last):
+    ...
+    ValidationError: Invalid file extension. Must be txt
+
+
+.. autofunction:: image_extension
+
+    >>> validator = image_extension()
+    >>> validator('my image.png')
+
+    >>> validator('my image.txt') # doctest: +ELLIPSIS
+    Traceback (most recent call last):
+    ...
+    ValidationError: Invalid image file. Must be jpeg, jpg, gif, png
+
