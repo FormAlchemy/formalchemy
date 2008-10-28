@@ -1,0 +1,11 @@
+{{py:
+from pylons import session
+flashes = session.get('_admin_flashes', [])
+if flashes:
+   session['_admin_flashes'] = []
+   session.save()
+}}
+{{for flash in flashes}}
+  <div class='admin-flash'>{{flash}}</div>
+{{endfor}}
+

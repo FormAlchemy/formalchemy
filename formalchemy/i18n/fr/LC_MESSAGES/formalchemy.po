@@ -9,7 +9,7 @@ msgstr ""
 "Project-Id-Version: FormAlchemy 0.5.1\n"
 "Report-Msgid-Bugs-To: formalchemy@googlegroups.com\n"
 "POT-Creation-Date: 2008-08-27 12:33+0200\n"
-"PO-Revision-Date: 2008-10-26 18:05+0100\n"
+"PO-Revision-Date: 2008-10-28 16:25+0100\n"
 "Last-Translator: gael@gawel.org\n"
 "Language-Team: fr <formalchemy@googlegroups.com>\n"
 "Plural-Forms: nplurals=2; plural=(n > 1)\n"
@@ -18,7 +18,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Generated-By: Babel 0.9.2\n"
 
-#: formalchemy/fields.py:235
+#: formalchemy/fields.py:237
 msgid "Remove"
 msgstr "Supprimer"
 
@@ -100,54 +100,54 @@ msgstr "La valeur doit contenir au moins %d caractères"
 msgid "Invalid input"
 msgstr "Valeur non valide"
 
-#: formalchemy/ext/pylons/admin.py:24
+#: formalchemy/ext/pylons/admin.py:25
 msgid "Edit"
 msgstr "Editer"
 
-#: formalchemy/ext/pylons/admin.py:25
+#: formalchemy/ext/pylons/admin.py:26
 msgid "Delete"
 msgstr "Supprimer"
 
-#: formalchemy/ext/pylons/admin.py:91
-msgid "Models"
-msgstr "Modèles"
-
-#: formalchemy/ext/pylons/admin.py:108
-msgid "Related types"
-msgstr "Types en relation"
-
-#: formalchemy/ext/pylons/admin.py:117
-msgid "Existing objects"
-msgstr "Objets existant"
-
-#: formalchemy/ext/pylons/admin.py:121
-msgid "New object"
-msgstr "Nouvel objet"
-
-#: formalchemy/ext/pylons/admin.py:123
-msgid "Create form"
-msgstr "Formulaire de création"
-
-#: formalchemy/ext/pylons/admin.py:182
+#: formalchemy/ext/pylons/admin.py:98
 msgid "edit"
 msgstr "éditer"
 
-#: formalchemy/ext/pylons/admin.py:182
+#: formalchemy/ext/pylons/admin.py:98
 msgid "delete"
 msgstr "supprimer"
 
-#: formalchemy/ext/pylons/admin.py:234
+#: formalchemy/ext/pylons/admin.py:155
 #, python-format
 msgid "Created %s %s"
 msgstr "%s %s crée"
 
-#: formalchemy/ext/pylons/admin.py:237
+#: formalchemy/ext/pylons/admin.py:158
 #, python-format
 msgid "Modified %s %s"
 msgstr "%s %s modifié"
 
-#: formalchemy/ext/pylons/admin.py:253
+#: formalchemy/ext/pylons/admin.py:176
 #, python-format
 msgid "Deleted %s %s"
 msgstr "%s %s supprimé"
+
+#: formalchemy/ext/pylons/admin_index.tmpl:2
+msgid "Models"
+msgstr "Modèles"
+
+#: formalchemy/ext/pylons/admin_list.tmpl:2
+msgid "Related types"
+msgstr "Types en relation"
+
+#: formalchemy/ext/pylons/admin_list.tmpl:11
+msgid "Existing objects"
+msgstr "Objets existant"
+
+#: formalchemy/ext/pylons/admin_list.tmpl:15
+msgid "New object"
+msgstr "Nouvel objet"
+
+#: formalchemy/ext/pylons/admin_list.tmpl:17
+msgid "Create form"
+msgstr "Formulaire de création"
 

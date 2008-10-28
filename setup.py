@@ -46,7 +46,8 @@ try:
     args.update(
           message_extractors = {'formalchemy': [
                   ('**.py', 'python', None),
-                  ('**.mako', 'mako', None)]},
+                  ('**.mako', 'mako', None),
+                  ('**.tmpl', 'python', None)]},
           zip_safe=False,
           )
 except:

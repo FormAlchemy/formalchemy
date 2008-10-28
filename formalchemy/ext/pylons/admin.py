@@ -1,4 +1,5 @@
 # standard pylons controller imports
+import os
 import logging
 log = logging.getLogger(__name__)
 
@@ -25,122 +26,37 @@ _('Edit')
 _('Delete')
 
 # templates
-css = """
-<style type="text/css">
-.admin-flash {
-    font-size:16pt;
-    font-weight: bold;
-    background-color: #00FF00;
-}
 
-label {
-    float: left;
-    text-align: right;
-    margin-right: 1em;
-    width: 10em;
-}
+template_dir = os.path.dirname(__file__)
 
-form div {
-    margin: 0.5em;
-    float: left;
-    width: 100%;
-}
+def load_text(filename):
+    fd = open(os.path.join(template_dir, '%s.tmpl' % filename))
+    data = fd.read()
+    fd.close()
+    return data
 
-form input[type="submit"] {
-    margin-top: 1em;
-    margin-left: 9em;
-}
-
-table {
-  	border-collapse: collapse;
-}
-
-th, td {
-    padding-left: 0.5em;
-    padding-right: 0.5em;
-}
-
-th {
-    background-color: #bbbbbb;
-    border-bottom: 1px solid #8e8e8e;
-    vertical-align: top;
-}
-
-</style>
-"""
-
-_flash_snippet = """
+def load_template(filename):
+    flash = load_text('admin_flash')
+    body = load_text(filename)
+    html = """<html>
 {{py:
-from pylons import session
-flashes = session.get('_admin_flashes', [])
-if flashes:
-   session['_admin_flashes'] = []
-   session.save()
+from pylons.controllers.util import url_for
+_ = F_
 }}
-{{for flash in flashes}}
-  <div class='admin-flash'>{{flash}}</div>
-{{endfor}}
-"""
-
-index_mako = """
-<html>
-  <head>
-""" + css + _flash_snippet + """
-  </head>
-  <body>
-    <h1>{{F_('"""+_('Models')+"""')}}</h1>
-    <ul>
-    {{for modelname in c.modelnames}}
-      <li><a href="{{h.url_for(modelname=modelname, action='list')}}">{{modelname}}</a></li>
-    {{endfor}}
-    </ul>
-  </body>
+<head>
+<style media="screen" type="text/css"><!-- @import url({{url_for(modelname='static_contents', action='admin.css')}}); --></style>
+%(flash)s
+{{custom_css}}
+{{custom_js}}
+</head>
+%(body)s
 </html>
-"""
-index_template = Template(index_mako)
+""" % locals()
+    return Template(html)
 
-list_mako = """
-<html>
-  <head>
-""" + css + _flash_snippet + """
-  </head>
-  <body>
-    <h1>{{F_('"""+_('Related types')+"""')}}</h1>
-      <ul>
-      {{for field in c.grid._fields.itervalues()}}
-        {{if field.is_relation()}}
-          {{py:clsname = field.relation_type().__name__}}
-          <li><a href="{{h.url_for(modelname=clsname, action='list')}}">{{clsname}}</a></li>
-        {{endif}}
-      {{endfor}}
-      </ul>
-    <h1>{{F_('"""+_('Existing objects')+"""')}}</h1>
-    <table>
-      {{c.grid.render()}}
-    </table>
-    <h1>{{F_('"""+_('New object')+"""')}}</h1>
-    <a href="{{h.url_for(modelname=c.modelname, action='edit')}}">
-    {{F_('"""+_('Create form')+"""')}}
-    </a>
-  </body>
-</html>
-"""
-list_template = Template(list_mako)
-
-edit_mako = """
-<html>
-  <head>
-""" + css + _flash_snippet + """
-  </head>
-  <body>
-    <form method="post">
-      {{c.fs.render()}}
-      <input type="submit">
-    </form>
-  </body>
-</html>
-"""
-edit_template = Template(edit_mako)
+index_template = load_template('admin_index')
+list_template = load_template('admin_list')
+edit_template = load_template('admin_edit')
 
 
 def flash(msg):
@@ -195,12 +111,15 @@ def get_forms(controller, model_module, forms):
 
 class AdminController(object):
     """Base class to generate administration interface in Pylons"""
+    _custom_css = _custom_js = ''
 
     def index(self):
         """List model types"""
         F_ = get_translator().gettext
         c.modelnames = sorted(self._model_grids.keys())
-        return index_template.substitute(c=c, h=h, F_=F_)
+        return index_template.substitute(c=c, h=h, F_=F_,
+                                         custom_css = self._custom_css,
+                                         custom_js = self._custom_js)
 
     def list(self, modelname):
         """List instances of a model type"""
@@ -210,7 +129,9 @@ class AdminController(object):
         S = self.Session()
         instances = S.query(grid.model.__class__).all()
         c.grid = grid.bind(instances)
-        return list_template.substitute(c=c, h=h, F_=F_)
+        return list_template.substitute(c=c, h=h, F_=F_,
+                                        custom_css = self._custom_css,
+                                        custom_js = self._custom_js)
 
     def edit(self, modelname, id=None):
         """Edit (or create, if `id` is None) an instance of the given model type"""
@@ -239,7 +160,9 @@ class AdminController(object):
                 flash(F_(message % (modelname,
                                     _pk(c.fs.model))))
                 redirect_to(url_for(modelname=modelname, action='list', id=None))
-        return edit_template.substitute(c=c, h=h, F_=F_)
+        return edit_template.substitute(c=c, h=h, F_=F_,
+                                        custom_css = self._custom_css,
+                                        custom_js = self._custom_js)
 
     def delete(self, modelname, id):
         """Delete an instance of the given model type"""
@@ -252,6 +175,22 @@ class AdminController(object):
         S.commit()
         flash(F_(_('Deleted %s %s') % (modelname, key)))
         redirect_to(url_for(modelname=modelname, action='list', id=None))
+
+    def static(self, id):
+        filename = os.path.basename(id)
+        if filename not in os.listdir(template_dir):
+            raise IOError('Invalid filename: %s' % filename)
+        filepath = os.path.join(template_dir, filename)
+        if filename.endswith('.css'):
+            response.headers['Content-type'] = "text/css"
+        elif filename.endswith('.js'):
+            response.headers['Content-type'] = "text/javascript"
+        else:
+            raise IOError('Invalid filename: %s' % filename)
+        fd = open(filepath)
+        data = fd.read()
+        fd.close()
+        return data
 
 def FormAlchemyAdminController(cls):
     """

@@ -8,6 +8,7 @@ def admin_map(map, cls, url='admin'):
     log.info('connecting %s to %s' % (url, cname))
     map.connect('/%s' % url, controller=cname, action='index')
     map.connect('/%s/' % url, controller=cname, action='index')
+    map.connect('/%s/static_contents/:id' % url, controller=cname, action='static')
     map.connect('/%s/:modelname' % url, controller=cname, action='list')
     map.connect('/%s/:modelname/:action' % url, controller=cname)
     map.connect('/%s/:modelname/:action/:id' % url, controller=cname)

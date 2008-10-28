@@ -1,0 +1,9 @@
+<body>
+<h1>{{_('Models')}}</h1>
+<ul>
+{{for modelname in c.modelnames}}
+  <li><a href="{{h.url_for(modelname=modelname, action='list')}}">{{modelname}}</a></li>
+{{endfor}}
+</ul>
+</body>
+

@@ -1,0 +1,19 @@
+<body>
+<h1>{{_('Related types')}}</h1>
+  <ul>
+  {{for field in c.grid._fields.itervalues()}}
+    {{if field.is_relation()}}
+      {{py:clsname = field.relation_type().__name__}}
+      <li><a href="{{h.url_for(modelname=clsname, action='list')}}">{{clsname}}</a></li>
+    {{endif}}
+  {{endfor}}
+  </ul>
+<h1>{{_('Existing objects')}}</h1>
+<table>
+  {{c.grid.render()}}
+</table>
+<h1>{{_('New object')}}</h1>
+<a href="{{h.url_for(modelname=c.modelname, action='edit')}}">
+{{_('Create form')}}
+</a>
+</body>
