@@ -4,29 +4,9 @@ A small module to remove the WebHelpers dependency in FormAlchemy.
 Copyright 2007 Adam Gomaa - MIT License
 http://www.opensource.org/licenses/mit-license.php
 
-
 """
 
 import cgi, re
-
-def normalize_filename(filename):
-    """
-    generate a clean filename::
-
-        >>> print normalize_filename(r'c:\\Program Files\My file.png')
-        My_file.png
-
-        >>> print normalize_filename(r'a/b/c/My_file.png')
-        My_file.png
-
-    """
-    if '\\' in filename:
-        filename = filename.split('\\')[-1]
-    if '/' in filename:
-        filename = filename.split('/')[-1]
-    if ' ' in filename:
-        filename = filename.replace(' ', '_')
-    return filename
 
 # Flag to indcate whether XHTML-style empty tags (< />) should be used.
 XHTML = True
@@ -34,12 +14,12 @@ XHTML = True
 def html_escape(s):
     """
     HTML-escape a string or object
-
+    
     This converts any non-string objects passed into it to strings
     (actually, using ``unicode()``).  All values returned are
     non-unicode strings (using ``&#num;`` entities for all non-ASCII
     characters).
-
+    
     None is treated specially, and returns the empty string.
     """
     if s is None:
