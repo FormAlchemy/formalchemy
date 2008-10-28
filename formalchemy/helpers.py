@@ -10,7 +10,8 @@ http://www.opensource.org/licenses/mit-license.php
 import cgi, re
 
 def normalize_filename(filename):
-    """generate a clean filename::
+    """
+    generate a clean filename::
 
         >>> print normalize_filename(r'c:\\Program Files\My file.png')
         My_file.png
@@ -31,7 +32,8 @@ def normalize_filename(filename):
 XHTML = True
 
 def html_escape(s):
-    """HTML-escape a string or object
+    """
+    HTML-escape a string or object
 
     This converts any non-string objects passed into it to strings
     (actually, using ``unicode()``).  All values returned are

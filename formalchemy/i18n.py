@@ -18,13 +18,13 @@ if not HAS_PYLONS:
     def get_lang(): return []
 
 class _Translator(object):
-    """dummy translator
-    """
+    """dummy translator"""
     def gettext(self, value):
         return value
 
 def get_translator(lang=None):
-    """return a GNUTranslations instance for `lang`::
+    """
+    return a GNUTranslations instance for `lang`::
 
         >>> translator = get_translator('fr')
         >>> if isinstance(translator, GNUTranslations):
@@ -32,7 +32,6 @@ def get_translator(lang=None):
         ...     assert translator.gettext('Remove') == 'Supprimer'
 
     """
-
     # get possible fallback languages
     try:
         langs = get_lang() or []
@@ -54,7 +53,5 @@ def get_translator(lang=None):
     return _Translator()
 
 def _(value):
-    """used only to retrieve translatable messages in python code
-    """
+    """dummy 'translator' to mark translation strings in python code"""
     return value
-

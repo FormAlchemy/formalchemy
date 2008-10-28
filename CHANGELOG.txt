@@ -6,7 +6,9 @@
 
 * model argument now optional for FieldSet.bind
 
-* add storage_path attribute to FileFieldRenderer to allow to store binaries
+* apply i8n to Grid labels
+
+* add storage_path attribute to FileFieldRenderer to allow storing binary
   data on file system.
 
 1.0.1

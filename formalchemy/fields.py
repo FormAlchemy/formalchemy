@@ -173,8 +173,7 @@ class FieldRenderer(object):
 
 
 class TextFieldRenderer(FieldRenderer):
-    """render a field as a text field
-    """
+    """render a field as a text field"""
     def length(self):
         return self.field.type.length
     length = property(length)
@@ -184,23 +183,20 @@ class TextFieldRenderer(FieldRenderer):
 
 
 class IntegerFieldRenderer(FieldRenderer):
-    """render a field as a text field
-    """
+    """render a field as a text field"""
     def render(self, **kwargs):
         return h.text_field(self.name, value=self._value, **kwargs)
 
 
 class PasswordFieldRenderer(TextFieldRenderer):
-    """Render a password field
-    """
+    """Render a password field"""
     def render(self, **kwargs):
         return h.password_field(self.name, value=self._value, maxlength=self.length, **kwargs)
     def render_readonly(self):
         return '*'*6
 
 class TextAreaFieldRenderer(FieldRenderer):
-    """render a field as a textarea
-    """
+    """render a field as a textarea"""
     def render(self, **kwargs):
         if isinstance(kwargs.get('size'), tuple):
             kwargs['size'] = 'x'.join([str(i) for i in kwargs['size']])
@@ -208,8 +204,7 @@ class TextAreaFieldRenderer(FieldRenderer):
 
 
 class HiddenFieldRenderer(FieldRenderer):
-    """render a field as an hidden field
-    """
+    """render a field as an hidden field"""
     def render(self, **kwargs):
         return h.hidden_field(self.name, value=self._value, **kwargs)
     def render_readonly(self):
@@ -217,8 +212,7 @@ class HiddenFieldRenderer(FieldRenderer):
 
 
 class CheckBoxFieldRenderer(FieldRenderer):
-    """render a boolean value as checkbox field
-    """
+    """render a boolean value as checkbox field"""
     def render(self, **kwargs):
         return h.check_box(self.name, True, checked=self._value, **kwargs)
     def _serialized_value(self):
@@ -232,8 +226,7 @@ class CheckBoxFieldRenderer(FieldRenderer):
 
 
 class FileFieldRenderer(FieldRenderer):
-    """render a file input field
-    """
+    """render a file input field"""
     remove_label = _('Remove')
     storage_path = None
     url_path = '/files'
@@ -277,8 +270,7 @@ class FileFieldRenderer(FieldRenderer):
             return h.file_field(self.name, **kwargs)
 
     def readable_size(self):
-        """return human readable size for the binary data
-        """
+        """return human readable size for the binary data"""
         value = self.field.raw_value
         if value is None:
             return '0 KB'
@@ -297,7 +289,8 @@ class FileFieldRenderer(FieldRenderer):
         return '%0.02f KB' % (length / 1024.0)
 
     def render_readonly(self, **kwargs):
-        """render only the binary size in a human readable format but you can
+        """
+        render only the binary size in a human readable format but you can
         override it to whatever you want
         """
         if self.storage_path:
@@ -333,13 +326,11 @@ class FileFieldRenderer(FieldRenderer):
         return data is not None and data or ''
 
 class ImageFieldRenderer(FieldRenderer):
-    """render an image input field
-    """
+    """render an image input field"""
     tag = '<br /><img src="%(url)s" />'
 
     def render_readonly(self, **kwargs):
-        """render the image tag
-        """
+        """render the image tag"""
         assert os.path.isdir(self.storage_path), \
                 'You must specify a storage_path to use ImageFieldRenderer'
         filename=h.normalize_filename(self.field.value)
@@ -353,8 +344,7 @@ def _ternary(condition, first, second):
     return second()
 
 class DateFieldRenderer(FieldRenderer):
-    """Render a date field
-    """
+    """Render a date field"""
     format = '%Y-%m-%d'
     def render_readonly(self, **kwargs):
         value = self.field.raw_value
@@ -385,8 +375,7 @@ class DateFieldRenderer(FieldRenderer):
 
 
 class TimeFieldRenderer(FieldRenderer):
-    """Render a time field
-    """
+    """Render a time field"""
     format = '%H:%M:%S'
     def render_readonly(self, **kwargs):
         value = self.field.raw_value
@@ -413,8 +402,7 @@ class TimeFieldRenderer(FieldRenderer):
 
 
 class DateTimeFieldRenderer(DateFieldRenderer, TimeFieldRenderer):
-    """Render a date time field
-    """
+    """Render a date time field"""
     format = '%Y-%m-%d %H:%M:%S'
     def render(self, **kwargs):
         return h.content_tag('span', DateFieldRenderer._render(self, **kwargs) + ' ' + TimeFieldRenderer._render(self, **kwargs), id=self.name)
@@ -440,8 +428,7 @@ def _extract_options(options):
 
 
 class RadioSet(FieldRenderer):
-    """render a field as radio
-    """
+    """render a field as radio"""
     widget = staticmethod(h.radio_button)
     
     def _serialized_value(self):
@@ -688,7 +675,10 @@ class AbstractField(object):
         field.render_opts = {}
         return field
     def textarea(self, size=None):
-        """Render the field as a textarea.  Size must be a string (`"25x10"`) or tuple (`25, 10`)."""
+        """
+        Render the field as a textarea.  Size must be a string
+        (`"25x10"`) or tuple (`25, 10`).
+        """
         field = deepcopy(self)
         field._renderer = lambda: self.parent.default_renderers['textarea']
         if size:
