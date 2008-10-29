@@ -1,7 +1,12 @@
 1.0.2
 -----
 
-* formalchemy.ext.pylons.admin added; see http://docs.formalchemy.org/ext/pylons.html
+* formalchemy.ext.pylons.admin added; see
+  http://docs.formalchemy.org/ext/pylons.html
+
+* formalchemy.ext.fsblob added; see
+  http://docs.formalchemy.org/ext/fsblob.html
+
 * model argument now optional for FieldSet.bind
 
 * apply i8n to Grid labels
