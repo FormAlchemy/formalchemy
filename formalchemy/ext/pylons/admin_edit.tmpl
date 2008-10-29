@@ -1,7 +1,12 @@
 <body>
+<h1>{{_(title)}} {{modelname}} {{id and id or ''}}</h1>
 <form method="post">
   {{c.fs.render()}}
-  <input type="submit">
+  <div>
+      <input type="submit">
+      <input type="button" value="{{_('Cancel')}}"
+             onclick="javascript:window.location = '{{url_for(modelname=modelname, action='list', id=None)}}'" />
+  </div>
 </form>
 </body>
 

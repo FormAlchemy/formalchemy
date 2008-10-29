@@ -1,11 +1,33 @@
+body {
+    background-color:#FFFFFF;
+    color:#333333;
+}
+body, p {
+    font-family:verdana,arial,helvetica,sans-serif;
+    font-size:12px;
+    line-height:18px;
+}
+a {
+    color:#000000;
+}
+a:hover {
+    background-color:#000000;
+    color:#FFFFFF;
+}
+
 .admin-flash {
-    font-size:16pt;
+    font-size:120%;
     font-weight: bold;
+    padding: 0.2em;
     background-color: #00FF00;
+    margin-bottom:0.3em;
+    border: 1px solid #8e8e8e;
+    text-align:center;
 }
 
 label {
     float: left;
+    font-weight:bold;
     text-align: right;
     margin-right: 1em;
     width: 10em;
@@ -26,14 +48,17 @@ table {
   	border-collapse: collapse;
 }
 
-th, td {
-    padding-left: 0.5em;
-    padding-right: 0.5em;
-}
-
 th {
     background-color: #bbbbbb;
     border-bottom: 1px solid #8e8e8e;
     vertical-align: top;
+}
+
+th, td {
+    padding: 0.3em 0.5em;
+}
+
+tr.even {
+    background-color:#EEEEEE;
 }
 

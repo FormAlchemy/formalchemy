@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: FormAlchemy 1.0.2\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2008-10-28 23:35+0100\n"
+"POT-Creation-Date: 2008-10-29 21:33+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -99,12 +99,12 @@ msgstr ""
 msgid "Invalid input"
 msgstr ""
 
-#: formalchemy/ext/fsblob.py:26
+#: formalchemy/ext/fsblob.py:18
 #, python-format
 msgid "Invalid file extension. Must be %s, "
 msgstr ""
 
-#: formalchemy/ext/fsblob.py:42
+#: formalchemy/ext/fsblob.py:25
 #, python-format
 msgid "Invalid image file. Must be %s, "
 msgstr ""
@@ -117,25 +117,29 @@ msgstr ""
 msgid "Delete"
 msgstr ""
 
-#: formalchemy/ext/pylons/admin.py:98
+#: formalchemy/ext/pylons/admin.py:27
+msgid "Cancel"
+msgstr ""
+
+#: formalchemy/ext/pylons/admin.py:106
 msgid "edit"
 msgstr ""
 
-#: formalchemy/ext/pylons/admin.py:98
+#: formalchemy/ext/pylons/admin.py:106
 msgid "delete"
 msgstr ""
 
-#: formalchemy/ext/pylons/admin.py:155
+#: formalchemy/ext/pylons/admin.py:167
 #, python-format
 msgid "Created %s %s"
 msgstr ""
 
-#: formalchemy/ext/pylons/admin.py:158
+#: formalchemy/ext/pylons/admin.py:170
 #, python-format
 msgid "Modified %s %s"
 msgstr ""
 
-#: formalchemy/ext/pylons/admin.py:176
+#: formalchemy/ext/pylons/admin.py:190
 #, python-format
 msgid "Deleted %s %s"
 msgstr ""

@@ -23,7 +23,7 @@ Explicitly test rebind + render:
  </tr>
 </thead>
 <tbody>
- <tr>
+ <tr class="even">
   <td>
    <input id="User-1-email" maxlength="40" name="User-1-email" type="text" value="bill@example.com" />
   </td>
@@ -47,7 +47,7 @@ Explicitly test rebind + render:
    </select>
   </td>
  </tr>
- <tr>
+ <tr class="odd">
   <td>
    <input id="User-2-email" maxlength="40" name="User-2-email" type="text" value="john@example.com" />
   </td>

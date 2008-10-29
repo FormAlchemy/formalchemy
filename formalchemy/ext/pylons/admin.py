@@ -24,6 +24,7 @@ __all__ = ['FormAlchemyAdminController']
 # misc labels
 _('Edit')
 _('Delete')
+_('Cancel')
 
 # templates
 
@@ -44,11 +45,18 @@ from pylons.controllers.util import url_for
 _ = F_
 }}
 <head>
-<style media="screen" type="text/css"><!-- @import url({{url_for(modelname='static_contents', action='admin.css')}}); --></style>
+<style media="screen" type="text/css"><!-- @import url({{url_for(modelname='static_contents', action='admin.css', id=None)}}); --></style>
 %(flash)s
 {{custom_css}}
 {{custom_js}}
 </head>
+{{if modelname:}}
+<div>
+  <a href="{{url_for(modelname=None, action=None, id=None)}}">
+    &lt;&lt; {{F_('Models')}}
+  </a>
+</div>
+{{endif}}
 %(body)s
 </html>
 """ % locals()
@@ -116,20 +124,22 @@ class AdminController(object):
     def index(self):
         """List model types"""
         F_ = get_translator().gettext
-        c.modelnames = sorted(self._model_grids.keys())
+        modelnames = sorted(self._model_grids.keys())
         return index_template.substitute(c=c, h=h, F_=F_,
+                                         modelname=None,
+                                         modelnames=modelnames,
                                          custom_css = self._custom_css,
                                          custom_js = self._custom_js)
 
     def list(self, modelname):
         """List instances of a model type"""
         F_ = get_translator().gettext
-        c.modelname = modelname
         grid = self._model_grids[modelname]
         S = self.Session()
         instances = S.query(grid.model.__class__).all()
         c.grid = grid.bind(instances)
         return list_template.substitute(c=c, h=h, F_=F_,
+                                        modelname=modelname,
                                         custom_css = self._custom_css,
                                         custom_js = self._custom_js)
 
@@ -141,8 +151,10 @@ class AdminController(object):
         if id:
             instance = S.query(fs.model.__class__).get(id)
             c.fs = fs.bind(instance)
+            title = 'Edit'
         else:
             c.fs = fs.bind(fs.model.__class__)
+            title = 'New object'
         if request.method == 'POST':
             c.fs = c.fs.bind(data=request.params)
             log.debug('saving %s w/ %s' % (c.fs.model.id, request.POST))
@@ -157,10 +169,14 @@ class AdminController(object):
                     S.refresh(c.fs.model)
                     message = _('Modified %s %s')
                 S.commit()
-                flash(F_(message % (modelname,
-                                    _pk(c.fs.model))))
-                redirect_to(url_for(modelname=modelname, action='list', id=None))
+                message = F_(message) % (modelname.encode('utf-8', 'ignore'),
+                                         _pk(c.fs.model))
+                flash(message)
+                redirect_to(url_for(modelname=modelname,
+                                    action='list', id=None))
         return edit_template.substitute(c=c, h=h, F_=F_,
+                                        title=title, id=id,
+                                        modelname=modelname,
                                         custom_css = self._custom_css,
                                         custom_js = self._custom_js)
 
@@ -173,7 +189,9 @@ class AdminController(object):
         key = _pk(instance)
         S.delete(instance)
         S.commit()
-        flash(F_(_('Deleted %s %s') % (modelname, key)))
+        message = F_(_('Deleted %s %s')) % (modelname.encode('utf-8', 'ignore'),
+                                            key)
+        flash(message)
         redirect_to(url_for(modelname=modelname, action='list', id=None))
 
     def static(self, id):

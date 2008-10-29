@@ -24,9 +24,9 @@ template_grid_readonly = r"""
 </thead>
 
 <tbody>
-{{for row in collection.rows:}}
+{{for i, row in enumerate(collection.rows):}}
   {{collection._set_active(row)}}
-  <tr>
+  <tr class="{{i % 2 and 'odd' or 'even'}}">
   {{for field in collection.render_fields.itervalues()}}
     <td>{{field.render_readonly()}}</td>
   {{endfor}}
@@ -46,9 +46,9 @@ template_grid = r"""
 </thead>
 
 <tbody>
-{{for row in collection.rows:}}
+{{for i, row in enumerate(collection.rows):}}
   {{collection._set_active(row)}}
-  <tr>
+  <tr class="{{i % 2 and 'odd' or 'even'}}">
   {{for field in collection.render_fields.itervalues()}}
     <td>
       {{field.render()}}

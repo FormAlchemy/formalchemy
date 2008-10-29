@@ -9,7 +9,7 @@ msgstr ""
 "Project-Id-Version: FormAlchemy 0.5.1\n"
 "Report-Msgid-Bugs-To: formalchemy@googlegroups.com\n"
 "POT-Creation-Date: 2008-08-27 12:33+0200\n"
-"PO-Revision-Date: 2008-10-28 23:35+0100\n"
+"PO-Revision-Date: 2008-10-29 21:33+0100\n"
 "Last-Translator: gael@gawel.org\n"
 "Language-Team: fr <formalchemy@googlegroups.com>\n"
 "Plural-Forms: nplurals=2; plural=(n > 1)\n"
@@ -100,12 +100,12 @@ msgstr "La valeur doit contenir au moins %d caractères"
 msgid "Invalid input"
 msgstr "Valeur non valide"
 
-#: formalchemy/ext/fsblob.py:26
+#: formalchemy/ext/fsblob.py:18
 #, python-format
 msgid "Invalid file extension. Must be %s, "
 msgstr "Extension de fichier invalide. Doit être %s"
 
-#: formalchemy/ext/fsblob.py:42
+#: formalchemy/ext/fsblob.py:25
 #, python-format
 msgid "Invalid image file. Must be %s, "
 msgstr "Image invalide. Doit être au format %s"
@@ -118,25 +118,29 @@ msgstr "Éditer"
 msgid "Delete"
 msgstr "Supprimer"
 
-#: formalchemy/ext/pylons/admin.py:98
+#: formalchemy/ext/pylons/admin.py:27
+msgid "Cancel"
+msgstr "Annuler"
+
+#: formalchemy/ext/pylons/admin.py:106
 msgid "edit"
 msgstr "éditer"
 
-#: formalchemy/ext/pylons/admin.py:98
+#: formalchemy/ext/pylons/admin.py:106
 msgid "delete"
 msgstr "supprimer"
 
-#: formalchemy/ext/pylons/admin.py:155
+#: formalchemy/ext/pylons/admin.py:167
 #, python-format
 msgid "Created %s %s"
 msgstr "%s %s crée"
 
-#: formalchemy/ext/pylons/admin.py:158
+#: formalchemy/ext/pylons/admin.py:170
 #, python-format
 msgid "Modified %s %s"
 msgstr "%s %s modifié"
 
-#: formalchemy/ext/pylons/admin.py:176
+#: formalchemy/ext/pylons/admin.py:190
 #, python-format
 msgid "Deleted %s %s"
 msgstr "%s %s supprimé"
