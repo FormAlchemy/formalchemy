@@ -9,6 +9,7 @@ from formalchemy.tests import *
 from formalchemy.tests.test_binary import *
 from formalchemy.ext.fsblob import FileFieldRenderer as BaseFile
 from formalchemy.ext.fsblob import ImageFieldRenderer as BaseImage
+from formalchemy.ext.fsblob import file_extension
 
 TEMPDIR = tempfile.mkdtemp()
 
@@ -70,4 +71,24 @@ def test_image_storage():
     assert value in view, '%s != %s' % (value, view)
 
     assert value in fs.file.render(), fs.render()
+
+@with_setup(setup_tempdir, teardown_tempdir)
+def test_file_validation():
+    fs = FieldSet(Binaries)
+    record = fs.model
+    fs.configure(include=[
+        fs.file.with_renderer(
+                    FileFieldRenderer
+                ).validate(file_extension(['js']))])
+    data = get_fields(TEST_DATA)
+    fs.rebind(data=data)
+    assert fs.validate() is True
+
+    fs.configure(include=[
+        fs.file.with_renderer(
+                    FileFieldRenderer
+                ).validate(file_extension(['txt']))])
+    data = get_fields(TEST_DATA)
+    fs.rebind(data=data)
+    assert fs.validate() is False
 
