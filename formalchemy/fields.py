@@ -396,6 +396,11 @@ class RadioSet(FieldRenderer):
 class CheckBoxSet(RadioSet):
     widget = staticmethod(h.check_box)
 
+    def _serialized_value(self):
+        if self.name not in self._params:
+            return []
+        return FieldRenderer._serialized_value(self)
+
     def _is_checked(self, choice_value):
         return choice_value in self._value
 
