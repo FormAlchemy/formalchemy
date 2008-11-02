@@ -100,7 +100,7 @@ This will render instances as an html table::
    </tr>
   </thead>
   <tbody>
-   <tr>
+   <tr class="even">
     <td>
      bill@example.com
     </td>
@@ -142,7 +142,7 @@ You can also add a field to the `Grid` manually::
    </tr>
   </thead>
   <tbody>
-   <tr>
+   <tr class="even">
     <td>
      bill@example.com
     </td>
@@ -161,7 +161,7 @@ You can also add a field to the `Grid` manually::
      </a>
     </td>
    </tr>
-   <tr>
+   <tr class="odd">
     <td>
      john@example.com
     </td>
