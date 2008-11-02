@@ -25,7 +25,7 @@ args = dict(name='FormAlchemy',
       author_email='formalchemy@googlegroups.com',
       url='http://formalchemy.googlecode.com',
       download_url='http://code.google.com/p/formalchemy/downloads/list',
-      packages=['formalchemy', 'formalchemy.tempita'],
+      packages=['formalchemy', 'formalchemy.tempita', 'formalchemy.ext'],
       package_data={'formalchemy': ['i18n/*/LC_MESSAGES/formalchemy.mo']},
       classifiers=[
           'Development Status :: 5 - Production/Stable',
@@ -50,7 +50,7 @@ try:
                   ('**.tmpl', 'python', None)]},
           zip_safe=False,
           )
-except:
+except ImportError:
     from distutils.core import setup
 
 setup(**args)
