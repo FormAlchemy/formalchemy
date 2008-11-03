@@ -421,10 +421,11 @@ class ModelRenderer(object):
                 raise AttributeError(attrname)
         
     def __setattr__(self, attrname, value):
-        if attrname not in ('_fields', '__dict__') and attrname in self._fields or isinstance(value, fields.AbstractField):
+        if attrname not in ('_fields', '__dict__', 'focus') and \
+           (attrname in self._fields or isinstance(value, fields.AbstractField)):
             raise AttributeError('Do not set field attributes manually.  Use add() or configure() instead')
         object.__setattr__(self, attrname, value)
-        
+
     def render(self, **kwargs):
         raise NotImplementedError()
 
