@@ -31,6 +31,7 @@ Work like all :mod:`~formalchemy.validators`.
 
 .. autofunction:: file_extension
 
+    >>> from formalchemy.ext.fsblob import file_extension
     >>> validator = file_extension(extensions=['txt'])
     >>> validator('my image.txt')
 
@@ -42,6 +43,7 @@ Work like all :mod:`~formalchemy.validators`.
 
 .. autofunction:: image_extension
 
+    >>> from formalchemy.ext.fsblob import image_extension
     >>> validator = image_extension()
     >>> validator('my image.png')
 
