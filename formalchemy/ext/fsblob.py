@@ -79,8 +79,13 @@ class FileFieldRenderer(Base):
         """render a file field and the file preview
         """
         html = Base.render(self, **kwargs)
-        if self.field.value:
+        value = self.field.value
+        if value:
             html += self.render_readonly()
+
+            # add the old value for objects not yet stored
+            old_value = '%s--old' % self.name
+            html += h.hidden_field(old_value, value=value)
         return html
 
 
@@ -112,6 +117,13 @@ class FileFieldRenderer(Base):
             fd.write(data)
             fd.close()
             return self._path
+
+        # get value from old_value if needed
+        old_value = '%s--old' % self.name
+        checkbox_name = '%s--remove' % self.name
+        if not data and not self._params.has_key(checkbox_name) \
+                    and self._params.has_key(old_value):
+            return self._params[old_value]
         return data is not None and data or ''
 
 
