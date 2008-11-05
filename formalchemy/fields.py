@@ -376,6 +376,7 @@ def _extract_options(options):
 class RadioSet(FieldRenderer):
     """render a field as radio"""
     widget = staticmethod(h.radio_button)
+    format = '%(field)s%(label)s'
     
     def _serialized_value(self):
         if self.name not in self._params:
@@ -389,7 +390,8 @@ class RadioSet(FieldRenderer):
         self.radios = []
         for choice_name, choice_value in _extract_options(options):
             radio = self.widget(self.name, choice_value, checked=self._is_checked(choice_value), **kwargs)
-            self.radios.append(radio + choice_name)
+            self.radios.append(self.format % dict(field=radio,
+                                                  label=choice_name))
         return h.tag("br").join(self.radios)
 
 
