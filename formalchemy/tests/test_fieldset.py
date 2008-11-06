@@ -87,7 +87,7 @@ document.getElementById("Two--foo").focus();
 >>> assert fs.render() == configure_and_render(fs, include=[fs.foo])
 >>> assert fs.render() == configure_and_render(fs, exclude=[fs.id])
 
->>> fs = FieldSet(Two) 
+>>> fs = FieldSet(Two)
 >>> fs.configure(include=[fs.foo.hidden()])
 >>> print fs.render()
 <input id="Two--foo" name="Two--foo" type="hidden" value="133" />
@@ -158,11 +158,15 @@ document.getElementById("Two--foo").focus();
 >>> fs_cb.field.renderer._serialized_value() == None
 True
 >>> print pretty_html(fs_cb.field.radio().render())
-<input id="CheckBox--field_true" name="CheckBox--field" type="radio" value="True" />
-Yes
+<input id="CheckBox--field_0" name="CheckBox--field" type="radio" value="True" />
+<label for="CheckBox--field_0">
+ Yes
+</label>
 <br />
-<input id="CheckBox--field_false" name="CheckBox--field" type="radio" value="False" />
-No
+<input id="CheckBox--field_1" name="CheckBox--field" type="radio" value="False" />
+<label for="CheckBox--field_1">
+ No
+</label>
 
 >>> fs_cb.validate()
 True
@@ -185,15 +189,32 @@ True
 False
 
 >>> fs = FieldSet(Two)
->>> print fs.foo.dropdown(options=['one', 'two']).radio().render() 
-<input id="Two--foo_one" name="Two--foo" type="radio" value="one" />one<br /><input id="Two--foo_two" name="Two--foo" type="radio" value="two" />two
+>>> print pretty_html(fs.foo.dropdown(options=['one', 'two']).radio().render())
+<input id="Two--foo_0" name="Two--foo" type="radio" value="one" />
+<label for="Two--foo_0">
+ one
+</label>
+<br />
+<input id="Two--foo_1" name="Two--foo" type="radio" value="two" />
+<label for="Two--foo_1">
+ two
+</label>
+
 >>> assert fs.foo.radio(options=['one', 'two']).render() == fs.foo.dropdown(options=['one', 'two']).radio().render()
 >>> print fs.foo.radio(options=['one', 'two']).dropdown().render()
 <select id="Two--foo" name="Two--foo"><option value="one">one</option>
 <option value="two">two</option></select>
 >>> assert fs.foo.dropdown(options=['one', 'two']).render() == fs.foo.radio(options=['one', 'two']).dropdown().render()
->>> print fs.foo.dropdown(options=['one', 'two'], multiple=True).checkbox().render() 
-<input id="Two--foo" name="Two--foo" type="checkbox" value="one" />one<br /><input id="Two--foo" name="Two--foo" type="checkbox" value="two" />two
+>>> print pretty_html(fs.foo.dropdown(options=['one', 'two'], multiple=True).checkbox().render())
+<input id="Two--foo_0" name="Two--foo" type="checkbox" value="one" />
+<label for="Two--foo_0">
+ one
+</label>
+<br />
+<input id="Two--foo_1" name="Two--foo" type="checkbox" value="two" />
+<label for="Two--foo_1">
+ two
+</label>
 
 >>> fs = FieldSet(User)
 >>> print fs.render()
@@ -253,16 +274,23 @@ True
  </option>
 </select>
 >>> print pretty_html(fs.orders.checkbox().render())
-<input checked="checked" id="User-1-orders" name="User-1-orders" type="checkbox" value="1" />
-Quantity: 10
+<input checked="checked" id="User-1-orders_0" name="User-1-orders" type="checkbox" value="1" />
+<label for="User-1-orders_0">
+ Quantity: 10
+</label>
 <br />
-<input id="User-1-orders" name="User-1-orders" type="checkbox" value="2" />
-Quantity: 5
+<input id="User-1-orders_1" name="User-1-orders" type="checkbox" value="2" />
+<label for="User-1-orders_1">
+ Quantity: 5
+</label>
 <br />
-<input id="User-1-orders" name="User-1-orders" type="checkbox" value="3" />
-Quantity: 6
+<input id="User-1-orders_2" name="User-1-orders" type="checkbox" value="3" />
+<label for="User-1-orders_2">
+ Quantity: 6
+</label>
+
 >>> print fs.orders.checkbox(options=session.query(Order).filter_by(id=1)).render()
-<input checked="checked" id="User-1-orders" name="User-1-orders" type="checkbox" value="1" />Quantity: 10
+<input checked="checked" id="User-1-orders_0" name="User-1-orders" type="checkbox" value="1" /><label for="User-1-orders_0">Quantity: 10</label>
 
 >>> fs = FieldSet(bill, data={})
 >>> fs.configure(include=[fs.orders.checkbox()])

@@ -388,10 +388,13 @@ class RadioSet(FieldRenderer):
 
     def render(self, options, **kwargs):
         self.radios = []
-        for choice_name, choice_value in _extract_options(options):
-            radio = self.widget(self.name, choice_value, checked=self._is_checked(choice_value), **kwargs)
+        for i, (choice_name, choice_value) in enumerate(_extract_options(options)):
+            choice_id = '%s_%i' % (self.name, i)
+            radio = self.widget(self.name, choice_value, id=choice_id,
+                                checked=self._is_checked(choice_value), **kwargs)
+            label = h.content_tag('label', choice_name, for_=choice_id)
             self.radios.append(self.format % dict(field=radio,
-                                                  label=choice_name))
+                                                  label=label))
         return h.tag("br").join(self.radios)
 
 
