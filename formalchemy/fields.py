@@ -54,7 +54,7 @@ class FieldRenderer(object):
 
     def _value(self):
         """Submitted value, or field value if none"""
-        if self._params is not None:
+        if not self.field.is_readonly() and self._params is not None:
             v = self._serialized_value()
         else:
             v = None
@@ -568,6 +568,10 @@ class AbstractField(object):
         """True iff this Field must be given a non-empty value"""
         return validators.required in self.validators
 
+    def is_readonly(self):
+        """True iff this Field is in readonly mode"""
+        return self.modifier=='readonly'
+
     def model(self):
         return self.parent.model
     model = property(model)
@@ -713,12 +717,14 @@ class AbstractField(object):
         """
         opts = dict(self.render_opts)
         opts.update(html_options)
-        opts['readonly'] = opts.get('readonly') or self.modifier=='readonly'
+        opts['readonly'] = opts.get('readonly') or self.is_readonly()
         opts['disabled'] = opts.get('disabled') or self.modifier=='disabled'
         if (isinstance(self.type, fatypes.Boolean)
             and not opts.get('options')
             and self.renderer.__class__ in [self.parent.default_renderers['dropdown'], self.parent.default_renderers['radio']]):
             opts['options'] = [('Yes', True), ('No', False)]
+        if self.is_readonly():
+            return self.renderer.render_readonly(**opts)
         return self.renderer.render(**opts)
 
     def render_readonly(self, **html_options):
@@ -755,7 +761,7 @@ class Field(AbstractField):
         self._value = value
 
     def value(self):
-        if self.parent.data is not None:
+        if not self.is_readonly() and self.parent.data is not None:
             v = self._deserialize()
             if v is not None:
                 return v
@@ -790,7 +796,8 @@ class Field(AbstractField):
 
     def sync(self):
         """Set the attribute's value in `model` to the value given in `data`"""
-        self._value = self._deserialize()
+        if self.is_readonly():
+            self._value = self._deserialize()
 
     def __repr__(self):
         return 'AttributeField(%s)' % self.name
@@ -917,7 +924,7 @@ class AttributeField(AbstractField):
         For collections,
         a list of the primary key values of the items in the collection is returned.
         """
-        if self.parent.data is not None:
+        if not self.is_readonly() and self.parent.data is not None:
             v = self._deserialize()
         else:
             try:
@@ -951,7 +958,8 @@ class AttributeField(AbstractField):
 
     def sync(self):
         """Set the attribute's value in `model` to the value given in `data`"""
-        setattr(self.model, self.name, self._deserialize())
+        if not self.is_readonly():
+            setattr(self.model, self.name, self._deserialize())
 
     def __eq__(self, other):
         # we override eq so that when we configure with options=[...], we can match the renders in options

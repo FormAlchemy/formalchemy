@@ -132,12 +132,14 @@ _focus_rendered = False
 </div>
 
 % if (fieldset.focus == field or fieldset.focus is True) and not _focus_rendered:
+% if not field.is_readonly():
 <script type="text/javascript">
 //<![CDATA[
 document.getElementById("${field.renderer.name}").focus();
 //]]>
 </script>
 <% _focus_rendered = True %>\
+% endif
 % endif
   % else:
 ${field.render()}
@@ -166,12 +168,14 @@ template_text_tempita = r"""
 </div>
 
 {{if (fieldset.focus == field or fieldset.focus is True) and not _focus_rendered}}
+{{if not field.is_readonly()}}
 <script type="text/javascript">
 //<![CDATA[
 document.getElementById("{{field.renderer.name}}").focus();
 //]]>
 </script>
 {{py:_focus_rendered = True}}
+{{endif}}
 {{endif}}
 {{else}}
 {{field.render()}}
