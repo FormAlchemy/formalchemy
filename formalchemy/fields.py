@@ -544,6 +544,9 @@ class AbstractField(object):
         return self.parent.session.query(*args, **kwargs)
 
     def _validate(self):
+        if self.is_readonly():
+            return True
+
         self.errors = []
 
         try:
