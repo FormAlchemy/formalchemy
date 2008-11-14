@@ -118,10 +118,10 @@ document.getElementById("Two--foo").focus();
 >>> fs.configure(include=[fs.field.dropdown(User)])
 >>> print fs.render()
 <div>
- <label class="field_req" for="PrimaryKeys--field">
+ <label class="field_req" for="PrimaryKeys-_-field">
   Field
  </label>
- <select id="PrimaryKeys--field" name="PrimaryKeys--field">
+ <select id="PrimaryKeys-_-field" name="PrimaryKeys-_-field">
   <option value="1">
    Bill
   </option>
@@ -132,7 +132,7 @@ document.getElementById("Two--foo").focus();
 </div>
 <script type="text/javascript">
  //<![CDATA[
-document.getElementById("PrimaryKeys--field").focus();
+document.getElementById("PrimaryKeys-_-field").focus();
 //]]>
 </script>
 
@@ -513,7 +513,7 @@ True
 1
 >>> fs_1.rebind(data={'One-1-id': 'asdf'})
 >>> fs_1.id.renderer.name
-'One-1-id'
+u'One-1-id'
 >>> fs_1.validate()
 False
 >>> fs_1.errors
@@ -609,7 +609,7 @@ document.getElementById("NaturalOrder--quantity").focus();
 </div>
 >>> fs_npk.rebind(norder2, session, data={'NaturalOrder-2-user_email': nbill.email, 'NaturalOrder-2-quantity': str(norder2.quantity)})
 >>> fs_npk.user_email.renderer.name
-'NaturalOrder-2-user_email'
+u'NaturalOrder-2-user_email'
 >>> fs_npk.sync()
 >>> fs_npk.model.user_email == nbill.email
 True

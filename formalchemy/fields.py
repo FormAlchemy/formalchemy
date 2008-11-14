@@ -27,6 +27,13 @@ __all__ = ['Field', 'FieldRenderer',
            'DateTimeFieldRenderer',
            'CheckBoxFieldRenderer', 'CheckBoxSet']
 
+def iterable(item):
+    try:
+        iter(item)
+    except:
+        return False
+    return True
+
 class FieldRenderer(object):
     """
     This should be the super class of all Renderer classes.
@@ -45,11 +52,18 @@ class FieldRenderer(object):
     def name(self):
         """Name of rendered input element"""
         clsname = self.field.model.__class__.__name__
-        pk = _pks(self.field.model)
+        pk = _pk(self.field.model)
         assert pk != ''
-        if pk is None:
-            pk = ''
-        return '%s-%s-%s' % (clsname, pk, self.field.name)
+        def stringify_key(k):
+            if k is None:
+                return ''
+            return unicode(k)
+        if isinstance(pk, basestring) or not iterable(pk):
+            pk_string = stringify_key(pk)
+        else:
+            # remember to use a delimiter that can be used in the DOM (specifically, no commas)
+            pk_string = '_'.join([stringify_key(k) for k in pk])
+        return '%s-%s-%s' % (clsname, pk_string, self.field.name)
     name = property(name)
 
     def _value(self):
@@ -417,12 +431,7 @@ class SelectFieldRenderer(FieldRenderer):
         return h.select(self.name, h.options_for_select(options, selected=selected), **kwargs)
 
 
-def _pk(instance, index=0):
-    # Return the value of this instance's primary key.
-    try:
-        column = class_mapper(type(instance)).primary_key[index]
-    except InvalidRequestError:
-        return None
+def _pk_one_column(instance, column):
     try:
         attr = getattr(instance, column.key)
     except AttributeError:
@@ -440,20 +449,16 @@ def _pk(instance, index=0):
                     break
     return attr
 
-
-def _pks(instance):
-    # Return the value of this instance's primary keys. This is used to get a
-    # correct input id for models with more than one primary key.
+def _pk(instance):
+    # Return the value of this instance's primary key, suitable for passing to Query.get().  
+    # Will be a tuple if PK is multicolumn.
     try:
         columns = class_mapper(type(instance)).primary_key
     except InvalidRequestError:
         return None
-    values = []
-    for i, col in enumerate(columns):
-        value = _pk(instance, i)
-        if value is not None:
-            values.append(str(value))
-    return values and '_'.join(values) or None
+    if len(columns) == 1:
+        return _pk_one_column(instance, columns[0])
+    return tuple([_pk_one_column(instance, column) for column in columns])
 
 
 def _query_options(L):
