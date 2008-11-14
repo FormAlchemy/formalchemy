@@ -682,7 +682,7 @@ class AbstractField(object):
             options = _normalized_options(options)
         field.render_opts = {'options': options}
         return field
-    def dropdown(self, options=None, multiple=False, size=5, query=None):
+    def dropdown(self, options=None, multiple=False, size=5):
         """
         Render the field as an HTML select field.
         (With the `multiple` option this is not really a 'dropdown'.)
