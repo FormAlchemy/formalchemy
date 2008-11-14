@@ -827,6 +827,10 @@ True
 40
 >>> session.rollback()
 
+>>> fs_spk = FieldSet(stringpk1)
+>>> print fs_spk.foo.render()
+<input id="StringPK-quote'&quot;ed-foo" name="StringPK-quote'&quot;ed-foo" type="text" value="asdf" />
+
 # readonly tests
 >>> t = FieldSet(john)
 >>> john.name = None
