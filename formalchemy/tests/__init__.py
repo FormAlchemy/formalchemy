@@ -37,11 +37,6 @@ class CheckBox(Base):
     id = Column('id', Integer, primary_key=True)
     field = Column('field', Boolean, nullable=False)
 
-class StringPK(Base):
-    __tablename__ = 'string_pks'
-    id = Column(String, primary_key=True)
-    foo = Column(String)
-
 class PrimaryKeys(Base):
     __tablename__ = 'primary_keys'
     id = Column('first_id', Integer, primary_key=True)
@@ -207,8 +202,6 @@ norder2 = NaturalOrder(user=njohn, quantity=5)
 
 orderuser1 = OrderUser(user=1, order=1)
 orderuser2 = OrderUser(user=1, order=2)
-
-stringpk1 = StringPK(id='''quote'"ed''', foo='asdf')
 
 session.commit()
 
