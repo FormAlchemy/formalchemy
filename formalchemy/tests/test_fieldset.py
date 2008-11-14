@@ -742,30 +742,30 @@ AttributeError: Do not set field attributes manually.  Use add() or configure() 
 >>> fs.rebind(session.query(Order__User).filter_by(orders_id=1).one())
 >>> print configure_and_render(fs, focus=None)
 <div>
- <label class="field_req" for="Order__User-1-orders_quantity">
+ <label class="field_req" for="Order__User-1_1-orders_quantity">
   Orders quantity
  </label>
- <input id="Order__User-1-orders_quantity" name="Order__User-1-orders_quantity" type="text" value="10" />
+ <input id="Order__User-1_1-orders_quantity" name="Order__User-1_1-orders_quantity" type="text" value="10" />
 </div>
 <div>
- <label class="field_req" for="Order__User-1-users_email">
+ <label class="field_req" for="Order__User-1_1-users_email">
   Users email
  </label>
- <input id="Order__User-1-users_email" maxlength="40" name="Order__User-1-users_email" type="text" value="bill@example.com" />
+ <input id="Order__User-1_1-users_email" maxlength="40" name="Order__User-1_1-users_email" type="text" value="bill@example.com" />
 </div>
 <div>
- <label class="field_req" for="Order__User-1-users_password">
+ <label class="field_req" for="Order__User-1_1-users_password">
   Users password
  </label>
- <input id="Order__User-1-users_password" maxlength="20" name="Order__User-1-users_password" type="text" value="1234" />
+ <input id="Order__User-1_1-users_password" maxlength="20" name="Order__User-1_1-users_password" type="text" value="1234" />
 </div>
 <div>
- <label class="field_opt" for="Order__User-1-users_name">
+ <label class="field_opt" for="Order__User-1_1-users_name">
   Users name
  </label>
- <input id="Order__User-1-users_name" maxlength="30" name="Order__User-1-users_name" type="text" value="Bill" />
+ <input id="Order__User-1_1-users_name" maxlength="30" name="Order__User-1_1-users_name" type="text" value="Bill" />
 </div>
->>> fs.rebind(session.query(Order__User).filter_by(orders_id=1).one(), data={'Order__User-1-orders_quantity': '5', 'Order__User-1-users_email': bill.email, 'Order__User-1-users_password': '5678', 'Order__User-1-users_name': 'Bill'})
+>>> fs.rebind(session.query(Order__User).filter_by(orders_id=1).one(), data={'Order__User-1_1-orders_quantity': '5', 'Order__User-1_1-users_email': bill.email, 'Order__User-1_1-users_password': '5678', 'Order__User-1_1-users_name': 'Bill'})
 >>> fs.validate()
 True
 >>> fs.sync()

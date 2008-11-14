@@ -1,0 +1,108 @@
+# -*- coding: utf-8 -*-
+from formalchemy.tests import *
+
+def test_renderer_names():
+    """
+
+    Check that the input name take care of multiple primary keys::
+
+        >>> fs = FieldSet(primary1)
+        >>> print fs.field.render()
+        <input id="PrimaryKeys-1_22-field" maxlength="10" name="PrimaryKeys-1_22-field" type="text" value="value1" />
+
+        >>> fs = FieldSet(primary2)
+        >>> print fs.field.render()
+        <input id="PrimaryKeys-1_33-field" maxlength="10" name="PrimaryKeys-1_33-field" type="text" value="value2" />
+
+    Check form rendering with keys::
+
+        >>> fs = FieldSet(primary2)
+        >>> fs.configure(pk=True)
+        >>> print fs.render()
+        <div>
+         <label class="field_req" for="PrimaryKeys-1_33-id">
+          Id
+         </label>
+         <input id="PrimaryKeys-1_33-id" name="PrimaryKeys-1_33-id" type="text" value="1" />
+        </div>
+        <script type="text/javascript">
+         //<![CDATA[
+        document.getElementById("PrimaryKeys-1_33-id").focus();
+        //]]>
+        </script>
+        <div>
+         <label class="field_req" for="PrimaryKeys-1_33-id2">
+          Id2
+         </label>
+         <input id="PrimaryKeys-1_33-id2" maxlength="10" name="PrimaryKeys-1_33-id2" type="text" value="33" />
+        </div>
+        <div>
+         <label class="field_req" for="PrimaryKeys-1_33-field">
+          Field
+         </label>
+         <input id="PrimaryKeys-1_33-field" maxlength="10" name="PrimaryKeys-1_33-field" type="text" value="value2" />
+        </div>
+
+    """
+
+def test_foreign_keys(self):
+    """
+    Assume that we can have more than one ForeignKey as primary key::
+
+        >>> fs = FieldSet(orderuser2)
+        >>> fs.configure(include=[fs.user.dropdown(User), fs.order.dropdown(Order)], pk=True)
+        >>> print fs.render()
+        <div>
+         <label class="field_req" for="OrderUser-1_2-user">
+          User
+         </label>
+         <select id="OrderUser-1_2-user" name="OrderUser-1_2-user">
+          <option value="1" selected="selected">
+           Bill
+          </option>
+          <option value="2">
+           John
+          </option>
+         </select>
+        </div>
+        <script type="text/javascript">
+         //<![CDATA[
+        document.getElementById("OrderUser-1_2-user").focus();
+        //]]>
+        </script>
+        <div>
+         <label class="field_req" for="OrderUser-1_2-order">
+          Order
+         </label>
+         <select id="OrderUser-1_2-order" name="OrderUser-1_2-order">
+          <option value="1">
+           Quantity: 10
+          </option>
+          <option value="2" selected="selected">
+           Quantity: 5
+          </option>
+          <option value="3">
+           Quantity: 6
+          </option>
+         </select>
+        </div>
+            
+    """
+
+
+def test_deserialize():
+    """
+    Assume that we can deserialize a value
+    """
+
+    fs = FieldSet(primary1, data={'PrimaryKeys-1_22-field':'new_value'})
+
+    assert fs.validate() is True
+
+    assert fs.field.value == 'new_value'
+
+    fs.sync()
+
+    session.rollback()
+
+

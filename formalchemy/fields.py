@@ -45,7 +45,7 @@ class FieldRenderer(object):
     def name(self):
         """Name of rendered input element"""
         clsname = self.field.model.__class__.__name__
-        pk = _pk(self.field.model)
+        pk = _pks(self.field.model)
         assert pk != ''
         if pk is None:
             pk = ''
@@ -417,10 +417,10 @@ class SelectFieldRenderer(FieldRenderer):
         return h.select(self.name, h.options_for_select(options, selected=selected), **kwargs)
 
 
-def _pk(instance):
+def _pk(instance, index=0):
     # Return the value of this instance's primary key.
     try:
-        column = class_mapper(type(instance)).primary_key[0]
+        column = class_mapper(type(instance)).primary_key[index]
     except InvalidRequestError:
         return None
     try:
@@ -441,6 +441,21 @@ def _pk(instance):
     return attr
 
 
+def _pks(instance):
+    # Return the value of this instance's primary keys. This is used to get a
+    # correct input id for models with more than one primary key.
+    try:
+        columns = class_mapper(type(instance)).primary_key
+    except InvalidRequestError:
+        return None
+    values = []
+    for i, col in enumerate(columns):
+        value = _pk(instance, i)
+        if value is not None:
+            values.append(str(value))
+    return values and '_'.join(values) or None
+
+
 def _query_options(L):
     """
     Return a list of tuples of `(item description, item pk)`
@@ -451,7 +466,7 @@ def _query_options(L):
 
 
 def _normalized_options(options):
-    """ 
+    """
     If `options` is an SA query or an iterable of SA instances, it will be
     turned into a list of `(item description, item value)` pairs. Otherwise, a
     copy of the original options will be returned with no further validation.
@@ -468,7 +483,7 @@ def _normalized_options(options):
     except:
         return list(options)
     return _query_options(options)
-    
+
 
 def _foreign_keys(property):
     # 0.4/0.5 compatibility fn
@@ -667,7 +682,7 @@ class AbstractField(object):
             options = _normalized_options(options)
         field.render_opts = {'options': options}
         return field
-    def dropdown(self, options=None, multiple=False, size=5):
+    def dropdown(self, options=None, multiple=False, size=5, query=None):
         """
         Render the field as an HTML select field.
         (With the `multiple` option this is not really a 'dropdown'.)
@@ -676,6 +691,10 @@ class AbstractField(object):
         field._renderer = lambda: field.parent.default_renderers['dropdown']
         if options is None:
             options = self.render_opts.get('options')
+        elif not isinstance(options, list) and not isinstance(options, tuple):
+            # allow to manually set a mapper class as options values
+            options = [(str(v), _pk(v)) for v in self.query(options).all()]
+            options.sort()
         else:
             options = _normalized_options(options)
         field.render_opts = {'multiple': multiple, 'options': options}
@@ -913,7 +932,7 @@ class AttributeField(AbstractField):
 
     def relation_type(self):
         """
-        The type of object in the collection (e.g., `User`).  
+        The type of object in the collection (e.g., `User`).
         Calling this is only valid when `is_relation()` is True.
         """
         return self._property.mapper.class_

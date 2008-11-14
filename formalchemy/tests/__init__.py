@@ -37,6 +37,12 @@ class CheckBox(Base):
     id = Column('id', Integer, primary_key=True)
     field = Column('field', Boolean, nullable=False)
 
+class PrimaryKeys(Base):
+    __tablename__ = 'primary_keys'
+    id = Column('first_id', Integer, primary_key=True)
+    id2 = Column('second_id', String(10), primary_key=True)
+    field = Column('field', String(10), nullable=False)
+
 class Binaries(Base):
     __tablename__ = 'binaries'
     id = Column('id', Integer, primary_key=True)
@@ -155,6 +161,10 @@ class Manual(object):
     a = Field()
     b = Field(type=types.Integer).dropdown([('one', 1), ('two', 2)], multiple=True)
 
+class OrderUser(Base):
+    __tablename__ = 'order_user'
+    user = Column('user_id', Integer, ForeignKey('users.id'), primary_key=True)
+    order = Column('order_id', Integer, ForeignKey('orders.id'), primary_key=True)
 
 class Order__User(Base):
     __table__ = join(Order.__table__, User.__table__).alias('__orders__users')
@@ -167,6 +177,9 @@ class Aliases(Base):
 Base.metadata.create_all()
 
 session = Session()
+
+primary1 = PrimaryKeys(id=1, id2='22', field='value1')
+primary2 = PrimaryKeys(id=1, id2='33', field='value2')
 
 bill = User(email='bill@example.com',
             password='1234',
@@ -186,6 +199,9 @@ njohn = NaturalUser(email='njohn@example.com',
                     name='Natural John')
 norder1 = NaturalOrder(user=nbill, quantity=10)
 norder2 = NaturalOrder(user=njohn, quantity=5)
+
+orderuser1 = OrderUser(user=1, order=1)
+orderuser2 = OrderUser(user=1, order=2)
 
 session.commit()
 
