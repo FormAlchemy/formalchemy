@@ -61,7 +61,10 @@ class FieldRenderer(object):
         if isinstance(pk, basestring) or not iterable(pk):
             pk_string = stringify_key(pk)
         else:
-            # remember to use a delimiter that can be used in the DOM (specifically, no commas)
+            # remember to use a delimiter that can be used in the DOM (specifically, no commas).
+            # we don't have to worry about escaping the delimiter, since we never try to
+            # deserialize the generated name.  All we care about is generating unique
+            # names for a given model's domain.
             pk_string = '_'.join([stringify_key(k) for k in pk])
         return '%s-%s-%s' % (clsname, pk_string, self.field.name)
     name = property(name)
