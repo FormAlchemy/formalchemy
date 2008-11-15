@@ -19,34 +19,34 @@ Base = declarative_base(engine, mapper=Session.mapper)
 
 class One(Base):
     __tablename__ = 'ones'
-    id = Column('id', Integer, primary_key=True)
+    id = Column(Integer, primary_key=True)
 
 class Two(Base):
     __tablename__ = 'twos'
-    id = Column('id', Integer, primary_key=True)
-    foo = Column('foo', Integer, default='133', nullable=True)
+    id = Column(Integer, primary_key=True)
+    foo = Column(Integer, default='133', nullable=True)
 
 class Three(Base):
     __tablename__ = 'threes'
-    id = Column('id', Integer, primary_key=True)
-    foo = Column('foo', Text, nullable=True)
-    bar = Column('bar', Text, nullable=True)
+    id = Column(Integer, primary_key=True)
+    foo = Column(Text, nullable=True)
+    bar = Column(Text, nullable=True)
 
 class CheckBox(Base):
     __tablename__ = 'checkboxes'
-    id = Column('id', Integer, primary_key=True)
-    field = Column('field', Boolean, nullable=False)
+    id = Column(Integer, primary_key=True)
+    field = Column(Boolean, nullable=False)
 
 class PrimaryKeys(Base):
     __tablename__ = 'primary_keys'
-    id = Column('first_id', Integer, primary_key=True)
-    id2 = Column('second_id', String(10), primary_key=True)
-    field = Column('field', String(10), nullable=False)
+    id = Column(Integer, primary_key=True)
+    id2 = Column(String(10), primary_key=True)
+    field = Column(String(10), nullable=False)
 
 class Binaries(Base):
     __tablename__ = 'binaries'
-    id = Column('id', Integer, primary_key=True)
-    file = Column('file', Binary, nullable=True)
+    id = Column(Integer, primary_key=True)
+    file = Column(Binary, nullable=True)
 
 vertices = Table('vertices', Base.metadata,
     Column('id', Integer, primary_key=True),
@@ -97,46 +97,46 @@ class VertexFieldRenderer(FieldRenderer):
 
 class OTOChild(Base):
     __tablename__ = 'one_to_one_child'
-    id = Column('id', Integer, primary_key=True)
-    baz = Column('foo', Text, nullable=False)
+    id = Column(Integer, primary_key=True)
+    baz = Column(Text, nullable=False)
 
 class OTOParent(Base):
     __tablename__ = 'one_to_one_parent'
-    id = Column('id', Integer, primary_key=True)
-    oto_child_id = Column('oto_child_id', Integer, ForeignKey('one_to_one_child.id'), nullable=False)
+    id = Column(Integer, primary_key=True)
+    oto_child_id = Column(Integer, ForeignKey('one_to_one_child.id'), nullable=False)
     child = relation(OTOChild, uselist=False)
 
 class Order(Base):
     __tablename__ = 'orders'
-    id = Column('id', Integer, primary_key=True)
-    user_id = Column('user_id', Integer, ForeignKey('users.id'), nullable=False)
-    quantity = Column('quantity', Integer, nullable=False)
+    id = Column(Integer, primary_key=True)
+    user_id = Column(Integer, ForeignKey('users.id'), nullable=False)
+    quantity = Column(Integer, nullable=False)
     def __str__(self):
         return 'Quantity: %s' % self.quantity
 
 class User(Base):
     __tablename__ = 'users'
-    id = Column('id', Integer, primary_key=True)
-    email = Column('email', Unicode(40), unique=True, nullable=False)
-    password = Column('password', Unicode(20), nullable=False)
-    name = Column('name', Unicode(30))
+    id = Column(Integer, primary_key=True)
+    email = Column(Unicode(40), unique=True, nullable=False)
+    password = Column(Unicode(20), nullable=False)
+    name = Column(Unicode(30))
     orders = relation(Order, backref='user')
     def __str__(self):
         return self.name
 
 class NaturalOrder(Base):
     __tablename__ = 'natural_orders'
-    id = Column('id', Integer, primary_key=True)
-    user_email = Column('user_email', String, ForeignKey('natural_users.email'), nullable=False)
-    quantity = Column('quantity', Integer, nullable=False)
+    id = Column(Integer, primary_key=True)
+    user_email = Column(String, ForeignKey('natural_users.email'), nullable=False)
+    quantity = Column(Integer, nullable=False)
     def __str__(self):
         return 'Quantity: %s' % self.quantity
 
 class NaturalUser(Base):
     __tablename__ = 'natural_users'
-    email = Column('email', Unicode(40), primary_key=True)
-    password = Column('password', Unicode(20), nullable=False)
-    name = Column('name', Unicode(30))
+    email = Column(Unicode(40), primary_key=True)
+    password = Column(Unicode(20), nullable=False)
+    name = Column(Unicode(30))
     orders = relation(NaturalOrder, backref='user')
     def __str__(self):
         return self.name
@@ -163,8 +163,8 @@ class Manual(object):
 
 class OrderUser(Base):
     __tablename__ = 'order_user'
-    user_id = Column('user_id', Integer, ForeignKey('users.id'), primary_key=True)
-    order_id = Column('order_id', Integer, ForeignKey('orders.id'), primary_key=True)
+    user_id = Column(Integer, ForeignKey('users.id'), primary_key=True)
+    order_id = Column(Integer, ForeignKey('orders.id'), primary_key=True)
     user = relation(User)
     order = relation(Order)
 
@@ -173,7 +173,7 @@ class Order__User(Base):
 
 class Aliases(Base):
     __tablename__ = 'table_with_aliases'
-    id = Column('row_id', Integer, primary_key=True)
+    id = Column(Integer, primary_key=True)
     text = Column('row_text', Text)
 
 Base.metadata.create_all()
