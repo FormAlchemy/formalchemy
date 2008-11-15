@@ -163,8 +163,10 @@ class Manual(object):
 
 class OrderUser(Base):
     __tablename__ = 'order_user'
-    user = Column('user_id', Integer, ForeignKey('users.id'), primary_key=True)
-    order = Column('order_id', Integer, ForeignKey('orders.id'), primary_key=True)
+    user_id = Column('user_id', Integer, ForeignKey('users.id'), primary_key=True)
+    order_id = Column('order_id', Integer, ForeignKey('orders.id'), primary_key=True)
+    user = relation(User)
+    order = relation(Order)
 
 class Order__User(Base):
     __table__ = join(Order.__table__, User.__table__).alias('__orders__users')
@@ -200,8 +202,8 @@ njohn = NaturalUser(email='njohn@example.com',
 norder1 = NaturalOrder(user=nbill, quantity=10)
 norder2 = NaturalOrder(user=njohn, quantity=5)
 
-orderuser1 = OrderUser(user=1, order=1)
-orderuser2 = OrderUser(user=1, order=2)
+orderuser1 = OrderUser(user_id=1, order_id=1)
+orderuser2 = OrderUser(user_id=1, order_id=2)
 
 session.commit()
 

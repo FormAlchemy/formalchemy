@@ -49,8 +49,9 @@ def test_foreign_keys(self):
 
         >>> fs = FieldSet(orderuser2)
         >>> fs.configure(include=[fs.user.dropdown(User), fs.order.dropdown(Order)], pk=True)
+
         >>> print pretty_html(fs.user.render())
-        <select id="OrderUser-1_2-user" name="OrderUser-1_2-user">
+        <select id="OrderUser-1_2-user_id" name="OrderUser-1_2-user_id">
          <option value="1" selected="selected">
           Bill
          </option>
@@ -60,7 +61,7 @@ def test_foreign_keys(self):
         </select>
 
         >>> print pretty_html(fs.order.render())
-        <select id="OrderUser-1_2-order" name="OrderUser-1_2-order">
+        <select id="OrderUser-1_2-order_id" name="OrderUser-1_2-order_id">
          <option value="1">
           Quantity: 10
          </option>
