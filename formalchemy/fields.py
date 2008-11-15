@@ -696,10 +696,6 @@ class AbstractField(object):
         field._renderer = lambda: field.parent.default_renderers['dropdown']
         if options is None:
             options = self.render_opts.get('options')
-        elif not isinstance(options, list) and not isinstance(options, tuple):
-            # allow to manually set a mapper class as options values
-            options = [(str(v), _pk(v)) for v in self.query(options).all()]
-            options.sort()
         else:
             options = _normalized_options(options)
         field.render_opts = {'multiple': multiple, 'options': options}

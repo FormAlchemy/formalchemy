@@ -48,7 +48,7 @@ def test_foreign_keys(self):
     Assume that we can have more than one ForeignKey as primary key::
 
         >>> fs = FieldSet(orderuser2)
-        >>> fs.configure(include=[fs.user.dropdown(User), fs.order.dropdown(Order)], pk=True)
+        >>> fs.configure(pk=True)
 
         >>> print pretty_html(fs.user.render())
         <select id="OrderUser-1_2-user_id" name="OrderUser-1_2-user_id">

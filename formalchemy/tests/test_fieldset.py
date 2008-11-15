@@ -114,29 +114,6 @@ document.getElementById("Two--foo").focus();
 //]]>
 </script>
 
->>> fs = FieldSet(PrimaryKeys)
->>> fs.configure(include=[fs.field.dropdown(User)])
->>> print fs.render()
-<div>
- <label class="field_req" for="PrimaryKeys-_-field">
-  Field
- </label>
- <select id="PrimaryKeys-_-field" name="PrimaryKeys-_-field">
-  <option value="1">
-   Bill
-  </option>
-  <option value="2">
-   John
-  </option>
- </select>
-</div>
-<script type="text/javascript">
- //<![CDATA[
-document.getElementById("PrimaryKeys-_-field").focus();
-//]]>
-</script>
-
-
 >>> fs = FieldSet(Two)
 >>> assert configure_and_render(fs, include=[fs.foo.dropdown([('option1', 'value1'), ('option2', 'value2')])]) == configure_and_render(fs, options=[fs.foo.dropdown([('option1', 'value1'), ('option2', 'value2')])]) 
 >>> print pretty_html(fs.foo.render(onblur='test()'))
