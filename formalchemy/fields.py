@@ -822,7 +822,7 @@ class Field(AbstractField):
 
     def sync(self):
         """Set the attribute's value in `model` to the value given in `data`"""
-        if self.is_readonly():
+        if not self.is_readonly():
             self._value = self._deserialize()
 
     def __repr__(self):
