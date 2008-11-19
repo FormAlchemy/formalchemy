@@ -84,3 +84,16 @@ def test_deserialize():
     assert fs.field.value == 'new_value'
     fs.sync()
     session.rollback()
+
+def test_deserialize_new_record():
+    """
+    Assume that we can deserialize a value
+    """
+    fs = FieldSet(PrimaryKeys(), data={'PrimaryKeys-1_22-field':'new_value'})
+    assert fs.validate() is True
+    fs.sync()
+    assert fs.field.value == 'new_value'
+    fs.sync()
+    session.rollback()
+
+
