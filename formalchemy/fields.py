@@ -47,12 +47,13 @@ class FieldRenderer(object):
     """
     def __init__(self, field):
         self.field = field
+        self._pk = None
         assert isinstance(self.field, AbstractField)
 
     def name(self):
         """Name of rendered input element"""
         clsname = self.field.model.__class__.__name__
-        pk = _pk(self.field.model)
+        pk = self._pk is not None and self._pk or _pk(self.field.model)
         assert pk != ''
         def stringify_key(k):
             if k is None:
@@ -731,6 +732,7 @@ class AbstractField(object):
         if callable(self._renderer):
             # must be a Renderer class.  instantiate.
             self._renderer = self._renderer(self)
+        self._renderer._pk = self.parent._bound_pk
         return self._renderer
     renderer = property(renderer)
 

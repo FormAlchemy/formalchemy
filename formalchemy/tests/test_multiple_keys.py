@@ -94,8 +94,8 @@ def test_deserialize_new_record():
     fs.configure(include=[fs.id, fs.id2])
     assert fs.validate() is True
     fs.sync()
-    assert fs.model.id == 8
-    assert fs.model.id2 == 9
+    assert fs.model.id == 8, fs.model.id
+    assert fs.model.id2 == '9', fs.model.id2
     session.rollback()
 
 
