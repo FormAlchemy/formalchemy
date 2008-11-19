@@ -89,7 +89,9 @@ def test_deserialize_new_record():
     """
     Assume that we can deserialize a value
     """
-    fs = FieldSet(PrimaryKeys(), data={'PrimaryKeys-1_22-field':'new_value'})
+    fs = FieldSet(PrimaryKeys(), data={'PrimaryKeys-_-id':'8',
+                                       'PrimaryKeys-_-id2':'9'})
+    fs.configure(include=[fs.id, fs.id2])
     assert fs.validate() is True
     fs.sync()
     assert fs.field.value == 'new_value'
