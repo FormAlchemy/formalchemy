@@ -92,8 +92,12 @@ class FieldRenderer(object):
         if value is None:
             return ''
         if self.field.is_scalar_relation():
-            q = self.field.parent.session.query(self.field.relation_type())
-            v = q.get(value)
+            type = self.field.relation_type()
+            if isinstance(value, type):
+                v = value
+            else:
+                q = self.field.parent.session.query(self.field.relation_type())
+                v = q.get(value)
             return unicode(v)
         if isinstance(value, basestring):
             # FIXME this is a bad way to handle UnicodeEncodeError
