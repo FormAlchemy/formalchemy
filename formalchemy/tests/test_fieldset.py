@@ -82,6 +82,18 @@ document.getElementById("Two--foo").focus();
 document.getElementById("Two--foo").focus();
 //]]>
 </script>
+>>> fs.configure(options=[fs.foo.label('')])
+>>> print fs.render()
+<div>
+ <label class="field_opt" for="Two--foo">
+ </label>
+ <input id="Two--foo" name="Two--foo" type="text" value="133" />
+</div>
+<script type="text/javascript">
+ //<![CDATA[
+document.getElementById("Two--foo").focus();
+//]]>
+</script>
 
 >>> fs = FieldSet(Two)
 >>> assert fs.render() == configure_and_render(fs, include=[fs.foo])

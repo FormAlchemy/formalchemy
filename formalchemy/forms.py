@@ -100,7 +100,7 @@ template_text_readonly = r"""
 <tbody>
 {{for field in fieldset.render_fields.itervalues()}}
   <tr>
-    <td class="field_readonly">{{field.label_text or fieldset.prettify(field.key)}}:</td>
+    <td class="field_readonly">{{[field.label_text, fieldset.prettify(field.key)][int(field.label_text is None)]}}:</td>
     <td>{{field.render_readonly()}}</td>
   </tr>
 {{endfor}}
@@ -124,7 +124,7 @@ _focus_rendered = False
 % for field in fieldset.render_fields.itervalues():
   % if field.requires_label:
 <div>
-  <label class="${field.is_required() and 'field_req' or 'field_opt'}" for="${field.renderer.name}">${field.label_text or fieldset.prettify(field.key)}</label>
+  <label class="${field.is_required() and 'field_req' or 'field_opt'}" for="${field.renderer.name}">${[field.label_text, fieldset.prettify(field.key)][int(field.label_text is None)]}</label>
   ${field.render()}
   % for error in field.errors:
   <span class="field_error">${_(error)}</span>
@@ -160,7 +160,7 @@ template_text_tempita = r"""
 {{for field in fieldset.render_fields.itervalues()}}
 {{if field.requires_label}}
 <div>
-  <label class="{{field.is_required() and 'field_req' or 'field_opt'}}" for="{{field.renderer.name}}">{{field.label_text or fieldset.prettify(field.key)}}</label>
+  <label class="{{field.is_required() and 'field_req' or 'field_opt'}}" for="{{field.renderer.name}}">{{[field.label_text, fieldset.prettify(field.key)][int(field.label_text is None)]}}</label>
   {{field.render()}}
   {{for error in field.errors}}
   <span class="field_error">{{_(error)}}</span>
