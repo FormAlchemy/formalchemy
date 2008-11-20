@@ -47,13 +47,12 @@ class FieldRenderer(object):
     """
     def __init__(self, field):
         self.field = field
-        self._pk = None
         assert isinstance(self.field, AbstractField)
 
     def name(self):
         """Name of rendered input element"""
         clsname = self.field.model.__class__.__name__
-        pk = self._pk is not None and self._pk or _pk(self.field.model)
+        pk = self.field.parent._bound_pk
         assert pk != ''
         def stringify_key(k):
             if k is None:
@@ -66,8 +65,8 @@ class FieldRenderer(object):
             # we don't have to worry about escaping the delimiter, since we never try to
             # deserialize the generated name.  All we care about is generating unique
             # names for a given model's domain.
-            pk_string = '_'.join([stringify_key(k) for k in pk])
-        return '%s-%s-%s' % (clsname, pk_string, self.field.name)
+            pk_string = u'_'.join([stringify_key(k) for k in pk])
+        return u'%s-%s-%s' % (clsname, pk_string, self.field.name)
     name = property(name)
 
     def _value(self):
@@ -732,7 +731,6 @@ class AbstractField(object):
         if callable(self._renderer):
             # must be a Renderer class.  instantiate.
             self._renderer = self._renderer(self)
-        self._renderer._pk = self.parent._bound_pk
         return self._renderer
     renderer = property(renderer)
 

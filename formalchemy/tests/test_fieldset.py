@@ -488,13 +488,23 @@ True
 >>> fs_1.sync()
 >>> fs_1.model.id
 1
->>> fs_1.rebind(data={'One-1-id': 'asdf'})
+>>> fs_1.rebind(data={'One--id': 'asdf'})
 >>> fs_1.id.renderer.name
-u'One-1-id'
+u'One--id'
 >>> fs_1.validate()
 False
 >>> fs_1.errors
 {AttributeField(id): [ValidationError('Value is not an integer',)]}
+
+# test updating _bound_pk copy
+>>> one = One(id=1)
+>>> fs_11 = FieldSet(one)
+>>> fs_11.id.renderer.name
+u'One-1-id'
+>>> one.id = 2
+>>> fs_11.rebind(one)
+>>> fs_11.id.renderer.name
+u'One-2-id'
 
 >>> fs_u = FieldSet(User, data={})
 >>> fs_u.configure(include=[fs_u.orders])
