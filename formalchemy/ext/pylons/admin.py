@@ -138,6 +138,7 @@ class AdminController(object):
         S = self.Session()
         instances = S.query(grid.model.__class__).all()
         c.grid = grid.bind(instances)
+        c.modelname = modelname
         return list_template.substitute(c=c, h=h, F_=F_,
                                         modelname=modelname,
                                         custom_css = self._custom_css,
