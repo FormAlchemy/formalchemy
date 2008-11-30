@@ -422,7 +422,7 @@ You can derive your own subclasses from :class:`~formalchemy.forms.FieldSet` or
 :class:`~formalchemy.forms.AbstractFieldSet` to provide a customized `render`
 and/or `configure`.
 
-`AbstractBaseSet` encorporates validation/errors logic and provides a default
+`AbstractFieldSet` encorporates validation/errors logic and provides a default
 `configure` method.  It does _not_ provide `render`.
 
 You can write `render` by manually sticking strings together if that's
@@ -432,10 +432,11 @@ package as formalchemy.tempita; see http://pythonpaste.org/tempita/
 for documentation.
     
 `formalchemy.forms.template_text_tempita` is the default template used
-by `FieldSet.` `FormAlchemy` also includes a Mako version,
+by `FieldSet.` We recommend looking at that to get started.
+`FormAlchemy` also includes a Mako version,
 `formalchemy.forms.template_text_mako`, and will use that instead if
-Mako is available.  The rendered HTML is identical but (we suspect)
-Mako is faster.
+Mako is available.  The rendered HTML is identical but Mako
+should be faster.
 
 Classes definitions
 ===================
