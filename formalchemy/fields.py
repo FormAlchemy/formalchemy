@@ -92,8 +92,8 @@ class FieldRenderer(object):
         if value is None:
             return ''
         if self.field.is_scalar_relation():
-            type = self.field.relation_type()
-            if isinstance(value, type):
+            type_ = self.field.relation_type()
+            if isinstance(value, type_):
                 v = value
             else:
                 q = self.field.parent.session.query(self.field.relation_type())
