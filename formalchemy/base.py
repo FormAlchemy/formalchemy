@@ -158,7 +158,7 @@ class ModelRenderer(object):
         try:
             class_mapper(cls)
         except:
-            # does this class have raw Fields defined on it?
+            # this class is not managed by SA.  extract any raw Fields defined on it.
             keys = cls.__dict__.keys()
             keys.sort(lambda a, b: cmp(a.lower(), b.lower())) # 2.3 support
             for key in keys:
@@ -175,10 +175,7 @@ class ModelRenderer(object):
             # two step process so we get the right order in the OrderedDict
             L = []
             for iattr in _managed_attributes(cls):
-                if hasattr(iattr.property, 'mapper') and len(iattr.property.mapper.primary_key) != 1:
-                    logger.warn('ignoring multi-column property %s' % iattr.impl.key)
-                else:
-                    L.append(fields.AttributeField(iattr, self))
+                L.append(fields.AttributeField(iattr, self))
             L.sort(lambda a, b: cmp(a.is_relation(), b.is_relation())) # note, key= not used for 2.3 support
             for field in L:
                 self._fields[field.key] = field
@@ -380,28 +377,34 @@ class ModelRenderer(object):
         return self._fields.values()
     
     def _get_fields(self, pk=False, exclude=[], include=[], options=[]):
+        # sanity check
         if include and exclude:
             raise Exception('Specify at most one of include, exclude')
 
+        # help people who meant configure(include=[X]) but just wrote configure(X), resulting in pk getting the positional argument
         if pk not in [True, False]:
-            # help people who meant configure(include=[X]) but just wrote configure(X), resulting in pk getting the positional argument
             raise ValueError('pk option must be True or False, not %s' % pk)
-            
+
+        # verify that options that should be lists of Fields, are
         for lst in ['include', 'exclude', 'options']:
             try:
                 _validate_columns(eval(lst))
             except:
                 raise ValueError('%s parameter should be an iterable of AbstractField objects; was %s' % (lst, eval(lst)))
 
+        # if include is given, those are the fields used.  otherwise, include those not explicitly (or implicitly) excluded.
         if not include:
-            ignore = list(exclude)
+            ignore = list(exclude) # don't modify `exclude` directly to avoid surprising caller
             if not pk:
                 ignore.extend([wrapper for wrapper in self._raw_fields() if wrapper.is_pk() and not wrapper.is_collection()])
             ignore.extend([wrapper for wrapper in self._raw_fields() if wrapper.is_raw_foreign_key()])
             include = [field for field in self._raw_fields() if field not in ignore]
             
-        # this feels overcomplicated
-        options_dict = {}
+        # in the returned list, replace any fields in `include` w/ the corresponding one in `options`, if present.
+        # this is a bit clunky because we want to 
+        #   1. preserve the order given in `include`
+        #   2. not modify `include` (or `options`) directly; that could surprise the caller
+        options_dict = {} # create + update for 2.3's benefit
         options_dict.update(dict([(wrapper, wrapper) for wrapper in options]))
         L = []
         for wrapper in include:

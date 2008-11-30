@@ -161,12 +161,25 @@ class Manual(object):
     a = Field()
     b = Field(type=types.Integer).dropdown([('one', 1), ('two', 2)], multiple=True)
 
+
 class OrderUser(Base):
-    __tablename__ = 'order_user'
+    __tablename__ = 'order_users'
     user_id = Column(Integer, ForeignKey('users.id'), primary_key=True)
     order_id = Column(Integer, ForeignKey('orders.id'), primary_key=True)
     user = relation(User)
     order = relation(Order)
+    def __str__(self):
+        return 'OrderUser(%s, %s)' % (self.user_id, self.order_id)
+    
+class OrderUserTag(Base):
+    __table__ = Table('order_user_tags', Base.metadata,
+                      Column('id', Integer, primary_key=True),
+                      Column('user_id', Integer, nullable=False),
+                      Column('order_id', Integer, nullable=False),
+                      Column('tag', String, nullable=False),
+                      ForeignKeyConstraint(['user_id', 'order_id'], ['order_users.user_id', 'order_users.order_id']))
+    order_user = relation(OrderUser)
+
 
 class Order__User(Base):
     __table__ = join(Order.__table__, User.__table__).alias('__orders__users')
@@ -240,8 +253,7 @@ def configure_and_render(fs, **options):
 
 if not hasattr(__builtins__, 'sorted'):
     # 2.3 support
-    def sorted(L, key=None):
-        assert key
+    def sorted(L, key=lambda a: a):
         L = list(L)
         L.sort(lambda a, b: cmp(key(a), key(b)))
         return L

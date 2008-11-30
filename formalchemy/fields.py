@@ -857,7 +857,7 @@ class AttributeField(AbstractField):
         # mapper, columns, and foreign keys are all located there.
         self._property = instrumented_attribute.property
         # smarter default "required" value
-        if not self.is_collection() and not self._column.nullable:
+        if not self.is_collection() and [c for c in self._columns if not c.nullable]:
             self.validators.append(validators.required)
 
     def is_raw_foreign_key(self):
@@ -865,9 +865,12 @@ class AttributeField(AbstractField):
             return _foreign_keys(self._property.columns[0])
         except AttributeError:
             return False
+        
+    def is_composite_foreign_key(self):
+        return len(self._columns) > 1 and not [c for c in self._columns if not _foreign_keys(c)]
 
     def is_pk(self):
-        return self._column.primary_key
+        return bool([c for c in self._columns if c.primary_key])
 
     def type(self):
         if self.is_composite():
@@ -876,23 +879,24 @@ class AttributeField(AbstractField):
             # itself. SA should probably have called .type something
             # different, or just not instantiated them...
             return self.parent.model
-        return self._column.type
+        if len(self._columns) > 1:
+            return None # may have to be more accurate here
+        return self._columns[0].type
     type = property(type)
 
-    def _column(self):
-        # todo 2.0 this does not allow handling composite attributes (PKs or FKs)
+    def _columns(self):
         if isinstance(self._impl, ScalarObjectAttributeImpl):
             # If the attribute is a foreign key, return the Column that this
             # attribute is mapped from -- e.g., .user -> .user_id.
-            return _foreign_keys(self._property)[0]
+            return _foreign_keys(self._property)
         elif isinstance(self._impl, ScalarAttributeImpl) or self._impl.__class__.__name__ in ('ProxyImpl', '_ProxyImpl'): # 0.4 compatibility: ProxyImpl is a one-off class for each synonym, can't import it
             # normal property, mapped to a single column from the main table
-            return self._property.columns[0]
+            return self._property.columns
         else:
             # collection -- use the mapped class's PK
             assert isinstance(self._impl, CollectionAttributeImpl), self._impl.__class__
-            return self._property.mapper.primary_key[0]
-    _column = property(_column)
+            return self._property.mapper.primary_key
+    _columns = property(_columns)
 
     def key(self):
         """
@@ -905,6 +909,10 @@ class AttributeField(AbstractField):
         """
         return self._impl.key
     key = property(key)
+    
+    def _column_name(self):
+        return '_'.join([c.name for c in self._columns])
+    _column_name = property(_column_name)
 
     def name(self):
         """
@@ -918,9 +926,9 @@ class AttributeField(AbstractField):
         >>> print fs.user.name
         user_id
         """
-        if self.is_collection() or self.is_composite() or not hasattr(self.model, self._column.name):
+        if self.is_collection() or self.is_composite() or not hasattr(self.model, self._column_name):
             return self.key
-        return self._column.name
+        return self._column_name
     name = property(name)
 
     def is_collection(self):
@@ -965,8 +973,9 @@ class AttributeField(AbstractField):
             return [_pk(item) for item in v]
         if v is not None:
             return v
-        if self._column.default:
-            arg = self._column.default.arg
+        
+        if len(self._columns) == 1 and  self._columns[0].default:
+            arg = self._columns[0].default.arg
             if callable(arg):
                 # callables often depend on the current time, e.g. datetime.now or the equivalent SQL function.
                 # these are meant to be the value *at insertion time*, so it's not strictly correct to
@@ -1027,6 +1036,8 @@ class AttributeField(AbstractField):
 
     def _deserialize(self):
         if self.is_collection():
-            return [self.query(self.relation_type()).get(pk)
-                    for pk in self.renderer.deserialize()]
+            return [self.query(self.relation_type()).get(pk) for pk in self.renderer.deserialize()]
+        if self.is_composite_foreign_key():
+            return None
+            # return self.query(self.relation_type()).get(eval(self.renderer.deserialize()))
         return self.renderer.deserialize()

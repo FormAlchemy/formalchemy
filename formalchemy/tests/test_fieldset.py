@@ -897,6 +897,33 @@ Bill
 >>> t.model.a = 'test'
 >>> print pretty_html(t.a.render_readonly())
 test
+
+>>> out = FieldSet(OrderUserTag)
+>>> list(sorted(out._fields))
+['id', 'order_id', 'order_user', 'tag', 'user_id']
+>>> print out.order_user.name
+order_user
+>>> out.order_user.is_raw_foreign_key()
+False
+>>> out.order_user.is_composite_foreign_key()
+True
+>>> list(sorted(out.render_fields))
+['order_user', 'tag']
+>>> print pretty_html(out.order_user.render())
+<select id="OrderUserTag--order_user" name="OrderUserTag--order_user">
+ <option value="(1, 1)">
+  OrderUser(1, 1)
+ </option>
+ <option value="(1, 2)">
+  OrderUser(1, 2)
+ </option>
+</select>
+>>> out.rebind(data={'OrderUserTag--order_user': '(1, 2)', 'OrderUserTag--tag': 'asdf'})
+>>> out.validate()
+True
+>>> out.sync()
+>>> print out.model.order_user
+OrderUser(1, 2)
 """
 
 if __name__ == '__main__':
