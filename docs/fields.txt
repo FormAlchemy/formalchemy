@@ -421,7 +421,7 @@ to render `Date` objects::
 (Obviously the page template will need to add references to the jquery library
 and css.)
 
-Another example to rander a link field::
+Another example to render a link field::
 
     >>> class LinkFieldRenderer(FieldRenderer):
     ...     def render(self, **kwargs):
