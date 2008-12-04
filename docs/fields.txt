@@ -402,7 +402,7 @@ options by default, you could write::
 Of course, you can subclass `FieldSet` if you don't want to change the defaults globally.
 
 One more example, this one to use the 
-`JQuery UI DatePicker <[http://docs.jquery.com/UI/Datepicker>`_
+`JQuery UI DatePicker <http://docs.jquery.com/UI/Datepicker>`_
 to render `Date` objects::
 
     >>> from formalchemy.fields import FieldRenderer
