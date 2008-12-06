@@ -75,6 +75,7 @@ class FieldRenderer(object):
             v = self._serialized_value()
         else:
             v = None
+        # empty field will be '' -- use default value there, too
         return v or self.field.value
     _value = property(_value)
 
@@ -462,6 +463,37 @@ def _pk(instance):
     if len(columns) == 1:
         return _pk_one_column(instance, columns[0])
     return tuple([_pk_one_column(instance, column) for column in columns])
+
+
+# see http://code.activestate.com/recipes/364469/ for explanation.
+# 2.6 provides ast.literal_eval, but requiring 2.6 is a bit of a stretch for now.
+import compiler
+class _SafeEval(object):
+    def visit(self, node,**kw):
+        cls = node.__class__
+        meth = getattr(self,'visit'+cls.__name__,self.default)
+        return meth(node, **kw)
+            
+    def default(self, node, **kw):
+        for child in node.getChildNodes():
+            return self.visit(child, **kw)
+            
+    visitExpression = default
+    
+    def visitConst(self, node, **kw):
+        return node.value
+
+    def visitTuple(self,node, **kw):
+        return tuple(self.visit(i) for i in node.nodes)
+        
+    def visitList(self,node, **kw):
+        return [self.visit(i) for i in node.nodes]
+
+def _simple_eval(source):
+    """like 2.6's ast.literal_eval, but only does constants, lists, and tuples, for serialized pk eval"""
+    walker = _SafeEval()
+    ast = compiler.parse(source, 'eval')
+    return walker.visit(ast)
 
 
 def _query_options(L):
@@ -1029,11 +1061,17 @@ class AttributeField(AbstractField):
         if self.is_relation():
             return self.parent.default_renderers['dropdown']
         return AbstractField._get_renderer(self)
-
+    
     def _deserialize(self):
+        # for multicolumn keys, we turn the string into python via _simple_eval; otherwise,
+        # the key is just the raw deserialized value (which is already an int, etc., as necessary)
+        if len(self._columns) > 1:
+            python_pk = _simple_eval
+        else:
+            python_pk = lambda st: st
+            
         if self.is_collection():
-            return [self.query(self.relation_type()).get(pk) for pk in self.renderer.deserialize()]
+            return [self.query(self.relation_type()).get(python_pk(pk)) for pk in self.renderer.deserialize()]
         if self.is_composite_foreign_key():
-            return None
-            # return self.query(self.relation_type()).get(eval(self.renderer.deserialize()))
+            return self.query(self.relation_type()).get(python_pk(self.renderer.deserialize()))
         return self.renderer.deserialize()
