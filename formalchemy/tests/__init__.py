@@ -26,6 +26,11 @@ class Two(Base):
     id = Column(Integer, primary_key=True)
     foo = Column(Integer, default='133', nullable=True)
 
+class TwoFloat(Base):
+    __tablename__ = 'two_floats'
+    id = Column(Integer, primary_key=True)
+    foo = Column(Float, nullable=False)
+
 class Three(Base):
     __tablename__ = 'threes'
     id = Column(Integer, primary_key=True)

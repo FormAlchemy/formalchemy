@@ -150,6 +150,11 @@ document.getElementById("Two--foo").focus();
 1
 >>> session.rollback()
 
+>>> twof = TwoFloat(id=1, foo=32.3)
+>>> fs_twof = FieldSet(twof)
+>>> print pretty_html(fs_twof.foo.render())
+<input id="TwoFloat-1-foo" name="TwoFloat-1-foo" type="text" value="32.3" />
+
 >>> fs_cb = FieldSet(CheckBox)
 >>> print pretty_html(fs_cb.field.dropdown().render())
 <select id="CheckBox--field" name="CheckBox--field">

@@ -201,7 +201,13 @@ class TextFieldRenderer(FieldRenderer):
 
 
 class IntegerFieldRenderer(FieldRenderer):
-    """render a field as a text field"""
+    """render an integer as a text field"""
+    def render(self, **kwargs):
+        return h.text_field(self.name, value=self._value, **kwargs)
+
+
+class FloatFieldRenderer(FieldRenderer):
+    """render a float as a text field"""
     def render(self, **kwargs):
         return h.text_field(self.name, value=self._value, **kwargs)
 
