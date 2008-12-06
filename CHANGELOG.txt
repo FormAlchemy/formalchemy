@@ -1,5 +1,5 @@
-1.0.2
------
+1.1
+---
 
 * formalchemy.ext.pylons.admin added; see
   http://docs.formalchemy.org/ext/pylons.html
@@ -7,9 +7,15 @@
 * formalchemy.ext.fsblob added; see
   http://docs.formalchemy.org/ext/fsblob.html
 
+* support for composite primary or foreign keys of primitive types
+
 * model argument now optional for FieldSet.bind
 
 * apply i8n to Grid labels
+
+* documentation improvement
+
+* bug fixes
 
 
 1.0.1
