@@ -6,7 +6,7 @@
 import os
 from gettext import GNUTranslations
 
-i18n_path = os.path.join(os.path.dirname(__file__), 'i18n')
+i18n_path = os.path.join(os.path.dirname(__file__), 'i18n_resources')
 
 try:
     from pylons.i18n import get_lang
