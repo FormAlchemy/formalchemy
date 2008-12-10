@@ -7,7 +7,9 @@
 * formalchemy.ext.fsblob added; see
   http://docs.formalchemy.org/ext/fsblob.html
 
-* support for composite primary or foreign keys of primitive types
+* support for composite primary keys
+
+* support for composite foreign keys of primitive types
 
 * model argument now optional for FieldSet.bind
 

@@ -28,7 +28,7 @@ args = dict(name='FormAlchemy',
       install_requires=['SQLAlchemy'],
       packages=['formalchemy', 'formalchemy.tempita',
                 'formalchemy.ext', 'formalchemy.ext.pylons'],
-      package_data={'formalchemy': ['i18n/*/LC_MESSAGES/formalchemy.mo',
+      package_data={'formalchemy': ['i18n_resources/*/LC_MESSAGES/formalchemy.mo',
                                     'ext/pylons/*.tmpl']},
       classifiers=[
           'Development Status :: 5 - Production/Stable',
