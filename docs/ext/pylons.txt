@@ -19,7 +19,6 @@ Next, edit your `controllers/admin.py`, replacing `yourapp` with your applicatio
 
   from yourapp.lib.base import *
   from yourapp import model
-  from yourapp.model.meta import Session
   from formalchemy.ext.pylons.admin import FormAlchemyAdminController
 
   log = logging.getLogger(__name__)
@@ -27,7 +26,9 @@ Next, edit your `controllers/admin.py`, replacing `yourapp` with your applicatio
   class AdminControllerBase(BaseController):
       model = model # where your SQLAlchemy mappers are
       forms = None # module containing FormAlchemy fieldsets definitions
-      Session = Session # Session factory
+      def Session(self): # Session factory
+          AdminControllerBase.Session = model.meta.Session
+          return AdminControllerBase.Session
 
   AdminController = FormAlchemyAdminController(AdminControllerBase)
 
