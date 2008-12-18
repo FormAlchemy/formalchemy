@@ -672,9 +672,9 @@ class AbstractField(object):
         return field
     def required(self):
         """
-        Change the label associated with this field.  By default, the
-        field name is used, modified for readability (e.g.,
-        'user_name' -> 'User name').
+        Convenience method for `validate(validators.required)`. By
+        default, NOT NULL columns are required. You can only add
+        required-ness, not remove it.
         """
         return self.validate(validators.required)
     def label(self, text):
