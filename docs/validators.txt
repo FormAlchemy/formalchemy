@@ -214,9 +214,8 @@ Write your own validator
 You can write your own validator::
 
   >>> def negative(value):
-  ...     if isinstance(value, int) and value < 0:
-  ...         return True
-  ...     raise ValidationError('Value must be greater than 0')
+  ...     if not (isinstance(value, int) and value < 0):
+  ...         raise ValidationError('Value must be less than 0')
 
 Then bind it to a field::
 
@@ -239,8 +238,8 @@ The `FieldSet.errors` and `Field.errors` attributes contain your custom error
 message::
 
   >>> fs.errors
-  {AttributeField(number): ['Value must be greater than 0']}
+  {AttributeField(number): ['Value must be less than 0']}
 
   >>> fs.number.errors
-  ['Value must be greater than 0']
+  ['Value must be less than 0']
 
