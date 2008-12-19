@@ -14,7 +14,8 @@ A note on Sessions
 ------------------
 
 `FormAlchemy` can save you the most time if you use 
-contextual Sessions: http://www.sqlalchemy.org/docs/05/session.html#unitofwork_contextual.
+contextual Sessions: 
+http://www.sqlalchemy.org/docs/05/session.html#contextual-thread-local-sessions.
 Otherwise, you will have to manually pass Session objects when you bind
 :class:`~formalchemy.forms.FieldSet` and :class:`~formalchemy.tables.Grid`
 instances to your data.
@@ -36,15 +37,17 @@ Binding
       the session to use for queries (for relations). If `model` is associated
       with a session, that will be used by default. (Objects mapped with a
       `scoped_session
-      <http://www.sqlalchemy.org/docs/04/session.html#unitofwork_contextual>`_
+      <http://www.sqlalchemy.org/docs/05/session.html#contextual-thread-local-sessions>`_
       will always have a session. Other objects will
       also have a session if they were loaded by a Query.)
 
 - `data=None`: 
-      dictionary of user-submitted data to validate and/or sync to
-      the `model`. Scalar attributes should have a single value in
-      the dictionary; multi-valued relations should have a list,
-      even if there are zero or one values submitted.
+      dictionary-like object of user-submitted data to validate and/or
+      sync to the `model`. Scalar attributes should have a single
+      value in the dictionary; multi-valued relations should have a
+      list, even if there are zero or one values submitted.  Currently,
+      pylons request.params() objects and plain dictionaries are known
+      to work.
 
 Only the `model` parameter is required.
 
