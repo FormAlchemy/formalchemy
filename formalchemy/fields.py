@@ -569,8 +569,7 @@ class AbstractField(object):
         # errors found by _validate() (which runs implicit and
         # explicit validators)
         self.errors = []
-        # disabled or readonly
-        self.modifier = None
+        self._readonly = False
         # label to use for the rendered field.  autoguessed if not specified by .label()
         self.label_text = None
 
@@ -634,7 +633,7 @@ class AbstractField(object):
 
     def is_readonly(self):
         """True iff this Field is in readonly mode"""
-        return self.modifier=='readonly'
+        return self._readonly
 
     def model(self):
         return self.parent.model
@@ -683,12 +682,9 @@ class AbstractField(object):
         is used, modified for readability (e.g., 'user_name' -> 'User name').
         """
         return self._modified(label_text=text)
-    def disabled(self):
-        """Render the field disabled."""
-        return self._modified(modifier='disabled')
-    def readonly(self):
+    def readonly(self, value=True):
         """Render the field readonly."""
-        return self._modified(modifier='readonly')
+        return self._modified(_readonly=True)
     def hidden(self):
         """Render the field hidden.  (Value only, no label.)"""
         return self._modified(_renderer=HiddenFieldRenderer, render_opts={})
@@ -779,16 +775,14 @@ class AbstractField(object):
         `html_options` are not used by the default template, but are
         provided to make more customization possible in custom templates
         """
+        if self.is_readonly():
+            return self.render_readonly(**html_options)
         opts = dict(self.render_opts)
         opts.update(html_options)
-        opts['readonly'] = opts.get('readonly') or self.is_readonly()
-        opts['disabled'] = opts.get('disabled') or self.modifier=='disabled'
         if (isinstance(self.type, fatypes.Boolean)
             and not opts.get('options')
             and self.renderer.__class__ in [self.parent.default_renderers['dropdown'], self.parent.default_renderers['radio']]):
             opts['options'] = [('Yes', True), ('No', False)]
-        if self.is_readonly():
-            return self.renderer.render_readonly(**opts)
         return self.renderer.render(**opts)
 
     def render_readonly(self, **html_options):
@@ -1050,6 +1044,8 @@ class AttributeField(AbstractField):
     # todo? add .options method (for html_options)
 
     def render(self, **html_options):
+        if self.is_readonly():
+            return self.render_readonly(**html_options)
         if self.is_relation() and not self.render_opts.get('options'):
             # todo 2.0 this does not handle primaryjoin (/secondaryjoin) alternate join conditions
             fk_cls = self.relation_type()

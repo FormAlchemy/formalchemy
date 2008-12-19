@@ -64,7 +64,7 @@ def test_ignore_request_in_readonly():
 
     assert fs.name.value == value, '%s != %s' % (fs.name.value, value)
 
-    assert fs.name.modifier=='readonly'
+    assert fs.name.is_readonly()
 
     fs.sync()
 
