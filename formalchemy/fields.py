@@ -93,7 +93,7 @@ class FieldRenderer(object):
         if value is None:
             return ''
         if self.field.is_scalar_relation():
-            q = self.field.parent.session.query(self.field.relation_type())
+            q = self.field.query(self.field.relation_type())
             v = q.get(value)
             return unicode(v)
         if isinstance(value, basestring):
@@ -1050,7 +1050,7 @@ class AttributeField(AbstractField):
             # todo 2.0 this does not handle primaryjoin (/secondaryjoin) alternate join conditions
             fk_cls = self.relation_type()
             fk_pk = class_mapper(fk_cls).primary_key[0]
-            q = self.parent.session.query(fk_cls).order_by(fk_pk)
+            q = self.query(fk_cls).order_by(fk_pk)
             self.render_opts['options'] = _query_options(q)
             logger.debug('options for %s are %s' % (self.name, self.render_opts['options']))
         if self.is_collection() and isinstance(self.renderer, self.parent.default_renderers['dropdown']):
