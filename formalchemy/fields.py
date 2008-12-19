@@ -601,6 +601,8 @@ class AbstractField(object):
 
     def query(self, *args, **kwargs):
         """Perform a query in the parent's session"""
+        if not self.parent.session:
+            raise Exception("No session found.  Either bind a session explicitly, or specify relation options manually so FormAlchemy doesn't try to autoload them.")
         return self.parent.session.query(*args, **kwargs)
 
     def _validate(self):

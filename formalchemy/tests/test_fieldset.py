@@ -21,6 +21,11 @@ __doc__ = r"""
 >>> fs._raw_fields()
 [AttributeField(user_id), AttributeField(address_id), AttributeField(name), AttributeField(address)]
 
+>>> fs.render() #doctest: +ELLIPSIS
+Traceback (most recent call last):
+...
+Exception: No session found...
+
 >>> fs = FieldSet(One)
 >>> fs.configure(pk=True, focus=None)
 >>> fs.id.is_required()
