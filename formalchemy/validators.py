@@ -59,6 +59,18 @@ def float_(value):
     except:
         raise ValidationError(_('Value is not a number'))
 
+from decimal import Decimal
+def decimal_(value):
+    """Successful if value can represent a decimal"""
+    # the validator contract says you don't have to worry about "value is None",
+    # but this is called from deserialize as well as validation
+    if value is None or not value.strip():
+        return None
+    try:
+        return Decimal(value)
+    except:
+        raise ValidationError(_('Value is not a number'))
+
 def currency(value):
     """Successful if value looks like a currency amount (has exactly two digits after a decimal point)"""
     if '%.2f' % float_(value) != value:

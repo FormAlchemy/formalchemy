@@ -31,6 +31,12 @@ class TwoFloat(Base):
     id = Column(Integer, primary_key=True)
     foo = Column(Float, nullable=False)
 
+from decimal import Decimal
+class TwoNumeric(Base):
+    __tablename__ = 'two_numerics'
+    id = Column(Integer, primary_key=True)
+    foo = Column(Numeric, nullable=True)
+
 class Three(Base):
     __tablename__ = 'threes'
     id = Column(Integer, primary_key=True)

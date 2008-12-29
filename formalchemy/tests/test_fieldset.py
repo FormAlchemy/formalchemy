@@ -160,6 +160,25 @@ document.getElementById("Two--foo").focus();
 >>> print pretty_html(fs_twof.foo.render())
 <input id="TwoFloat-1-foo" name="TwoFloat-1-foo" type="text" value="32.3" />
 
+# test render and sync fatypes.Numeric
+# http://code.google.com/p/formalchemy/issues/detail?id=41
+>>> twon = TwoNumeric(id=1, foo=Decimal('2.3'))
+>>> fs_twon = FieldSet(twon)
+>>> print pretty_html(fs_twon.foo.render())
+<input id="TwoNumeric-1-foo" name="TwoNumeric-1-foo" type="text" value="2.3" />
+>>> fs_twon.rebind(data={"TwoNumeric-1-foo": "6.7"})
+>>> fs_twon.sync()
+>>> new_twon = fs_twon.model
+>>> new_twon.foo
+Decimal("6.7")
+
+# test sync when TwoNumeric-1-foo is empty
+>>> fs_twon.rebind(data={"TwoNumeric-1-foo": ""})
+>>> fs_twon.sync()
+>>> new_twon = fs_twon.model
+>>> str(new_twon.foo)
+'None'
+
 >>> fs_cb = FieldSet(CheckBox)
 >>> print pretty_html(fs_cb.field.dropdown().render())
 <select id="CheckBox--field" name="CheckBox--field">

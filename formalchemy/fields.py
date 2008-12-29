@@ -158,7 +158,12 @@ class FieldRenderer(object):
             return validators.integer(data)
         if isinstance(self.field.type, fatypes.Float):
             return validators.float_(data)
-
+        if isinstance(self.field.type, fatypes.Numeric):
+            if self.field.type.asdecimal:
+                return validators.decimal_(data)
+            else:
+                return validators.float_(data)
+        
         def _date(data):
             if data == 'YYYY-MM-DD' or data == '-MM-DD' or not data.strip():
                 return None

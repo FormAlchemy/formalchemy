@@ -438,6 +438,7 @@ class EditableRenderer(ModelRenderer):
         fatypes.String: fields.TextFieldRenderer,
         fatypes.Integer: fields.IntegerFieldRenderer,
         fatypes.Float: fields.FloatFieldRenderer,
+        fatypes.Numeric: fields.FloatFieldRenderer,
         fatypes.Boolean: fields.CheckBoxFieldRenderer,
         fatypes.DateTime: fields.DateTimeFieldRenderer,
         fatypes.Date: fields.DateFieldRenderer,
