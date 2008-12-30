@@ -302,7 +302,7 @@ class ModelRenderer(object):
                 try:
                     model = model()
                 except:
-                    raise Exception('%s appears to be a class, not an instance, but FormAlchemy cannot instantiate it' % model)
+                    raise Exception('%s appears to be a class, not an instance, but FormAlchemy cannot instantiate it.  (Make sure all constructor parameters are optional!)' % model)
                 # take object out of session, if present
                 try:
                     _obj_session = object_session(model)
