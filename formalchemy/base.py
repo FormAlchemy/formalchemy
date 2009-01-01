@@ -282,7 +282,7 @@ class ModelRenderer(object):
         mr.__dict__ = dict(self.__dict__)
         # two steps so bind's error checking can work
         ModelRenderer.rebind(mr, model, session, data)
-        mr._fields = dict([(key, renderer.bind(mr)) for key, renderer in self._fields.iteritems()])
+        mr._fields = OrderedDict([(key, renderer.bind(mr)) for key, renderer in self._fields.iteritems()])
         if self._render_fields:
             mr._render_fields = OrderedDict([(field.name, field) for field in
                                              [field.bind(mr) for field in self._render_fields.itervalues()]])

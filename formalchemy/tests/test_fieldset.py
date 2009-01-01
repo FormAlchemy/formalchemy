@@ -17,6 +17,12 @@ __doc__ = r"""
 >>> fs.orders.name
 'orders'
 
+binding should not change attribute order:
+>>> fs = FieldSet(User)
+>>> fs_bound = fs.bind(User)
+>>> fs_bound._fields.values()
+[AttributeField(id), AttributeField(email), AttributeField(password), AttributeField(name), AttributeField(orders)]
+
 >>> fs = FieldSet(User2)
 >>> fs._raw_fields()
 [AttributeField(user_id), AttributeField(address_id), AttributeField(name), AttributeField(address)]
