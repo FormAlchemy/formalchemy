@@ -6,5 +6,5 @@ exclude *.cfg
 exclude *.ini
 exclude bootstrap.py
 exclude RELEASE_NOTES.txt
-recursive-include formalchemy/ *.tmpl
+recursive-include formalchemy *.tmpl
 recursive-include formalchemy/i18n_resources *
