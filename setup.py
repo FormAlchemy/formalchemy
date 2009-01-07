@@ -29,7 +29,7 @@ args = dict(name='FormAlchemy',
       packages=['formalchemy', 'formalchemy.tempita',
                 'formalchemy.ext', 'formalchemy.ext.pylons'],
       package_data={'formalchemy': ['i18n_resources/*/LC_MESSAGES/formalchemy.mo',
-                                    'ext/pylons/*.tmpl']},
+                                    'ext/pylons/*.tmpl', 'ext/pylons/*.css']},
       classifiers=[
           'Development Status :: 5 - Production/Stable',
           'Intended Audience :: Developers',
