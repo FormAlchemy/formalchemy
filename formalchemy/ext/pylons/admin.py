@@ -137,7 +137,7 @@ class AdminController(object):
         grid = self._model_grids[modelname]
         S = self.Session()
         instances = S.query(grid.model.__class__).all()
-        c.grid = grid.bind(instances)
+        c.grid = grid.bind(instances, session=S)
         c.modelname = modelname
         return list_template.substitute(c=c, h=h, F_=F_,
                                         modelname=modelname,
@@ -151,13 +151,13 @@ class AdminController(object):
         S = self.Session()
         if id:
             instance = S.query(fs.model.__class__).get(id)
-            c.fs = fs.bind(instance)
+            c.fs = fs.bind(instance, session=S)
             title = 'Edit'
         else:
-            c.fs = fs.bind(fs.model.__class__)
+            c.fs = fs.bind(fs.model.__class__, session=S)
             title = 'New object'
         if request.method == 'POST':
-            c.fs = c.fs.bind(data=request.params)
+            c.fs = c.fs.bind(session=S, data=request.params)
             log.debug('saving %s w/ %s' % (c.fs.model.id, request.POST))
             if c.fs.validate():
                 c.fs.sync()
