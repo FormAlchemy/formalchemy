@@ -11,7 +11,6 @@ except:
 from pylons.controllers.util import redirect_to, url_for
 import pylons.controllers.util as h
 
-from sqlalchemy.orm.exc import UnmappedClassError
 from sqlalchemy.orm import class_mapper
 from formalchemy import *
 from formalchemy.i18n import _, get_translator
@@ -91,7 +90,7 @@ def get_forms(controller, model_module, forms):
     for key, obj in model_module.__dict__.iteritems():
         try:
             class_mapper(obj)
-        except UnmappedClassError:
+        except:
             continue
         if not isinstance(obj, type):
             continue
