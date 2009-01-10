@@ -10,7 +10,7 @@ from sqlalchemy.orm import *
 from sqlalchemy.ext.declarative import declarative_base
 logging.getLogger('sqlalchemy').setLevel(logging.ERROR)
 
-from formalchemy.fields import Field, SelectFieldRenderer, FieldRenderer, TextFieldRenderer
+from formalchemy.fields import Field, SelectFieldRenderer, FieldRenderer, TextFieldRenderer, EscapingReadonlyRenderer
 import formalchemy.fatypes as types
 
 engine = create_engine('sqlite://')

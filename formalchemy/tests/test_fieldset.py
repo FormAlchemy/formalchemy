@@ -930,8 +930,12 @@ Bill
  </tr>
 </tbody>
 >>> t.model.a = 'test'
->>> print pretty_html(t.a.render_readonly())
+>>> print t.a.render_readonly()
 test
+>>> t.configure(readonly=True, options=[t.a.with_renderer(EscapingReadonlyRenderer)])
+>>> t.model.a = '<test>'
+>>> print t.a.render_readonly()
+&lt;test&gt;
 
 >>> out = FieldSet(OrderUserTag)
 >>> list(sorted(out._fields))

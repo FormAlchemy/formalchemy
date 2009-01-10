@@ -342,6 +342,13 @@ SelectFieldRenderer
 .. autoclass:: SelectFieldRenderer
    :members:
 
+EscapingReadonlyRenderer
+************************
+
+.. autoclass:: EscapingReadonlyRenderer
+   :members:
+
+
 Custom renderer
 ---------------
 

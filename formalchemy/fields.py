@@ -194,6 +194,25 @@ class FieldRenderer(object):
         return data
 
 
+class EscapingReadonlyRenderer(FieldRenderer):
+    """
+    In readonly mode, html-escapes the output of the default renderer
+    for this field type.  (Escaping is not performed by default because
+    it is sometimes useful to have the renderer include raw html in its
+    output.  The FormAlchemy admin app extension for Pylons uses this,
+    for instance.)
+    """
+    def __init__(self, field):
+        FieldRenderer.__init__(self, field)
+        self._renderer = field._get_renderer()(field)
+
+    def render(self, **kwargs):
+        return self._renderer.render(**kwargs)
+        
+    def render_readonly(self, **kwargs):
+        return h.html_escape(self._renderer.render_readonly(**kwargs))
+
+
 class TextFieldRenderer(FieldRenderer):
     """render a field as a text field"""
     def length(self):
