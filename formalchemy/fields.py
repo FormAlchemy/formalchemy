@@ -15,7 +15,6 @@ import helpers as h
 from sqlalchemy.orm import class_mapper, Query
 from sqlalchemy.orm.attributes import ScalarAttributeImpl, ScalarObjectAttributeImpl, CollectionAttributeImpl, InstrumentedAttribute
 from sqlalchemy.orm.properties import CompositeProperty
-# from sqlalchemy.orm.exc import UnmappedClassError
 from sqlalchemy.exceptions import InvalidRequestError # 0.4 support
 import fatypes, validators
 from i18n import _
@@ -1010,8 +1009,9 @@ class AttributeField(AbstractField):
             return v
         
         if len(self._columns) == 1 and  self._columns[0].default:
+            from sqlalchemy.sql.expression import _Function
             arg = self._columns[0].default.arg
-            if callable(arg):
+            if callable(arg) or isinstance(arg, _Function):
                 # callables often depend on the current time, e.g. datetime.now or the equivalent SQL function.
                 # these are meant to be the value *at insertion time*, so it's not strictly correct to
                 # generate a value at form-edit time.

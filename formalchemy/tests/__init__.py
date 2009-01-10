@@ -152,6 +152,10 @@ class NaturalUser(Base):
     def __str__(self):
         return self.name
 
+class Function(Base):
+    __tablename__ = 'functions'
+    foo = Column(TIMESTAMP, primary_key=True, default=func.current_timestamp())
+
 # test property order for non-declarative mapper
 addresses = Table('email_addresses', Base.metadata,
     Column('address_id', Integer, Sequence('address_id_seq', optional=True), primary_key = True),

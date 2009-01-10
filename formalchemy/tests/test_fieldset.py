@@ -959,6 +959,11 @@ True
 >>> out.sync()
 >>> print out.model.order_user
 OrderUser(1, 2)
+
+>>> fs = FieldSet(Function)
+>>> fs.configure(pk=True)
+>>> fs.foo.render().startswith('<span')
+True
 """
 
 if __name__ == '__main__':
