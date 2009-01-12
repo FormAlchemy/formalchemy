@@ -708,6 +708,13 @@ True
   </option>
  </select>
 </div>
+<div>
+ <label class="field_opt" for="Manual--d">
+  D
+ </label>
+ <textarea cols="80" id="Manual--d" name="Manual--d" rows="10">
+ </textarea>
+</div>
 >>> fs.rebind(data={'Manual--a': 'asdf'})
 >>> print pretty_html(fs.a.render())
 <input id="Manual--a" name="Manual--a" type="text" value="asdf" />
@@ -909,7 +916,7 @@ True
 Bill
 
 >>> t = FieldSet(Manual)
->>> t.configure(readonly=True)
+>>> t.configure(include=[t.a, t.b], readonly=True)
 >>> t.model.b = [1, 2]
 >>> print t.render()
 <tbody>

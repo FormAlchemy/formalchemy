@@ -725,7 +725,7 @@ class AbstractField(object):
         (`"25x10"`) or tuple (`25, 10`).
         """
         field = deepcopy(self)
-        field._renderer = lambda: self.parent.default_renderers['textarea']
+        field._renderer = lambda: field.parent.default_renderers['textarea']
         if size:
             field.render_opts = {'size': size}
         return field
@@ -1028,9 +1028,12 @@ class AttributeField(AbstractField):
             return v
         
         if len(self._columns) == 1 and  self._columns[0].default:
-            from sqlalchemy.sql.expression import _Function
+            try:
+                from sqlalchemy.sql.expression import Function
+            except ImportError:
+                from sqlalchemy.sql.expression import _Function as Function
             arg = self._columns[0].default.arg
-            if callable(arg) or isinstance(arg, _Function):
+            if callable(arg) or isinstance(arg, Function):
                 # callables often depend on the current time, e.g. datetime.now or the equivalent SQL function.
                 # these are meant to be the value *at insertion time*, so it's not strictly correct to
                 # generate a value at form-edit time.
