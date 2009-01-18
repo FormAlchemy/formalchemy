@@ -27,9 +27,11 @@ def get_translator(lang=None):
     return a GNUTranslations instance for `lang`::
 
         >>> translator = get_translator('fr')
-        >>> if isinstance(translator, GNUTranslations):
-        ...     # check only if a .mo is found
-        ...     assert translator.gettext('Remove') == 'Supprimer'
+        ... assert translator.gettext('Remove') == 'Supprimer'
+        ... assert translator.gettext('month_01') == 'Janvier'
+        >>> translator = get_translator('en')
+        ... assert translator.gettext('Remove') == 'Remove'
+        ... assert translator.gettext('month_01') == 'January'
 
     """
     # get possible fallback languages
@@ -43,6 +45,9 @@ def get_translator(lang=None):
     if lang and lang not in langs:
         langs.insert(0, lang)
 
+    if not langs:
+        langs = ['en']
+
     # get the first available catalog
     for lang in langs:
         filename = os.path.join(i18n_path, lang, 'LC_MESSAGES','formalchemy.mo')
@@ -55,3 +60,21 @@ def get_translator(lang=None):
 def _(value):
     """dummy 'translator' to mark translation strings in python code"""
     return value
+
+# month translation
+_('Year')
+_('Month')
+_('Day')
+_('month_01')
+_('month_02')
+_('month_03')
+_('month_04')
+_('month_05')
+_('month_06')
+_('month_07')
+_('month_08')
+_('month_09')
+_('month_10')
+_('month_11')
+_('month_12')
+

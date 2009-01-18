@@ -11,13 +11,14 @@ logger = logging.getLogger('formalchemy.' + __name__)
 from copy import copy, deepcopy
 import datetime
 
-import helpers as h
 from sqlalchemy.orm import class_mapper, Query
 from sqlalchemy.orm.attributes import ScalarAttributeImpl, ScalarObjectAttributeImpl, CollectionAttributeImpl, InstrumentedAttribute
 from sqlalchemy.orm.properties import CompositeProperty
 from sqlalchemy.exceptions import InvalidRequestError # 0.4 support
-import fatypes, validators
-from i18n import _
+from formalchemy import helpers as h
+from formalchemy import fatypes, validators
+from formalchemy.i18n import get_translator
+from formalchemy.i18n import _
 
 __all__ = ['Field', 'FieldRenderer',
            'TextFieldRenderer', 'TextAreaFieldRenderer',
@@ -77,6 +78,17 @@ class FieldRenderer(object):
         # empty field will be '' -- use default value there, too
         return v or self.field.value
     _value = property(_value)
+
+    def get_translator(self, **kwargs):
+        """return a GNUTranslations object in the most convenient way
+        """
+        if 'F_' in kwargs:
+            return kwargs.pop('F_')
+        if 'lang' in kwargs:
+            lang = kwargs.pop('lang')
+        else:
+            lang = 'en'
+        return get_translator(lang=lang).gettext
 
     def render(self, **kwargs):
         """
@@ -162,7 +174,7 @@ class FieldRenderer(object):
                 return validators.decimal_(data)
             else:
                 return validators.float_(data)
-        
+
         def _date(data):
             if data == 'YYYY-MM-DD' or data == '-MM-DD' or not data.strip():
                 return None
@@ -208,7 +220,7 @@ class EscapingReadonlyRenderer(FieldRenderer):
 
     def render(self, **kwargs):
         return self._renderer.render(**kwargs)
-        
+
     def render_readonly(self, **kwargs):
         return h.html_escape(self._renderer.render_readonly(**kwargs))
 
@@ -339,14 +351,15 @@ def _ternary(condition, first, second):
 class DateFieldRenderer(FieldRenderer):
     """Render a date field"""
     format = '%Y-%m-%d'
+    edit_format = 'm-d-y'
     def render_readonly(self, **kwargs):
         value = self.field.raw_value
         return value and value.strftime(self.format) or ''
     def _render(self, **kwargs):
         data = self._params
-        import calendar
-        month_options = [('Month', 'MM')] + [(calendar.month_name[i], str(i)) for i in xrange(1, 13)]
-        day_options = [('Day', 'DD')] + [(i, str(i)) for i in xrange(1, 32)]
+        F_ = self.get_translator(**kwargs)
+        month_options = [(F_('Month'), 'MM')] + [(F_('month_%02i' % i), str(i)) for i in xrange(1, 13)]
+        day_options = [(F_('Day'), 'DD')] + [(i, str(i)) for i in xrange(1, 32)]
         mm_name = self.name + '__month'
         dd_name = self.name + '__day'
         yyyy_name = self.name + '__year'
@@ -357,9 +370,12 @@ class DateFieldRenderer(FieldRenderer):
             yyyy = data[yyyy_name]
         else:
             yyyy = str(self._value and self._value.year or 'YYYY')
-        return h.select(mm_name, h.options_for_select(month_options, selected=mm), **kwargs) \
-               + ' ' + h.select(dd_name, h.options_for_select(day_options, selected=dd), **kwargs) \
-               + ' ' + h.text_field(yyyy_name, value=yyyy, maxlength=4, size=4, **kwargs)
+        selects = dict(
+                m=h.select(mm_name, h.options_for_select(month_options, selected=mm), **kwargs),
+                d=h.select(dd_name, h.options_for_select(day_options, selected=dd), **kwargs),
+                y=h.text_field(yyyy_name, value=yyyy, maxlength=4, size=4, **kwargs))
+        value = [selects.get(l) for l in self.edit_format.split('-')]
+        return ' '.join(value)
     def render(self, **kwargs):
         return h.content_tag('span', self._render(**kwargs), id=self.name)
 

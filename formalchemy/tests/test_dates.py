@@ -1,4 +1,5 @@
 from formalchemy.tests import *
+from formalchemy.fields import DateTimeFieldRenderer
 import datetime
 
 class Dt(Base):
@@ -8,8 +9,28 @@ class Dt(Base):
     bar = Column('bar', Time, nullable=True)
     foobar = Column('foobar', DateTime, nullable=True)
 
+class DateTimeFieldRendererFr(DateTimeFieldRenderer):
+    edit_format = 'd-m-y'
 
 __doc__ = r"""
+>>> fs = FieldSet(Dt)
+>>> fs.configure(options=[fs.foobar.with_renderer(DateTimeFieldRendererFr)])
+>>> print pretty_html(fs.foobar.render(lang='fr')) #doctest: +ELLIPSIS
+<span id="Dt--foobar">
+ <select id="Dt--foobar__day" lang="fr" name="Dt--foobar__day">
+  <option value="DD">
+   Jour
+  </option>
+...
+ <select id="Dt--foobar__month" lang="fr" name="Dt--foobar__month">
+  <option value="MM">
+   Mois
+  </option>
+  <option value="1">
+   Janvier
+  </option>
+...
+
 >>> fs = FieldSet(Dt)
 >>> print pretty_html(fs.foobar.render())
 <span id="Dt--foobar">
