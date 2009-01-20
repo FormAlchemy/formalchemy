@@ -13,7 +13,7 @@ import datetime
 
 from sqlalchemy.orm import class_mapper, Query
 from sqlalchemy.orm.attributes import ScalarAttributeImpl, ScalarObjectAttributeImpl, CollectionAttributeImpl, InstrumentedAttribute
-from sqlalchemy.orm.properties import CompositeProperty
+from sqlalchemy.orm.properties import CompositeProperty, ColumnProperty
 from sqlalchemy.exceptions import InvalidRequestError # 0.4 support
 from formalchemy import helpers as h
 from formalchemy import fatypes, validators
@@ -930,10 +930,7 @@ class AttributeField(AbstractField):
             self.validators.append(validators.required)
 
     def is_raw_foreign_key(self):
-        try:
-            return _foreign_keys(self._property.columns[0])
-        except AttributeError:
-            return False
+        return bool(isinstance(self._property, ColumnProperty) and _foreign_keys(self._property.columns[0]))
         
     def is_composite_foreign_key(self):
         return len(self._columns) > 1 and not [c for c in self._columns if not _foreign_keys(c)]

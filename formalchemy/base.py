@@ -193,7 +193,7 @@ class ModelRenderer(object):
         dict of {fieldname: Field} pairs
         """
         if not self._render_fields:
-            self._render_fields = OrderedDict([(field.name, field) for field in self._get_fields()])
+            self._render_fields = OrderedDict([(field.key, field) for field in self._get_fields()])
         return self._render_fields
     render_fields = property(render_fields)
 

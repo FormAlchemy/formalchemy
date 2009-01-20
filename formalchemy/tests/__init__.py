@@ -59,6 +59,7 @@ class Binaries(Base):
     id = Column(Integer, primary_key=True)
     file = Column(Binary, nullable=True)
 
+
 vertices = Table('vertices', Base.metadata,
     Column('id', Integer, primary_key=True),
     Column('x1', Integer),
@@ -105,6 +106,13 @@ class VertexFieldRenderer(FieldRenderer):
 # probably need to add _renderer attr and check
 # isinstance(getattr(myclass, '_renderer', type(myclass)), Boolean)
 # since the custom class shouldn't really inherit from Boolean
+
+class Recursive(Base):
+    __tablename__ = 'recursives'
+    id = Column(Integer, primary_key=True)
+    foo = Column(Text, nullable=True)
+    parent_id = Column(Integer, ForeignKey("recursives.id"))
+    parent = relation('Recursive', primaryjoin=parent_id==id, uselist=False, remote_side=parent_id)
 
 class OTOChild(Base):
     __tablename__ = 'one_to_one_child'

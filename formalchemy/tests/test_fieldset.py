@@ -975,6 +975,10 @@ OrderUser(1, 2)
 >>> fs.configure(pk=True)
 >>> fs.foo.render().startswith('<span')
 True
+
+>>> fs_r = FieldSet(Recursive)
+>>> fs_r.parent_id.is_raw_foreign_key()
+True
 """
 
 if __name__ == '__main__':
