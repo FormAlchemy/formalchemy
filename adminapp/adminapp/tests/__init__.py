@@ -17,12 +17,15 @@ from webtest import TestApp
 
 import pylons.test
 
-__all__ = ['environ', 'url', 'TestController']
+__all__ = ['environ', 'url', 'TestController', 'meta', 'model']
 
 # Invoke websetup with the current config file
 SetupCommand('setup-app').run([config['__file__']])
 
 environ = {}
+
+from adminapp.model import meta
+from adminapp import model
 
 class TestController(TestCase):
 
