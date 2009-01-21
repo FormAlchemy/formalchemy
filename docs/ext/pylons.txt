@@ -4,7 +4,7 @@
 .. automodule:: formalchemy.ext.pylons
 
 Administration interface
-========================
+************************
 
 Setup
 -----
@@ -13,39 +13,13 @@ First, generate a controller in your application::
 
   $ paster controller admin
 
-Next, edit your `controllers/admin.py`, replacing `yourapp` with your application name::
+Next, edit your `controllers/admin.py`, replacing `yourapp` with your application name:
 
-  import logging
+.. literalinclude:: ../../adminapp/adminapp/controllers/admin.py
 
-  from yourapp.lib.base import *
-  from yourapp import model
-  from formalchemy.ext.pylons.admin import FormAlchemyAdminController
+Add these lines in `config/routing.py`:
 
-  log = logging.getLogger(__name__)
-
-  class AdminControllerBase(BaseController):
-      model = model # where your SQLAlchemy mappers are
-      forms = None # module containing FormAlchemy fieldsets definitions
-      def Session(self): # Session factory
-          AdminControllerBase.Session = model.meta.Session
-          return AdminControllerBase.Session
-
-  AdminController = FormAlchemyAdminController(AdminControllerBase)
-
-Add these lines in `config/routing.py`::
-
-  from formalchemy.ext.pylons import maps
-  from yourapp.controllers.admin import AdminController
-  ...
-
-  def make_map():
-      """Create, configure and return the routes Mapper"""
-      ...
-
-      # CUSTOM ROUTES HERE
-      maps.admin_map(map, AdminController, 'admin')
-
-      ...
+.. literalinclude:: ../../adminapp/adminapp/config/routing.py
 
 All done!  Now you can go to the `/admin/` url.
 
@@ -76,7 +50,7 @@ and :class:`~formalchemy.tables.Grid` (for object lists)
 instances for the models you wish to customize.  (The `Grids` will
 automatically get edit and delete links added, and be made readonly.)
 
-See http://docs.formalchemy.org/forms.html for details on form configuration.
+See :mod:`~formalchemy.forms` for details on form configuration.
 
 
 Troubleshooting
@@ -91,5 +65,13 @@ If you don't see all your models on the top-level admin page, you'll
 need to import them into your model module, or tell `FormAlchemy` the
 correct module to look in (the "model = " line in the controller class
 you created).  In particular, `FormAlchemy` does not recursively scan
-for models, so if you have models in e.g., model/foo.py, you will want
-to add "from foo import *" in model/__init__.py.
+for models, so if you have models in e.g., `model/foo.py`, you will want
+to add `from foo import *` in `model/__init__.py`.
+
+Sample app 
+----------
+
+You can have a look at the complete `source
+<http://code.google.com/p/formalchemy/source/browse/#svn/trunk/adminapp>`_ of
+the application used for FA's testing.
+
