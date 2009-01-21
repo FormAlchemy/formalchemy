@@ -475,6 +475,13 @@ class CheckBoxSet(RadioSet):
 
 class SelectFieldRenderer(FieldRenderer):
     """render a field as select"""
+    def _serialized_value(self):
+        if self.name not in self._params:
+            if self.field.is_collection():
+                return []
+            return None
+        return FieldRenderer._serialized_value(self)
+
     def render(self, options, **kwargs):
         selected = kwargs.get('selected', None) or self._value
         return h.select(self.name, h.options_for_select(options, selected=selected), **kwargs)
