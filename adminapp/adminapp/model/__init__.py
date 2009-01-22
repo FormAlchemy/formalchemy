@@ -21,4 +21,14 @@ class Foo(object):
 
 orm.mapper(Foo, foo_table)
 
+files_table = sa.Table("Files", meta.metadata,
+    sa.Column("id", sa.types.Integer, primary_key=True),
+    sa.Column("path", sa.types.String(255), nullable=False),
+    )
+
+class Files(object):
+    pass
+
+orm.mapper(Files, files_table)
+
 

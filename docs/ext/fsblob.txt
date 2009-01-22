@@ -1,6 +1,11 @@
 :mod:`formalchemy.ext.fsblob` -- File system renderer
 =====================================================
 
+This extension is used to store binary files/images on filesystem and only
+store the file path in the database.
+
+This page present a Pylons integration but it should work on most framework.
+
 .. automodule:: formalchemy.ext.fsblob
 
 Renderers
@@ -16,13 +21,12 @@ Renderers
 Usage
 -----
 
-You must override the `storage_path` attribute::
+You must override the `storage_path` attribute:
 
-    >>> from formalchemy.ext.fsblob import FileFieldRenderer as Base
-    >>> class FileFieldRenderer(Base):
-    ...     storage_path = '/var/share/my_app_file'
+.. literalinclude:: ../../adminapp/adminapp/forms/fsblob.py
 
-Then use it like all :mod:`~formalchemy.fields`
+As you can see, you can use it like all :mod:`~formalchemy.fields` in the
+`.configure` method.
 
 Validators
 ----------
@@ -51,4 +55,11 @@ Work like all :mod:`~formalchemy.validators`.
     Traceback (most recent call last):
     ...
     ValidationError: Invalid image file. Must be jpeg, jpg, gif, png
+
+Sample app 
+----------
+
+You can have a look at the complete `source
+<http://code.google.com/p/formalchemy/source/browse/#svn/trunk/adminapp>`_ of
+the application used for FA's testing.
 

@@ -49,7 +49,8 @@ class FileFieldRenderer(Base):
     storage_path = None
     def __init__(self, *args, **kwargs):
         if not self.storage_path or not os.path.isdir(self.storage_path):
-            raise ValueError('storage_path must be set to a valid path')
+            raise ValueError(
+                    'storage_path must be set to a valid path. Got %r' % self.storage_path)
         Base.__init__(self, *args, **kwargs)
         self._path = None
 
