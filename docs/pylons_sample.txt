@@ -1,0 +1,13 @@
+Pylons integration
+==================
+
+Imagine you have a `Foo` model in your `model/__init__.py` then your controller
+can look like this:
+
+.. literalinclude:: ../adminapp/adminapp/controllers/basic.py
+
+If you have a lot of fieldset and configuration stuff and want to use them in
+different controller, then you can create a `forms/` module to put your
+fieldsets. This is a standard and allow you to use the
+:mod:`formalchemy.ext.pylons` extension
+

@@ -12,6 +12,7 @@ Modules contents
    validators
    internationalisation
    customisation
+   pylons_sample
    ext/*
 
 
