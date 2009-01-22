@@ -7,6 +7,8 @@ Boostrap a buildout env::
   $ python bootstrap.py
   $ ./bin/buildout
 
+Update version numbers in setup.py and formalchemy/__init__.py
+
 Compile .mo files and create the tarball::
 
   $ ./bin/python setup.py make_dist

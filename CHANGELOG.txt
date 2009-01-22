@@ -1,10 +1,11 @@
 1.1.1
 -----
 
-* add Date*Renderer translation
-
 * bug fixes: issues 36, 37, 38, 39, 40, 41, 42, 43, 45, 46, 47, 49
+
 * added EscapingReadonlyRenderer
+
+* add Date*Renderer translation
 
 
 1.1
