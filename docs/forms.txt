@@ -127,6 +127,16 @@ Field Modification
       field name is used, modified for readability (e.g.,
       'user_name' -> 'User name').
 
+- `with_null_as(self, option)`:
+      For optional foreign key fields, render null as the given option
+      tuple of text, value.
+
+- `with_renderer(self, renderer)`:
+      Change the renderer class used to render this field.  Used for
+      one-off renderer changes; if you want to change the renderer
+      for all instances of a Field type, modify
+      FieldSet.default_renderers instead.
+
 - `disabled(self)`:
       Render the field disabled.
 
