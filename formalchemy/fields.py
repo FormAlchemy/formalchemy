@@ -598,6 +598,8 @@ class AbstractField(object):
     Contains the information necessary to render (and modify the rendering of)
     a form field
     """
+    _null_option = ('None', '__null_value__')
+
     def __init__(self, parent):
         # the FieldSet (or any ModelRenderer) owning this instance
         self.parent = parent
@@ -693,6 +695,9 @@ class AbstractField(object):
         for attr, value in kwattrs.iteritems():
             setattr(copied, attr, value)
         return copied
+    def with_null_as(self, option):
+        """Render null as the given option tuple of text, value."""
+        return self._modified(_null_option=option)
     def with_renderer(self, r):
         """
         Return a copy of this Field, with a different renderer.
@@ -1096,11 +1101,15 @@ class AttributeField(AbstractField):
         if self.is_readonly():
             return self.render_readonly(**html_options)
         if self.is_relation() and not self.render_opts.get('options'):
+            if self.is_required() or self.is_collection():
+                self.render_opts['options'] = []
+            else:
+                self.render_opts['options'] = [self._null_option]
             # todo 2.0 this does not handle primaryjoin (/secondaryjoin) alternate join conditions
             fk_cls = self.relation_type()
             fk_pk = class_mapper(fk_cls).primary_key[0]
             q = self.query(fk_cls).order_by(fk_pk)
-            self.render_opts['options'] = _query_options(q)
+            self.render_opts['options'] += _query_options(q)
             logger.debug('options for %s are %s' % (self.name, self.render_opts['options']))
         if self.is_collection() and isinstance(self.renderer, self.parent.default_renderers['dropdown']):
             self.render_opts['multiple'] = True

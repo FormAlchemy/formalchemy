@@ -260,7 +260,7 @@ class ModelRenderer(object):
         fs.configure(include=[fs.name, fs.options.checkbox()])
         }}}
         """
-        self._render_fields = OrderedDict([(field.name, field) for field in self._get_fields(pk, exclude, include, options)])
+        self._render_fields = OrderedDict([(field.key, field) for field in self._get_fields(pk, exclude, include, options)])
 
     def bind(self, model=None, session=None, data=None):
         """
@@ -284,7 +284,7 @@ class ModelRenderer(object):
         ModelRenderer.rebind(mr, model, session, data)
         mr._fields = OrderedDict([(key, renderer.bind(mr)) for key, renderer in self._fields.iteritems()])
         if self._render_fields:
-            mr._render_fields = OrderedDict([(field.name, field) for field in
+            mr._render_fields = OrderedDict([(field.key, field) for field in
                                              [field.bind(mr) for field in self._render_fields.itervalues()]])
         return mr
 

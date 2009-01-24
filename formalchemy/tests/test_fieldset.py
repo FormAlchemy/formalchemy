@@ -982,6 +982,23 @@ True
 >>> fs_r.rebind(data={'Recursive--foo': 'asdf'})
 >>> fs_r.validate()
 True
+
+>>> fs_oo = FieldSet(OptionalOrder)
+>>> fs_oo.configure(options=[fs_oo.user.with_null_as(('No user', ''))])
+>>> fs_oo.user._null_option
+('No user', '')
+>>> print pretty_html(fs_oo.user.render())
+<select id="OptionalOrder--user_id" name="OptionalOrder--user_id">
+ <option value="">
+  No user
+ </option>
+ <option value="1">
+  Bill
+ </option>
+ <option value="2">
+  John
+ </option>
+</select>
 """
 
 if __name__ == '__main__':

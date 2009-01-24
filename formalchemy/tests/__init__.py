@@ -133,6 +133,15 @@ class Order(Base):
     def __str__(self):
         return 'Quantity: %s' % self.quantity
 
+class OptionalOrder(Base): # the user is optional, not the order
+    __tablename__ = 'optional_orders'
+    id = Column(Integer, primary_key=True)
+    user_id = Column(Integer, ForeignKey('users.id'))
+    quantity = Column(Integer, nullable=False)
+    user = relation('User')
+    def __str__(self):
+        return 'Quantity: %s' % self.quantity
+
 class User(Base):
     __tablename__ = 'users'
     id = Column(Integer, primary_key=True)
