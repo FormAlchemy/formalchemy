@@ -6,6 +6,23 @@
 Administration interface
 ************************
 
+Purpose
+-------
+
+The Pylons administration interface provides a simple way to enable
+CRUD (create, retrieve, update, delete) operations on your SQLAlchemy
+models, with a high degree of customizability.
+
+Sample model listing:
+.. image:: admin-models.png
+
+Sample model overview page:
+.. image:: admin-order.png
+
+Sample model creation page:
+.. image:: admin-new.png
+
+
 Setup
 -----
 
