@@ -999,6 +999,12 @@ True
   John
  </option>
 </select>
+
+>>> fs_bad = FieldSet(One)
+>>> fs_bad.configure(include=[Field('invalid')])
+Traceback (most recent call last):
+...
+ValueError: Unrecognized Field `AttributeField(invalid)` in `include` -- did you mean to call add() first?
 """
 
 if __name__ == '__main__':

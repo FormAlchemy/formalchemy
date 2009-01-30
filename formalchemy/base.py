@@ -40,15 +40,6 @@ except ImportError:
         return [getattr(cls, p.key) for p in class_mapper(cls).iterate_properties]
     
 
-def _validate_columns(iterable):
-    try:
-        L = list(iterable)
-    except:
-        raise ValueError()
-    if L and not isinstance(L[0], fields.AbstractField):
-        raise ValueError()
-
-
 def prettify(text):
     """
     Turn an attribute name into something prettier, for a default label where none is given.
@@ -386,11 +377,16 @@ class ModelRenderer(object):
             raise ValueError('pk option must be True or False, not %s' % pk)
 
         # verify that options that should be lists of Fields, are
-        for lst in ['include', 'exclude', 'options']:
+        for iterable in ['include', 'exclude', 'options']:
             try:
-                _validate_columns(eval(lst))
+                L = list(eval(iterable))
             except:
-                raise ValueError('%s parameter should be an iterable of AbstractField objects; was %s' % (lst, eval(lst)))
+                raise ValueError('`%s` parameter should be an iterable' % iterable)
+            for field in L:
+                if not isinstance(field, fields.AbstractField):
+                    raise TypeError('non-AbstractField object `%s` found in `%s`' % (field, iterable))
+                if field not in self._fields.values():
+                    raise ValueError('Unrecognized Field `%s` in `%s` -- did you mean to call add() first?' % (field, iterable))
 
         # if include is given, those are the fields used.  otherwise, include those not explicitly (or implicitly) excluded.
         if not include:
