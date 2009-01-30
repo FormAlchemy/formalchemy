@@ -744,7 +744,7 @@ class AbstractField(object):
     def password(self):
         """Render the field as a password input, hiding its value."""
         field = deepcopy(self)
-        field._renderer = lambda: self.parent.default_renderers['password']
+        field._renderer = lambda: field.parent.default_renderers['password']
         field.render_opts = {}
         return field
     def textarea(self, size=None):
@@ -760,7 +760,7 @@ class AbstractField(object):
     def radio(self, options=None):
         """Render the field as a set of radio buttons."""
         field = deepcopy(self)
-        field._renderer = lambda: self.parent.default_renderers['radio']
+        field._renderer = lambda: field.parent.default_renderers['radio']
         if options is None:
             options = self.render_opts.get('options')
         else:
