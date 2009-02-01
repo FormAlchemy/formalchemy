@@ -52,7 +52,8 @@ def get_translator(lang=None):
     for lang in langs:
         filename = os.path.join(i18n_path, lang, 'LC_MESSAGES','formalchemy.mo')
         if os.path.isfile(filename):
-            return GNUTranslations(open(os.path.join(i18n_path, lang, 'LC_MESSAGES','formalchemy.mo')))
+            translations_path = os.path.join(i18n_path, lang, 'LC_MESSAGES','formalchemy.mo')
+            return GNUTranslations(open(translations_path, 'rb'))
 
     # dummy translator
     return _Translator()
