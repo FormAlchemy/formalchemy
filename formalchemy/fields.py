@@ -103,7 +103,7 @@ class FieldRenderer(object):
         value = self.field.raw_value
         if value is None:
             return ''
-        if self.field.is_scalar_relation():
+        if self.field.is_scalar_relation:
             q = self.field.query(self.field.relation_type())
             v = q.get(value)
             return unicode(v)
@@ -138,7 +138,7 @@ class FieldRenderer(object):
         The default _serialized_value returns the submitted value(s)
         in the input element corresponding to self.name.
         """
-        if self.field.is_collection():
+        if self.field.is_collection:
             return self._params.getall(self.name)
         return self._params.getone(self.name)
 
@@ -154,7 +154,7 @@ class FieldRenderer(object):
         You should only have to override this if you are using custom
         (e.g., Composite) types.
         """
-        if self.field.is_collection():
+        if self.field.is_collection:
             return [self._deserialize(subdata) for subdata in self._serialized_value()]
         return self._deserialize(self._serialized_value())
 
@@ -477,7 +477,7 @@ class SelectFieldRenderer(FieldRenderer):
     """render a field as select"""
     def _serialized_value(self):
         if self.name not in self._params:
-            if self.field.is_collection():
+            if self.field.is_collection:
                 return []
             return None
         return FieldRenderer._serialized_value(self)
@@ -868,8 +868,10 @@ class Field(AbstractField):
         """
         AbstractField.__init__(self, None) # parent will be set by ModelRenderer.add
         self.type = type()
-        self.name = name
+        self.name = self.key = name
         self._value = value
+        self.is_relation = False
+        self.is_scalar_relation = False
 
     def value(self):
         if not self.is_readonly() and self.parent.data is not None:
@@ -888,18 +890,9 @@ class Field(AbstractField):
         return self._value
     value = property(value)
 
-    def key(self):
-        return self.name
-    key = property(key)
-
     def is_collection(self):
         return self.render_opts.get('multiple', False) or isinstance(self.renderer, self.parent.default_renderers['checkbox'])
-    
-    def is_relation(self):
-        return False
-
-    def is_scalar_relation(self):
-        return False
+    is_collection = property(is_collection)
 
     def raw_value(self):
         return self.value
@@ -929,6 +922,15 @@ class AttributeField(AbstractField):
     Field corresponding to an SQLAlchemy attribute.
     """
     def __init__(self, instrumented_attribute, parent):
+        """
+            >>> from formalchemy.tests import FieldSet, Order
+            >>> fs = FieldSet(Order)
+            >>> print fs.user.key
+            user
+
+            >>> print fs.user.name
+            user_id
+        """
         AbstractField.__init__(self, parent)
         # we rip out just the parts we care about from InstrumentedAttribute.
         # impl is the AttributeImpl.  So far all we care about there is ".key,"
@@ -937,33 +939,58 @@ class AttributeField(AbstractField):
         # property is the PropertyLoader which handles all the interesting stuff.
         # mapper, columns, and foreign keys are all located there.
         self._property = instrumented_attribute.property
+
+        # True iff this is a multi-valued (one-to-many or many-to-many) SA relation
+        self.is_collection = isinstance(self._impl, CollectionAttributeImpl)
+
+        # True iff this is the 'one' end of a one-to-many relation
+        self.is_scalar_relation = isinstance(self._impl, ScalarObjectAttributeImpl)
+
+        # True iff this field represents a mapped SA relation
+        self.is_relation = self.is_scalar_relation or self.is_collection
+
+        self.is_composite = isinstance(self._property, CompositeProperty)
+
         # smarter default "required" value
-        if not self.is_collection() and [c for c in self._columns if not c.nullable]:
+        _columns = self._columns
+        if not self.is_collection and [c for c in _columns if not c.nullable]:
             self.validators.append(validators.required)
 
-    def is_raw_foreign_key(self):
-        return bool(isinstance(self._property, ColumnProperty) and _foreign_keys(self._property.columns[0]))
-        
-    def is_composite_foreign_key(self):
-        return len(self._columns) > 1 and not [c for c in self._columns if not _foreign_keys(c)]
-
-    def is_pk(self):
-        return bool([c for c in self._columns if c.primary_key])
-
-    def type(self):
-        if self.is_composite():
+        if self.is_composite:
             # this is a little confusing -- we need to return an _instance_ of
             # the correct type, which for composite values will be the value
             # itself. SA should probably have called .type something
             # different, or just not instantiated them...
-            return self.parent.model
-        if len(self._columns) > 1:
-            return None # may have to be more accurate here
-        return self._columns[0].type
-    type = property(type)
+            self.type = self.parent.model
+        elif len(_columns) > 1:
+            self.type = None # may have to be more accurate here
+        else:
+            self.type = _columns[0].type
+
+        self.key = self._impl.key
+        self._column_name = '_'.join([c.name for c in _columns])
+
+        # The name of the form input. usually the same as the key, except for
+        # multi-valued SA relation properties. For example, for order.user,
+        # name will be 'user_id' (assuming that is indeed the name of the foreign
+        # key to users), but for user.orders, name will be 'orders'.
+        if self.is_collection or self.is_composite or not hasattr(self.model, self._column_name):
+            self.name = self.key
+        else:
+            self.name = self._column_name
+
+    def is_raw_foreign_key(self):
+        return bool(isinstance(self._property, ColumnProperty) and _foreign_keys(self._property.columns[0]))
+
+    def is_composite_foreign_key(self):
+        _columns = self._columns
+        return len(_columns) > 1 and not [c for c in _columns if not _foreign_keys(c)]
+
+    def is_pk(self):
+        return bool([c for c in self._columns if c.primary_key])
 
     def _columns(self):
-        if isinstance(self._impl, ScalarObjectAttributeImpl):
+        if self.is_scalar_relation:
             # If the attribute is a foreign key, return the Column that this
             # attribute is mapped from -- e.g., .user -> .user_id.
             return _foreign_keys(self._property)
@@ -972,62 +999,14 @@ class AttributeField(AbstractField):
             return self._property.columns
         else:
             # collection -- use the mapped class's PK
-            assert isinstance(self._impl, CollectionAttributeImpl), self._impl.__class__
+            assert self.is_collection, self._impl.__class__
             return self._property.mapper.primary_key
     _columns = property(_columns)
-
-    def key(self):
-        """
-        The name of the attribute in the class.
-        
-        >>> from formalchemy.tests import FieldSet, Order
-        >>> fs = FieldSet(Order)
-        >>> print fs.user.key
-        user
-        """
-        return self._impl.key
-    key = property(key)
-    
-    def _column_name(self):
-        return '_'.join([c.name for c in self._columns])
-    _column_name = property(_column_name)
-
-    def name(self):
-        """
-        The name of the form input. usually the same as the key, except for
-        multi-valued SA relation properties. For example, for order.user,
-        name will be 'user_id' (assuming that is indeed the name of the foreign
-        key to users), but for user.orders, name will be 'orders'.
-
-        >>> from formalchemy.tests import FieldSet, Order
-        >>> fs = FieldSet(Order)
-        >>> print fs.user.name
-        user_id
-        """
-        if self.is_collection() or self.is_composite() or not hasattr(self.model, self._column_name):
-            return self.key
-        return self._column_name
-    name = property(name)
-
-    def is_collection(self):
-        """True iff this is a multi-valued (one-to-many or many-to-many) SA relation"""
-        return isinstance(self._impl, CollectionAttributeImpl)
-
-    def is_composite(self):
-        return isinstance(self._property, CompositeProperty)
-
-    def is_relation(self):
-        """True iff this field represents a mapped SA relation"""
-        return self.is_scalar_relation() or self.is_collection()
-
-    def is_scalar_relation(self):
-        """True iff this is the 'one' end of a one-to-many relation"""
-        return isinstance(self._impl, ScalarObjectAttributeImpl)
 
     def relation_type(self):
         """
         The type of object in the collection (e.g., `User`).
-        Calling this is only valid when `is_relation()` is True.
+        Calling this is only valid when `is_relation` is True.
         """
         return self._property.mapper.class_
 
@@ -1047,17 +1026,18 @@ class AttributeField(AbstractField):
                 v = getattr(self.model, self.name)
             except AttributeError:
                 v = getattr(self.model, self.key)
-        if self.is_collection():
+        if self.is_collection:
             return [_pk(item) for item in v]
         if v is not None:
             return v
-        
-        if len(self._columns) == 1 and  self._columns[0].default:
+
+        _columns = self._columns
+        if len(_columns) == 1 and  _columns[0].default:
             try:
                 from sqlalchemy.sql.expression import Function
             except ImportError:
                 from sqlalchemy.sql.expression import _Function as Function
-            arg = self._columns[0].default.arg
+            arg = _columns[0].default.arg
             if callable(arg) or isinstance(arg, Function):
                 # callables often depend on the current time, e.g. datetime.now or the equivalent SQL function.
                 # these are meant to be the value *at insertion time*, so it's not strictly correct to
@@ -1100,8 +1080,8 @@ class AttributeField(AbstractField):
     def render(self, **html_options):
         if self.is_readonly():
             return self.render_readonly(**html_options)
-        if self.is_relation() and not self.render_opts.get('options'):
-            if self.is_required() or self.is_collection():
+        if self.is_relation and not self.render_opts.get('options'):
+            if self.is_required() or self.is_collection:
                 self.render_opts['options'] = []
             else:
                 self.render_opts['options'] = [self._null_option]
@@ -1111,17 +1091,17 @@ class AttributeField(AbstractField):
             q = self.query(fk_cls).order_by(fk_pk)
             self.render_opts['options'] += _query_options(q)
             logger.debug('options for %s are %s' % (self.name, self.render_opts['options']))
-        if self.is_collection() and isinstance(self.renderer, self.parent.default_renderers['dropdown']):
+        if self.is_collection and isinstance(self.renderer, self.parent.default_renderers['dropdown']):
             self.render_opts['multiple'] = True
             if 'size' not in self.render_opts:
                 self.render_opts['size'] = 5
         return AbstractField.render(self, **html_options)
 
     def _get_renderer(self):
-        if self.is_relation():
+        if self.is_relation:
             return self.parent.default_renderers['dropdown']
         return AbstractField._get_renderer(self)
-    
+
     def _deserialize(self):
         # for multicolumn keys, we turn the string into python via _simple_eval; otherwise,
         # the key is just the raw deserialized value (which is already an int, etc., as necessary)
@@ -1129,8 +1109,8 @@ class AttributeField(AbstractField):
             python_pk = _simple_eval
         else:
             python_pk = lambda st: st
-            
-        if self.is_collection():
+
+        if self.is_collection:
             return [self.query(self.relation_type()).get(python_pk(pk)) for pk in self.renderer.deserialize()]
         if self.is_composite_foreign_key():
             return self.query(self.relation_type()).get(python_pk(self.renderer.deserialize()))

@@ -167,7 +167,7 @@ class ModelRenderer(object):
             L = []
             for iattr in _managed_attributes(cls):
                 L.append(fields.AttributeField(iattr, self))
-            L.sort(lambda a, b: cmp(a.is_relation(), b.is_relation())) # note, key= not used for 2.3 support
+            L.sort(lambda a, b: cmp(a.is_relation, b.is_relation)) # note, key= not used for 2.3 support
             for field in L:
                 self._fields[field.key] = field
 
@@ -392,7 +392,7 @@ class ModelRenderer(object):
         if not include:
             ignore = list(exclude) # don't modify `exclude` directly to avoid surprising caller
             if not pk:
-                ignore.extend([wrapper for wrapper in self._raw_fields() if wrapper.is_pk() and not wrapper.is_collection()])
+                ignore.extend([wrapper for wrapper in self._raw_fields() if wrapper.is_pk() and not wrapper.is_collection])
             ignore.extend([wrapper for wrapper in self._raw_fields() if wrapper.is_raw_foreign_key()])
             include = [field for field in self._raw_fields() if field not in ignore]
             
