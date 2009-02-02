@@ -620,6 +620,11 @@ class AbstractField(object):
         self._readonly = False
         # label to use for the rendered field.  autoguessed if not specified by .label()
         self.label_text = None
+        # True iff this Field is a primary key
+        self.is_pk = False
+        # True iff this Field is a raw foreign key
+        self.is_raw_foreign_key = False
+        return False
 
     def __deepcopy__(self, memo):
         wrapper = copy(self)
@@ -638,14 +643,6 @@ class AbstractField(object):
     def requires_label(self):
         return not isinstance(self.renderer, HiddenFieldRenderer)
     requires_label = property(requires_label)
-
-    def is_raw_foreign_key(self):
-        """True iff this Field is a raw foreign key"""
-        return False
-
-    def is_pk(self):
-        """True iff this Field is a primary key"""
-        return False
 
     def query(self, *args, **kwargs):
         """Perform a query in the parent's session"""
@@ -951,10 +948,13 @@ class AttributeField(AbstractField):
 
         self.is_composite = isinstance(self._property, CompositeProperty)
 
-        # smarter default "required" value
         _columns = self._columns
-        if not self.is_collection and [c for c in _columns if not c.nullable]:
-            self.validators.append(validators.required)
+
+        self.is_pk = bool([c for c in self._columns if c.primary_key])
+
+        self.is_raw_foreign_key = bool(isinstance(self._property, ColumnProperty) and _foreign_keys(self._property.columns[0]))
+
+        self.is_composite_foreign_key = len(_columns) > 1 and not [c for c in _columns if not _foreign_keys(c)]
 
         if self.is_composite:
             # this is a little confusing -- we need to return an _instance_ of
@@ -979,15 +979,9 @@ class AttributeField(AbstractField):
         else:
             self.name = self._column_name
 
-    def is_raw_foreign_key(self):
-        return bool(isinstance(self._property, ColumnProperty) and _foreign_keys(self._property.columns[0]))
-
-    def is_composite_foreign_key(self):
-        _columns = self._columns
-        return len(_columns) > 1 and not [c for c in _columns if not _foreign_keys(c)]
-
-    def is_pk(self):
-        return bool([c for c in self._columns if c.primary_key])
+        # smarter default "required" value
+        if not self.is_collection and [c for c in _columns if not c.nullable]:
+            self.validators.append(validators.required)
 
     def _columns(self):
         if self.is_scalar_relation:
@@ -1112,6 +1106,6 @@ class AttributeField(AbstractField):
 
         if self.is_collection:
             return [self.query(self.relation_type()).get(python_pk(pk)) for pk in self.renderer.deserialize()]
-        if self.is_composite_foreign_key():
+        if self.is_composite_foreign_key:
             return self.query(self.relation_type()).get(python_pk(self.renderer.deserialize()))
         return self.renderer.deserialize()

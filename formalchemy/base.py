@@ -157,7 +157,7 @@ class ModelRenderer(object):
                 if isinstance(field, fields.Field):
                     if field.name and field.name != key:
                         raise Exception('Fields in a non-mapped class have the same name as their attribute.  Do not manually give them a name.')
-                    field.name = key
+                    field.name = field.key = key
                     self.add(field)
             if not self._fields:
                 raise Exception("not bound to a SA instance, and no manual Field definitions found")
@@ -392,8 +392,8 @@ class ModelRenderer(object):
         if not include:
             ignore = list(exclude) # don't modify `exclude` directly to avoid surprising caller
             if not pk:
-                ignore.extend([wrapper for wrapper in self._raw_fields() if wrapper.is_pk() and not wrapper.is_collection])
-            ignore.extend([wrapper for wrapper in self._raw_fields() if wrapper.is_raw_foreign_key()])
+                ignore.extend([wrapper for wrapper in self._raw_fields() if wrapper.is_pk and not wrapper.is_collection])
+            ignore.extend([wrapper for wrapper in self._raw_fields() if wrapper.is_raw_foreign_key])
             include = [field for field in self._raw_fields() if field not in ignore]
             
         # in the returned list, replace any fields in `include` w/ the corresponding one in `options`, if present.

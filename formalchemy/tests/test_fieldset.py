@@ -949,9 +949,9 @@ test
 ['id', 'order_id', 'order_user', 'tag', 'user_id']
 >>> print out.order_user.name
 order_user
->>> out.order_user.is_raw_foreign_key()
+>>> out.order_user.is_raw_foreign_key
 False
->>> out.order_user.is_composite_foreign_key()
+>>> out.order_user.is_composite_foreign_key
 True
 >>> list(sorted(out.render_fields))
 ['order_user', 'tag']
@@ -977,7 +977,7 @@ OrderUser(1, 2)
 True
 
 >>> fs_r = FieldSet(Recursive)
->>> fs_r.parent_id.is_raw_foreign_key()
+>>> fs_r.parent_id.is_raw_foreign_key
 True
 >>> fs_r.rebind(data={'Recursive--foo': 'asdf'})
 >>> fs_r.validate()
