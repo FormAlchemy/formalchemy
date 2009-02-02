@@ -52,6 +52,10 @@ try:
                   ('**.mako', 'mako', None),
                   ('**.tmpl', 'python', None)]},
           zip_safe=False,
+          entry_points = """
+          [paste.paster_create_template]
+          pylons_fa = formalchemy.templates:PylonsTemplate
+          """,
           )
 except ImportError:
     from distutils.core import setup

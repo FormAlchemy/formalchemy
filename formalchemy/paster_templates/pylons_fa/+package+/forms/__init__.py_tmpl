@@ -1,0 +1,10 @@
+{{if sqlalchemy}}
+from formalchemy import forms
+from formalchemy import validators
+from formalchemy import fields
+from {{package}}.lib.base import render
+
+class FieldSet(forms.FieldSet):
+    pass
+
+{{endif}}
