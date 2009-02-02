@@ -359,8 +359,8 @@ See http://www.sqlalchemy.org/docs/05/mappers.html#advdatamapping_mapper_joins
 for full details on mapping multiple tables to a single class.
 
 
-Non-SQLAlchemy forms (experimental)
-===================================
+Non-SQLAlchemy forms
+====================
 
 You can create a :class:`~formalchemy.forms.FieldSet` from non-SQLAlchemy, new-style (inheriting
 from `object`) classes, like this::

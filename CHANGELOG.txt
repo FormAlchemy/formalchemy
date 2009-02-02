@@ -1,3 +1,14 @@
+1.1.2
+-----
+
+* performance improvements
+
+* non-SQLA Fields are no longer considered "experimental"
+
+* with_null_as feature (see issue #52)
+
+
+
 1.1.1
 -----
 
