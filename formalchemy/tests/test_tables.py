@@ -1,6 +1,5 @@
 __doc__ = r"""
 >>> from formalchemy.tests import *
->>> from formalchemy import Grid
 
 Explicitly test rebind + render:
 >>> g = Grid(User)

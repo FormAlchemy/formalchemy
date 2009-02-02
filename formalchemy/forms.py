@@ -106,46 +106,8 @@ template_text_readonly = r"""
 {{endfor}}
 </tbody>
 """
-render_readonly = TempitaTemplate(template_text_readonly, name='template_readonly').substitute
+render_readonly_tempita = TempitaTemplate(template_text_readonly, name='template_readonly').substitute
 
-
-template_text_mako = r"""
-<%
-_ = F_
-_focus_rendered = False
-%>\
-
-% for error in fieldset.errors.get(None, []):
-<div class="fieldset_error">
-  ${_(error)}
-</div>
-% endfor
-
-% for field in fieldset.render_fields.itervalues():
-  % if field.requires_label:
-<div>
-  <label class="${field.is_required() and 'field_req' or 'field_opt'}" for="${field.renderer.name}">${[field.label_text, fieldset.prettify(field.key)][int(field.label_text is None)]}</label>
-  ${field.render()}
-  % for error in field.errors:
-  <span class="field_error">${_(error)}</span>
-  % endfor
-</div>
-
-% if (fieldset.focus == field or fieldset.focus is True) and not _focus_rendered:
-% if not field.is_readonly():
-<script type="text/javascript">
-//<![CDATA[
-document.getElementById("${field.renderer.name}").focus();
-//]]>
-</script>
-<% _focus_rendered = True %>\
-% endif
-% endif
-  % else:
-${field.render()}
-  % endif
-% endfor
-""".strip()
 
 template_text_tempita = r"""
 {{py:_focus_rendered = False}}
@@ -186,10 +148,13 @@ render_tempita = TempitaTemplate(template_text_tempita, name='fieldset_template'
 
 try:
     from mako.template import Template as MakoTemplate
+    from formalchemy.templates import mako_template
 except ImportError:
-    render = render_tempita
+    HAS_MAKO = False
 else:
-    render_mako = MakoTemplate(template_text_mako).render
+    HAS_MAKO = True
+    render_mako = MakoTemplate(mako_template('fieldset')).render
+    render_readonly_mako = MakoTemplate(mako_template('fieldset_readonly')).render
 
 
 class FieldSet(AbstractFieldSet):
@@ -266,8 +231,8 @@ class FieldSet(AbstractFieldSet):
         >>> fs.prettify = myprettify
 
     """
-    _render = staticmethod('render_mako' in locals() and render_mako or render_tempita)
-    _render_readonly = staticmethod(render_readonly)
+    _render = staticmethod(HAS_MAKO and render_mako or render_tempita)
+    _render_readonly = staticmethod(HAS_MAKO and render_readonly_mako or render_readonly_tempita)
 
     def __init__(self, *args, **kwargs):
         AbstractFieldSet.__init__(self, *args, **kwargs)

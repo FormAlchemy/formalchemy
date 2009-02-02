@@ -70,10 +70,6 @@ You need some imports::
 .. Hidden code needed for testing
 
   >>> from formalchemy.tests import *
-  >>> from formalchemy.tables import Grid as Base
-  >>> class Grid(Base):
-  ...     def render(self):
-  ...         return pretty_html(Base.render(self))
 
 Then you can initialize a `Grid` and bind it to a list of row instance::  
 

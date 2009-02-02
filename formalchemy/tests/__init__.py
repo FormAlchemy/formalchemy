@@ -254,11 +254,8 @@ orderuser2 = OrderUser(user_id=1, order_id=2)
 session.commit()
 
 
-from formalchemy.forms import FieldSet as DefaultFieldSet, render_tempita, render_readonly
-try:
-    import mako
-except ImportError:
-    pass
+from formalchemy.forms import FieldSet as DefaultFieldSet, HAS_MAKO, render_tempita, render_readonly_tempita
+from formalchemy.tables import Grid as DefaultGrid, render_grid_tempita, render_grid_readonly_tempita
 from formalchemy.fields import Field
 from formalchemy.validators import ValidationError
 
@@ -269,13 +266,35 @@ def pretty_html(html):
 class FieldSet(DefaultFieldSet):
     def render(self, lang=None):
         if self.readonly:
-            return pretty_html(DefaultFieldSet.render(self))
+            html = pretty_html(DefaultFieldSet.render(self))
+            if HAS_MAKO:
+                F_ = lambda s: s
+                html_tempita = pretty_html(render_readonly_tempita(fieldset=self, F_=F_))
+                assert html == html_tempita, (html, html_tempita)
+            return html
         html = pretty_html(DefaultFieldSet.render(self))
-        if 'mako' in globals():
+        if HAS_MAKO:
             # FS will use mako by default, so test tempita for equivalence here
             F_ = lambda s: s
             html_tempita = pretty_html(render_tempita(fieldset=self, F_=F_))
-            assert html == html_tempita
+            assert html == html_tempita, (html, html_tempita)
+        return html
+
+class Grid(DefaultGrid):
+    def render(self, lang=None):
+        if self.readonly:
+            html = pretty_html(DefaultGrid.render(self))
+            if HAS_MAKO:
+                F_ = lambda s: s
+                html_tempita = pretty_html(render_grid_readonly_tempita(collection=self, F_=F_))
+                assert html == html_tempita, (html, html_tempita)
+            return html
+        html = pretty_html(DefaultGrid.render(self))
+        if HAS_MAKO:
+            # FS will use mako by default, so test tempita for equivalence here
+            F_ = lambda s: s
+            html_tempita = pretty_html(render_grid_tempita(collection=self, F_=F_))
+            assert html == html_tempita, (html, html_tempita)
         return html
 
 original_renderers = FieldSet.default_renderers.copy()
