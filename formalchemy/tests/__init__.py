@@ -137,7 +137,7 @@ class OptionalOrder(Base): # the user is optional, not the order
     __tablename__ = 'optional_orders'
     id = Column(Integer, primary_key=True)
     user_id = Column(Integer, ForeignKey('users.id'))
-    quantity = Column(Integer, nullable=False)
+    quantity = Column(Integer)
     user = relation('User')
     def __str__(self):
         return 'Quantity: %s' % self.quantity

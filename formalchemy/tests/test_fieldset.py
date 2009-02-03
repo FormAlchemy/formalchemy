@@ -1000,6 +1000,13 @@ True
  </option>
 </select>
 
+>>> fs_oo = FieldSet(OptionalOrder)
+>>> fs_oo.rebind(data={'OptionalOrder--user_id': fs_oo.user_id._null_option[1], 'OptionalOrder--quantity': ''})
+>>> fs_oo.validate()
+True
+>>> fs_oo.user_id.value is None
+True
+
 >>> fs_bad = FieldSet(One)
 >>> fs_bad.configure(include=[Field('invalid')])
 Traceback (most recent call last):

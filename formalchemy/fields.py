@@ -163,7 +163,7 @@ class FieldRenderer(object):
             if data is not None:
                 if data.lower() in ['1', 't', 'true', 'yes']: return True
                 if data.lower() in ['0', 'f', 'false', 'no']: return False
-        if data is None:
+        if data is None or data == self.field._null_option[1]:
             return None
         if isinstance(self.field.type, fatypes.Integer):
             return validators.integer(data)
