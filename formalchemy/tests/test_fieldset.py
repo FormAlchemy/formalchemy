@@ -1012,6 +1012,10 @@ True
 Traceback (most recent call last):
 ...
 ValueError: Unrecognized Field `AttributeField(invalid)` in `include` -- did you mean to call add() first?
+
+>>> fs_s = FieldSet(Synonym)
+>>> fs_s._fields
+{'foo': AttributeField(foo), 'id': AttributeField(id)}
 """
 
 if __name__ == '__main__':

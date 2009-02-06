@@ -114,6 +114,16 @@ class Recursive(Base):
     parent_id = Column(Integer, ForeignKey("recursives.id"))
     parent = relation('Recursive', primaryjoin=parent_id==id, uselist=False, remote_side=parent_id)
 
+class Synonym(Base):
+    __tablename__ = 'synonyms'
+    id = Column(Integer, primary_key=True)
+    _foo = Column(Text, nullable=True)
+    def _set_foo(self, foo):
+        self._foo = "SOMEFOO " + foo
+    def _get_foo(self):
+        return self._foo
+    foo = synonym('_foo', descriptor=property(_get_foo, _set_foo))
+
 class OTOChild(Base):
     __tablename__ = 'one_to_one_child'
     id = Column(Integer, primary_key=True)

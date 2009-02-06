@@ -12,7 +12,8 @@ from sqlalchemy import __version__
 if __version__.split('.') < MIN_SA_VERSION.split('.'):
     raise ImportError('Version %s or later of SQLAlchemy required' % MIN_SA_VERSION)
 
-from sqlalchemy.orm.attributes import InstrumentedAttribute, ScalarAttributeImpl
+from sqlalchemy.orm.attributes import InstrumentedAttribute
+from sqlalchemy.orm.properties import SynonymProperty
 from sqlalchemy.orm import compile_mappers, object_session, class_mapper
 from sqlalchemy.orm.session import Session
 from sqlalchemy.orm.scoping import ScopedSession
@@ -31,13 +32,13 @@ compile_mappers() # initializes InstrumentedAttributes
 try:
     # 0.5
     from sqlalchemy.orm.attributes import manager_of_class
-    def _managed_attributes(cls):
+    def _get_attribute(cls, p):
         manager = manager_of_class(cls)
-        return [manager[p.key] for p in class_mapper(cls).iterate_properties]
+        return manager[p.key]
 except ImportError:
     # 0.4
-    def _managed_attributes(cls):
-        return [getattr(cls, p.key) for p in class_mapper(cls).iterate_properties]
+    def _get_attribute(cls, p):
+        return getattr(cls, p.key)
     
 
 def prettify(text):
@@ -163,13 +164,17 @@ class ModelRenderer(object):
                 raise Exception("not bound to a SA instance, and no manual Field definitions found")
         else:
             # SA class.
-            # two step process so we get the right order in the OrderedDict
-            L = []
-            for iattr in _managed_attributes(cls):
-                L.append(fields.AttributeField(iattr, self))
+            # strip out synonyms.  there may be a more straightforward way to do this.
+            attrs = [_get_attribute(cls, p) for p in class_mapper(cls).iterate_properties]
+            for p in class_mapper(cls).iterate_properties:
+                if isinstance(p, SynonymProperty):
+                    attrs = [attr for attr in attrs
+                             if attr.property.key != p.name
+                             or attr is _get_attribute(cls, p)]
+            # sort relations last before storing in the OrderedDict
+            L = [fields.AttributeField(attr, self) for attr in attrs]
             L.sort(lambda a, b: cmp(a.is_relation, b.is_relation)) # note, key= not used for 2.3 support
-            for field in L:
-                self._fields[field.key] = field
+            self._fields.update((field.key, field) for field in L)
 
     def add(self, field):
         """Add a form Field.  By default, this Field will be included in the rendered form or table."""

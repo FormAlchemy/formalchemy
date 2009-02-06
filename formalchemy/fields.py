@@ -971,7 +971,7 @@ class AttributeField(AbstractField):
         self._column_name = '_'.join([c.name for c in _columns])
 
         # The name of the form input. usually the same as the key, except for
-        # multi-valued SA relation properties. For example, for order.user,
+        # single-valued SA relation properties. For example, for order.user,
         # name will be 'user_id' (assuming that is indeed the name of the foreign
         # key to users), but for user.orders, name will be 'orders'.
         if self.is_collection or self.is_composite or not hasattr(self.model, self._column_name):
