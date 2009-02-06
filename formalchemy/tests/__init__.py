@@ -148,7 +148,7 @@ class User(Base):
     email = Column(Unicode(40), unique=True, nullable=False)
     password = Column(Unicode(20), nullable=False)
     name = Column(Unicode(30))
-    orders = relation(Order, backref='user')
+    orders = relation(Order, backref='user', order_by='Order.quantity')
     def __str__(self):
         return self.name
 

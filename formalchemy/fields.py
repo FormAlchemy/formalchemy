@@ -1081,8 +1081,8 @@ class AttributeField(AbstractField):
                 self.render_opts['options'] = [self._null_option]
             # todo 2.0 this does not handle primaryjoin (/secondaryjoin) alternate join conditions
             fk_cls = self.relation_type()
-            fk_pk = class_mapper(fk_cls).primary_key[0]
-            q = self.query(fk_cls).order_by(fk_pk)
+            order_by = self._property.order_by or list(class_mapper(fk_cls).primary_key)
+            q = self.query(fk_cls).order_by(order_by)
             self.render_opts['options'] += _query_options(q)
             logger.debug('options for %s are %s' % (self.name, self.render_opts['options']))
         if self.is_collection and isinstance(self.renderer, self.parent.default_renderers['dropdown']):

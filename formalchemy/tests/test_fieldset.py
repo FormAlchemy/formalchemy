@@ -293,14 +293,14 @@ document.getElementById("User--email").focus();
   Orders
  </label>
  <select id="User--orders" multiple="multiple" name="User--orders" size="5">
-  <option value="1">
-   Quantity: 10
-  </option>
   <option value="2">
    Quantity: 5
   </option>
   <option value="3">
    Quantity: 6
+  </option>
+  <option value="1">
+   Quantity: 10
   </option>
  </select>
 </div>
@@ -310,30 +310,30 @@ True
 >>> fs = FieldSet(bill)
 >>> print pretty_html(fs.orders.render())
 <select id="User-1-orders" multiple="multiple" name="User-1-orders" size="5">
- <option value="1" selected="selected">
-  Quantity: 10
- </option>
  <option value="2">
   Quantity: 5
  </option>
  <option value="3">
   Quantity: 6
  </option>
+ <option value="1" selected="selected">
+  Quantity: 10
+ </option>
 </select>
 >>> print pretty_html(fs.orders.checkbox().render())
-<input checked="checked" id="User-1-orders_0" name="User-1-orders" type="checkbox" value="1" />
+<input id="User-1-orders_0" name="User-1-orders" type="checkbox" value="2" />
 <label for="User-1-orders_0">
- Quantity: 10
-</label>
-<br />
-<input id="User-1-orders_1" name="User-1-orders" type="checkbox" value="2" />
-<label for="User-1-orders_1">
  Quantity: 5
 </label>
 <br />
-<input id="User-1-orders_2" name="User-1-orders" type="checkbox" value="3" />
-<label for="User-1-orders_2">
+<input id="User-1-orders_1" name="User-1-orders" type="checkbox" value="3" />
+<label for="User-1-orders_1">
  Quantity: 6
+</label>
+<br />
+<input checked="checked" id="User-1-orders_2" name="User-1-orders" type="checkbox" value="1" />
+<label for="User-1-orders_2">
+ Quantity: 10
 </label>
 
 >>> print fs.orders.checkbox(options=session.query(Order).filter_by(id=1)).render()
