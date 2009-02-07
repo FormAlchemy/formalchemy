@@ -1,0 +1,3 @@
+include pylonsapp/config/deployment.ini_tmpl
+recursive-include pylonsapp/public *
+recursive-include pylonsapp/templates *
