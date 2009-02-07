@@ -7,7 +7,7 @@ def test_aliases():
     fs.bind(Aliases)
     assert fs.id.name == 'id'
 
-def test_render_aliases(self):
+def test_render_aliases():
     """
     >>> alias = session.query(Aliases).first()
     >>> alias

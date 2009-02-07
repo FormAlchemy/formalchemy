@@ -43,7 +43,7 @@ def test_renderer_names():
         </div>
     """
 
-def test_foreign_keys(self):
+def test_foreign_keys():
     """
     Assume that we can have more than one ForeignKey as primary key::
 
