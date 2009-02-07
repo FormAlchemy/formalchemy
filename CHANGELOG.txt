@@ -1,6 +1,8 @@
 1.1.2
 -----
 
+* add a paster template to bootstrap a pylons project with FA support enable
+
 * performance improvements
 
 * non-SQLA Fields are no longer considered "experimental"
