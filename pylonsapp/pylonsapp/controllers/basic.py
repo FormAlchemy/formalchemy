@@ -4,7 +4,7 @@ from pylons.controllers.util import abort, redirect_to
 from pylonsapp.lib.base import BaseController, render
 from pylonsapp.model import meta
 from pylonsapp import model
-from formalchemy import FieldSet
+from pylonsapp.forms import FieldSet
 
 log = logging.getLogger(__name__)
 

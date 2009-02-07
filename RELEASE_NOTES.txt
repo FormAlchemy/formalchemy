@@ -9,6 +9,22 @@ Boostrap a buildout env::
 
 Update version numbers in setup.py and formalchemy/__init__.py
 
+Run tests::
+
+  $ ./bin/test
+
+Assume the pylons template work::
+
+  $ ./bin/paster create -t pylons_fa pylonsapp
+
+Merge files carefully. All files should be override except development.ini and
+model/__init__.py.
+
+Run pylons tests::
+
+  $ cd pylonsapp
+  $ ../bin/test_pylons
+
 Compile .mo files and create the tarball::
 
   $ ./bin/python setup.py make_dist

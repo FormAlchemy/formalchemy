@@ -23,7 +23,7 @@ Usage
 
 You must override the `storage_path` attribute:
 
-.. literalinclude:: ../../adminapp/adminapp/forms/fsblob.py
+.. literalinclude:: ../../pylonsapp/pylonsapp/forms/fsblob.py
 
 As you can see, you can use it like all :mod:`~formalchemy.fields` in the
 `.configure` method.
@@ -60,6 +60,6 @@ Sample app
 ----------
 
 You can have a look at the complete `source
-<http://code.google.com/p/formalchemy/source/browse/#svn/trunk/adminapp>`_ of
+<http://code.google.com/p/formalchemy/source/browse/#svn/trunk/pylonsapp>`_ of
 the application used for FA's testing.
 

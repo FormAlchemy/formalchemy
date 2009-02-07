@@ -1,13 +1,35 @@
 Pylons integration
 ==================
 
+Bootstrap your project
+----------------------
+
+`FormAlchemy` come with a subclass of the Pylons_ template.
+If you have Pylons_ and `FormAlchemy` installed you should see that::
+
+  $ paster create --list-templates
+  Available templates:
+    basic_package:   A basic setuptools-enabled package
+    paste_deploy:    A web application deployed through paste.deploy
+    pylons:          Pylons application template
+    pylons_fa:       Pylons application template with formalchemy support
+    pylons_minimal:  Pylons minimal application template
+
+To bootstrap a new Pylons_ project with `FormAlchemy` support enable just run::
+
+  $ paster create -t pylons_fa pylonsapp
+
+Using forms in controllers
+--------------------------
+
 Imagine you have a `Foo` model in your `model/__init__.py` then your controller
 can look like this:
 
-.. literalinclude:: ../adminapp/adminapp/controllers/basic.py
+.. literalinclude:: ../pylonsapp/pylonsapp/controllers/basic.py
 
 If you have a lot of fieldset and configuration stuff and want to use them in
-different controller, then you can create a `forms/` module to put your
+different controller, then you can use the `forms/` module to put your
 fieldsets. This is a standard and allow you to use the
 :mod:`formalchemy.ext.pylons` extension
 
+.. _Pylons: http://pylonshq.com/

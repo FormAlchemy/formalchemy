@@ -4,7 +4,6 @@ from pylons.controllers.util import abort, redirect_to
 from pylonsapp.lib.base import BaseController, render
 from pylonsapp.model import meta
 from pylonsapp import model
-from pylonsapp.forms import FieldSet
 from pylonsapp.forms.fsblob import Files
 
 log = logging.getLogger(__name__)
