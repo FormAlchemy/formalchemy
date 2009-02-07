@@ -20,7 +20,7 @@ except ImportError:
 else:
     class PylonsTemplate(Template):
         _template_dir = ('formalchemy', 'paster_templates/pylons_fa')
-        summary = 'Pylons template with formalchemy support'
+        summary = 'Pylons application template with formalchemy support'
         required_templates = ['pylons']
         template_renderer = staticmethod(paste_script_template_renderer)
         vars = [

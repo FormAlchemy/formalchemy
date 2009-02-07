@@ -1,10 +1,41 @@
-{{if sqlalchemy}}
-from formalchemy import forms
+from {{package}} import model
+from {{package}}.lib.base import render
 from formalchemy import validators
 from formalchemy import fields
-from {{package}}.lib.base import render
+from formalchemy import forms
+from formalchemy import tables
 
 class FieldSet(forms.FieldSet):
+{{if template_engine == 'mako'}}
+    def _render(self, **kwargs):
+        return render('/fieldset.mako',
+                      extra_vars=kwargs)
+    def _render_readonly(self, **kwargs):
+        return render('/fieldset_readonly.mako',
+                      extra_vars=kwargs)
+{{else}}
     pass
-
 {{endif}}
+
+class Grid(tables.Grid):
+{{if template_engine == 'mako'}}
+    def _render(self, **kwargs):
+        return render('/grid.mako',
+                      extra_vars=kwargs)
+    def _render_readonly(self, **kwargs):
+        return render('/grid_readonly.mako',
+                      extra_vars=kwargs)
+{{else}}
+    pass
+{{endif}}
+
+## Initialize fieldsets
+
+#Foo = FieldSet(model.Foo)
+#Reflected = FieldSet(Reflected)
+
+## Initialize grids
+
+#FooGrid = Grid(model.Foo)
+#ReflectedGrid = Grid(Reflected)
+
