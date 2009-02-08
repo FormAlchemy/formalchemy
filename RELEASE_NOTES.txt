@@ -22,8 +22,7 @@ model/__init__.py.
 
 Run pylons tests::
 
-  $ cd pylonsapp
-  $ ../bin/test_pylons
+  $ ./bin/test_pylons
 
 Compile .mo files and create the tarball::
 
