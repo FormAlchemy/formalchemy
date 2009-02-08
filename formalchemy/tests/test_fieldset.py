@@ -175,8 +175,8 @@ document.getElementById("Two--foo").focus();
 >>> fs_twon.rebind(data={"TwoNumeric-1-foo": "6.7"})
 >>> fs_twon.sync()
 >>> new_twon = fs_twon.model
->>> new_twon.foo
-Decimal("6.7")
+>>> new_twon.foo == Decimal("6.7")
+True
 
 # test sync when TwoNumeric-1-foo is empty
 >>> fs_twon.rebind(data={"TwoNumeric-1-foo": ""})
