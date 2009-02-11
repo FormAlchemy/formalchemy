@@ -66,7 +66,11 @@ class FieldRenderer(object):
             # deserialize the generated name.  All we care about is generating unique
             # names for a given model's domain.
             pk_string = u'_'.join([stringify_key(k) for k in pk])
-        return u'%s-%s-%s' % (clsname, pk_string, self.field.name)
+
+        components = [clsname, pk_string, self.field.name]
+        if self.field.parent.prefix:
+            components.insert(0, self.field.parent.prefix)
+        return u"-".join(components)
     name = property(name)
 
     def _value(self):

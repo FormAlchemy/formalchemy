@@ -122,6 +122,83 @@ Simulate creating a grid in a different thread than it's used in:
 >>> g = Grid(User, session=_old_session)
 >>> g2 = g.bind([john])
 >>> _ = g2.render()
+
+Explicitly test rebind + render:
+>>> g = Grid(User, prefix="myprefix")
+>>> g.rebind([bill, john])
+>>> print pretty_html(g.render())
+<thead>
+ <tr>
+  <th>
+   Email
+  </th>
+  <th>
+   Password
+  </th>
+  <th>
+   Name
+  </th>
+  <th>
+   Orders
+  </th>
+ </tr>
+</thead>
+<tbody>
+ <tr class="even">
+  <td>
+   <input id="myprefix-User-1-email" maxlength="40" name="myprefix-User-1-email" type="text" value="bill@example.com" />
+  </td>
+  <td>
+   <input id="myprefix-User-1-password" maxlength="20" name="myprefix-User-1-password" type="text" value="1234" />
+  </td>
+  <td>
+   <input id="myprefix-User-1-name" maxlength="30" name="myprefix-User-1-name" type="text" value="Bill" />
+  </td>
+  <td>
+   <select id="myprefix-User-1-orders" multiple="multiple" name="myprefix-User-1-orders" size="5">
+    <option value="2">
+     Quantity: 5
+    </option>
+    <option value="3">
+     Quantity: 6
+    </option>
+    <option value="1" selected="selected">
+     Quantity: 10
+    </option>
+   </select>
+  </td>
+ </tr>
+ <tr class="odd">
+  <td>
+   <input id="myprefix-User-2-email" maxlength="40" name="myprefix-User-2-email" type="text" value="john@example.com" />
+  </td>
+  <td>
+   <input id="myprefix-User-2-password" maxlength="20" name="myprefix-User-2-password" type="text" value="5678" />
+  </td>
+  <td>
+   <input id="myprefix-User-2-name" maxlength="30" name="myprefix-User-2-name" type="text" value="John" />
+  </td>
+  <td>
+   <select id="myprefix-User-2-orders" multiple="multiple" name="myprefix-User-2-orders" size="5">
+    <option value="2" selected="selected">
+     Quantity: 5
+    </option>
+    <option value="3" selected="selected">
+     Quantity: 6
+    </option>
+    <option value="1">
+     Quantity: 10
+    </option>
+   </select>
+  </td>
+ </tr>
+</tbody>
+>>> g.rebind(data={'myprefix-User-1-email': 'updatebill_@example.com', 'myprefix-User-1-password': '1234_', 'myprefix-User-1-name': 'Bill_', 'myprefix-User-1-orders': '1', 'myprefix-User-2-email': 'john_@example.com', 'myprefix-User-2-password': '5678_', 'myprefix-User-2-name': 'John_', 'myprefix-User-2-orders': ['2', '3'], })
+>>> g.validate()
+True
+>>> g.sync()
+>>> bill.email
+'updatebill_@example.com'
 """
 
 if __name__ == '__main__':

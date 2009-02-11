@@ -49,6 +49,14 @@ Binding
       pylons request.params() objects and plain dictionaries are known
       to work.
 
+- `prefix=None`:
+      the prefix to prepend to html name attributes. This is useful to avoid 
+      field name conflicts when there are two fieldsets creating objects
+      from the same model in one html page.  (This is not needed when
+      editing existing objects, since the object primary key is used as part
+      of the field name.)
+
+
 Only the `model` parameter is required.
 
 After binding, the :class:`~formalchemy.forms.FieldSet`.model attribute will always be an instance.

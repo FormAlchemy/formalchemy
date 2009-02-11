@@ -109,11 +109,11 @@ class Grid(base.EditableRenderer):
     _render = staticmethod(HAS_MAKO and render_grid_mako or render_grid_tempita)
     _render_readonly = staticmethod(HAS_MAKO and render_grid_readonly_mako or render_grid_readonly_tempita)
 
-    def __init__(self, cls, instances=[], session=None, data=None):
+    def __init__(self, cls, instances=[], session=None, data=None, prefix=None):
         from sqlalchemy.orm import class_mapper
         if not class_mapper(cls):
             raise Exception('Grid must be bound to an SA mapped class')
-        base.EditableRenderer.__init__(self, cls, session, data)
+        base.EditableRenderer.__init__(self, cls, session, data, prefix) 
         self.rows = instances
         self.readonly = False
         self.errors = {}

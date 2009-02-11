@@ -9,7 +9,9 @@
 
 * with_null_as feature (see issue #52)
 
-* when querying for option values, the order_by given on the relation is used, if any
+* prefix feature (see issue #59)
+
+* when auto-querying for option values, the order_by given on the relation is used, if any
 
 * synonym awareness (you don't have to manually exclude the shadowed attribute)
 

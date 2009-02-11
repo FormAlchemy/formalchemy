@@ -1016,6 +1016,27 @@ ValueError: Unrecognized Field `AttributeField(invalid)` in `include` -- did you
 >>> fs_s = FieldSet(Synonym)
 >>> fs_s._fields
 {'foo': AttributeField(foo), 'id': AttributeField(id)}
+
+>>> fs_prefix = FieldSet(Two, prefix="myprefix")
+>>> print(fs_prefix.render())
+<div>
+ <label class="field_opt" for="myprefix-Two--foo">
+  Foo
+ </label>
+ <input id="myprefix-Two--foo" name="myprefix-Two--foo" type="text" value="133" />
+</div>
+<script type="text/javascript">
+ //<![CDATA[
+document.getElementById("myprefix-Two--foo").focus();
+//]]>
+</script>
+
+>>> fs_prefix.rebind(data={"myprefix-Two--foo": "42"})
+>>> fs_prefix.validate()
+True
+>>> fs_prefix.sync()
+>>> fs_prefix.model.foo
+42
 """
 
 if __name__ == '__main__':

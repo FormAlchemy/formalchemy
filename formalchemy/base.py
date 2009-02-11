@@ -78,7 +78,7 @@ class ModelRenderer(object):
     """
     prettify = staticmethod(prettify)
 
-    def __init__(self, model, session=None, data=None):
+    def __init__(self, model, session=None, data=None, prefix=None):
         """ 
         !FormAlchemy FieldSet and Table constructors take three parameters:
         
@@ -141,6 +141,7 @@ class ModelRenderer(object):
         self._fields = OrderedDict()
         self._render_fields = OrderedDict()
         self.model = self.session = None
+        self.prefix = prefix
 
         if not model:
             raise Exception('model parameter may not be None')
