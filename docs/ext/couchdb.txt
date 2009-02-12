@@ -1,0 +1,41 @@
+:mod:`formalchemy.ext.couchdb` -- CouchDB support
+**************************************************
+
+.. automodule:: formalchemy.ext.couchdb
+
+This module provide a subclass of :class:`~formalchemy.forms.FieldSet` to support simplecouchdb_'s schema. 
+
+.. _simplecouchdb: http://py-simplecouchdb.e-engura.org/
+
+Usage
+=====
+
+Simple example::
+
+    from formalchemy.ext.couchdb import FieldSet
+    from simplecouchdb import schema
+
+    class Pet(schema.Document):
+        name = schema.StringProperty(required=True)
+        type = schema.StringProperty(required=True)
+        birthdate = schema.DateProperty(auto_now=True)
+        weight_in_pounds = schema.IntegerProperty()
+        spayed_or_neutered = schema.BooleanProperty()
+        owner = schema.StringProperty()
+
+    fs = FieldSet(Pet)
+    p = Pet()
+    p.name = 'dewey'
+    p.type = 'cat'
+    p.owner = 'gawel'
+    fs = fs.bind(p)
+
+Classes definitions
+===================
+
+FieldSet
+--------
+
+.. autoclass:: FieldSet
+   :members:
+

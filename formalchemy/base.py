@@ -77,6 +77,7 @@ class ModelRenderer(object):
     access and supporting rendering capabilities.
     """
     prettify = staticmethod(prettify)
+    use_session = True
 
     def __init__(self, model, session=None, data=None, prefix=None):
         """ 
@@ -146,7 +147,7 @@ class ModelRenderer(object):
         if not model:
             raise Exception('model parameter may not be None')
         ModelRenderer.rebind(self, model, session, data)
-        
+
         cls = isinstance(self.model, type) and self.model or type(self.model)
         try:
             class_mapper(cls)
