@@ -153,8 +153,8 @@ except ImportError:
     HAS_MAKO = False
 else:
     HAS_MAKO = True
-    render_mako = MakoTemplate(mako_template('fieldset')).render
-    render_readonly_mako = MakoTemplate(mako_template('fieldset_readonly')).render
+    render_mako = MakoTemplate(mako_template('fieldset')).render_unicode
+    render_readonly_mako = MakoTemplate(mako_template('fieldset_readonly')).render_unicode
 
 
 class FieldSet(AbstractFieldSet):

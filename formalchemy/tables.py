@@ -70,8 +70,8 @@ except ImportError:
     HAS_MAKO = False
 else:
     HAS_MAKO = True
-    render_grid_mako = MakoTemplate(mako_template('grid')).render
-    render_grid_readonly_mako = MakoTemplate(mako_template('grid_readonly')).render
+    render_grid_mako = MakoTemplate(mako_template('grid')).render_unicode
+    render_grid_readonly_mako = MakoTemplate(mako_template('grid_readonly')).render_unicode
 
 def _validate_iterable(o):
     try:
