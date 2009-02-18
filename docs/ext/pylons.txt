@@ -14,12 +14,15 @@ CRUD (create, retrieve, update, delete) operations on your SQLAlchemy
 models, with a high degree of customizability.
 
 Sample model listing:
+
 .. image:: admin-models.png
 
 Sample model overview page:
+
 .. image:: admin-order.png
 
 Sample model creation page:
+
 .. image:: admin-new.png
 
 
@@ -32,11 +35,11 @@ First, generate a controller in your application::
 
 Next, edit your `controllers/admin.py`, replacing `yourapp` with your application name:
 
-.. literalinclude:: ../../adminapp/adminapp/controllers/admin.py
+.. literalinclude:: ../../pylonsapp/pylonsapp/controllers/admin.py
 
 Add these lines in `config/routing.py`:
 
-.. literalinclude:: ../../adminapp/adminapp/config/routing.py
+.. literalinclude:: ../../pylonsapp/pylonsapp/config/routing.py
 
 All done!  Now you can go to the `/admin/` url.
 
@@ -89,6 +92,6 @@ Sample app
 ----------
 
 You can have a look at the complete `source
-<http://code.google.com/p/formalchemy/source/browse/#svn/trunk/adminapp>`_ of
+<http://code.google.com/p/formalchemy/source/browse/#svn/trunk/pylonsapp>`_ of
 the application used for FA's testing.
 
