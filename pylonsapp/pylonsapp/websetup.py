@@ -15,3 +15,10 @@ def setup_app(command, conf, vars):
 
     # Create the tables if they aren't there already
     meta.metadata.create_all(checkfirst=True)
+
+    from pylonsapp import model
+
+    o = model.Owner()
+    o.name = 'gawel'
+    meta.Session.add(o)
+    meta.Session.commit()

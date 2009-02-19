@@ -37,6 +37,32 @@ class Files(object):
 
 orm.mapper(Files, files_table)
 
+animals_table = sa.Table("Animals", meta.metadata,
+    sa.Column("id", sa.types.Integer, primary_key=True),
+    sa.Column("name", sa.types.String(255), nullable=False),
+    sa.Column("owner_id", sa.ForeignKey('Owners.id'), nullable=False),
+    )
+
+class Animal(object):
+    pass
+
+orm.mapper(Animal, animals_table)
+
+owners_table = sa.Table("Owners", meta.metadata,
+    sa.Column("id", sa.types.Integer, primary_key=True),
+    sa.Column("name", sa.types.String(255), nullable=False),
+    )
+
+class Owner(object):
+    def __repr__(self):
+        return self.name
+
+orm.mapper(Owner, owners_table, properties=dict(
+           animals=orm.relation(Animal,
+                                backref=orm.backref('owner', uselist=False))
+           ))
+
+
 ## Non-reflected tables may be defined and mapped at module level
 #foo_table = sa.Table("Foo", meta.metadata,
 #    sa.Column("id", sa.types.Integer, primary_key=True),

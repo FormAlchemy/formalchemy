@@ -14,6 +14,8 @@ class TestAdminController(TestController):
         response.mustcontain('/admin/Foo')
         response = response.click('Foo')
 
+        ## Simple model
+
         # add page
         response.mustcontain('/admin/Foo/edit')
         response = response.click('Create form')
@@ -41,3 +43,20 @@ class TestAdminController(TestController):
         response = response.follow()
 
         assert 'new value' not in response, response
+
+    def test_fk(self):
+        response = self.app.get(url(controller='admin'))
+        response.mustcontain('/admin/Animal')
+
+        ## Animals / FK
+        response = response.click('Animal')
+
+        # add page
+        response.mustcontain('/admin/Animal/edit')
+        response = response.click('Create form')
+        response.mustcontain('<option value="1">gawel</option>')
+        form = response.forms[0]
+        form['Animal--name'] = 'dewey'
+        form['Animal--owner_id'] = '1'
+        response = form.submit()
+        assert response.headers['location'] == 'http://localhost/admin/Animal'
