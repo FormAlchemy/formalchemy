@@ -1,12 +1,20 @@
-<body>
-<h1>{{_(title)}} {{modelname}} {{id and id or ''}}</h1>
+{{py:
+from pylons.controllers.util import url_for
+_ = F_
+}}
+{{def title}}
+{{_(action)}} {{modelname}} {{id and id or ''}}
+{{enddef}}
+<fieldset>
+<legend>
+{{_(action)}} {{modelname}} {{id and id or ''}}
+</legend>
 <form method="post">
   {{c.fs.render()}}
-  <div>
-      <input type="submit">
-      <input type="button" value="{{_('Cancel')}}"
+  <div class="form_controls">
+      <input type="submit" class="button">
+      <input type="button" value="{{_('Cancel')}}" class="button"
              onclick="javascript:window.location = '{{url_for(modelname=modelname, action='list', id=None)}}'" />
   </div>
 </form>
-</body>
-
+</fieldset>

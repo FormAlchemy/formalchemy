@@ -18,7 +18,7 @@ class TestAdminController(TestController):
 
         # add page
         response.mustcontain('/admin/Foo/edit')
-        response = response.click('Create form')
+        response = response.click('New object')
         form = response.forms[0]
         form['Foo--bar'] = 'value'
         response = form.submit()
@@ -53,7 +53,7 @@ class TestAdminController(TestController):
 
         # add page
         response.mustcontain('/admin/Animal/edit')
-        response = response.click('Create form')
+        response = response.click('New object')
         response.mustcontain('<option value="1">gawel</option>')
         form = response.forms[0]
         form['Animal--name'] = 'dewey'

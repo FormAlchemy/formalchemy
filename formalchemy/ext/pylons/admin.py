@@ -29,37 +29,15 @@ _('Cancel')
 
 template_dir = os.path.dirname(__file__)
 
-def load_text(filename):
-    fd = open(os.path.join(template_dir, '%s.tmpl' % filename))
-    data = fd.read()
-    fd.close()
-    return data
+def get_file_template(name, from_template):
+    path = os.path.join(template_dir, '%s.tmpl' % name)
+    return from_template.__class__.from_filename(
+        path, namespace=from_template.namespace,
+        get_template=from_template.get_template)
 
 def load_template(filename):
-    flash = load_text('admin_flash')
-    body = load_text(filename)
-    html = """<html>
-{{py:
-from pylons.controllers.util import url_for
-_ = F_
-}}
-<head>
-<style media="screen" type="text/css"><!-- @import url({{url_for(modelname='static_contents', action='admin.css', id=None)}}); --></style>
-%(flash)s
-{{custom_css}}
-{{custom_js}}
-</head>
-{{if modelname:}}
-<div>
-  <a href="{{url_for(modelname=None, action=None, id=None)}}">
-    &lt;&lt; {{F_('Models')}}
-  </a>
-</div>
-{{endif}}
-%(body)s
-</html>
-""" % locals()
-    return Template(html)
+    filename = os.path.join(template_dir, '%s.tmpl' % filename)
+    return Template.from_filename(filename, default_inherit='base', get_template=get_file_template)
 
 index_template = load_template('admin_index')
 list_template = load_template('admin_list')
@@ -103,11 +81,13 @@ def get_forms(controller, model_module, forms):
         def get_linker(action, modelname=modelname):
             _ = get_translator().gettext
             label = action == 'edit' and _('edit') or _('delete')
-            return lambda item: '<a href="%s">%s</a>' % (
+            return lambda item: '<a href="%s" title="%s" class="icon %s">%s</a>' % (
                                 h.url_for(modelname=modelname,
                                 action=action,
                                 id=_pk(item)),
-                                get_translator().gettext(action))
+                                label,
+                                action,
+                                label)
         old_include = grid.render_fields.values() # grab this now, or .add will change it if user didn't call configure yet
         for action in ['edit', 'delete']:
             grid.add(Field(action, types.String, get_linker(action)))
@@ -175,7 +155,7 @@ class AdminController(object):
                 redirect_to(url_for(modelname=modelname,
                                     action='list', id=None))
         return edit_template.substitute(c=c, h=h, F_=F_,
-                                        title=title, id=id,
+                                        action=title, id=id,
                                         modelname=modelname,
                                         custom_css = self._custom_css,
                                         custom_js = self._custom_js)
@@ -203,6 +183,8 @@ class AdminController(object):
             response.headers['Content-type'] = "text/css"
         elif filename.endswith('.js'):
             response.headers['Content-type'] = "text/javascript"
+        elif filename.endswith('.png'):
+            response.headers['Content-type'] = "image/png"
         else:
             raise IOError('Invalid filename: %s' % filename)
         fd = open(filepath)

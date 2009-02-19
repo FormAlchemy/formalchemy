@@ -1,9 +1,12 @@
-<body>
-<h1>{{_('Models')}}</h1>
-<ul>
-{{for modelname in modelnames}}
-  <li><a href="{{h.url_for(modelname=modelname, action='list')}}">{{modelname}}</a></li>
+{{py:
+from pylons.controllers.util import url_for
+_ = F_
+}}
+{{def title}}
+{{_('Models')}}
+{{enddef}}
+<table>
+{{for i, modelname in enumerate(modelnames)}}
+  <tr class="{{i % 2 and 'odd' or 'even'}}"><td><a href="{{h.url_for(modelname=modelname, action='list')}}">{{modelname}}</a></td></tr>
 {{endfor}}
-</ul>
-</body>
-
+</table>

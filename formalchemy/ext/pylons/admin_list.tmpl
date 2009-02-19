@@ -1,19 +1,31 @@
-<body>
-<h1>{{_('Related types')}}</h1>
-  <ul>
-  {{for field in c.grid._fields.itervalues()}}
-    {{if field.is_relation}}
-      {{py:clsname = field.relation_type().__name__}}
-      <li><a href="{{h.url_for(modelname=clsname, action='list')}}">{{clsname}}</a></li>
-    {{endif}}
-  {{endfor}}
-  </ul>
-<h1>{{_('Existing objects')}}</h1>
+{{py:
+from pylons.controllers.util import url_for
+_ = F_
+}}
+{{def title}}
+{{c.modelname}}
+{{enddef}}
+<div class="box">
+<h2>
+{{_('Existing objects')}}
+</h2>
 <table>
   {{c.grid.render()}}
 </table>
-<h1>{{_('New object')}}</h1>
-<a href="{{h.url_for(modelname=c.modelname, action='edit')}}">
-{{_('Create form')}}
+<a class="icon add" title="{{_('New object')}}" href="{{h.url_for(modelname=c.modelname, action='edit')}}">
+{{_('New object')}}
 </a>
-</body>
+</div>
+
+<div class="box">
+<h2>{{_('Related types')}}</h2>
+  <table>
+  {{for field in c.grid._fields.itervalues()}}
+    {{if field.is_relation}}
+      {{py:clsname = field.relation_type().__name__}}
+      <tr><td><a href="{{h.url_for(modelname=clsname, action='list')}}">{{clsname}}</a></td></tr>
+    {{endif}}
+  {{endfor}}
+  </table>
+</div>
+
