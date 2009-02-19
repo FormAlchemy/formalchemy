@@ -44,7 +44,8 @@ animals_table = sa.Table("Animals", meta.metadata,
     )
 
 class Animal(object):
-    pass
+    def __repr__(self):
+        return self.name
 
 orm.mapper(Animal, animals_table)
 

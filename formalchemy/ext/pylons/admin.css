@@ -390,18 +390,4 @@ fieldset p.label {
     overflow:hidden;
 }
 
-.add {
-    margin-left:1em;
-    margin-bottom: 0.3em;
-    background: url('/admin/static_contents/add.png');
-}
-
-.delete {
-    background: url('/admin/static_contents/delete.png');
-    float:left;
-}
-.edit {
-    background: url('/admin/static_contents/edit.png');
-    float:left;
-}
 /*****************************/

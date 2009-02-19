@@ -19,7 +19,7 @@ Sample model listing:
 
 Sample model overview page:
 
-.. image:: admin-order.png
+.. image:: admin-listing.png
 
 Sample model creation page:
 
