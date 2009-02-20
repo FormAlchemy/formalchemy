@@ -1,4 +1,3 @@
-{{if template_engine == 'mako'}}
 # -*- coding: utf-8 -*-
 <tbody>
 %for field in fieldset.render_fields.itervalues():
@@ -8,4 +7,3 @@
   </tr>
 %endfor
 </tbody>
-{{endif}}

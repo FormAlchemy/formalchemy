@@ -1,4 +1,3 @@
-{{if template_engine == 'mako'}}
 # -*- coding: utf-8 -*-
 <%
 _ = F_
@@ -35,4 +34,3 @@ document.getElementById("${field.renderer.name}").focus();
 ${field.render()}
   % endif
 % endfor
-{{endif}}

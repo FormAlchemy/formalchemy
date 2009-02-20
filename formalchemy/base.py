@@ -77,7 +77,6 @@ class ModelRenderer(object):
     access and supporting rendering capabilities.
     """
     prettify = staticmethod(prettify)
-    use_session = True
 
     def __init__(self, model, session=None, data=None, prefix=None):
         """ 

@@ -1,4 +1,3 @@
-{{if template_engine == 'mako'}}
 # -*- coding: utf-8 -*-
 <thead>
   <tr>
@@ -18,4 +17,3 @@
   </tr>
 %endfor
 </tbody>
-{{endif}}
