@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
-from formalchemy.forms import FieldSet as Base
+from formalchemy.forms import FieldSet as BaseFieldSet
+from formalchemy.tables import Grid as BaseGrid
 from formalchemy.fields import Field as BaseField
 from formalchemy import fields
 from formalchemy import validators
@@ -21,12 +22,12 @@ class Field(BaseField):
         return getattr(self.model, self.name)
     value = property(value)
 
-class FieldSet(Base):
+class FieldSet(BaseFieldSet):
     def __init__(self, model, session=None, data=None, prefix=None):
         self._fields = OrderedDict()
         self._render_fields = OrderedDict()
         self.model = self.session = None
-        Base.rebind(self, model, data=data)
+        BaseFieldSet.rebind(self, model, data=data)
         self.prefix = prefix
         self.model = model
         self.readonly = False
@@ -81,6 +82,22 @@ class FieldSet(Base):
             except:
                 raise Exception('unsupported data object %s.  currently only dicts and Paste multidicts are supported' % self.data)
 
+class Grid(BaseGrid, FieldSet):
+    def __init__(self, cls, instances=[], session=None, data=None, prefix=None):
+        FieldSet.__init__(self, cls, session, data, prefix)
+        self.rows = instances
+        self.readonly = False
+        self._errors = {}
+    def _get_errors(self):
+        return self._errors
+    def _set_errors(self, value):
+        self._errors = value
+    errors = property(_get_errors, _set_errors)
+    def rebind(self, instances=None, session=None, data=None):
+        if instances is not None:
+            self.rows = instances
+    def _set_active(self, instance, session=None):
+        FieldSet.rebind(self, instance, session or self.session, self.data)
 
 def test_fieldset():
     class Pet(schema.Document):
@@ -102,5 +119,10 @@ def test_fieldset():
     assert fs.owner.value == 'gawel'
     html = fs.render()
     assert 'class="field_req" for="Pet--name"' in html, html
+    assert 'value="gawel"' in html, html
+
+    fs = Grid(Pet, [p, Pet()])
+    html = fs.render()
+    assert '<thead>' in html, html
     assert 'value="gawel"' in html, html
 

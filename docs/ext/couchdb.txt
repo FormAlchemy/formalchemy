@@ -39,3 +39,6 @@ FieldSet
 .. autoclass:: FieldSet
    :members:
 
+.. autoclass:: Grid
+   :members:
+
