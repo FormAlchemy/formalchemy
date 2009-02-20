@@ -15,10 +15,11 @@ __all__ = ["Grid"]
 
 
 template_grid_readonly = r"""
+{{py:import formalchemy.helpers as h}}
 <thead>
   <tr>
     {{for field in collection.render_fields.itervalues()}}
-      <th>{{F_(field.label_text or collection.prettify(field.key))}}</th>
+      <th>{{h.escape_once(F_(field.label_text or collection.prettify(field.key)))}}</th>
     {{endfor}}
   </tr>
 </thead>
@@ -37,10 +38,11 @@ template_grid_readonly = r"""
 render_grid_readonly_tempita = TempitaTemplate(template_grid_readonly, name='template_grid_readonly').substitute
 
 template_grid = r"""
+{{py:import formalchemy.helpers as h}}
 <thead>
   <tr>
     {{for field in collection.render_fields.itervalues()}}
-      <th>{{F_(field.label_text or collection.prettify(field.key))}}</td>
+      <th>{{h.escape_once(F_(field.label_text or collection.prettify(field.key)))}}</td>
     {{endfor}}
   </tr>
 </thead>

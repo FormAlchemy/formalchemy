@@ -97,10 +97,11 @@ class AbstractFieldSet(base.EditableRenderer):
 
 
 template_text_readonly = r"""
+{{py:import formalchemy.helpers as h}}
 <tbody>
 {{for field in fieldset.render_fields.itervalues()}}
   <tr>
-    <td class="field_readonly">{{[field.label_text, fieldset.prettify(field.key)][int(field.label_text is None)]}}:</td>
+    <td class="field_readonly">{{h.escape_once([field.label_text, fieldset.prettify(field.key)][int(field.label_text is None)])}}:</td>
     <td>{{field.render_readonly()}}</td>
   </tr>
 {{endfor}}
@@ -110,6 +111,7 @@ render_readonly_tempita = TempitaTemplate(template_text_readonly, name='template
 
 
 template_text_tempita = r"""
+{{py:import formalchemy.helpers as h}}
 {{py:_focus_rendered = False}}
 {{py:_ = F_}}
 
@@ -122,7 +124,7 @@ template_text_tempita = r"""
 {{for field in fieldset.render_fields.itervalues()}}
 {{if field.requires_label}}
 <div>
-  <label class="{{field.is_required() and 'field_req' or 'field_opt'}}" for="{{field.renderer.name}}">{{[field.label_text, fieldset.prettify(field.key)][int(field.label_text is None)]}}</label>
+  <label class="{{field.is_required() and 'field_req' or 'field_opt'}}" for="{{field.renderer.name}}">{{h.escape_once([field.label_text, fieldset.prettify(field.key)][int(field.label_text is None)])}}</label>
   {{field.render()}}
   {{for error in field.errors}}
   <span class="field_error">{{_(error)}}</span>

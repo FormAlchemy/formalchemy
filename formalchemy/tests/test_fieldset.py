@@ -1037,6 +1037,21 @@ True
 >>> fs_prefix.sync()
 >>> fs_prefix.model.foo
 42
+
+>>> fs_two = FieldSet(Two)
+>>> fs_two.configure(options=[fs_two.foo.label('1 < 2')])
+>>> print fs_two.render()
+<div>
+ <label class="field_opt" for="Two--foo">
+  1 &lt; 2
+ </label>
+ <input id="Two--foo" name="Two--foo" type="text" value="133" />
+</div>
+<script type="text/javascript">
+ //<![CDATA[
+document.getElementById("Two--foo").focus();
+//]]>
+</script>
 """
 
 if __name__ == '__main__':
