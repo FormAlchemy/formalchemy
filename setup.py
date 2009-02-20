@@ -56,7 +56,7 @@ try:
           zip_safe=False,
           entry_points = """
           [paste.paster_create_template]
-          pylons_fa = formalchemy.templates:PylonsTemplate
+          pylons_fa = formalchemy.ext.pylons.pastertemplate:PylonsTemplate
           """,
           )
 except ImportError:
