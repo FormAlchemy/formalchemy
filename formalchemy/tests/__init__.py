@@ -159,7 +159,7 @@ class User(Base):
     password = Column(Unicode(20), nullable=False)
     name = Column(Unicode(30))
     orders = relation(Order, backref='user', order_by='Order.quantity')
-    def __str__(self):
+    def __unicode__(self):
         return self.name
 
 class NaturalOrder(Base):

@@ -43,7 +43,7 @@ def stringify_key(k):
     elif isinstance(k, unicode):
         return k
     elif hasattr(k, '__unicode__'):
-        return k.__unicode__()
+        return unicode(k)
     else:
         return unicode(str(k), config.encoding)
 
