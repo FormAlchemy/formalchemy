@@ -2,6 +2,7 @@
 from formalchemy.forms import FieldSet as BaseFieldSet
 from formalchemy.tables import Grid as BaseGrid
 from formalchemy.fields import Field as BaseField
+from formalchemy.base import SimpleMultiDict
 from formalchemy import fields
 from formalchemy import validators
 from sqlalchemy.util import OrderedDict
@@ -21,6 +22,11 @@ class Field(BaseField):
                 return v
         return getattr(self.model, self.name)
     value = property(value)
+
+    def sync(self):
+        """Set the attribute's value in `model` to the value given in `data`"""
+        if not self.is_readonly():
+            setattr(self.model, self.name, self._deserialize())
 
 class FieldSet(BaseFieldSet):
     def __init__(self, model, session=None, data=None, prefix=None):
@@ -72,6 +78,7 @@ class FieldSet(BaseFieldSet):
                 except:
                     raise Exception('%s appears to be a class, not an instance, but FormAlchemy cannot instantiate it.  (Make sure all constructor parameters are optional!)' % model)
             self.model = model
+            self._bound_pk = '%s%s' % (model._doc.get('_id', ''), model._doc.get('_rev', '')) or None
         if data is None:
             self.data = None
         elif hasattr(data, 'getall') and hasattr(data, 'getone'):
@@ -88,14 +95,19 @@ class Grid(BaseGrid, FieldSet):
         self.rows = instances
         self.readonly = False
         self._errors = {}
+
     def _get_errors(self):
         return self._errors
+
     def _set_errors(self, value):
         self._errors = value
     errors = property(_get_errors, _set_errors)
+
     def rebind(self, instances=None, session=None, data=None):
+        FieldSet.rebind(data=data)
         if instances is not None:
             self.rows = instances
+
     def _set_active(self, instance, session=None):
         FieldSet.rebind(self, instance, session or self.session, self.data)
 
@@ -115,12 +127,23 @@ def test_fieldset():
     p.owner = 'gawel'
     p.owner = 'gawel'
     fs = fs.bind(p)
+
+    # rendering
     assert fs.name.is_required() == True, fs.name.is_required()
     assert fs.owner.value == 'gawel'
     html = fs.render()
     assert 'class="field_req" for="Pet--name"' in html, html
     assert 'value="gawel"' in html, html
 
+    # syncing
+    fs.configure(include=[fs.name])
+    fs.rebind(p, data={'Pet--name':'minou'})
+    fs.validate()
+    fs.sync()
+    assert fs.name.value == 'minou', fs.render_fields
+    assert p.name == 'minou', p.name
+
+    # grid
     fs = Grid(Pet, [p, Pet()])
     html = fs.render()
     assert '<thead>' in html, html
