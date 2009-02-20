@@ -5,6 +5,23 @@ _ = F_
 {{def title}}
 {{c.modelname}}
 {{enddef}}
+
+{{def sidebar}}
+<div id="sidebar">
+<div class="box">
+<h2>{{_('Related types')}}</h2>
+  <table>
+  {{for field in c.grid._fields.itervalues()}}
+    {{if field.is_relation}}
+      {{py:clsname = field.relation_type().__name__}}
+      <tr><td><a href="{{h.url_for(modelname=clsname, action='list')}}">{{clsname}}</a></td></tr>
+    {{endif}}
+  {{endfor}}
+  </table>
+</div>
+</div>
+{{enddef}}
+
 <div class="box">
 <h2>
 {{_('Existing objects')}}
@@ -17,15 +34,4 @@ _ = F_
 </a>
 </div>
 
-<div class="box">
-<h2>{{_('Related types')}}</h2>
-  <table>
-  {{for field in c.grid._fields.itervalues()}}
-    {{if field.is_relation}}
-      {{py:clsname = field.relation_type().__name__}}
-      <tr><td><a href="{{h.url_for(modelname=clsname, action='list')}}">{{clsname}}</a></td></tr>
-    {{endif}}
-  {{endfor}}
-  </table>
-</div>
 
