@@ -17,8 +17,8 @@ Assume the pylons template work::
 
   $ ./bin/paster create -t pylons_fa pylonsapp
 
-Merge files carefully. All files should be override except development.ini and
-model/__init__.py.
+Merge files carefully. All files should be override except development.ini,
+test.ini, websetup.py and model/__init__.py.
 
 Run pylons tests::
 
