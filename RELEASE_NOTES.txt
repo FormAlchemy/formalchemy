@@ -4,6 +4,7 @@ How to release FormAlchemy
 Boostrap a buildout env::
   
   $ wget http://svn.zope.org/*checkout*/zc.buildout/trunk/bootstrap/bootstrap.py
+  $ python bootstrap.py
   $ python -S bootstrap.py
   $ python -S bin/buildout
 
@@ -16,7 +17,9 @@ Run tests::
 Assume the pylons template work::
 
   $ ./bin/paster create -t pylons_fa pylonsapp
-  $ svn revert -R pylonsapp # don't let paster pollute our svn
+
+Merge files carefully. All files should be override except development.ini,
+test.ini, websetup.py and model/__init__.py.
 
 Run pylons tests::
 
