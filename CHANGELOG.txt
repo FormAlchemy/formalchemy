@@ -1,7 +1,9 @@
-1.1.2
------
+1.2
+---
 
 * add a paster template to bootstrap a pylons project with FA support enable
+
+* much sexier look for admin interface
 
 * performance improvements
 
@@ -14,6 +16,8 @@
 * when auto-querying for option values, the order_by given on the relation is used, if any
 
 * synonym awareness (you don't have to manually exclude the shadowed attribute)
+
+* ext.couchdb
 
 
 1.1.1
