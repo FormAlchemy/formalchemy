@@ -17,6 +17,7 @@ from sqlalchemy.orm.properties import CompositeProperty, ColumnProperty
 from sqlalchemy.exceptions import InvalidRequestError # 0.4 support
 from formalchemy import helpers as h
 from formalchemy import fatypes, validators
+from formalchemy import config
 from formalchemy.i18n import get_translator
 from formalchemy.i18n import _
 
@@ -33,6 +34,18 @@ def iterable(item):
     except:
         return False
     return True
+
+def stringify_key(k):
+    if k is None:
+        return u''
+    if isinstance(k, str):
+        return unicode(k, config.encoding)
+    elif isinstance(k, unicode):
+        return k
+    elif hasattr(k, '__unicode__'):
+        return k.__unicode__()
+    else:
+        return unicode(str(k), config.encoding)
 
 class FieldRenderer(object):
     """
@@ -54,10 +67,6 @@ class FieldRenderer(object):
         clsname = self.field.model.__class__.__name__
         pk = self.field.parent._bound_pk
         assert pk != ''
-        def stringify_key(k):
-            if k is None:
-                return ''
-            return unicode(k)
         if isinstance(pk, basestring) or not iterable(pk):
             pk_string = stringify_key(pk)
         else:
@@ -110,14 +119,11 @@ class FieldRenderer(object):
         if self.field.is_scalar_relation:
             q = self.field.query(self.field.relation_type())
             v = q.get(value)
-            return unicode(v)
-        if isinstance(value, basestring):
-            # FIXME this is a bad way to handle UnicodeEncodeError
-            # FA need to implement a default charset and try to encode value
-            # there
-            return value
+            return stringify_key(v)
         if isinstance(value, list):
             return ', '.join([str(item) for item in value])
+        if isinstance(value, unicode):
+            return value.encode(config.encoding)
         return str(value)
 
     def _params(self):
@@ -558,7 +564,7 @@ def _query_options(L):
     for each item in the iterable L, where `item description`
     is the result of str(item) and `item pk` is the item's primary key.
     """
-    return [(unicode(item), _pk(item)) for item in L]
+    return [(stringify_key(item), _pk(item)) for item in L]
 
 
 def _normalized_options(options):
