@@ -1,3 +1,4 @@
+{{if template_engine == 'mako'}}
 # -*- coding: utf-8 -*-
 <%
 _ = F_
@@ -13,7 +14,7 @@ _focus_rendered = False
 % for field in fieldset.render_fields.itervalues():
   % if field.requires_label:
 <div>
-  <label class="${field.is_required() and 'field_req' or 'field_opt'}" for="${field.renderer.name}">${[field.label_text, fieldset.prettify(field.key)][int(field.label_text is None)]}</label>
+  <label class="${field.is_required() and 'field_req' or 'field_opt'}" for="${field.renderer.name}">${[field.label_text, fieldset.prettify(field.key)][int(field.label_text is None)]|h}</label>
   ${field.render()|n}
   % for error in field.errors:
   <span class="field_error">${_(error)}</span>
@@ -34,3 +35,4 @@ document.getElementById("${field.renderer.name}").focus();
 ${field.render()}
   % endif
 % endfor
+{{endif}}

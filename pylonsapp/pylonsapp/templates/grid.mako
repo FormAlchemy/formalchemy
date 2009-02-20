@@ -1,8 +1,9 @@
+{{if template_engine == 'mako'}}
 # -*- coding: utf-8 -*-
 <thead>
   <tr>
     %for field in collection.render_fields.itervalues():
-      <th>${F_(field.label_text or collection.prettify(field.key))}</th>
+      <th>${F_(field.label_text or collection.prettify(field.key))|h}</th>
     %endfor
   </tr>
 </thead>
@@ -22,3 +23,4 @@
   </tr>
 %endfor
 </tbody>
+{{endif}}
