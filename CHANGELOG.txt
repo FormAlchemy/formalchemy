@@ -1,7 +1,7 @@
 1.2
 ---
 
-* add a paster template to bootstrap a pylons project with FA support enable
+* add a paster template to bootstrap a pylons project with FA support enabled
 
 * much sexier look for admin interface
 
@@ -17,7 +17,7 @@
 
 * synonym awareness (you don't have to manually exclude the shadowed attribute)
 
-* ext.couchdb
+* ext.couchdb (experimental)
 
 
 1.1.1

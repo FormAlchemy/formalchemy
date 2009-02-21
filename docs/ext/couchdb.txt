@@ -3,7 +3,7 @@
 
 .. automodule:: formalchemy.ext.couchdb
 
-This module provides a subclass of :class:`~formalchemy.forms.FieldSet` to support simplecouchdb_'s schema. 
+This module provides an experimental subclass of :class:`~formalchemy.forms.FieldSet` to support simplecouchdb_'s schema. 
 
 .. _simplecouchdb: http://py-simplecouchdb.e-engura.org/
 
