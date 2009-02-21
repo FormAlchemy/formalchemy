@@ -245,13 +245,9 @@ bill = User(email='bill@example.com',
 john = User(email='john@example.com',
             password='5678',
             name='John')
-jose = User(email='jose@example.com',
-            password='6565',
-            name=u'Jos\xe9')
 order1 = Order(user=bill, quantity=10)
 order2 = Order(user=john, quantity=5)
 order3 = Order(user=john, quantity=6)
-order4 = Order(user=jose, quantity=4)
 
 nbill = NaturalUser(email='nbill@example.com',
                     password='1234',

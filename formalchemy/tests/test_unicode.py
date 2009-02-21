@@ -2,6 +2,13 @@
 __doc__ = r"""
 >>> from formalchemy.tests import *
 
+>>> jose = User(email='jose@example.com',
+...             password='6565',
+...             name=u'Jos\xe9')
+>>> order4 = Order(user=jose, quantity=4)
+>>> session.add(jose)
+>>> session.add(order4)
+>>> session.flush()
 >>> FieldSet.default_renderers = original_renderers.copy()
 >>> fs = FieldSet(jose)
 >>> print fs.render() #doctest: +ELLIPSIS
@@ -21,6 +28,7 @@ __doc__ = r"""
 >>> print fs.render() #doctest: +ELLIPSIS
 <tbody>...José...
 
+>>> session.rollback()
 """
 
 
