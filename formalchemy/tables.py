@@ -5,6 +5,7 @@
 
 import helpers as h
 
+from formalchemy import config
 from formalchemy import base
 from formalchemy.i18n import get_translator
 
@@ -12,68 +13,6 @@ from tempita import Template as TempitaTemplate # must import after base
 
 
 __all__ = ["Grid"]
-
-
-template_grid_readonly = r"""
-{{py:import formalchemy.helpers as h}}
-<thead>
-  <tr>
-    {{for field in collection.render_fields.itervalues()}}
-      <th>{{h.escape_once(F_(field.label_text or collection.prettify(field.key)))}}</th>
-    {{endfor}}
-  </tr>
-</thead>
-
-<tbody>
-{{for i, row in enumerate(collection.rows):}}
-  {{collection._set_active(row)}}
-  <tr class="{{i % 2 and 'odd' or 'even'}}">
-  {{for field in collection.render_fields.itervalues()}}
-    <td>{{field.render_readonly()}}</td>
-  {{endfor}}
-  </tr>
-{{endfor}}
-</tbody>
-"""
-render_grid_readonly_tempita = TempitaTemplate(template_grid_readonly, name='template_grid_readonly').substitute
-
-template_grid = r"""
-{{py:import formalchemy.helpers as h}}
-<thead>
-  <tr>
-    {{for field in collection.render_fields.itervalues()}}
-      <th>{{h.escape_once(F_(field.label_text or collection.prettify(field.key)))}}</td>
-    {{endfor}}
-  </tr>
-</thead>
-
-<tbody>
-{{for i, row in enumerate(collection.rows):}}
-  {{collection._set_active(row)}}
-  <tr class="{{i % 2 and 'odd' or 'even'}}">
-  {{for field in collection.render_fields.itervalues()}}
-    <td>
-      {{field.render()}}
-      {{for error in field.errors}}
-      <span class="grid_error">{{error}}</span>
-      {{endfor}}
-    </td>
-  {{endfor}}
-  </tr>
-{{endfor}}
-</tbody>
-"""
-render_grid_tempita = TempitaTemplate(template_grid, name='template_grid').substitute
-
-try:
-    from mako.template import Template as MakoTemplate
-    from formalchemy.templates import mako_template
-except ImportError:
-    HAS_MAKO = False
-else:
-    HAS_MAKO = True
-    render_grid_mako = MakoTemplate(mako_template('grid')).render_unicode
-    render_grid_readonly_mako = MakoTemplate(mako_template('grid_readonly')).render_unicode
 
 def _validate_iterable(o):
     try:
@@ -108,8 +47,8 @@ class Grid(base.EditableRenderer):
     dictionary whose keys are `Field`s, and whose values are
     `ValidationError` instances.
     """
-    _render = staticmethod(HAS_MAKO and render_grid_mako or render_grid_tempita)
-    _render_readonly = staticmethod(HAS_MAKO and render_grid_readonly_mako or render_grid_readonly_tempita)
+    _render = lambda self, **kw: config.template_engine.render('grid', **kw)
+    _render_readonly = lambda self, **kw: config.template_engine.render('grid_readonly', **kw)
 
     def __init__(self, cls, instances=[], session=None, data=None, prefix=None):
         from sqlalchemy.orm import class_mapper

@@ -3,6 +3,8 @@
 # This module is part of FormAlchemy and is released under
 # the MIT License: http://www.opensource.org/licenses/mit-license.php
 
+from formalchemy import templates
+from formalchemy import config
 from formalchemy.base import SimpleMultiDict
 from formalchemy.tables import *
 from formalchemy.forms import *

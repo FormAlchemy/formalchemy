@@ -9,6 +9,7 @@ logger = logging.getLogger('formalchemy.' + __name__)
 import base, fields
 from i18n import get_translator
 from validators import ValidationError
+from formalchemy import config
 
 from tempita import Template as TempitaTemplate # must import after base
 
@@ -96,69 +97,6 @@ class AbstractFieldSet(base.EditableRenderer):
     errors = property(errors)
 
 
-template_text_readonly = r"""
-{{py:import formalchemy.helpers as h}}
-<tbody>
-{{for field in fieldset.render_fields.itervalues()}}
-  <tr>
-    <td class="field_readonly">{{h.escape_once([field.label_text, fieldset.prettify(field.key)][int(field.label_text is None)])}}:</td>
-    <td>{{field.render_readonly()}}</td>
-  </tr>
-{{endfor}}
-</tbody>
-"""
-render_readonly_tempita = TempitaTemplate(template_text_readonly, name='template_readonly').substitute
-
-
-template_text_tempita = r"""
-{{py:import formalchemy.helpers as h}}
-{{py:_focus_rendered = False}}
-{{py:_ = F_}}
-
-{{for error in fieldset.errors.get(None, [])}}
-<div class="fieldset_error">
-  {{_(error)}}
-</div>
-{{endfor}}
-
-{{for field in fieldset.render_fields.itervalues()}}
-{{if field.requires_label}}
-<div>
-  <label class="{{field.is_required() and 'field_req' or 'field_opt'}}" for="{{field.renderer.name}}">{{h.escape_once([field.label_text, fieldset.prettify(field.key)][int(field.label_text is None)])}}</label>
-  {{field.render()}}
-  {{for error in field.errors}}
-  <span class="field_error">{{_(error)}}</span>
-  {{endfor}}
-</div>
-
-{{if (fieldset.focus == field or fieldset.focus is True) and not _focus_rendered}}
-{{if not field.is_readonly()}}
-<script type="text/javascript">
-//<![CDATA[
-document.getElementById("{{field.renderer.name}}").focus();
-//]]>
-</script>
-{{py:_focus_rendered = True}}
-{{endif}}
-{{endif}}
-{{else}}
-{{field.render()}}
-{{endif}}
-{{endfor}}
-""".strip()
-render_tempita = TempitaTemplate(template_text_tempita, name='fieldset_template').substitute
-
-try:
-    from mako.template import Template as MakoTemplate
-    from formalchemy.templates import mako_template
-except ImportError:
-    HAS_MAKO = False
-else:
-    HAS_MAKO = True
-    render_mako = MakoTemplate(mako_template('fieldset')).render_unicode
-    render_readonly_mako = MakoTemplate(mako_template('fieldset_readonly')).render_unicode
-
-
 class FieldSet(AbstractFieldSet):
     """
     A `FieldSet` is bound to a SQLAlchemy mapped instance (or class, for
@@ -233,8 +171,8 @@ class FieldSet(AbstractFieldSet):
         >>> fs.prettify = myprettify
 
     """
-    _render = staticmethod(HAS_MAKO and render_mako or render_tempita)
-    _render_readonly = staticmethod(HAS_MAKO and render_readonly_mako or render_readonly_tempita)
+    _render = lambda self, **kwargs: config.template_engine.render('fieldset', **kwargs)
+    _render_readonly = lambda self, **kwargs: config.template_engine.render('fieldset_readonly', **kwargs)
 
     def __init__(self, *args, **kwargs):
         AbstractFieldSet.__init__(self, *args, **kwargs)

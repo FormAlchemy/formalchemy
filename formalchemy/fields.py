@@ -121,10 +121,10 @@ class FieldRenderer(object):
             v = q.get(value)
             return stringify_key(v)
         if isinstance(value, list):
-            return ', '.join([str(item) for item in value])
+            return u', '.join([stringify_key(item) for item in value])
         if isinstance(value, unicode):
-            return value.encode(config.encoding)
-        return str(value)
+            return value
+        return stringify_key(value)
 
     def _params(self):
         return self.field.parent.data

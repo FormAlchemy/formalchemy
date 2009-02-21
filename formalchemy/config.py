@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import sys
+from formalchemy import templates
 
 class Config(object):
     """A class to store global configuration::
@@ -18,7 +19,7 @@ class Config(object):
     __file__ = __file__
     __data = dict(
         encoding='utf-8',
-        template_engine = None,
+        template_engine = templates.default_engine,
     )
 
     def __getattr__(self, attr):
@@ -35,7 +36,7 @@ class Config(object):
             self.__data[attr] = value
 
     def __set_template_engine(self, value):
-        if callable(value) and hasattr(value, 'render'):
+        if hasattr(value, 'render'):
             self.__data['template_engine'] = value
         else:
             raise ValueError('Template engine must have a render method')

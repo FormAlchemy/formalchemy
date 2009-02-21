@@ -264,10 +264,18 @@ orderuser2 = OrderUser(user_id=1, order_id=2)
 session.commit()
 
 
-from formalchemy.forms import FieldSet as DefaultFieldSet, HAS_MAKO, render_tempita, render_readonly_tempita
-from formalchemy.tables import Grid as DefaultGrid, render_grid_tempita, render_grid_readonly_tempita
+from formalchemy import config
+from formalchemy.forms import FieldSet as DefaultFieldSet
+from formalchemy.tables import Grid as DefaultGrid
 from formalchemy.fields import Field
+from formalchemy import templates
 from formalchemy.validators import ValidationError
+
+if templates.HAS_MAKO:
+    if not isinstance(config.template_engine, templates.MakoEngine):
+        raise ValueError('MakoEngine is not the default engine: %s' % config.template_engine)
+else:
+    raise ImportError('mako is required for testing')
 
 def pretty_html(html):
     soup = BeautifulSoup(html)
@@ -277,34 +285,40 @@ class FieldSet(DefaultFieldSet):
     def render(self, lang=None):
         if self.readonly:
             html = pretty_html(DefaultFieldSet.render(self))
-            if HAS_MAKO:
+            for k, v in templates.engines.items():
+                if isinstance(v, config.template_engine.__class__):
+                    continue
                 F_ = lambda s: s
-                html_tempita = pretty_html(render_readonly_tempita(fieldset=self, F_=F_))
-                assert html == html_tempita, (html, html_tempita)
+                html_engine = pretty_html(v.render('fieldset_readonly', fieldset=self, F_=F_))
+                assert html == html_engine, (k, html, html_engine)
             return html
         html = pretty_html(DefaultFieldSet.render(self))
-        if HAS_MAKO:
-            # FS will use mako by default, so test tempita for equivalence here
+        for k, v in templates.engines.items():
+            if isinstance(v, config.template_engine.__class__):
+                continue
             F_ = lambda s: s
-            html_tempita = pretty_html(render_tempita(fieldset=self, F_=F_))
-            assert html == html_tempita, (html, html_tempita)
+            html_engine = pretty_html(v.render('fieldset', fieldset=self, F_=F_))
+            assert html == html_engine, (k, html, html_engine)
         return html
 
 class Grid(DefaultGrid):
     def render(self, lang=None):
         if self.readonly:
             html = pretty_html(DefaultGrid.render(self))
-            if HAS_MAKO:
+            for k, v in templates.engines.items():
+                if isinstance(v, config.template_engine.__class__):
+                    continue
                 F_ = lambda s: s
-                html_tempita = pretty_html(render_grid_readonly_tempita(collection=self, F_=F_))
-                assert html == html_tempita, (html, html_tempita)
+                html_engine = pretty_html(v.render('grid_readonly', collection=self, F_=F_))
+                assert html == html_engine, (k, html, html_engine)
             return html
         html = pretty_html(DefaultGrid.render(self))
-        if HAS_MAKO:
-            # FS will use mako by default, so test tempita for equivalence here
+        for k, v in templates.engines.items():
+            if isinstance(v, config.template_engine.__class__):
+                continue
             F_ = lambda s: s
-            html_tempita = pretty_html(render_grid_tempita(collection=self, F_=F_))
-            assert html == html_tempita, (html, html_tempita)
+            html_engine = pretty_html(v.render('grid', collection=self, F_=F_))
+            assert html == html_engine, (k, html, html_engine)
         return html
 
 original_renderers = FieldSet.default_renderers.copy()

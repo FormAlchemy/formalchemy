@@ -21,10 +21,6 @@ from sqlalchemy.util import OrderedDict
 
 import fields, fatypes
 
-# put tempita on the path
-import sys, os
-sys.path.append(os.path.split(os.path.abspath(__file__))[0])
-
 
 compile_mappers() # initializes InstrumentedAttributes
 
