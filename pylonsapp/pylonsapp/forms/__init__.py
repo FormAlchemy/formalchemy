@@ -1,6 +1,8 @@
 from pylons import config
 from pylonsapp import model
 from pylonsapp.lib.base import render
+from formalchemy import config as fa_config
+from formalchemy import templates
 from formalchemy import validators
 from formalchemy import fields
 from formalchemy import forms
@@ -13,21 +15,16 @@ if 'storage_path' in config['app_conf']:
     FileFieldRenderer.storage_path = config['app_conf']['storage_path']
     ImageFieldRenderer.storage_path = config['app_conf']['storage_path']
 
+class TemplateEngine(templates.TemplateEngine):
+    def render(self, name, **kwargs):
+        return render('/%s.mako' % name, extra_vars=kwargs)
+fa_config.template_engine = TemplateEngine()
+
 class FieldSet(forms.FieldSet):
-    def _render(self, **kwargs):
-        return render('/fieldset.mako',
-                      extra_vars=kwargs)
-    def _render_readonly(self, **kwargs):
-        return render('/fieldset_readonly.mako',
-                      extra_vars=kwargs)
+    pass
 
 class Grid(tables.Grid):
-    def _render(self, **kwargs):
-        return render('/grid.mako',
-                      extra_vars=kwargs)
-    def _render_readonly(self, **kwargs):
-        return render('/grid_readonly.mako',
-                      extra_vars=kwargs)
+    pass
 
 ## Initialize fieldsets
 

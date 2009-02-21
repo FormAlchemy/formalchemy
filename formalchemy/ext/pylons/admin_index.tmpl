@@ -7,6 +7,6 @@ _ = F_
 {{enddef}}
 <table>
 {{for i, modelname in enumerate(modelnames)}}
-  <tr class="{{i % 2 and 'odd' or 'even'}}"><td><a href="{{h.url_for(modelname=modelname, action='list')}}">{{modelname}}</a></td></tr>
+  <tr class="{{i % 2 and 'odd' or 'even'}}"><td><a href="{{url_for(modelname=modelname, action='list')}}">{{modelname}}</a></td></tr>
 {{endfor}}
 </table>

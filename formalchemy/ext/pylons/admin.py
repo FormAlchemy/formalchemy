@@ -15,6 +15,7 @@ from sqlalchemy.orm import class_mapper
 from formalchemy import *
 from formalchemy.i18n import _, get_translator
 from formalchemy.fields import _pk
+from formalchemy.templates import TempitaEngine
 from formalchemy.tempita import Template
 
 
@@ -35,13 +36,11 @@ def get_file_template(name, from_template):
         path, namespace=from_template.namespace,
         get_template=from_template.get_template)
 
-def load_template(filename):
-    filename = os.path.join(template_dir, '%s.tmpl' % filename)
-    return Template.from_filename(filename, default_inherit='base', get_template=get_file_template)
+class TemplateEngine(TempitaEngine):
+    directories = [template_dir]
+    _templates = ['base', 'admin_index', 'admin_list', 'admin_edit']
 
-index_template = load_template('admin_index')
-list_template = load_template('admin_list')
-edit_template = load_template('admin_edit')
+engine = TemplateEngine(default_inherit='base', get_template=get_file_template)
 
 
 def flash(msg):
@@ -102,26 +101,23 @@ class AdminController(object):
 
     def index(self):
         """List model types"""
-        F_ = get_translator().gettext
         modelnames = sorted(self._model_grids.keys())
-        return index_template.substitute(c=c, h=h, F_=F_,
-                                         modelname=None,
-                                         modelnames=modelnames,
-                                         custom_css = self._custom_css,
-                                         custom_js = self._custom_js)
+        return engine('admin_index', c=c, modelname=None,
+                                     modelnames=modelnames,
+                                     custom_css = self._custom_css,
+                                     custom_js = self._custom_js)
 
     def list(self, modelname):
         """List instances of a model type"""
-        F_ = get_translator().gettext
         grid = self._model_grids[modelname]
         S = self.Session()
         instances = S.query(grid.model.__class__).all()
         c.grid = grid.bind(instances)
         c.modelname = modelname
-        return list_template.substitute(c=c, h=h, F_=F_,
-                                        modelname=modelname,
-                                        custom_css = self._custom_css,
-                                        custom_js = self._custom_js)
+        return engine('admin_list', c=c,
+                                    modelname=modelname,
+                                    custom_css = self._custom_css,
+                                    custom_js = self._custom_js)
 
     def edit(self, modelname, id=None):
         """Edit (or create, if `id` is None) an instance of the given model type"""
@@ -154,11 +150,11 @@ class AdminController(object):
                 flash(message)
                 redirect_to(url_for(modelname=modelname,
                                     action='list', id=None))
-        return edit_template.substitute(c=c, h=h, F_=F_,
-                                        action=title, id=id,
-                                        modelname=modelname,
-                                        custom_css = self._custom_css,
-                                        custom_js = self._custom_js)
+        return engine('admin_edit', c=c,
+                                    action=title, id=id,
+                                    modelname=modelname,
+                                    custom_css = self._custom_css,
+                                    custom_js = self._custom_js)
 
     def delete(self, modelname, id):
         """Delete an instance of the given model type"""

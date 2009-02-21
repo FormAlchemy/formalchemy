@@ -7,7 +7,6 @@ import helpers as h
 
 from formalchemy import config
 from formalchemy import base
-from formalchemy.i18n import get_translator
 
 from tempita import Template as TempitaTemplate # must import after base
 
@@ -47,8 +46,8 @@ class Grid(base.EditableRenderer):
     dictionary whose keys are `Field`s, and whose values are
     `ValidationError` instances.
     """
-    _render = lambda self, **kw: config.template_engine.render('grid', **kw)
-    _render_readonly = lambda self, **kw: config.template_engine.render('grid_readonly', **kw)
+    _render = lambda self, **kw: config.template_engine('grid', **kw)
+    _render_readonly = lambda self, **kw: config.template_engine('grid_readonly', **kw)
 
     def __init__(self, cls, instances=[], session=None, data=None, prefix=None):
         from sqlalchemy.orm import class_mapper
@@ -93,7 +92,6 @@ class Grid(base.EditableRenderer):
             self.rows = instances
 
     def render(self, **kwargs):
-        kwargs['F_'] = get_translator(kwargs.get('lang', None)).gettext # tempita pukes if we pass this as `_`
         if self.readonly:
             return self._render_readonly(collection=self, **kwargs)
         return self._render(collection=self, **kwargs)

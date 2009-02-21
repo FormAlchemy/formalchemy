@@ -7,7 +7,6 @@ import logging
 logger = logging.getLogger('formalchemy.' + __name__)
 
 import base, fields
-from i18n import get_translator
 from validators import ValidationError
 from formalchemy import config
 
@@ -171,8 +170,8 @@ class FieldSet(AbstractFieldSet):
         >>> fs.prettify = myprettify
 
     """
-    _render = lambda self, **kwargs: config.template_engine.render('fieldset', **kwargs)
-    _render_readonly = lambda self, **kwargs: config.template_engine.render('fieldset_readonly', **kwargs)
+    _render = lambda self, **kwargs: config.template_engine('fieldset', **kwargs)
+    _render_readonly = lambda self, **kwargs: config.template_engine('fieldset_readonly', **kwargs)
 
     def __init__(self, *args, **kwargs):
         AbstractFieldSet.__init__(self, *args, **kwargs)
@@ -204,7 +203,6 @@ class FieldSet(AbstractFieldSet):
     def render(self, **kwargs):
         if fields._pk(self.model) != self._bound_pk and self.data is not None:
             raise Exception('Primary key of model has changed since binding, probably due to sync()ing a new instance.  You can solve this by either binding to a model with the original primary key again, or by binding data to None.')
-        kwargs['F_'] = get_translator(kwargs.get('lang', None)).gettext # tempita pukes if we pass this as `_`
         if self.readonly:
             return self._render_readonly(fieldset=self, **kwargs)
         return self._render(fieldset=self, **kwargs)

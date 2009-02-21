@@ -285,40 +285,36 @@ class FieldSet(DefaultFieldSet):
     def render(self, lang=None):
         if self.readonly:
             html = pretty_html(DefaultFieldSet.render(self))
-            for k, v in templates.engines.items():
-                if isinstance(v, config.template_engine.__class__):
+            for name, engine in templates.engines.items():
+                if isinstance(engine, config.template_engine.__class__):
                     continue
-                F_ = lambda s: s
-                html_engine = pretty_html(v.render('fieldset_readonly', fieldset=self, F_=F_))
-                assert html == html_engine, (k, html, html_engine)
+                html_engine = pretty_html(engine('fieldset_readonly', fieldset=self))
+                assert html == html_engine, (name, html, html_engine)
             return html
         html = pretty_html(DefaultFieldSet.render(self))
-        for k, v in templates.engines.items():
-            if isinstance(v, config.template_engine.__class__):
+        for name, engine in templates.engines.items():
+            if isinstance(engine, config.template_engine.__class__):
                 continue
-            F_ = lambda s: s
-            html_engine = pretty_html(v.render('fieldset', fieldset=self, F_=F_))
-            assert html == html_engine, (k, html, html_engine)
+            html_engine = pretty_html(engine('fieldset', fieldset=self))
+            assert html == html_engine, (name, html, html_engine)
         return html
 
 class Grid(DefaultGrid):
     def render(self, lang=None):
         if self.readonly:
             html = pretty_html(DefaultGrid.render(self))
-            for k, v in templates.engines.items():
-                if isinstance(v, config.template_engine.__class__):
+            for name, engine in templates.engines.items():
+                if isinstance(engine, config.template_engine.__class__):
                     continue
-                F_ = lambda s: s
-                html_engine = pretty_html(v.render('grid_readonly', collection=self, F_=F_))
-                assert html == html_engine, (k, html, html_engine)
+                html_engine = pretty_html(engine('grid_readonly', collection=self))
+                assert html == html_engine, (name, html, html_engine)
             return html
         html = pretty_html(DefaultGrid.render(self))
-        for k, v in templates.engines.items():
-            if isinstance(v, config.template_engine.__class__):
+        for name, engine in templates.engines.items():
+            if isinstance(engine, config.template_engine.__class__):
                 continue
-            F_ = lambda s: s
-            html_engine = pretty_html(v.render('grid', collection=self, F_=F_))
-            assert html == html_engine, (k, html, html_engine)
+            html_engine = pretty_html(engine('grid', collection=self))
+            assert html == html_engine, (name, html, html_engine)
         return html
 
 original_renderers = FieldSet.default_renderers.copy()

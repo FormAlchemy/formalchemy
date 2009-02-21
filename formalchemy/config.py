@@ -36,10 +36,10 @@ class Config(object):
             self.__data[attr] = value
 
     def __set_template_engine(self, value):
-        if hasattr(value, 'render'):
+        if isinstance(value, templates.TemplateEngine):
             self.__data['template_engine'] = value
         else:
-            raise ValueError('Template engine must have a render method')
+            raise ValueError('%s is not a template engine')
 
     def from_config(self, config, prefix='formalchemy.'):
         for k, v in config.items():

@@ -14,7 +14,7 @@ _ = F_
   {{for field in c.grid._fields.itervalues()}}
     {{if field.is_relation}}
       {{py:clsname = field.relation_type().__name__}}
-      <tr><td><a href="{{h.url_for(modelname=clsname, action='list')}}">{{clsname}}</a></td></tr>
+      <tr><td><a href="{{url_for(modelname=clsname, action='list')}}">{{clsname}}</a></td></tr>
     {{endif}}
   {{endfor}}
   </table>
@@ -29,7 +29,7 @@ _ = F_
 <table>
   {{c.grid.render()}}
 </table>
-<a class="icon add" title="{{_('New object')}}" href="{{h.url_for(modelname=c.modelname, action='edit')}}">
+<a class="icon add" title="{{_('New object')}}" href="{{url_for(modelname=c.modelname, action='edit')}}">
 {{_('New object')}}
 </a>
 </div>
