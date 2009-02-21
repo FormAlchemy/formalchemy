@@ -15,10 +15,12 @@ if 'storage_path' in config['app_conf']:
     FileFieldRenderer.storage_path = config['app_conf']['storage_path']
     ImageFieldRenderer.storage_path = config['app_conf']['storage_path']
 
+fa_config.encoding = 'utf-8'
+
 class TemplateEngine(templates.TemplateEngine):
     def render(self, name, **kwargs):
         return render('/%s.mako' % name, extra_vars=kwargs)
-fa_config.template_engine = TemplateEngine()
+fa_config.engine = TemplateEngine()
 
 class FieldSet(forms.FieldSet):
     pass

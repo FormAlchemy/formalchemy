@@ -272,8 +272,8 @@ from formalchemy import templates
 from formalchemy.validators import ValidationError
 
 if templates.HAS_MAKO:
-    if not isinstance(config.template_engine, templates.MakoEngine):
-        raise ValueError('MakoEngine is not the default engine: %s' % config.template_engine)
+    if not isinstance(config.engine, templates.MakoEngine):
+        raise ValueError('MakoEngine is not the default engine: %s' % config.engine)
 else:
     raise ImportError('mako is required for testing')
 
@@ -286,14 +286,14 @@ class FieldSet(DefaultFieldSet):
         if self.readonly:
             html = pretty_html(DefaultFieldSet.render(self))
             for name, engine in templates.engines.items():
-                if isinstance(engine, config.template_engine.__class__):
+                if isinstance(engine, config.engine.__class__):
                     continue
                 html_engine = pretty_html(engine('fieldset_readonly', fieldset=self))
                 assert html == html_engine, (name, html, html_engine)
             return html
         html = pretty_html(DefaultFieldSet.render(self))
         for name, engine in templates.engines.items():
-            if isinstance(engine, config.template_engine.__class__):
+            if isinstance(engine, config.engine.__class__):
                 continue
             html_engine = pretty_html(engine('fieldset', fieldset=self))
             assert html == html_engine, (name, html, html_engine)
@@ -304,14 +304,14 @@ class Grid(DefaultGrid):
         if self.readonly:
             html = pretty_html(DefaultGrid.render(self))
             for name, engine in templates.engines.items():
-                if isinstance(engine, config.template_engine.__class__):
+                if isinstance(engine, config.engine.__class__):
                     continue
                 html_engine = pretty_html(engine('grid_readonly', collection=self))
                 assert html == html_engine, (name, html, html_engine)
             return html
         html = pretty_html(DefaultGrid.render(self))
         for name, engine in templates.engines.items():
-            if isinstance(engine, config.template_engine.__class__):
+            if isinstance(engine, config.engine.__class__):
                 continue
             html_engine = pretty_html(engine('grid', collection=self))
             assert html == html_engine, (name, html, html_engine)

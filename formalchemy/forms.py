@@ -170,8 +170,8 @@ class FieldSet(AbstractFieldSet):
         >>> fs.prettify = myprettify
 
     """
-    _render = lambda self, **kwargs: config.template_engine('fieldset', **kwargs)
-    _render_readonly = lambda self, **kwargs: config.template_engine('fieldset_readonly', **kwargs)
+    _render = lambda self, **kwargs: config.engine('fieldset', **kwargs)
+    _render_readonly = lambda self, **kwargs: config.engine('fieldset_readonly', **kwargs)
 
     def __init__(self, *args, **kwargs):
         AbstractFieldSet.__init__(self, *args, **kwargs)

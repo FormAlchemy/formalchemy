@@ -46,8 +46,8 @@ class Grid(base.EditableRenderer):
     dictionary whose keys are `Field`s, and whose values are
     `ValidationError` instances.
     """
-    _render = lambda self, **kw: config.template_engine('grid', **kw)
-    _render_readonly = lambda self, **kw: config.template_engine('grid_readonly', **kw)
+    _render = lambda self, **kw: config.engine('grid', **kw)
+    _render_readonly = lambda self, **kw: config.engine('grid_readonly', **kw)
 
     def __init__(self, cls, instances=[], session=None, data=None, prefix=None):
         from sqlalchemy.orm import class_mapper
