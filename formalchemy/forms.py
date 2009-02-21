@@ -3,6 +3,7 @@
 # This module is part of FormAlchemy and is released under
 # the MIT License: http://www.opensource.org/licenses/mit-license.php
 
+import warnings
 import logging
 logger = logging.getLogger('formalchemy.' + __name__)
 
@@ -122,8 +123,8 @@ class FieldSet(AbstractFieldSet):
     Customization
 
     There are three parts you can customize in a `FieldSet` subclass short
-    of writing your own render method.  These are `default_renderers`, `prettify`, and
-    `_render`.  As in::
+    of writing your own render method.  These are `default_renderers`, and `prettify`.
+    As in::
 
         >>> def myprettify(value):
         ...     return value
@@ -155,14 +156,6 @@ class FieldSet(AbstractFieldSet):
     `prettify` is a function that, given an attribute name ('user_name')
     turns it into something usable as an HTML label ('User name').
 
-    `_render` should be a template rendering method, such as
-    `Template.render` from a mako Template or `Template.substitute` from a
-    Tempita Template.
-
-    `_render` should take as a parameter the `FieldSet` to render.
-
-    You can also specify `_render_readonly` similarly to `_render`.
-
     You can also override these on a per-`FieldSet` basis::
 
         >>> from formalchemy.tests import One
@@ -170,8 +163,7 @@ class FieldSet(AbstractFieldSet):
         >>> fs.prettify = myprettify
 
     """
-    _render = lambda self, **kwargs: config.engine('fieldset', **kwargs)
-    _render_readonly = lambda self, **kwargs: config.engine('fieldset_readonly', **kwargs)
+    engine = _render = _render_readonly = None
 
     def __init__(self, *args, **kwargs):
         AbstractFieldSet.__init__(self, *args, **kwargs)
@@ -203,6 +195,15 @@ class FieldSet(AbstractFieldSet):
     def render(self, **kwargs):
         if fields._pk(self.model) != self._bound_pk and self.data is not None:
             raise Exception('Primary key of model has changed since binding, probably due to sync()ing a new instance.  You can solve this by either binding to a model with the original primary key again, or by binding data to None.')
+        engine = self.engine or config.engine
+        if self._render or self._render_readonly:
+            warnings.warn(DeprecationWarning('_render and _render_readonly are deprecated and will be removed in 1.5. Use a TemplateEngine instead'))
         if self.readonly:
-            return self._render_readonly(fieldset=self, **kwargs)
-        return self._render(fieldset=self, **kwargs)
+            if self._render_readonly is not None:
+                engine._update_args(kwargs)
+                return self._render_readonly(fieldset=self, **kwargs)
+            return engine('fieldset_readonly', fieldset=self, **kwargs)
+        if self._render is not None:
+            engine._update_args(kwargs)
+            return self._render(fieldset=self, **kwargs)
+        return engine('fieldset', fieldset=self, **kwargs)

@@ -2,28 +2,40 @@
 import sys
 from formalchemy import templates
 
+__doc__ = """
+There is two configuration settings available in a global config object.
+
+- encoding: the global encoding used by FormAlchemy to deal with unicode
+
+- engine: A valide :class:`~formalchemy.templates.TemplateEngine`
+
+Here is a simple example::
+
+    >>> from formalchemy import config
+    >>> config.encoding = 'iso-8859-1'
+    >>> config.encoding
+    'iso-8859-1'
+
+    >>> from formalchemy import templates
+    >>> config.engine = templates.TempitaEngine
+
+There is also a convenience method to set the configuration from a config file::
+
+    >>> config.from_config({'formalchemy.encoding':'utf-8',
+    ...                     'formalchemy.engine':'mako',
+    ...                     'formalchemy.engine.options.input_encoding':'utf-8',
+    ...                     'formalchemy.engine.options.output_encoding':'utf-8',
+    ...                    })
+    >>> config.from_config({'formalchemy.encoding':'utf-8'})
+    >>> config.encoding
+    'utf-8'
+    >>> isinstance(config.engine, templates.MakoEngine)
+    True
+
+"""
+
 class Config(object):
-    """A class to store global configuration::
-
-        >>> from formalchemy import config
-        >>> from formalchemy import templates
-        >>> config.encoding = 'iso-8859-1'
-        >>> config.encoding
-        'iso-8859-1'
-
-        >>> config.from_config({'formalchemy.encoding':'utf-8'})
-        >>> config.encoding
-        'utf-8'
-
-        >>> config.engine = templates.TempitaEngine
-        >>> config.from_config({'formalchemy.engine':'mako',
-        ...                     'formalchemy.engine.options.input_encoding':'utf-8',
-        ...                     'formalchemy.engine.options.output_encoding':'utf-8',
-        ...                    })
-        >>> isinstance(config.engine, templates.MakoEngine)
-        True
-
-    """
+    __doc__ = __doc__
     __name__ = 'formalchemy.config'
     __file__ = __file__
     __data = dict(

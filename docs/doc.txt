@@ -6,9 +6,11 @@ Modules contents
    :glob:
 
    formalchemy
+   config
    forms
    tables
    fields
+   templates
    validators
    internationalisation
    customisation

@@ -46,8 +46,7 @@ class Grid(base.EditableRenderer):
     dictionary whose keys are `Field`s, and whose values are
     `ValidationError` instances.
     """
-    _render = lambda self, **kw: config.engine('grid', **kw)
-    _render_readonly = lambda self, **kw: config.engine('grid_readonly', **kw)
+    engine = _render = _render_readonly = None
 
     def __init__(self, cls, instances=[], session=None, data=None, prefix=None):
         from sqlalchemy.orm import class_mapper
@@ -92,9 +91,18 @@ class Grid(base.EditableRenderer):
             self.rows = instances
 
     def render(self, **kwargs):
+        engine = self.engine or config.engine
+        if self._render or self._render_readonly:
+            warnings.warn(DeprecationWarning('_render and _render_readonly are deprecated and will be removed in 1.5. Use a TemplateEngine instead'))
         if self.readonly:
-            return self._render_readonly(collection=self, **kwargs)
-        return self._render(collection=self, **kwargs)
+            if self._render_readonly is not None:
+                engine._update_args(kwargs)
+                return self._render_readonly(collection=self, **kwargs)
+            return engine('grid_readonly', collection=self, **kwargs)
+        if self._render is not None:
+            engine._update_args(kwargs)
+            return self._render(collection=self, **kwargs)
+        return engine('grid', collection=self, **kwargs)
 
     def _set_active(self, instance, session=None):
         base.EditableRenderer.rebind(self, instance, session or self.session, self.data)

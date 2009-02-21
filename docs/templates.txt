@@ -1,0 +1,81 @@
+:mod:`formalchemy.templates` -- Template engines
+=================================================
+
+.. automodule:: formalchemy.templates
+
+.. Commented imports
+
+   >>> from formalchemy.tests import User
+   >>> from formalchemy.forms import FieldSet
+   >>> from formalchemy.templates import TemplateEngine
+   >>> from formalchemy import config
+   >>> old_engine = config.engine
+
+Available engines
+-----------------
+
+.. autoclass:: MakoEngine
+   :members:
+
+.. autoclass:: GenshiEngine
+   :members:
+
+.. autoclass:: TempitaEngine
+   :members:
+
+Base class
+----------
+
+.. autoclass:: TemplateEngine
+   :members:
+
+Customize templates
+-------------------
+
+You can override the default template by adding a directory for your project which will contain the templates.
+The engine will scan the directory and try to load templates from it. If he can't, the default templates are used.
+
+Here is an example::
+
+  $ ls /Users/me/myproject/mako_templates
+  fieldset.mako
+  grid_readonly.mako
+
+Then you can override the default mako templates::
+
+  >>> from formalchemy import config
+  >>> from formalchemy import templates
+  >>> config.engine = templates.MakoEngine(
+  ...               directories=['/Users/me/project/mako_templates'],
+  ...               input_encoding='utf-8', output_encoding='utf-8')
+
+
+Write your own engine
+----------------------
+
+You need to subclass the :class:`~formalchemy.templates.TemplateEngine`::
+
+  >>> class MyEngine(TemplateEngine):
+  ...     def render(self, template_name, **kw):
+  ...         return 'It works !'
+
+You can use it for a specific :class:`~formalchemy.forms.FieldSet`::
+
+  >>> fs = FieldSet(User)
+  >>> fs.engine = MyEngine()
+  >>> print fs.render()
+  It works !
+
+Or set it as the global engine with :mod:`formalchemy`'s :mod:`~formalchemy.config`::
+
+  >>> from formalchemy import config
+  >>> config.engine = MyEngine()
+
+It should be available for all :class:`~formalchemy.forms.FieldSet`::
+
+  >>> print FieldSet(User).render()
+  It works !
+
+.. restore config
+
+  >>> config.engine = old_engine
