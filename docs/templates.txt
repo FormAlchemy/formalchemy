@@ -35,20 +35,62 @@ Customize templates
 You can override the default template by adding a directory for your project which will contain the templates.
 The engine will scan the directory and try to load templates from it. If he can't, the default templates are used.
 
+.. set templates dirs
+
+  >>> import os
+  >>> import formalchemy.tests
+  >>> from formalchemy. tests import ls, cat
+  >>> mako_templates_dir = os.path.join(os.path.dirname(formalchemy.tests.__file__), 'data', 'mako')
+  >>> genshi_templates_dir = os.path.join(os.path.dirname(formalchemy.tests.__file__), 'data', 'genshi')
+
 Here is an example::
 
-  $ ls /Users/me/myproject/mako_templates
-  fieldset.mako
-  grid_readonly.mako
+  >>> ls(mako_templates_dir)
+  - fieldset.mako
+
+  >>> cat(mako_templates_dir, 'fieldset.mako')
+  <ul>
+  %for field in fieldset.render_fields.itervalues():
+  <li>${field.name}</li>
+  %endfor
+  </ul>
+  <BLANKLINE>
 
 Then you can override the default mako templates::
 
   >>> from formalchemy import config
   >>> from formalchemy import templates
   >>> config.engine = templates.MakoEngine(
-  ...               directories=['/Users/me/project/mako_templates'],
+  ...               directories=[mako_templates_dir],
   ...               input_encoding='utf-8', output_encoding='utf-8')
 
+And see the result::
+
+  >>> print FieldSet(User).render()
+  <ul>
+  <li>email</li>
+  <li>password</li>
+  <li>name</li>
+  <li>orders</li>
+  </ul>
+  <BLANKLINE>
+
+Same with genshi except that :mod:`formalchemy` don't provide default templates::  
+
+  >>> cat(genshi_templates_dir, 'fieldset.html')
+  <ul xmlns:py="http://genshi.edgewall.org/">
+  <li py:for="field in fieldset.render_fields.itervalues()">${field.name}</li>
+  </ul>
+  <BLANKLINE>
+
+  >>> config.engine = templates.GenshiEngine(directories=[genshi_templates_dir])
+
+And same the result of course::
+
+  >>> print FieldSet(User).render()
+  <ul>
+  <li>email</li><li>password</li><li>name</li><li>orders</li>
+  </ul>
 
 Write your own engine
 ----------------------
@@ -65,6 +107,11 @@ You can use it for a specific :class:`~formalchemy.forms.FieldSet`::
   >>> fs.engine = MyEngine()
   >>> print fs.render()
   It works !
+
+You can also override the engine in a subclass::
+
+  >>> class MyFieldSet(FieldSet):
+  ...     engine = MyEngine()
 
 Or set it as the global engine with :mod:`formalchemy`'s :mod:`~formalchemy.config`::
 

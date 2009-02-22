@@ -30,6 +30,7 @@ args = dict(name='FormAlchemy',
                 'formalchemy.ext', 'formalchemy.ext.pylons'],
       package_data={'formalchemy': ['*.tmpl', 'i18n_resources/*/LC_MESSAGES/formalchemy.mo',
                                     'ext/pylons/*.tmpl', 'ext/pylons/*.css', 'ext/pylons/*.png',
+                                    'tests/data/mako/*.mako', 'tests/data/genshi/*.html',
                                     'paster_templates/pylons_fa/+package+/*/*_tmpl',
                                     ]},
       classifiers=[

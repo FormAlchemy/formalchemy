@@ -10,3 +10,4 @@ recursive-exclude pylonsapp *
 recursive-include formalchemy *tmpl
 recursive-include formalchemy *png
 recursive-include formalchemy/i18n_resources *
+recursive-include formalchemy/tests/data *

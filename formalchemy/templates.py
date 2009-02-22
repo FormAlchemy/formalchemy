@@ -15,7 +15,7 @@ try:
 except ImportError:
     HAS_MAKO = False
 try:
-    from genshi.template import GenshiTemplateLoader
+    from genshi.template import TemplateLoader as GenshiTemplateLoader
     HAS_GENSHI = True
 except ImportError:
     HAS_GENSHI = False
@@ -96,19 +96,19 @@ class MakoEngine(TemplateEngine):
         template = self.templates.get(template_name, None)
         return template.render_unicode(**kwargs)
 
-class GenshiEngine(object):
+class GenshiEngine(TemplateEngine):
     """Template engine for genshi. File extension is `.html`.
     """
     extension = 'html'
     def get_template(self, name, **kw):
         filename = self.get_filename(name)
         if filename:
-            loader = TemplateLoader(os.path.dirname(filename), **kw)
+            loader = GenshiTemplateLoader(os.path.dirname(filename), **kw)
             return loader.load(os.path.basename(filename))
 
     def render(self, template_name, **kwargs):
         template = self.templates.get(template_name, None)
-        return template.generate(**kwargs).render('html', doctype='html')
+        return template.generate(**kwargs).render('html', doctype=None)
 
 
 if HAS_MAKO:

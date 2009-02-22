@@ -1,4 +1,6 @@
 # -*- coding: utf-8 -*-
+import os
+import glob
 import logging
 logging.basicConfig()
 logging.getLogger().setLevel(logging.DEBUG)
@@ -12,6 +14,22 @@ logging.getLogger('sqlalchemy').setLevel(logging.ERROR)
 
 from formalchemy.fields import Field, SelectFieldRenderer, FieldRenderer, TextFieldRenderer, EscapingReadonlyRenderer
 import formalchemy.fatypes as types
+
+def ls(*args):
+    dirname = os.path.dirname(__file__)
+    args = list(args)
+    args.append('*')
+    files = glob.glob(os.path.join(dirname, *args))
+    files.sort()
+    for f in files:
+        if os.path.isdir(f):
+            print 'D %s' % os.path.basename(f)
+        else:
+            print '- %s' % os.path.basename(f)
+
+def cat(*args):
+    filename = os.path.join(os.path.dirname(__file__), *args)
+    print open(filename).read()
 
 engine = create_engine('sqlite://')
 Session = scoped_session(sessionmaker(autoflush=False, bind=engine))
