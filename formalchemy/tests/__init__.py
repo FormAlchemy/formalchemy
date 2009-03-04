@@ -158,7 +158,7 @@ class Order(Base):
     id = Column(Integer, primary_key=True)
     user_id = Column(Integer, ForeignKey('users.id'), nullable=False)
     quantity = Column(Integer, nullable=False)
-    def __str__(self):
+    def __repr__(self):
         return 'Quantity: %s' % self.quantity
 
 class OptionalOrder(Base): # the user is optional, not the order
@@ -167,7 +167,7 @@ class OptionalOrder(Base): # the user is optional, not the order
     user_id = Column(Integer, ForeignKey('users.id'))
     quantity = Column(Integer)
     user = relation('User')
-    def __str__(self):
+    def __repr__(self):
         return 'Quantity: %s' % self.quantity
 
 class User(Base):
@@ -185,7 +185,7 @@ class NaturalOrder(Base):
     id = Column(Integer, primary_key=True)
     user_email = Column(String, ForeignKey('natural_users.email'), nullable=False)
     quantity = Column(Integer, nullable=False)
-    def __str__(self):
+    def __repr__(self):
         return 'Quantity: %s' % self.quantity
 
 class NaturalUser(Base):
@@ -194,7 +194,7 @@ class NaturalUser(Base):
     password = Column(Unicode(20), nullable=False)
     name = Column(Unicode(30))
     orders = relation(NaturalOrder, backref='user')
-    def __str__(self):
+    def __repr__(self):
         return self.name
 
 class Function(Base):
@@ -229,7 +229,7 @@ class OrderUser(Base):
     order_id = Column(Integer, ForeignKey('orders.id'), primary_key=True)
     user = relation(User)
     order = relation(Order)
-    def __str__(self):
+    def __repr__(self):
         return 'OrderUser(%s, %s)' % (self.user_id, self.order_id)
     
 class OrderUserTag(Base):
