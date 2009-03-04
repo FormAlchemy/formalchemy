@@ -9,13 +9,18 @@ from sqlalchemy.util import OrderedDict
 import fatypes
 from datetime import datetime
 from zope import schema
+from zope.schema import interfaces
 from zope import interface
 
 FIELDS_MAPPING = {
         schema.TextLine: fatypes.String,
+        schema.Text: fatypes.String,
         schema.Int: fatypes.Integer,
+        schema.Bool: fatypes.Boolean,
+        schema.Float: fatypes.Float,
         schema.Date: fatypes.Date,
         schema.Datetime: fatypes.DateTime,
+        schema.Time: fatypes.Time,
     }
 
 class Field(BaseField):
@@ -27,6 +32,25 @@ class Field(BaseField):
                 return v
         return getattr(self.model, self.name)
     value = property(value)
+
+    def _validate(self):
+        if self.is_readonly():
+            return True
+
+        valide = BaseField._validate(self)
+        if not valide:
+            return False
+
+        value = self._deserialize()
+
+        field = self.parent.iface[self.name]
+        bound = field.bind(self.model)
+        try:
+            bound.validate(value)
+        except schema.ValidationError, e:
+            self.errors.append(e.doc())
+
+        return not self.errors
 
     def sync(self):
         """Set the attribute's value in `model` to the value given in `data`"""
@@ -46,14 +70,15 @@ class FieldSet(BaseFieldSet):
         self._errors = []
         self.iface = model
         focus = True
-        for name, field in schema.getFields(model).items():
+        for name, field in schema.getFieldsInOrder(model):
             try:
                 t = FIELDS_MAPPING[field.__class__]
             except KeyError:
                 raise NotImplementedError('%s is not mapped to a type' % field.__class__)
             else:
                 self.add(Field(name=name, type=t))
-                self._fields[name].label_text = field.title
+                if field.title:
+                    self._fields[name].label_text = field.title
                 if field.required:
                     self._fields[name].validators.append(validators.required)
 
@@ -95,12 +120,13 @@ class FieldSet(BaseFieldSet):
 def test_fieldset():
 
     class IPet(interface.Interface):
-        name = schema.TextLine(
+        name = schema.Text(
             title=u'Name',
             required=True)
         type = schema.TextLine(
             title=u'Type',
             required=True)
+        age = schema.Int(min=1)
         owner = schema.TextLine(
             title=u'Owner')
         birthdate = schema.Date(title=u'Birth date')
@@ -110,6 +136,7 @@ def test_fieldset():
         def __init__(self):
             self.name = ''
             self.type = ''
+            self.age = ''
             self.owner = ''
             self.birthdate = ''
 
@@ -136,4 +163,8 @@ def test_fieldset():
     assert fs.name.value == 'minou', fs.render_fields
     assert p.name == 'minou', p.name
 
+    fs.configure(include=[fs.age])
+    fs.rebind(p, data={'Pet--age':'-1'})
+    fs.validate()
+    assert fs.age.errors == [u'Value is too small'], fs.errors
 
