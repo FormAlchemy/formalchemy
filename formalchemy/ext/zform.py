@@ -49,10 +49,11 @@ class FieldSet(BaseFieldSet):
         for name, field in schema.getFields(model).items():
             try:
                 t = FIELDS_MAPPING[field.__class__]
-            except AttributeError:
+            except KeyError:
                 raise NotImplementedError('%s is not mapped to a type' % field.__class__)
             else:
                 self.add(Field(name=name, type=t))
+                self._fields[name].label_text = field.title
                 if field.required:
                     self._fields[name].validators.append(validators.required)
 
@@ -102,7 +103,7 @@ def test_fieldset():
             required=True)
         owner = schema.TextLine(
             title=u'Owner')
-        birthdate = schema.Datetime(title=u'Birth date')
+        birthdate = schema.Date(title=u'Birth date')
 
     class Pet(object):
         interface.implements(IPet)
@@ -125,6 +126,7 @@ def test_fieldset():
     html = fs.render()
     assert 'class="field_req" for="Pet--name"' in html, html
     assert 'value="gawel"' in html, html
+    assert 'Birth date' in html, html
 
     # syncing
     fs.configure(include=[fs.name])
