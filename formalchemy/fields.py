@@ -380,13 +380,13 @@ class DateFieldRenderer(FieldRenderer):
         mm_name = self.name + '__month'
         dd_name = self.name + '__day'
         yyyy_name = self.name + '__year'
-        mm = _ternary((data is not None and mm_name in data), lambda: data[mm_name],  lambda: str(self._value and self._value.month))
-        dd = _ternary((data is not None and dd_name in data), lambda: data[dd_name], lambda: str(self._value and self._value.day))
+        mm = _ternary((data is not None and mm_name in data), lambda: data[mm_name],  lambda: str(self.field.value and self.field.value.month))
+        dd = _ternary((data is not None and dd_name in data), lambda: data[dd_name], lambda: str(self.field.value and self.field.value.day))
         # could be blank so don't use and/or construct
         if data is not None and yyyy_name in data:
             yyyy = data[yyyy_name]
         else:
-            yyyy = str(self._value and self._value.year or 'YYYY')
+            yyyy = str(self.field.value and self.field.value.year or 'YYYY')
         selects = dict(
                 m=h.select(mm_name, h.options_for_select(month_options, selected=mm), **kwargs),
                 d=h.select(dd_name, h.options_for_select(day_options, selected=dd), **kwargs),
@@ -414,9 +414,9 @@ class TimeFieldRenderer(FieldRenderer):
         hh_name = self.name + '__hour'
         mm_name = self.name + '__minute'
         ss_name = self.name + '__second'
-        hh = _ternary((data is not None and hh_name in data), lambda: data[hh_name], lambda: str(self._value and self._value.hour))
-        mm = _ternary((data is not None and mm_name in data), lambda: data[mm_name], lambda: str(self._value and self._value.minute))
-        ss = _ternary((data is not None and ss_name in data), lambda: data[ss_name], lambda: str(self._value and self._value.second))
+        hh = _ternary((data is not None and hh_name in data), lambda: data[hh_name], lambda: str(self.field.value and self.field.value.hour))
+        mm = _ternary((data is not None and mm_name in data), lambda: data[mm_name], lambda: str(self.field.value and self.field.value.minute))
+        ss = _ternary((data is not None and ss_name in data), lambda: data[ss_name], lambda: str(self.field.value and self.field.value.second))
         return h.select(hh_name, h.options_for_select(hour_options, selected=hh), **kwargs) \
                + ':' + h.select(mm_name, h.options_for_select(minute_options, selected=mm), **kwargs) \
                + ':' + h.select(ss_name, h.options_for_select(second_options, selected=ss), **kwargs)
