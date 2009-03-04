@@ -344,6 +344,20 @@ True
 >>> fs.validate()
 True
 
+>>> fs = FieldSet(bill, data={'User-1-orders': ['2', '3']})
+>>> print pretty_html(fs.orders.render())
+<select id="User-1-orders" multiple="multiple" name="User-1-orders" size="5">
+ <option value="2" selected="selected">
+  Quantity: 5
+ </option>
+ <option value="3" selected="selected">
+  Quantity: 6
+ </option>
+ <option value="1">
+  Quantity: 10
+ </option>
+</select>
+
 >>> fs = FieldSet(Two)
 >>> print fs.foo.render()
 <input id="Two--foo" name="Two--foo" type="text" value="133" />

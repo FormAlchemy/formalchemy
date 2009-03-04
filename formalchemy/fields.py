@@ -35,9 +35,9 @@ def iterable(item):
         return False
     return True
 
-def stringify_key(k):
+def _stringify(k, null_value=u''):
     if k is None:
-        return u''
+        return null_value
     if isinstance(k, str):
         return unicode(k, config.encoding)
     elif isinstance(k, unicode):
@@ -68,13 +68,13 @@ class FieldRenderer(object):
         pk = self.field.parent._bound_pk
         assert pk != ''
         if isinstance(pk, basestring) or not iterable(pk):
-            pk_string = stringify_key(pk)
+            pk_string = _stringify(pk)
         else:
             # remember to use a delimiter that can be used in the DOM (specifically, no commas).
             # we don't have to worry about escaping the delimiter, since we never try to
             # deserialize the generated name.  All we care about is generating unique
             # names for a given model's domain.
-            pk_string = u'_'.join([stringify_key(k) for k in pk])
+            pk_string = u'_'.join([_stringify(k) for k in pk])
 
         components = [clsname, pk_string, self.field.name]
         if self.field.parent.prefix:
@@ -83,9 +83,15 @@ class FieldRenderer(object):
     name = property(name)
 
     def _value(self):
-        """Submitted value, or field value if none"""
+        """
+        Submitted value, or field value if none.
+        The return value can thus be a string (if there was a submitted value)
+        or an object (if we're using the field value).  Callers should be able
+        to deal with either.
+        """
         if not self.field.is_readonly() and self._params is not None:
-            v = self._serialized_value()
+            # submitted value.  do not deserialize here since that requires valid data, which we might not have
+            v = self._serialized_value() 
         else:
             v = None
         # empty field will be '' -- use default value there, too
@@ -119,12 +125,12 @@ class FieldRenderer(object):
         if self.field.is_scalar_relation:
             q = self.field.query(self.field.relation_type())
             v = q.get(value)
-            return stringify_key(v)
+            return _stringify(v)
         if isinstance(value, list):
-            return u', '.join([stringify_key(item) for item in value])
+            return u', '.join([_stringify(item) for item in value])
         if isinstance(value, unicode):
             return value
-        return stringify_key(value)
+        return _stringify(value)
 
     def _params(self):
         return self.field.parent.data
@@ -214,7 +220,8 @@ class FieldRenderer(object):
             return datetime.datetime(dt.year, dt.month, dt.day, tm.hour, tm.minute, tm.second)
 
         return data
-
+    def stringify_value(self, v):
+        return _stringify(v, null_value=self.field._null_option[1])
 
 class EscapingReadonlyRenderer(FieldRenderer):
     """
@@ -493,8 +500,20 @@ class SelectFieldRenderer(FieldRenderer):
         return FieldRenderer._serialized_value(self)
 
     def render(self, options, **kwargs):
-        selected = kwargs.get('selected', None) or self._value
-        return h.select(self.name, h.options_for_select(options, selected=selected), **kwargs)
+        L = list(options)
+        if len(L) > 0:
+            if len(L[0]) == 2:
+                L = [(k, self.stringify_value(v)) for k, v in L]
+            else:
+                L = [_stringify(k) for k in L]
+        if self._value is None:
+            selected = None
+        else:
+            if self.field.is_collection:
+                selected = [self.stringify_value(v) for v in self._value]
+            else:
+                selected = self.stringify_value(self._value)
+        return h.select(self.name, h.options_for_select(L, selected=selected), **kwargs)
 
 
 def _pk_one_column(instance, column):
@@ -564,7 +583,7 @@ def _query_options(L):
     for each item in the iterable L, where `item description`
     is the result of str(item) and `item pk` is the item's primary key.
     """
-    return [(stringify_key(item), _pk(item)) for item in L]
+    return [(_stringify(item), _pk(item)) for item in L]
 
 
 def _normalized_options(options):
