@@ -161,10 +161,12 @@ document.getElementById("Two--foo").focus();
 1
 >>> session.rollback()
 
->>> twof = TwoFloat(id=1, foo=32.3)
+>>> twof = TwoFloat(id=1, foo=32.2)
 >>> fs_twof = FieldSet(twof)
+>>> fs_twof.foo.value
+32.200000000000003
 >>> print pretty_html(fs_twof.foo.render())
-<input id="TwoFloat-1-foo" name="TwoFloat-1-foo" type="text" value="32.3" />
+<input id="TwoFloat-1-foo" name="TwoFloat-1-foo" type="text" value="32.2" />
 
 # test render and sync fatypes.Numeric
 # http://code.google.com/p/formalchemy/issues/detail?id=41
@@ -186,6 +188,8 @@ True
 'None'
 
 >>> fs_cb = FieldSet(CheckBox)
+>>> fs_cb.field.value is None
+True
 >>> print pretty_html(fs_cb.field.dropdown().render())
 <select id="CheckBox--field" name="CheckBox--field">
  <option value="True">
@@ -198,11 +202,17 @@ True
 
 # test no checkbox/radio submitted
 >>> fs_cb.rebind(data={})
+>>> fs_cb.field.raw_value is None
+True
+>>> fs_cb.field.value
+False
+>>> fs_cb.field.renderer._value is None
+True
 >>> print fs_cb.field.render()
 <input id="CheckBox--field" name="CheckBox--field" type="checkbox" value="True" />
 >>> fs_cb.field.renderer #doctest: +ELLIPSIS
 <formalchemy.fields.CheckBoxFieldRenderer object at ...>
->>> fs_cb.field.renderer._serialized_value() == None
+>>> fs_cb.field.renderer._serialized_value() is None
 True
 >>> print pretty_html(fs_cb.field.radio().render())
 <input id="CheckBox--field_0" name="CheckBox--field" type="radio" value="True" />

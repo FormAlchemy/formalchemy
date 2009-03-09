@@ -13,6 +13,7 @@ def test_readonly_mode():
          <label class="field_opt" for="Two--foo">
           Foo
          </label>
+         133
         </div>
     """
 

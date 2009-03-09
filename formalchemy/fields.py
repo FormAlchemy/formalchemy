@@ -84,10 +84,8 @@ class FieldRenderer(object):
 
     def _value(self):
         """
-        Submitted value, or field value if none.
-        The return value can thus be a string (if there was a submitted value)
-        or an object (if we're using the field value).  Callers should be able
-        to deal with either.
+        Submitted value, or field value converted to string.
+        Return value is always either None or a string.
         """
         if not self.field.is_readonly() and self._params is not None:
             # submitted value.  do not deserialize here since that requires valid data, which we might not have
@@ -95,8 +93,16 @@ class FieldRenderer(object):
         else:
             v = None
         # empty field will be '' -- use default value there, too
-        return v or self.field.value
+        return v or self._model_value_as_string()
     _value = property(_value)
+
+    def _model_value_as_string(self):
+        if self.field.model_value is None:
+            return None
+        if self.field.is_collection:
+            return [self.stringify_value(v) for v in self.field.model_value]
+        else:
+            return self.stringify_value(self.field.model_value)
 
     def get_translator(self, **kwargs):
         """return a GNUTranslations object in the most convenient way
@@ -149,7 +155,8 @@ class FieldRenderer(object):
 
         Do not attempt to deserialize here; return value should be a
         string (corresponding to the output of `str` for your data
-        type), or for a collection type, a a list of strings.
+        type), or for a collection type, a a list of strings,
+        or None if no value was submitted for this renderer.
 
         The default _serialized_value returns the submitted value(s)
         in the input element corresponding to self.name.
@@ -309,7 +316,7 @@ class FileFieldRenderer(FieldRenderer):
         self._filename = None
 
     def render(self, **kwargs):
-        if self.field.value:
+        if self.field.model_value:
             checkbox_name = '%s--remove' % self.name
             return '%s %s %s' % (
                    h.file_field(self.name, **kwargs),
@@ -380,13 +387,13 @@ class DateFieldRenderer(FieldRenderer):
         mm_name = self.name + '__month'
         dd_name = self.name + '__day'
         yyyy_name = self.name + '__year'
-        mm = _ternary((data is not None and mm_name in data), lambda: data[mm_name],  lambda: str(self.field.value and self.field.value.month))
-        dd = _ternary((data is not None and dd_name in data), lambda: data[dd_name], lambda: str(self.field.value and self.field.value.day))
+        mm = _ternary((data is not None and mm_name in data), lambda: data[mm_name],  lambda: str(self.field.model_value and self.field.model_value.month))
+        dd = _ternary((data is not None and dd_name in data), lambda: data[dd_name], lambda: str(self.field.model_value and self.field.model_value.day))
         # could be blank so don't use and/or construct
         if data is not None and yyyy_name in data:
             yyyy = data[yyyy_name]
         else:
-            yyyy = str(self.field.value and self.field.value.year or 'YYYY')
+            yyyy = str(self.field.model_value and self.field.model_value.year or 'YYYY')
         selects = dict(
                 m=h.select(mm_name, h.options_for_select(month_options, selected=mm), **kwargs),
                 d=h.select(dd_name, h.options_for_select(day_options, selected=dd), **kwargs),
@@ -414,9 +421,9 @@ class TimeFieldRenderer(FieldRenderer):
         hh_name = self.name + '__hour'
         mm_name = self.name + '__minute'
         ss_name = self.name + '__second'
-        hh = _ternary((data is not None and hh_name in data), lambda: data[hh_name], lambda: str(self.field.value and self.field.value.hour))
-        mm = _ternary((data is not None and mm_name in data), lambda: data[mm_name], lambda: str(self.field.value and self.field.value.minute))
-        ss = _ternary((data is not None and ss_name in data), lambda: data[ss_name], lambda: str(self.field.value and self.field.value.second))
+        hh = _ternary((data is not None and hh_name in data), lambda: data[hh_name], lambda: str(self.field.model_value and self.field.model_value.hour))
+        mm = _ternary((data is not None and mm_name in data), lambda: data[mm_name], lambda: str(self.field.model_value and self.field.model_value.minute))
+        ss = _ternary((data is not None and ss_name in data), lambda: data[ss_name], lambda: str(self.field.model_value and self.field.model_value.second))
         return h.select(hh_name, h.options_for_select(hour_options, selected=hh), **kwargs) \
                + ':' + h.select(mm_name, h.options_for_select(minute_options, selected=mm), **kwargs) \
                + ':' + h.select(ss_name, h.options_for_select(second_options, selected=ss), **kwargs)
@@ -464,7 +471,7 @@ class RadioSet(FieldRenderer):
         return FieldRenderer._serialized_value(self)
 
     def _is_checked(self, choice_value):
-        return self._value == choice_value
+        return self._value == _stringify(choice_value)
 
     def render(self, options, **kwargs):
         self.radios = []
@@ -487,7 +494,7 @@ class CheckBoxSet(RadioSet):
         return FieldRenderer._serialized_value(self)
 
     def _is_checked(self, choice_value):
-        return choice_value in self._value
+        return _stringify(choice_value) in self._value
 
 
 class SelectFieldRenderer(FieldRenderer):
@@ -506,14 +513,7 @@ class SelectFieldRenderer(FieldRenderer):
                 L = [(k, self.stringify_value(v)) for k, v in L]
             else:
                 L = [_stringify(k) for k in L]
-        if self._value is None:
-            selected = None
-        else:
-            if self.field.is_collection:
-                selected = [self.stringify_value(v) for v in self._value]
-            else:
-                selected = self.stringify_value(self._value)
-        return h.select(self.name, h.options_for_select(L, selected=selected), **kwargs)
+        return h.select(self.name, h.options_for_select(L, selected=self._value), **kwargs)
 
 
 def _pk_one_column(instance, column):
@@ -627,7 +627,7 @@ class AbstractField(object):
     Contains the information necessary to render (and modify the rendering of)
     a form field
     """
-    _null_option = ('None', '__null_value__')
+    _null_option = (u'None', u'')
 
     def __init__(self, parent):
         # the FieldSet (or any ModelRenderer) owning this instance
@@ -875,6 +875,44 @@ class AbstractField(object):
         opts.update(html_options)
         return self.renderer.render_readonly(**opts)
 
+    def _pkify(self, value):
+        """return the PK for value, if applicable"""
+        return value
+
+    def value(self):
+        """
+        The value of this Field: use the corresponding value in the bound `data`,
+        if any; otherwise, use the value in the bound `model`.  For SQLAlchemy models,
+        if there is still no value, use the default defined on the corresponding `Column`.
+
+        For SQLAlchemy collections,
+        a list of the primary key values of the items in the collection is returned.
+
+        Invalid form data will cause an error to be raised.  Controllers should thus validate first.
+        Renderers should thus never access .value; use .model_value instead.  
+        """
+        # TODO add ._validated flag to save users from themselves?
+        if not self.is_readonly() and self.parent.data is not None:
+            v = self._deserialize()
+            if v is not None:
+                return self._pkify(v)
+        return self.model_value
+    value = property(value)
+
+    def model_value(self):
+        """
+        raw value from model, transformed if necessary for use as a form input value.
+        """
+        raise NotImplementedError()
+        
+    def raw_value(self):
+        """
+        raw value from model.  different from `.model_value` in SQLAlchemy fields, because for reference types,
+        `.model_value` will return the foreign key ID.  This will return the actual object 
+        referenced instead.
+        """
+        raise NotImplementedError()
+
     def _deserialize(self):
         return self.renderer.deserialize()
 
@@ -899,11 +937,15 @@ class Field(AbstractField):
         self.is_relation = False
         self.is_scalar_relation = False
 
-    def value(self):
-        if not self.is_readonly() and self.parent.data is not None:
-            v = self._deserialize()
-            if v is not None:
-                return v
+    def model_value(self):
+        return self.raw_value
+    model_value = property(model_value)
+
+    def is_collection(self):
+        return self.render_opts.get('multiple', False) or isinstance(self.renderer, self.parent.default_renderers['checkbox'])
+    is_collection = property(is_collection)
+
+    def raw_value(self):
         try:
             # this is NOT the same as getattr -- getattr will return the class's
             # value for the attribute name, which for a manually added Field will
@@ -914,14 +956,6 @@ class Field(AbstractField):
         if callable(self._value):
             return self._value(self.model)
         return self._value
-    value = property(value)
-
-    def is_collection(self):
-        return self.render_opts.get('multiple', False) or isinstance(self.renderer, self.parent.default_renderers['checkbox'])
-    is_collection = property(is_collection)
-
-    def raw_value(self):
-        return self.value
     raw_value = property(raw_value)
 
     def sync(self):
@@ -1033,24 +1067,23 @@ class AttributeField(AbstractField):
         """
         return self._property.mapper.class_
 
-    def value(self):
-        """
-        The value of this Field: use the corresponding value in the bound `data`,
-        if any; otherwise, use the value in the bound `model`.  If there is still no
-        value, use the default defined on the corresponding `Column`.
-
-        For collections,
-        a list of the primary key values of the items in the collection is returned.
-        """
-        if not self.is_readonly() and self.parent.data is not None:
-            v = self._deserialize()
-        else:
-            try:
-                v = getattr(self.model, self.name)
-            except AttributeError:
-                v = getattr(self.model, self.key)
+    def _pkify(self, value):
+        """return the PK for value, if applicable"""
+        if value is None:
+            return None
         if self.is_collection:
-            return [_pk(item) for item in v]
+            return [_pk(item) for item in value]
+        return value
+
+    def model_value(self):
+        return self._pkify(self.raw_value)
+    model_value = property(model_value)
+
+    def raw_value(self):
+        try:
+            v = getattr(self.model, self.name)
+        except AttributeError:
+            v = getattr(self.model, self.key)
         if v is not None:
             return v
 
@@ -1069,15 +1102,6 @@ class AttributeField(AbstractField):
             else:
                 return arg
         return None
-    value = property(value)
-
-    def raw_value(self):
-        """
-        raw value from model.  different from `.value`, because for reference types,
-        `.value` will return the foreign key ID.  This will return the actual object 
-        referenced instead.
-        """
-        return getattr(self.model, self.name)
     raw_value = property(raw_value)
 
     def sync(self):
