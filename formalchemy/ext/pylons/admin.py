@@ -183,7 +183,7 @@ class AdminController(object):
             response.headers['Content-type'] = "image/png"
         else:
             raise IOError('Invalid filename: %s' % filename)
-        fd = open(filepath)
+        fd = open(filepath, 'rb')
         data = fd.read()
         fd.close()
         return data
