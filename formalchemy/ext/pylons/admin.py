@@ -6,8 +6,14 @@ log = logging.getLogger(__name__)
 from pylons import request, response, session
 try:
     from pylons import tmpl_context as c
-except:
+except ImportError:
     from pylons import c
+try:
+    import elixir
+    has_elixir = True
+except ImportError:
+    has_elixir = False
+
 from pylons.controllers.util import redirect_to, url_for
 import pylons.controllers.util as h
 
@@ -139,7 +145,8 @@ class AdminController(object):
                 S.flush()
                 if not id:
                     # needed if the object does not exist in db
-                    S.save(c.fs.model)
+                    if not has_elixir or not isinstance(c.fs.model, elixir.Entity):
+                        S.save(c.fs.model)
                     message = _('Created %s %s')
                 else:
                     S.refresh(c.fs.model)
