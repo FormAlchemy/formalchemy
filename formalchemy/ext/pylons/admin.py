@@ -12,7 +12,7 @@ except ImportError:
 from pylons.controllers.util import redirect_to, url_for
 import pylons.controllers.util as h
 
-from sqlalchemy.orm import class_mapper
+from sqlalchemy.orm import class_mapper, object_session
 from formalchemy import *
 from formalchemy.i18n import _, get_translator
 from formalchemy.fields import _pk
