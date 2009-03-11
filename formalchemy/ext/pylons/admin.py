@@ -8,11 +8,6 @@ try:
     from pylons import tmpl_context as c
 except ImportError:
     from pylons import c
-try:
-    import elixir
-    has_elixir = True
-except ImportError:
-    has_elixir = False
 
 from pylons.controllers.util import redirect_to, url_for
 import pylons.controllers.util as h
@@ -145,7 +140,7 @@ class AdminController(object):
                 S.flush()
                 if not id:
                     # needed if the object does not exist in db
-                    if not has_elixir or not isinstance(c.fs.model, elixir.Entity):
+                    if not object_session(c.fs.model):
                         S.save(c.fs.model)
                     message = _('Created %s %s')
                 else:
