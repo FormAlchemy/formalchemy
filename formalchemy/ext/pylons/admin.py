@@ -9,7 +9,7 @@ try:
 except ImportError:
     from pylons import c
 
-from pylons.controllers.util import redirect_to, url_for
+from pylons.controllers.util import redirect_to
 import pylons.controllers.util as h
 
 from sqlalchemy.orm import class_mapper, object_session
@@ -150,8 +150,8 @@ class AdminController(object):
                 message = F_(message) % (modelname.encode('utf-8', 'ignore'),
                                          _pk(c.fs.model))
                 flash(message)
-                redirect_to(url_for(modelname=modelname,
-                                    action='list', id=None))
+                redirect_to(modelname=modelname,
+                            action='list', id=None)
         return engine('admin_edit', c=c,
                                     action=title, id=id,
                                     modelname=modelname,
@@ -170,7 +170,7 @@ class AdminController(object):
         message = F_(_('Deleted %s %s')) % (modelname.encode('utf-8', 'ignore'),
                                             key)
         flash(message)
-        redirect_to(url_for(modelname=modelname, action='list', id=None))
+        redirect_to(modelname=modelname, action='list', id=None)
 
     def static(self, id):
         filename = os.path.basename(id)

@@ -19,6 +19,7 @@
 
 * ext.couchdb (experimental)
 
+* bug fixes: issues 70
 
 1.1.1
 -----
