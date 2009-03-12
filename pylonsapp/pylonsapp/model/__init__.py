@@ -44,7 +44,7 @@ animals_table = sa.Table("Animals", meta.metadata,
     )
 
 class Animal(object):
-    def __repr__(self):
+    def __unicode__(self):
         return self.name
 
 orm.mapper(Animal, animals_table)
@@ -55,7 +55,7 @@ owners_table = sa.Table("Owners", meta.metadata,
     )
 
 class Owner(object):
-    def __repr__(self):
+    def __unicode__(self):
         return self.name
 
 orm.mapper(Owner, owners_table, properties=dict(
