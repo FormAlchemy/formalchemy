@@ -363,8 +363,8 @@ class ModelRenderer(object):
             raise Exception("No data bound; cannot sync")
         for field in self.render_fields.itervalues():
             field.sync()
-        if self.session and object_session(self.model) is None:
-            self.session.save(self.model)
+        if self.session:
+            self.session.add(self.model)
 
     def _raw_fields(self):
         return self._fields.values()
