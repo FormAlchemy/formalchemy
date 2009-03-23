@@ -649,6 +649,8 @@ class AbstractField(object):
         self._readonly = False
         # label to use for the rendered field.  autoguessed if not specified by .label()
         self.label_text = None
+        # optional attributes to pass to renderers
+        self.html_options = {}
         # True iff this Field is a primary key
         self.is_pk = False
         # True iff this Field is a raw foreign key
@@ -755,6 +757,25 @@ class AbstractField(object):
         required-ness, not remove it.
         """
         return self.validate(validators.required)
+    def with_html(self, **html_options):
+        """
+        Give some HTML options to renderer.
+
+        Trailing underscore (_) characters will be stripped. For example,
+        you might want to add a `class` attribute to your checkbox. You
+        would need to specify `.options(class_='someclass')`.
+
+        For WebHelpers-aware people: those parameters will be passed to
+        the `text_area()`, `password()`, `text()`, etc.. webhelpers.
+
+        NOTE: Those options can override generated attributes and can mess
+              the `sync` calls, or `label`-tag associations (if you change
+              `name`, or `id` for example).  Use with caution.
+        """
+        new_opts = copy(self.html_options)
+        for k, v in html_options.iteritems():
+            new_opts[k.rstrip('_')] = v
+        return self._modified(html_options=new_opts)
     def label(self, text):
         """
         Change the label associated with this field.  By default, the field name
@@ -847,33 +868,36 @@ class AbstractField(object):
         return self._renderer
     renderer = property(renderer)
 
-    def render(self, **html_options):
+    def _get_render_opts(self):
+        """
+        Calculate the final options dict to be sent to renderers.
+        """
+        # Use options from internally set render_opts
+        opts = dict(self.render_opts)
+        # Override with user-specified options (with .with_html())
+        opts.update(self.html_options)
+        return opts
+
+    def render(self):
         """
         Render this Field as HTML.
-
-        `html_options` are not used by the default template, but are
-        provided to make more customization possible in custom templates
         """
         if self.is_readonly():
-            return self.render_readonly(**html_options)
-        opts = dict(self.render_opts)
-        opts.update(html_options)
+            return self.render_readonly()
+
+        opts = self._get_render_opts()
+
         if (isinstance(self.type, fatypes.Boolean)
             and not opts.get('options')
             and self.renderer.__class__ in [self.parent.default_renderers['dropdown'], self.parent.default_renderers['radio']]):
             opts['options'] = [('Yes', True), ('No', False)]
         return self.renderer.render(**opts)
 
-    def render_readonly(self, **html_options):
+    def render_readonly(self):
         """
         Render this Field as HTML for read only mode.
-
-        `html_options` are not used by the default template, but are
-        provided to make more customization possible in custom templates
         """
-        opts = dict(self.render_opts)
-        opts.update(html_options)
-        return self.renderer.render_readonly(**opts)
+        return self.renderer.render_readonly(**self._get_render_opts())
 
     def _pkify(self, value):
         """return the PK for value, if applicable"""
@@ -1122,11 +1146,9 @@ class AttributeField(AbstractField):
     def __repr__(self):
         return 'AttributeField(%s)' % self.key
 
-    # todo? add .options method (for html_options)
-
-    def render(self, **html_options):
+    def render(self):
         if self.is_readonly():
-            return self.render_readonly(**html_options)
+            return self.render_readonly()
         if self.is_relation and not self.render_opts.get('options'):
             if self.is_required() or self.is_collection:
                 self.render_opts['options'] = []
@@ -1142,7 +1164,7 @@ class AttributeField(AbstractField):
             self.render_opts['multiple'] = True
             if 'size' not in self.render_opts:
                 self.render_opts['size'] = 5
-        return AbstractField.render(self, **html_options)
+        return AbstractField.render(self)
 
     def _get_renderer(self):
         if self.is_relation:

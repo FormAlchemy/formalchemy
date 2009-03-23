@@ -15,7 +15,7 @@ class DateTimeFieldRendererFr(DateTimeFieldRenderer):
 __doc__ = r"""
 >>> fs = FieldSet(Dt)
 >>> fs.configure(options=[fs.foobar.with_renderer(DateTimeFieldRendererFr)])
->>> print pretty_html(fs.foobar.render(lang='fr')) #doctest: +ELLIPSIS
+>>> print pretty_html(fs.foobar.with_html(lang='fr').render()) #doctest: +ELLIPSIS
 <span id="Dt--foobar">
  <select id="Dt--foobar__day" lang="fr" name="Dt--foobar__day">
   <option value="DD">

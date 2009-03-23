@@ -139,7 +139,7 @@ document.getElementById("Two--foo").focus();
 
 >>> fs = FieldSet(Two)
 >>> assert configure_and_render(fs, include=[fs.foo.dropdown([('option1', 'value1'), ('option2', 'value2')])]) == configure_and_render(fs, options=[fs.foo.dropdown([('option1', 'value1'), ('option2', 'value2')])]) 
->>> print pretty_html(fs.foo.render(onblur='test()'))
+>>> print pretty_html(fs.foo.with_html(onblur='test()').render())
 <select id="Two--foo" name="Two--foo" onblur="test()">
  <option value="value1">
   option1
@@ -148,7 +148,7 @@ document.getElementById("Two--foo").focus();
   option2
  </option>
 </select>
->>> print fs.foo.reset().render(onblur='test')
+>>> print fs.foo.reset().with_html(onblur='test').render()
 <input id="Two--foo" name="Two--foo" onblur="test" type="text" value="133" />
 
 # test sync

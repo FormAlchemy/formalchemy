@@ -1,6 +1,11 @@
 1.2.1
+-----
 
 * bug fixes: issues 70
+
+* added the `.with_html(**kwargs)` method to :class:`AbstractField` which will be
+  passed to the renderers, allowing to add some HTML attributes to rendered
+  HTML tags.  Removed **html_options from render method.  (See issue #60)
 
 
 1.2
