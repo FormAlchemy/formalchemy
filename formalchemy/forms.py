@@ -151,7 +151,7 @@ class FieldSet(AbstractFieldSet):
         ...         kwargs['options'] = [('Yes', True), ('No', False)]
         ...         return fields.SelectFieldRenderer.render(self, **kwargs)
 
-    FieldSet.default_renderers[types.Boolean] = BooleanSelectRenderer
+        >>> FieldSet.default_renderers[types.Boolean] = BooleanSelectRenderer
 
     `prettify` is a function that, given an attribute name ('user_name')
     turns it into something usable as an HTML label ('User name').
