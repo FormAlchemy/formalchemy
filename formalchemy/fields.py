@@ -14,6 +14,7 @@ import datetime
 from sqlalchemy.orm import class_mapper, Query
 from sqlalchemy.orm.attributes import ScalarAttributeImpl, ScalarObjectAttributeImpl, CollectionAttributeImpl, InstrumentedAttribute
 from sqlalchemy.orm.properties import CompositeProperty, ColumnProperty
+from sqlalchemy.orm.dynamic import DynamicAttributeImpl
 from sqlalchemy.exceptions import InvalidRequestError # 0.4 support
 from formalchemy import helpers as h
 from formalchemy import fatypes, validators
@@ -1025,7 +1026,7 @@ class AttributeField(AbstractField):
         self._property = instrumented_attribute.property
 
         # True iff this is a multi-valued (one-to-many or many-to-many) SA relation
-        self.is_collection = isinstance(self._impl, CollectionAttributeImpl)
+        self.is_collection = isinstance(self._impl, (CollectionAttributeImpl, DynamicAttributeImpl))
 
         # True iff this is the 'one' end of a one-to-many relation
         self.is_scalar_relation = isinstance(self._impl, ScalarObjectAttributeImpl)
