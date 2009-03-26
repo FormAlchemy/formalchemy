@@ -1076,6 +1076,10 @@ True
 document.getElementById("Two--foo").focus();
 //]]>
 </script>
+
+>>> fs_prop = FieldSet(Property)
+>>> fs_prop.foo.is_readonly()
+True
 """
 
 if __name__ == '__main__':

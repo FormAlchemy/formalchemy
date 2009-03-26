@@ -125,6 +125,16 @@ class VertexFieldRenderer(FieldRenderer):
 # isinstance(getattr(myclass, '_renderer', type(myclass)), Boolean)
 # since the custom class shouldn't really inherit from Boolean
 
+properties = Table('properties', Base.metadata,
+                   Column('id', Integer, primary_key=True),
+                   Column('a', Integer))
+                   
+
+class Property(Base):
+    __table__ = properties
+    foo = column_property(properties.c.a.label('foo'))
+    # bar = column_property(properties.c.a) # TODO
+
 class Recursive(Base):
     __tablename__ = 'recursives'
     id = Column(Integer, primary_key=True)

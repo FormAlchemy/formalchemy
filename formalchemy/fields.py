@@ -1068,8 +1068,12 @@ class AttributeField(AbstractField):
             self.name = self._column_name
 
         # smarter default "required" value
-        if not self.is_collection and [c for c in _columns if not c.nullable]:
+        if not self.is_collection and not self.is_readonly() and [c for c in _columns if not c.nullable]:
             self.validators.append(validators.required)
+
+    def is_readonly(self):
+        from sqlalchemy.sql.expression import _Label
+        return AbstractField.is_readonly(self) or isinstance(self._columns[0], _Label)
 
     def _columns(self):
         if self.is_scalar_relation:
