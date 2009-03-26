@@ -17,6 +17,7 @@ from sqlalchemy.orm.properties import SynonymProperty
 from sqlalchemy.orm import compile_mappers, object_session, class_mapper
 from sqlalchemy.orm.session import Session
 from sqlalchemy.orm.scoping import ScopedSession
+from sqlalchemy.orm.dynamic import DynamicAttributeImpl
 from sqlalchemy.util import OrderedDict
 
 import fields, fatypes
@@ -161,13 +162,16 @@ class ModelRenderer(object):
                 raise Exception("not bound to a SA instance, and no manual Field definitions found")
         else:
             # SA class.
-            # strip out synonyms.  there may be a more straightforward way to do this.
-            attrs = [_get_attribute(cls, p) for p in class_mapper(cls).iterate_properties]
+            # load synonyms so we can ignore them
+            synonyms = set(p for p in class_mapper(cls).iterate_properties 
+                           if isinstance(p, SynonymProperty))
+            # attributes we're interested in
+            attrs = []
             for p in class_mapper(cls).iterate_properties:
-                if isinstance(p, SynonymProperty):
-                    attrs = [attr for attr in attrs
-                             if attr.property.key != p.name
-                             or attr is _get_attribute(cls, p)]
+                attr = _get_attribute(cls, p)
+                if ((isinstance(p, SynonymProperty) or attr.property.key not in (s.name for s in synonyms))
+                    and not isinstance(attr.impl, DynamicAttributeImpl)):
+                    attrs.append(attr)
             # sort relations last before storing in the OrderedDict
             L = [fields.AttributeField(attr, self) for attr in attrs]
             L.sort(lambda a, b: cmp(a.is_relation, b.is_relation)) # note, key= not used for 2.3 support
