@@ -9,7 +9,7 @@ msgstr ""
 "Project-Id-Version: FormAlchemy 1.1\n"
 "Report-Msgid-Bugs-To: formalchemy@googlegroups.com\n"
 "POT-Creation-Date: 2009-01-18 12:51+0100\n"
-"PO-Revision-Date: 2009-01-18 13:59+0100\n"
+"PO-Revision-Date: 2009-03-30 19:07+0200\n"
 "Last-Translator: gael@gawel.org\n"
 "Language-Team: fr <formalchemy@googlegroups.com>\n"
 "Plural-Forms: nplurals=2; plural=(n != 1)\n"
@@ -18,67 +18,67 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Generated-By: Babel 0.9.4\n"
 
-#: formalchemy/fields.py:288
+#: formalchemy/fields.py:313
 msgid "Remove"
 msgstr ""
 
-#: formalchemy/i18n.py:65
+#: formalchemy/i18n.py:66
 msgid "Year"
 msgstr ""
 
-#: formalchemy/i18n.py:66
+#: formalchemy/i18n.py:67
 msgid "Month"
 msgstr ""
 
-#: formalchemy/i18n.py:67
+#: formalchemy/i18n.py:68
 msgid "Day"
 msgstr ""
 
-#: formalchemy/i18n.py:68
+#: formalchemy/i18n.py:69
 msgid "month_01"
 msgstr "January"
 
-#: formalchemy/i18n.py:69
+#: formalchemy/i18n.py:70
 msgid "month_02"
 msgstr "February"
 
-#: formalchemy/i18n.py:70
+#: formalchemy/i18n.py:71
 msgid "month_03"
 msgstr "March"
 
-#: formalchemy/i18n.py:71
+#: formalchemy/i18n.py:72
 msgid "month_04"
 msgstr "April"
 
-#: formalchemy/i18n.py:72
+#: formalchemy/i18n.py:73
 msgid "month_05"
 msgstr "May"
 
-#: formalchemy/i18n.py:73
+#: formalchemy/i18n.py:74
 msgid "month_06"
 msgstr "June"
 
-#: formalchemy/i18n.py:74
+#: formalchemy/i18n.py:75
 msgid "month_07"
 msgstr "July"
 
-#: formalchemy/i18n.py:75
+#: formalchemy/i18n.py:76
 msgid "month_08"
 msgstr "August"
 
-#: formalchemy/i18n.py:76
+#: formalchemy/i18n.py:77
 msgid "month_09"
 msgstr "September"
 
-#: formalchemy/i18n.py:77
+#: formalchemy/i18n.py:78
 msgid "month_10"
 msgstr "October"
 
-#: formalchemy/i18n.py:78
+#: formalchemy/i18n.py:79
 msgid "month_11"
 msgstr "November"
 
-#: formalchemy/i18n.py:79
+#: formalchemy/i18n.py:80
 msgid "month_12"
 msgstr "December"
 
@@ -170,58 +170,58 @@ msgstr ""
 msgid "Invalid image file. Must be %s, "
 msgstr ""
 
-#: formalchemy/ext/pylons/admin.py:24
+#: formalchemy/ext/pylons/admin.py:26
 msgid "Edit"
 msgstr ""
 
-#: formalchemy/ext/pylons/admin.py:25
+#: formalchemy/ext/pylons/admin.py:27
 msgid "Delete"
 msgstr ""
 
-#: formalchemy/ext/pylons/admin.py:26
+#: formalchemy/ext/pylons/admin.py:28
 msgid "Cancel"
 msgstr ""
 
-#: formalchemy/ext/pylons/admin.py:105
+#: formalchemy/ext/pylons/admin.py:29
+msgid "Models"
+msgstr ""
+
+#: formalchemy/ext/pylons/admin.py:30 formalchemy/ext/pylons/admin.py:33
+msgid "Existing objects"
+msgstr ""
+
+#: formalchemy/ext/pylons/admin.py:31
+msgid "New object"
+msgstr ""
+
+#: formalchemy/ext/pylons/admin.py:32
+msgid "Related types"
+msgstr ""
+
+#: formalchemy/ext/pylons/admin.py:34
+msgid "Create form"
+msgstr ""
+
+#: formalchemy/ext/pylons/admin.py:76
 msgid "edit"
 msgstr ""
 
-#: formalchemy/ext/pylons/admin.py:105
+#: formalchemy/ext/pylons/admin.py:76
 msgid "delete"
 msgstr ""
 
-#: formalchemy/ext/pylons/admin.py:167
+#: formalchemy/ext/pylons/admin.py:138
 #, python-format
 msgid "Created %s %s"
 msgstr ""
 
-#: formalchemy/ext/pylons/admin.py:170
+#: formalchemy/ext/pylons/admin.py:141
 #, python-format
 msgid "Modified %s %s"
 msgstr ""
 
-#: formalchemy/ext/pylons/admin.py:192
+#: formalchemy/ext/pylons/admin.py:163
 #, python-format
 msgid "Deleted %s %s"
-msgstr ""
-
-#: formalchemy/ext/pylons/admin_index.tmpl:2
-msgid "Models"
-msgstr ""
-
-#: formalchemy/ext/pylons/admin_list.tmpl:2
-msgid "Related types"
-msgstr ""
-
-#: formalchemy/ext/pylons/admin_list.tmpl:11
-msgid "Existing objects"
-msgstr ""
-
-#: formalchemy/ext/pylons/admin_list.tmpl:15
-msgid "New object"
-msgstr ""
-
-#: formalchemy/ext/pylons/admin_list.tmpl:17
-msgid "Create form"
 msgstr ""
 

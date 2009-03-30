@@ -26,6 +26,12 @@ __all__ = ['FormAlchemyAdminController']
 _('Edit')
 _('Delete')
 _('Cancel')
+_('Models')
+_('Existing objects')
+_('New object')
+_('Related types')
+_('Existing objects')
+_('Create form')
 
 # templates
 
