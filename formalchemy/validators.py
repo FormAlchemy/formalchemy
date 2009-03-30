@@ -29,7 +29,7 @@ class ValidationError(Exception):
     def __repr__(self):
         return 'ValidationError(%r,)' % self.message
 
-def required(value):
+def required(value, field=None):
     """Successful if value is neither None nor the empty string (yes, including empty lists)"""
     if value is None or value == '':
         msg = isinstance(value, list) and _('Please select a value') or _('Please enter a value')
@@ -37,7 +37,7 @@ def required(value):
 
 # other validators will not be called for empty values
 
-def integer(value):
+def integer(value, field=None):
     """Successful if value is an int"""
     # the validator contract says you don't have to worry about "value is None",
     # but this is called from deserialize as well as validation
@@ -48,7 +48,7 @@ def integer(value):
     except:
         raise ValidationError(_('Value is not an integer'))
 
-def float_(value):
+def float_(value, field=None):
     """Successful if value is a float"""
     # the validator contract says you don't have to worry about "value is None",
     # but this is called from deserialize as well as validation
@@ -60,7 +60,7 @@ def float_(value):
         raise ValidationError(_('Value is not a number'))
 
 from decimal import Decimal
-def decimal_(value):
+def decimal_(value, field=None):
     """Successful if value can represent a decimal"""
     # the validator contract says you don't have to worry about "value is None",
     # but this is called from deserialize as well as validation
@@ -71,12 +71,12 @@ def decimal_(value):
     except:
         raise ValidationError(_('Value is not a number'))
 
-def currency(value):
+def currency(value, field=None):
     """Successful if value looks like a currency amount (has exactly two digits after a decimal point)"""
     if '%.2f' % float_(value) != value:
         raise ValidationError('Please specify full currency value, including cents (e.g., 12.34)')
 
-def email(value):
+def email(value, field=None):
     """
     Successful if value is a valid RFC 822 email address.
     Ignores the more subtle intricacies of what is legal inside a quoted region,
@@ -143,7 +143,7 @@ def maxlength(length):
     """Returns a validator that is successful if the input's length is at most the given one."""
     if length <= 0:
         raise ValueError('Invalid maximum length')
-    def f(value):
+    def f(value, field=None):
         if len(value) > length:
             raise ValidationError(_('Value must be no more than %d characters long') % length)
     return f
@@ -152,7 +152,7 @@ def minlength(length):
     """Returns a validator that is successful if the input's length is at least the given one."""
     if length <= 0:
         raise ValueError('Invalid minimum length')
-    def f(value):
+    def f(value, field=None):
         if len(value) < length:
             raise ValidationError(_('Value must be at least %d characters long') % length)
     return f
@@ -167,7 +167,7 @@ def regex(exp, errormsg=_('Invalid input')):
     import re
     if type(exp) != type(re.compile('')):
         exp = re.compile(exp)
-    def f(value):
+    def f(value, field=None):
         if not exp.match(value):
             raise ValidationError(errormsg)
     return f

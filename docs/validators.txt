@@ -211,7 +211,9 @@ Function generators
 Write your own validator
 ------------------------
 
-You can write your own validator::
+You can write your own validator, with the following function signature. The
+`field` parameter will be the `Field` object being validated (and though its
+`.parent` attribute, the `FieldSet`::
 
   >>> def negative(value):
   ...     if not (isinstance(value, int) and value < 0):
@@ -233,6 +235,13 @@ Then it should work::
   >>> fs.rebind(One, data={'One--number': '2'})
   >>> fs.validate()
   False
+
+You can also use the `field` positional argument to compare with some other fields
+in the same FieldSet if you know this will be contained in a FieldSet, for example:
+
+  >>> def passwd2_validator(value, field):
+  ...     if field.parent.passwd1.value != value:
+  ...         raise validators.ValidationError('Password do not match')
 
 The `FieldSet.errors` and `Field.errors` attributes contain your custom error
 message::

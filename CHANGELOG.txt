@@ -7,6 +7,11 @@
   passed to the renderers, allowing to add some HTML attributes to rendered
   HTML tags.  Removed **html_options from render method.  (See issue #60)
 
+* validators are now passed as second argument the `field` being validated. WARN:
+  this will mean adding the parameter to your functions to be backwards compatible.
+  The validator function signature changed from `myfunc(value)` to
+  `myfunc(value, field=None)`.
+
 
 1.2
 ---

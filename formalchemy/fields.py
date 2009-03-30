@@ -10,6 +10,7 @@ logger = logging.getLogger('formalchemy.' + __name__)
 
 from copy import copy, deepcopy
 import datetime
+import warnings
 
 from sqlalchemy.orm import class_mapper, Query
 from sqlalchemy.orm.attributes import ScalarAttributeImpl, ScalarObjectAttributeImpl, CollectionAttributeImpl, InstrumentedAttribute
@@ -189,14 +190,14 @@ class FieldRenderer(object):
         if data is None or data == self.field._null_option[1]:
             return None
         if isinstance(self.field.type, fatypes.Integer):
-            return validators.integer(data)
+            return validators.integer(data, self)
         if isinstance(self.field.type, fatypes.Float):
-            return validators.float_(data)
+            return validators.float_(data, self)
         if isinstance(self.field.type, fatypes.Numeric):
             if self.field.type.asdecimal:
-                return validators.decimal_(data)
+                return validators.decimal_(data, self)
             else:
-                return validators.float_(data)
+                return validators.float_(data, self)
 
         def _date(data):
             if data == 'YYYY-MM-DD' or data == '-MM-DD' or not data.strip():
@@ -700,9 +701,15 @@ class AbstractField(object):
             if validator is not validators.required and value is None:
                 continue
             try:
-                validator(value)
+                validator(value, self)
             except validators.ValidationError, e:
                 self.errors.append(e.message)
+            except TypeError:
+                warnings.warn(DeprecationWarning('Please provide a field argument to your %r validator. Your validator will break in FA 1.5' % validator))
+                try:
+                    validator(value)
+                except validators.ValidationError, e:
+                    self.errors.append(e.message)
         return not self.errors
 
     def is_required(self):
