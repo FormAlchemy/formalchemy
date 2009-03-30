@@ -10,7 +10,9 @@ from formalchemy import helpers
 
 from tempita import Template as TempitaTemplate
 try:
+    from mako.lookup import TemplateLookup
     from mako.template import Template as MakoTemplate
+    from mako.exceptions import TopLevelLookupException
     HAS_MAKO = True
 except ImportError:
     HAS_MAKO = False
@@ -83,14 +85,17 @@ class MakoEngine(TemplateEngine):
     """Template engine for mako. File extension is `.mako`.
     """
     extension = 'mako'
+    _lookup = None
     def get_template(self, name, **kw):
-        filename = self.get_filename(name)
-        if filename:
-            return MakoTemplate(filename=filename, **kw)
-        filename = os.path.join(MAKO_TEMPLATES, '%s.mako_tmpl' % name)
-        if os.path.isfile(filename):
-            template = TempitaTemplate.from_filename(filename)
-            return MakoTemplate(template.substitute(template_engine='mako'), **kw)
+        if self._lookup is None:
+            self._lookup = TemplateLookup(directories=self.directories, **kw)
+        try:
+            return self._lookup.get_template('%s.%s' % (name, self.extension))
+        except TopLevelLookupException:
+            filename = os.path.join(MAKO_TEMPLATES, '%s.mako_tmpl' % name)
+            if os.path.isfile(filename):
+                template = TempitaTemplate.from_filename(filename)
+                return MakoTemplate(template.substitute(template_engine='mako'), **kw)
 
     def render(self, template_name, **kwargs):
         template = self.templates.get(template_name, None)

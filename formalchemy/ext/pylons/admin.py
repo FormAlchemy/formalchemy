@@ -3,7 +3,7 @@ import os
 import logging
 log = logging.getLogger(__name__)
 
-from pylons import request, response, session
+from pylons import request, response, session, config
 try:
     from pylons import tmpl_context as c
 except ImportError:
@@ -16,7 +16,7 @@ from sqlalchemy.orm import class_mapper, object_session
 from formalchemy import *
 from formalchemy.i18n import _, get_translator
 from formalchemy.fields import _pk
-from formalchemy.templates import TempitaEngine
+from formalchemy.templates import MakoEngine
 from formalchemy.tempita import Template
 
 
@@ -30,19 +30,6 @@ _('Cancel')
 # templates
 
 template_dir = os.path.dirname(__file__)
-
-def get_file_template(name, from_template):
-    path = os.path.join(template_dir, '%s.tmpl' % name)
-    return from_template.__class__.from_filename(
-        path, namespace=from_template.namespace,
-        get_template=from_template.get_template)
-
-class TemplateEngine(TempitaEngine):
-    directories = [template_dir]
-    _templates = ['base', 'admin_index', 'admin_list', 'admin_edit']
-
-engine = TemplateEngine(default_inherit='base', get_template=get_file_template)
-
 
 def flash(msg):
     """Add 'msg' to the users flashest list in the users session"""
@@ -103,7 +90,7 @@ class AdminController(object):
     def index(self):
         """List model types"""
         modelnames = sorted(self._model_grids.keys())
-        return engine('admin_index', c=c, modelname=None,
+        return self._engine('admin_index', c=c, modelname=None,
                                      modelnames=modelnames,
                                      custom_css = self._custom_css,
                                      custom_js = self._custom_js)
@@ -115,7 +102,7 @@ class AdminController(object):
         instances = S.query(grid.model.__class__).all()
         c.grid = grid.bind(instances)
         c.modelname = modelname
-        return engine('admin_list', c=c,
+        return self._engine('admin_list', c=c,
                                     modelname=modelname,
                                     custom_css = self._custom_css,
                                     custom_js = self._custom_js)
@@ -152,7 +139,7 @@ class AdminController(object):
                 flash(message)
                 redirect_to(modelname=modelname,
                             action='list', id=None)
-        return engine('admin_edit', c=c,
+        return self._engine('admin_edit', c=c,
                                     action=title, id=id,
                                     modelname=modelname,
                                     custom_css = self._custom_css,
@@ -190,7 +177,11 @@ class AdminController(object):
         fd.close()
         return data
 
-def FormAlchemyAdminController(cls):
+class TemplateEngine(MakoEngine):
+    directories = [os.path.join(p, 'fa_admin') for p in config['pylons.paths']['templates']] + [template_dir]
+    _templates = ['base', 'admin_index', 'admin_list', 'admin_edit']
+
+def FormAlchemyAdminController(cls, engine=None):
     """
     Generate a controller that is a subclass of `AdminController`
     and the Pylons BaseController `cls`
@@ -198,4 +189,10 @@ def FormAlchemyAdminController(cls):
     controller = cls.__name__.lower().split('controller')[0]
     kwargs = get_forms(controller, cls.model, cls.forms)
     log.info('creating admin controller with args %s' % kwargs)
+
+    if engine is not None:
+        kwargs['_engine'] = engine
+    else:
+        kwargs['_engine'] = TemplateEngine(input_encoding='utf-8', output_encoding='utf-8')
+
     return type(cls.__name__, (cls, AdminController), kwargs)
