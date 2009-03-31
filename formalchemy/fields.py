@@ -563,7 +563,8 @@ class _SafeEval(object):
     visitExpression = default
     
     def visitName(self, node, **kw):
-        return node.name # for booleans
+        if node.name in ['True', 'False', 'None']:
+            return eval(node.name)
 
     def visitConst(self, node, **kw):
         return node.value
