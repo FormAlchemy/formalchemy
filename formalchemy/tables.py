@@ -93,6 +93,7 @@ class Grid(base.EditableRenderer):
     def render(self, **kwargs):
         engine = self.engine or config.engine
         if self._render or self._render_readonly:
+            import warnings
             warnings.warn(DeprecationWarning('_render and _render_readonly are deprecated and will be removed in 1.5. Use a TemplateEngine instead'))
         if self.readonly:
             if self._render_readonly is not None:
