@@ -298,7 +298,7 @@ class HiddenFieldRenderer(FieldRenderer):
 class CheckBoxFieldRenderer(FieldRenderer):
     """render a boolean value as checkbox field"""
     def render(self, **kwargs):
-        return h.check_box(self.name, True, checked=self._value, **kwargs)
+        return h.check_box(self.name, True, checked=_simple_eval(self._value or ''), **kwargs)
     def _serialized_value(self):
         if self.name not in self._params:
             return None
@@ -577,6 +577,8 @@ class _SafeEval(object):
 
 def _simple_eval(source):
     """like 2.6's ast.literal_eval, but only does constants, lists, and tuples, for serialized pk eval"""
+    if source == '':
+        return None
     walker = _SafeEval()
     ast = compiler.parse(source, 'eval')
     return walker.visit(ast)
@@ -1164,7 +1166,7 @@ class AttributeField(AbstractField):
     def render(self):
         if self.is_readonly():
             return self.render_readonly()
-        if self.is_relation and not self.render_opts.get('options'):
+        if self.is_relation and self.render_opts.get('options') is None:
             if self.is_required() or self.is_collection:
                 self.render_opts['options'] = []
             else:
