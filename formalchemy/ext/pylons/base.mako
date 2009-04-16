@@ -4,19 +4,19 @@ from pylons.controllers.util import url_for
 <html>
 <head>
 <title>${self.title()}</title>
-<style media="screen" type="text/css"><!-- @import url(${url_for(modelname='static_contents', action='admin.css', id=None)}); --></style>
+<style media="screen" type="text/css"><!-- @import url(${url_for(controller=controller, modelname='static_contents', action='admin.css', id=None)}); --></style>
 <style type="text/css">
 .add {
     margin-left:1em;
     margin-bottom: 0.3em;
-    background: url('${url_for(modelname='static_contents', action='add.png', id=None)}');
+    background: url('${url_for(controller=controller, modelname='static_contents', action='add.png', id=None)}');
 }
 .delete {
-    background: url('${url_for(modelname='static_contents', action='delete.png', id=None)}');
+    background: url('${url_for(controller=controller, modelname='static_contents', action='delete.png', id=None)}');
     float:left;
 }
 .edit {
-    background: url('${url_for(modelname='static_contents', action='edit.png', id=None)}');
+    background: url('${url_for(controller=controller, modelname='static_contents', action='edit.png', id=None)}');
     float:left;
 }
 </style>
@@ -28,7 +28,7 @@ ${custom_js}
     <div id="title"><h1>${self.title()}</h1></div>
     <div id="nav">
     %if modelname:
-      <a href="${url_for(modelname=None, action=None, id=None)}">
+      <a href="${url_for(controller=controller, modelname=None, action=None, id=None)}">
         ${F_('Models')}
       </a>
     %endif

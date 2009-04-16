@@ -14,7 +14,7 @@ ${c.modelname}
   %for field in c.grid._fields.itervalues():
     %if field.is_relation:
       <% clsname = field.relation_type().__name__ %>
-      <tr><td><a href="${url_for(modelname=clsname, action='list')}">${clsname}</a></td></tr>
+      <tr><td><a href="${url_for(controller=controller, modelname=clsname, action='list')}">${clsname}</a></td></tr>
     %endif
   %endfor
   </table>
@@ -29,7 +29,7 @@ ${F_('Existing objects')}
 <table>
   ${c.grid.render()}
 </table>
-<a class="icon add" title="${F_('New object')}" href="${url_for(modelname=c.modelname, action='edit')}">
+<a class="icon add" title="${F_('New object')}" href="${url_for(controller=controller, modelname=c.modelname, action='edit')}">
 ${F_('New object')}
 </a>
 </div>

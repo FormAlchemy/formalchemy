@@ -75,9 +75,10 @@ def get_forms(controller, model_module, forms):
             _ = get_translator().gettext
             label = action == 'edit' and _('edit') or _('delete')
             return lambda item: '<a href="%s" title="%s" class="icon %s">%s</a>' % (
-                                h.url_for(modelname=modelname,
-                                action=action,
-                                id=_pk(item)),
+                                h.url_for(controller=controller,
+                                          modelname=modelname,
+                                          action=action,
+                                          id=_pk(item)),
                                 label,
                                 action,
                                 label)
@@ -97,6 +98,7 @@ class AdminController(object):
         """List model types"""
         modelnames = sorted(self._model_grids.keys())
         return self._engine('admin_index', c=c, modelname=None,
+                                     controller=self._name,
                                      modelnames=modelnames,
                                      custom_css = self._custom_css,
                                      custom_js = self._custom_js)
@@ -109,6 +111,7 @@ class AdminController(object):
         c.grid = grid.bind(instances)
         c.modelname = modelname
         return self._engine('admin_list', c=c,
+                                    controller=self._name,
                                     modelname=modelname,
                                     custom_css = self._custom_css,
                                     custom_js = self._custom_js)
@@ -147,6 +150,7 @@ class AdminController(object):
                             action='list', id=None)
         return self._engine('admin_edit', c=c,
                                     action=title, id=id,
+                                    controller=self._name,
                                     modelname=modelname,
                                     custom_css = self._custom_css,
                                     custom_js = self._custom_js)
@@ -163,7 +167,7 @@ class AdminController(object):
         message = F_(_('Deleted %s %s')) % (modelname.encode('utf-8', 'ignore'),
                                             key)
         flash(message)
-        redirect_to(modelname=modelname, action='list', id=None)
+        redirect_to(controller=self._name, modelname=modelname, action='list', id=None)
 
     def static(self, id):
         filename = os.path.basename(id)
@@ -196,6 +200,7 @@ def FormAlchemyAdminController(cls, engine=None):
     kwargs = get_forms(controller, cls.model, cls.forms)
     log.info('creating admin controller with args %s' % kwargs)
 
+    kwargs['_name'] = controller
     if engine is not None:
         kwargs['_engine'] = engine
     else:
