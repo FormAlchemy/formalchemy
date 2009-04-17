@@ -7,7 +7,9 @@ from formalchemy import fields
 from formalchemy import validators
 from sqlalchemy.util import OrderedDict
 import fatypes
-from simplecouchdb import schema
+from couchdbkit import schema
+from couchdbkit import properties
+
 from datetime import datetime
 
 
@@ -113,12 +115,12 @@ class Grid(BaseGrid, FieldSet):
 
 def test_fieldset():
     class Pet(schema.Document):
-        name = schema.StringProperty(required=True)
-        type = schema.StringProperty(required=True)
-        birthdate = schema.DateProperty(auto_now=True)
-        weight_in_pounds = schema.IntegerProperty()
-        spayed_or_neutered = schema.BooleanProperty()
-        owner = schema.StringProperty()
+        name = properties.StringProperty(required=True)
+        type = properties.StringProperty(required=True)
+        birthdate = properties.DateProperty(auto_now=True)
+        weight_in_pounds = properties.IntegerProperty()
+        spayed_or_neutered = properties.BooleanProperty()
+        owner = properties.StringProperty()
 
     fs = FieldSet(Pet)
     p = Pet()

@@ -3,9 +3,9 @@
 
 .. automodule:: formalchemy.ext.couchdb
 
-This module provides an experimental subclass of :class:`~formalchemy.forms.FieldSet` to support simplecouchdb_'s schema. 
+This module provides an experimental subclass of :class:`~formalchemy.forms.FieldSet` to support couchdbkit_'s schema. 
 
-.. _simplecouchdb: http://py-simplecouchdb.e-engura.org/
+.. _ couchdbkit: http://bitbucket.org/benoitc/couchdbkit/wiki/Home
 
 Usage
 =====
@@ -13,7 +13,7 @@ Usage
 Simple example::
 
     from formalchemy.ext.couchdb import FieldSet
-    from simplecouchdb import schema
+    from couchdbkit import schema
 
     class Pet(schema.Document):
         name = schema.StringProperty(required=True)
