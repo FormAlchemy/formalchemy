@@ -11,6 +11,7 @@ except ImportError:
 
 from pylons.controllers.util import redirect_to
 import pylons.controllers.util as h
+from webhelpers.paginate import Page
 
 from sqlalchemy.orm import class_mapper, object_session
 from formalchemy import *
@@ -107,14 +108,16 @@ class AdminController(object):
         """List instances of a model type"""
         grid = self._model_grids[modelname]
         S = self.Session()
-        instances = S.query(grid.model.__class__).all()
-        c.grid = grid.bind(instances)
+        query = S.query(grid.model.__class__)
+        page = Page(query, page=int(request.GET.get('page', '1')), **self._paginate)
+        c.grid = grid.bind(page)
         c.modelname = modelname
         return self._engine('admin_list', c=c,
-                                    controller=self._name,
-                                    modelname=modelname,
-                                    custom_css = self._custom_css,
-                                    custom_js = self._custom_js)
+                            page=page,
+                            controller=self._name,
+                            modelname=modelname,
+                            custom_css = self._custom_css,
+                            custom_js = self._custom_js)
 
     def edit(self, modelname, id=None):
         """Edit (or create, if `id` is None) an instance of the given model type"""
@@ -191,7 +194,8 @@ class TemplateEngine(MakoEngine):
     directories = [os.path.join(p, 'fa_admin') for p in config['pylons.paths']['templates']] + [template_dir]
     _templates = ['base', 'admin_index', 'admin_list', 'admin_edit']
 
-def FormAlchemyAdminController(cls, engine=None, controller=None):
+def FormAlchemyAdminController(cls, engine=None, controller=None,
+                               paginate=dict()):
     """
     Generate a controller that is a subclass of `AdminController`
     and the Pylons BaseController `cls`
@@ -203,6 +207,7 @@ def FormAlchemyAdminController(cls, engine=None, controller=None):
     log.info('creating admin controller with args %s' % kwargs)
 
     kwargs['_name'] = controller
+    kwargs['_paginate'] = paginate
     if engine is not None:
         kwargs['_engine'] = engine
     else:

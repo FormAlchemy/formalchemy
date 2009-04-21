@@ -26,6 +26,9 @@ ${c.modelname}
 <h2>
 ${F_('Existing objects')}
 </h2>
+<div id="pager">
+${page.pager()}
+</div>
 <table>
   ${c.grid.render()}
 </table>

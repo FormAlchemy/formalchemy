@@ -390,4 +390,11 @@ fieldset p.label {
     overflow:hidden;
 }
 
+#pager {
+    text-align: center;
+}
+#pager .pager_curpage {
+    text-decoration:underline;
+    color:#114477;
+}
 /*****************************/

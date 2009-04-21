@@ -21,4 +21,8 @@ def setup_app(command, conf, vars):
     o = model.Owner()
     o.name = 'gawel'
     meta.Session.add(o)
+    for i in range(50):
+        o = model.Owner()
+        o.name = 'owner%i' % i
+        meta.Session.add(o)
     meta.Session.commit()
