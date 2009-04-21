@@ -191,12 +191,14 @@ class TemplateEngine(MakoEngine):
     directories = [os.path.join(p, 'fa_admin') for p in config['pylons.paths']['templates']] + [template_dir]
     _templates = ['base', 'admin_index', 'admin_list', 'admin_edit']
 
-def FormAlchemyAdminController(cls, engine=None):
+def FormAlchemyAdminController(cls, engine=None, controller=None):
     """
     Generate a controller that is a subclass of `AdminController`
     and the Pylons BaseController `cls`
     """
-    controller = cls.__name__.lower().split('controller')[0]
+    if not controller:
+        controller = cls.__name__.lower().split('controller')[0]
+
     kwargs = get_forms(controller, cls.model, cls.forms)
     log.info('creating admin controller with args %s' % kwargs)
 
