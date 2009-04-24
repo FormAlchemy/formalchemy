@@ -5,7 +5,7 @@
 
 This module provides an experimental subclass of :class:`~formalchemy.forms.FieldSet` to support couchdbkit_'s schema. 
 
-.. _ couchdbkit: http://bitbucket.org/benoitc/couchdbkit/wiki/Home
+.. _couchdbkit: http://bitbucket.org/benoitc/couchdbkit/wiki/Home
 
 Usage
 =====
