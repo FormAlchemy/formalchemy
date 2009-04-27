@@ -151,6 +151,25 @@ document.getElementById("Two--foo").focus();
 >>> print fs.foo.reset().with_html(onblur='test').render()
 <input id="Two--foo" name="Two--foo" onblur="test" type="text" value="133" />
 
+# Test with_metadata()
+>>> fs = FieldSet(Three)
+>>> fs.configure(include=[fs.foo.with_metadata(instructions=u'Answer well')])
+>>> print fs.render()
+<div>
+ <label class="field_opt" for="Three--foo">
+  Foo
+ </label>
+ <input id="Three--foo" name="Three--foo" type="text" />
+ <span class="instructions">
+  Answer well
+ </span>
+</div>
+<script type="text/javascript">
+ //<![CDATA[
+document.getElementById("Three--foo").focus();
+//]]>
+</script>
+
 # test sync
 >>> print session.query(One).count()
 0

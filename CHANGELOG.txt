@@ -16,6 +16,12 @@
 
 * ext.couchdb now use couchdbkit instead of py-simplecouchdb
 
+* added the `.with_metadata(**attrs)` method to :class:`AbstractField` which allows
+  you to add metadata to your field. The difference with `.with_html()` is that
+  the attributes passed in will not be rendered in the HTML element, but are there
+  only to be used in your templates, to tweak the output according to those
+  properties. See docs/forms.txt
+
 
 1.2
 ---

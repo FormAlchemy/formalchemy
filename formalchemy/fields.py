@@ -662,6 +662,8 @@ class AbstractField(object):
         self.is_pk = False
         # True iff this Field is a raw foreign key
         self.is_raw_foreign_key = False
+        # Field metadata, for customization
+        self.metadata = {}
         return False
 
     def __deepcopy__(self, memo):
@@ -750,6 +752,26 @@ class AbstractField(object):
     def bind(self, parent):
         """Return a copy of this Field, bound to a different parent"""
         return self._modified(parent=parent)
+    def with_metadata(self, **attrs):
+        """Attach some metadata attributes to the Field, to be used by
+        conditions in templates.
+
+        Example usage:
+
+          >>> test = Field('test')
+          >>> field = test.with_metadata(instructions='use this widget this way')
+          ...
+
+        And further in your templates you can verify:
+
+          >>> 'instructions' in field.metadata
+          True
+
+        and display the content in a <span> or something.
+        """
+        new_attr = self.metadata.copy()
+        new_attr.update(attrs)
+        return self._modified(metadata=new_attr)
     def validate(self, validator):
         """
         Add the `validator` function to the list of validation

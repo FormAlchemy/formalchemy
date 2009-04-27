@@ -145,6 +145,11 @@ Field Modification
       for all instances of a Field type, modify
       FieldSet.default_renderers instead.
 
+- `with_metadata(self, **attrs)`:
+      Add/modify some metadata for the Field. Use this to attach any
+      metadata to your field. By default, the the `instructions` property
+      is used to show additional text below or beside your rendered Field.
+
 - `disabled(self)`:
       Render the field disabled.
 
