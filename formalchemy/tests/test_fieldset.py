@@ -863,7 +863,7 @@ True
 True
 >>> session.rollback()
 
->>> FieldSet.default_renderers[Vertex] = VertexFieldRenderer
+>>> FieldSet.default_renderers[Point] = PointFieldRenderer
 >>> fs = FieldSet(Vertex)
 >>> print pretty_html(fs.start.render())
 <input id="Vertex--start-x" name="Vertex--start-x" type="text" value="" />

@@ -105,7 +105,7 @@ Session.mapper(Vertex, vertices, properties={
     'end':composite(Point, vertices.c.x2, vertices.c.y2)
 })
 
-class VertexFieldRenderer(FieldRenderer):
+class PointFieldRenderer(FieldRenderer):
     def render(self, **kwargs):
         import helpers as h
         data = self.field.parent.data

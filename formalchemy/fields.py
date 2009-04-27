@@ -1061,7 +1061,7 @@ class AttributeField(AbstractField):
             # the correct type, which for composite values will be the value
             # itself. SA should probably have called .type something
             # different, or just not instantiated them...
-            self.type = self.parent.model
+            self.type = self._property.composite_class.__new__(self._property.composite_class)
         elif len(_columns) > 1:
             self.type = None # may have to be more accurate here
         else:
