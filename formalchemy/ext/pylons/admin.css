@@ -226,7 +226,7 @@ code {
 .box{
 	border:1px solid #999;
 	margin:0 0 1em 0;
-    overflow:hidden;
+    overflow:auto;
 }
 .box p,
 .box ul,
