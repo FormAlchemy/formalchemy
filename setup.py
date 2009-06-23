@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+from setuptools import setup
 import xml.sax.saxutils
 import os
 
@@ -16,7 +17,7 @@ long_description = '.. contents::\n\n' +\
                    '=======\n\n' +\
                    read('CHANGELOG.txt')
 
-args = dict(name='FormAlchemy',
+setup(name='FormAlchemy',
       license='MIT License',
       version='1.2',
       description='FormAlchemy greatly speeds development with SQLAlchemy mapped classes (models) in a HTML forms environment.',
@@ -25,8 +26,8 @@ args = dict(name='FormAlchemy',
       author_email='formalchemy@googlegroups.com',
       url='http://formalchemy.googlecode.com',
       download_url='http://code.google.com/p/formalchemy/downloads/list',
-      install_requires=['SQLAlchemy'],
-      packages=['formalchemy', 'formalchemy.tempita',
+      install_requires=['SQLAlchemy', 'Tempita'],
+      packages=['formalchemy',
                 'formalchemy.ext', 'formalchemy.ext.pylons'],
       package_data={'formalchemy': ['*.tmpl', 'i18n_resources/*/LC_MESSAGES/formalchemy.mo',
                                     'ext/pylons/*.mako', 'ext/pylons/*.css', 'ext/pylons/*.png',
@@ -44,24 +45,15 @@ args = dict(name='FormAlchemy',
           'Topic :: Software Development :: User Interfaces',
           'Topic :: Text Processing :: Markup :: HTML',
           'Topic :: Utilities',
-      ]
-)
-
-try:
-    from setuptools import setup
-    args.update(
-          message_extractors = {'formalchemy': [
-                  ('**.py', 'python', None),
-                  ('**.mako', 'mako', None),
-                  ('**.tmpl', 'python', None)]},
-          zip_safe=False,
-          entry_points = """
-          [paste.paster_create_template]
-          pylons_fa = formalchemy.ext.pylons.pastertemplate:PylonsTemplate
-          """,
-          )
-except ImportError:
-    from distutils.core import setup
-
-setup(**args)
+      ],
+      message_extractors = {'formalchemy': [
+              ('**.py', 'python', None),
+              ('**.mako', 'mako', None),
+              ('**.tmpl', 'python', None)]},
+      zip_safe=False,
+      entry_points = """
+      [paste.paster_create_template]
+      pylons_fa = formalchemy.ext.pylons.pastertemplate:PylonsTemplate
+      """,
+      )
 

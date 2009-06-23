@@ -5,8 +5,8 @@ from formalchemy.fields import Field as BaseField
 from formalchemy.base import SimpleMultiDict
 from formalchemy import fields
 from formalchemy import validators
+from formalchemy import fatypes
 from sqlalchemy.util import OrderedDict
-import fatypes
 from couchdbkit import schema
 
 from datetime import datetime

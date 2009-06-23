@@ -2,9 +2,6 @@
 import os
 import sys
 
-# put tempita on the path
-sys.path.append(os.path.split(os.path.abspath(__file__))[0])
-
 from formalchemy.i18n import get_translator
 from formalchemy import helpers
 

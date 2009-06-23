@@ -107,7 +107,7 @@ Session.mapper(Vertex, vertices, properties={
 
 class PointFieldRenderer(FieldRenderer):
     def render(self, **kwargs):
-        import helpers as h
+        from formalchemy import helpers as h
         data = self.field.parent.data
         x_name = self.name + '-x'
         y_name = self.name + '-y'

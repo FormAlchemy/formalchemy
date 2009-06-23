@@ -18,7 +18,6 @@ from formalchemy import *
 from formalchemy.i18n import _, get_translator
 from formalchemy.fields import _pk
 from formalchemy.templates import MakoEngine
-from formalchemy.tempita import Template
 
 
 __all__ = ['FormAlchemyAdminController']

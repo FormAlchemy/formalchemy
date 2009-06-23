@@ -5,8 +5,8 @@ from formalchemy.fields import Field as BaseField
 from formalchemy.base import SimpleMultiDict
 from formalchemy import fields
 from formalchemy import validators
+from formalchemy import fatypes
 from sqlalchemy.util import OrderedDict
-import fatypes
 from datetime import datetime
 from zope import schema
 from zope.schema import interfaces
