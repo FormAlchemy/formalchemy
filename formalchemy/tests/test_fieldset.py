@@ -975,7 +975,7 @@ Bill
    B:
   </td>
   <td>
-   1, 2
+   one, two
   </td>
  </tr>
 </tbody>

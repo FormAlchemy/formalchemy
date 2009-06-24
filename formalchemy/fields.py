@@ -516,6 +516,28 @@ class SelectFieldRenderer(FieldRenderer):
                 L = [_stringify(k) for k in L]
         return h.select(self.name, h.options_for_select(L, selected=self._value), **kwargs)
 
+    def render_readonly(self, options=None, **kwargs):
+        """render a string representation of the field value.
+           Try to retrieve a value from `options`
+        """
+        if not options or self.field.is_scalar_relation:
+            return FieldRenderer.render_readonly(self)
+
+        value = self.field.raw_value
+        if value is None:
+            return ''
+
+        L = list(options)
+        if len(L) > 0:
+            if len(L[0]) == 2:
+                L = [(v, k) for k, v in L]
+            else:
+                L = [(k, _stringify(k)) for k in L]
+        D = dict(L)
+        if isinstance(value, list):
+            return u', '.join([_stringify(D.get(item, item)) for item in value])
+        return _stringify(D.get(value, value))
+
 
 def _pk_one_column(instance, column):
     try:
