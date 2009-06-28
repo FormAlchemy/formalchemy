@@ -508,7 +508,12 @@ class SelectFieldRenderer(FieldRenderer):
         return FieldRenderer._serialized_value(self)
 
     def render(self, options, **kwargs):
-        L = list(options)
+        if callable(options):
+            L = _normalized_options(options(self.field.parent))
+            if not self.field.is_required() and not self.field.is_collection:
+                L.insert(0, self.field._null_option)
+        else:
+            L = list(options)
         if len(L) > 0:
             if len(L[0]) == 2:
                 L = [(k, self.stringify_value(v)) for k, v in L]
@@ -623,6 +628,8 @@ def _normalized_options(options):
     """
     if isinstance(options, Query):
         options = options.all()
+    if callable(options):
+        return options
     i = iter(options)
     try:
         first = i.next()
