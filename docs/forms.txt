@@ -182,6 +182,7 @@ specifying those options:
 - a SQLAlchemy query; the query will be executed with `all()` and the objects returned evaluated as above
 - an iterable of (description, value) pairs
 - a dictionary of {description: value} pairs
+- a callable that return one of those cases. Used to evaluate options each time.
 
 Options can be "chained" indefinitely because each modification returns a new
 :mod:`Field <formalchemy.fields>` instance, so you can write::
