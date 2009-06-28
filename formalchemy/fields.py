@@ -532,7 +532,11 @@ class SelectFieldRenderer(FieldRenderer):
         if value is None:
             return ''
 
-        L = list(options)
+        if callable(options):
+            L = _normalized_options(options(self.field.parent))
+        else:
+            L = list(options)
+
         if len(L) > 0:
             if len(L[0]) == 2:
                 L = [(v, k) for k, v in L]
