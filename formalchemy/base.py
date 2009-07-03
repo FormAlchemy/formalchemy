@@ -4,6 +4,7 @@
 # the MIT License: http://www.opensource.org/licenses/mit-license.php
 
 import cgi
+import warnings
 import logging
 logger = logging.getLogger('formalchemy.' + __name__)
 
@@ -177,12 +178,43 @@ class ModelRenderer(object):
             L.sort(lambda a, b: cmp(a.is_relation, b.is_relation)) # note, key= not used for 2.3 support
             self._fields.update((field.key, field) for field in L)
 
-    def add(self, field):
-        """Add a form Field.  By default, this Field will be included in the rendered form or table."""
+    def append(self, field):
+        """Add a form Field. By default, this Field will be included in the rendered form or table."""
         if not isinstance(field, fields.Field):
             raise ValueError('Can only add Field objects; got %s instead' % field)
         field.parent = self
-        self._fields[field.name] = field
+        _fields = self._render_fields or self._fields
+        _fields[field.name] = field
+
+    def add(self, field):
+        warnings.warn(DeprecationWarning('FieldSet.add is deprecated. Use FieldSet.append instead. Your validator will break in FA 1.5'))
+        self.append(field)
+
+    def extend(self, fields):
+        """Add a list of fields. By default, each Field will be included in the
+        rendered form or table."""
+        for field in fields:
+            self.append(field)
+
+    def insert(self, field, new_field):
+        """Insert a field at index or before field if index is a field"""
+        fields_ = self._render_fields or self._fields
+        if not isinstance(new_field, fields.Field):
+            raise ValueError('Can only add Field objects; got %s instead' % field)
+        if isinstance(field, fields.AbstractField):
+            try:
+                index = fields_.keys().index(field.name)
+            except ValueError:
+                raise ValueError('%s not in fields' % field.name)
+        else:
+            raise TypeError('field must be a Field. Got %r' % new_field)
+        items = fields_.items()
+        new_field.parent = self
+        items.insert(index, (new_field.name, new_field))
+        if self._render_fields:
+            self._render_fields = OrderedDict(items)
+        else:
+            self._fields = OrderedDict(items)
 
     def render_fields(self):
         """

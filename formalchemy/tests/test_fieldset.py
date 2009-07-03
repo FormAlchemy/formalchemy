@@ -816,10 +816,10 @@ True
 # test attribute names
 >>> fs = FieldSet(One)
 >>> fs.add(Field('foo'))
->>> fs.foo == fs._fields['foo']
+>>> fs.foo == fs['foo']
 True
 >>> fs.add(Field('add'))
->>> fs.add == fs._fields['add']
+>>> fs.add == fs['add']
 False
 
 # change default renderer 
