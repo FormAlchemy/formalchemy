@@ -424,7 +424,9 @@ class ModelRenderer(object):
                 return self._fields[attrname]
             except KeyError:
                 raise AttributeError(attrname)
-        
+
+    __getitem__ = __getattr__
+
     def __setattr__(self, attrname, value):
         if attrname not in ('_fields', '__dict__', 'focus') and \
            (attrname in self._fields or isinstance(value, fields.AbstractField)):

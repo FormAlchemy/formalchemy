@@ -103,10 +103,10 @@ itself appropriately.
   Bill
 
 If you have an attribute name that conflicts with a built-in
-:class:`~formalchemy.forms.FieldSet` attribute, you can use the `fs._fields`
-dictionary instead.  So these are equivalent::
+:class:`~formalchemy.forms.FieldSet` attribute, you can use `fs[fieldname]`
+instead. So these are equivalent::
 
-  >>> fs.name == fs._fields['name']
+  >>> fs.name == fs['name']
   True
 
 
@@ -201,7 +201,7 @@ Here is a callable exemple::
   >>> fs3.configure(options=[fs3.name.dropdown(options=custom_query)])
   >>> print fs3.name.render()
   <select id="User-1-name" name="User-1-name"><option value="">None</option>
-  <option value="1">Bill</option>
+  <option value="1">Bill</option></select>
 
 
 Adding Fields
