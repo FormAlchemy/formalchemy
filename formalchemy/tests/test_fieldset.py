@@ -230,7 +230,7 @@ True
 >>> print fs_cb.field.render()
 <input id="CheckBox--field" name="CheckBox--field" type="checkbox" value="True" />
 >>> fs_cb.field.renderer #doctest: +ELLIPSIS
-<formalchemy.fields.CheckBoxFieldRenderer object at ...>
+<CheckBoxFieldRenderer for AttributeField(field)>
 >>> fs_cb.field.renderer._serialized_value() is None
 True
 >>> print pretty_html(fs_cb.field.radio().render())

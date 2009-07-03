@@ -231,6 +231,9 @@ class FieldRenderer(object):
     def stringify_value(self, v):
         return _stringify(v, null_value=self.field._null_option[1])
 
+    def __repr__(self):
+        return '<%s for %r>' % (self.__class__.__name__, self.field)
+
 class EscapingReadonlyRenderer(FieldRenderer):
     """
     In readonly mode, html-escapes the output of the default renderer
@@ -771,6 +774,38 @@ class AbstractField(object):
         for attr, value in kwattrs.iteritems():
             setattr(copied, attr, value)
         return copied
+
+    def update(self, **kwattrs):
+        """
+        Update field attributes in place. Allowed attributes are: renderer,
+        readonly, nul_as, label, multiple, options, size::
+
+            >>> field = Field('myfield')
+            >>> field.update(label='My field', renderer=SelectFieldRenderer,
+            ...              options=[('Value', 1)])
+            AttributeField(myfield)
+            >>> field.label_text
+            'My field'
+            >>> field.renderer
+            <SelectFieldRenderer for AttributeField(myfield)>
+
+        """
+        attrs = kwattrs.keys()
+        mapping = dict(renderer='_renderer',
+                       readonly='_readonly',
+                       null_as='_null_option',
+                       label='label_text')
+        for attr in attrs:
+            value = kwattrs.pop(attr)
+            if attr in mapping:
+                attr = mapping.get(attr)
+                setattr(self, attr, value)
+            elif attr in ('multiple', 'options', 'size'):
+                if attr == 'options' and value is not None:
+                    value = _normalized_options(value)
+                self.render_opts[attr] = value
+        return self
+
     def with_null_as(self, option):
         """Render null as the given option tuple of text, value."""
         return self._modified(_null_option=option)
@@ -1012,7 +1047,7 @@ class Field(AbstractField):
     """
     A manually-added form field
     """
-    def __init__(self, name=None, type=fatypes.String, value=None):
+    def __init__(self, name=None, type=fatypes.String, value=None, **kwattrs):
         """
           * `name`: field name
           * `type`: data type, from formalchemy.types (Boolean, Integer, String, etc.),
@@ -1028,6 +1063,7 @@ class Field(AbstractField):
         self._value = value
         self.is_relation = False
         self.is_scalar_relation = False
+        self.update(**kwattrs)
 
     def model_value(self):
         return self.raw_value
