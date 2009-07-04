@@ -74,6 +74,10 @@ def field_update():
     <PasswordFieldRenderer for AttributeField(password)>
     >>> fs.password.validators # doctest: +ELLIPSIS
     [<function required at ...>, <function validate at ...>]
+
+    >>> field = Field('password', renderer=PasswordFieldRenderer)
+    >>> field.renderer
+    <PasswordFieldRenderer for AttributeField(password)>
     """
 
 def delete():
