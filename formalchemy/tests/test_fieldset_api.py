@@ -62,24 +62,6 @@ def insert():
     AttributeField(login)
     """
 
-def field_update():
-    """
-    >>> fs = FieldSet(User)
-    >>> fs.insert(fs.password, Field('login'))
-    >>> def validate(value, field):
-    ...     if len(value) < 2: raise ValidationError('Need more than 2 chars')
-    >>> fs.password.update(renderer=PasswordFieldRenderer, validate=validate)
-    AttributeField(password)
-    >>> fs.password.renderer
-    <PasswordFieldRenderer for AttributeField(password)>
-    >>> fs.password.validators # doctest: +ELLIPSIS
-    [<function required at ...>, <function validate at ...>]
-
-    >>> field = Field('password', renderer=PasswordFieldRenderer)
-    >>> field.renderer
-    <PasswordFieldRenderer for AttributeField(password)>
-    """
-
 def delete():
     """
     >>> fs = FieldSet(User)
@@ -101,3 +83,28 @@ def delete():
     ['email', 'password', 'orders']
 
     """
+
+def field_update():
+    """
+    >>> fs = FieldSet(User)
+    >>> fs.insert(fs.password, Field('login'))
+    >>> def validate(value, field):
+    ...     if len(value) < 2: raise ValidationError('Need more than 2 chars')
+    >>> fs.password.update(renderer=PasswordFieldRenderer, validate=validate)
+    AttributeField(password)
+    >>> fs.password.renderer
+    <PasswordFieldRenderer for AttributeField(password)>
+    >>> fs.password.validators # doctest: +ELLIPSIS
+    [<function required at ...>, <function validate at ...>]
+
+    >>> field = Field('password', value='passwd', renderer=PasswordFieldRenderer)
+    >>> field.renderer
+    <PasswordFieldRenderer for AttributeField(password)>
+    >>> field.raw_value
+    'passwd'
+    >>> field.update(value='new_passwd')
+    AttributeField(password)
+    >>> field.raw_value
+    'new_passwd'
+    """
+

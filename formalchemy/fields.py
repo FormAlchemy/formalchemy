@@ -1067,6 +1067,11 @@ class Field(AbstractField):
         self.is_scalar_relation = False
         self.update(**kwattrs)
 
+    def update(self, **kwattrs):
+        if 'value' in kwattrs:
+            self._value = kwattrs.pop('value')
+        return AbstractField.update(self, **kwattrs)
+
     def model_value(self):
         return self.raw_value
     model_value = property(model_value)
@@ -1081,7 +1086,7 @@ class Field(AbstractField):
             # value for the attribute name, which for a manually added Field will
             # be the Field object.  So force looking in the instance __dict__ only.
             return self.model.__dict__[self.name]
-        except KeyError:
+        except (KeyError, AttributeError):
             pass
         if callable(self._value):
             return self._value(self.model)
