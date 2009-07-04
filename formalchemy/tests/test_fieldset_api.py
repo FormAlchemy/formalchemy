@@ -2,7 +2,7 @@
 from formalchemy.tests import *
 from formalchemy.fields import PasswordFieldRenderer
 
-def test_append():
+def append():
     """
     >>> fs = FieldSet(User)
     >>> fs.append(Field('added'))
