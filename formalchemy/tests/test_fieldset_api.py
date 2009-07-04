@@ -76,3 +76,24 @@ def field_update():
     [<function required at ...>, <function validate at ...>]
     """
 
+def delete():
+    """
+    >>> fs = FieldSet(User)
+    >>> del fs.name #doctest: +ELLIPSIS
+    Traceback (most recent call last):
+    ...
+    RuntimeError: You try to delete a field but your form is not configured
+
+    >>> del fs.notexist #doctest: +ELLIPSIS
+    Traceback (most recent call last):
+    ...
+    AttributeError: field notexist does not exist
+
+    >>> fs.configure()
+    >>> del fs.name
+    >>> fs._fields.keys()
+    ['id', 'email', 'password', 'name', 'orders']
+    >>> fs._render_fields.keys()
+    ['email', 'password', 'orders']
+
+    """

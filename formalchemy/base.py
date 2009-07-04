@@ -465,6 +465,16 @@ class ModelRenderer(object):
             raise AttributeError('Do not set field attributes manually.  Use add() or configure() instead')
         object.__setattr__(self, attrname, value)
 
+    def __delattr__(self, attrname):
+        if attrname in self._render_fields:
+            del self._render_fields[attrname]
+        elif attrname in self._fields:
+            raise RuntimeError("You try to delete a field but your form is not configured")
+        else:
+            raise AttributeError("field %s does not exist" % attrname)
+
+    __delitem__ = __delattr__
+
     def render(self, **kwargs):
         raise NotImplementedError()
 
