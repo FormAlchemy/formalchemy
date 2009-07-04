@@ -197,7 +197,7 @@ class ModelRenderer(object):
             self.append(field)
 
     def insert(self, field, new_field):
-        """Insert a field at index or before field if index is a field"""
+        """Insert a new field before an existing field"""
         fields_ = self._render_fields or self._fields
         if not isinstance(new_field, fields.Field):
             raise ValueError('Can only add Field objects; got %s instead' % field)
@@ -450,7 +450,7 @@ class ModelRenderer(object):
     
     def __getattr__(self, attrname):
         try:
-            return self.render_fields[attrname]
+            return self._render_fields[attrname]
         except KeyError:
             try:
                 return self._fields[attrname]

@@ -777,8 +777,8 @@ class AbstractField(object):
 
     def update(self, **kwattrs):
         """
-        Update field attributes in place. Allowed attributes are: renderer,
-        readonly, nul_as, label, multiple, options, size::
+        Update field attributes in place. Allowed attributes are: validate,
+        renderer, readonly, nul_as, label, multiple, options, size::
 
             >>> field = Field('myfield')
             >>> field.update(label='My field', renderer=SelectFieldRenderer,
@@ -797,7 +797,9 @@ class AbstractField(object):
                        label='label_text')
         for attr in attrs:
             value = kwattrs.pop(attr)
-            if attr in mapping:
+            if attr == 'validate':
+                self.validators.append(value)
+            elif attr in mapping:
                 attr = mapping.get(attr)
                 setattr(self, attr, value)
             elif attr in ('multiple', 'options', 'size'):
