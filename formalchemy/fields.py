@@ -231,6 +231,9 @@ class FieldRenderer(object):
     def stringify_value(self, v):
         return _stringify(v, null_value=self.field._null_option[1])
 
+    def __repr__(self):
+        return '<%s for %r>' % (self.__class__.__name__, self.field)
+
 class EscapingReadonlyRenderer(FieldRenderer):
     """
     In readonly mode, html-escapes the output of the default renderer
@@ -791,6 +794,47 @@ class AbstractField(object):
         for attr, value in kwattrs.iteritems():
             setattr(copied, attr, value)
         return copied
+
+    def set(self, **kwattrs):
+        """
+        Update field attributes in place. Allowed attributes are: validate,
+        renderer, readonly, nul_as, label, multiple, options, size,
+        instructions, metadata::
+
+            >>> field = Field('myfield')
+            >>> field.set(label='My field', renderer=SelectFieldRenderer,
+            ...            options=[('Value', 1)])
+            AttributeField(myfield)
+            >>> field.label_text
+            'My field'
+            >>> field.renderer
+            <SelectFieldRenderer for AttributeField(myfield)>
+
+        """
+        attrs = kwattrs.keys()
+        mapping = dict(renderer='_renderer',
+                       readonly='_readonly',
+                       null_as='_null_option',
+                       label='label_text')
+        for attr in attrs:
+            value = kwattrs.pop(attr)
+            if attr == 'validate':
+                self.validators.append(value)
+            elif attr == 'metadata':
+                self.metadata.update(value)
+            elif attr == 'instructions':
+                self.metadata['instructions'] = value
+            elif attr in mapping:
+                attr = mapping.get(attr)
+                setattr(self, attr, value)
+            elif attr in ('multiple', 'options', 'size'):
+                if attr == 'options' and value is not None:
+                    value = _normalized_options(value)
+                self.render_opts[attr] = value
+            else:
+                raise ValueError('Invalid argument %s' % attr)
+        return self
+
     def with_null_as(self, option):
         """Render null as the given option tuple of text, value."""
         return self._modified(_null_option=option)
@@ -1033,7 +1077,7 @@ class Field(AbstractField):
     """
     A manually-added form field
     """
-    def __init__(self, name=None, type=fatypes.String, value=None):
+    def __init__(self, name=None, type=fatypes.String, value=None, **kwattrs):
         """
         Create a new Field object.
 
@@ -1064,6 +1108,12 @@ class Field(AbstractField):
         self._value = value
         self.is_relation = False
         self.is_scalar_relation = False
+        self.set(**kwattrs)
+
+    def set(self, **kwattrs):
+        if 'value' in kwattrs:
+            self._value = kwattrs.pop('value')
+        return AbstractField.set(self, **kwattrs)
 
     def model_value(self):
         return self.raw_value
@@ -1079,7 +1129,7 @@ class Field(AbstractField):
             # value for the attribute name, which for a manually added Field will
             # be the Field object.  So force looking in the instance __dict__ only.
             return self.model.__dict__[self.name]
-        except KeyError:
+        except (KeyError, AttributeError):
             pass
         if callable(self._value):
             return self._value(self.model)
