@@ -6,13 +6,13 @@ Modules contents
    :glob:
 
    formalchemy
-   config
+   fields
    forms
    tables
-   fields
-   templates
    validators
    internationalisation
+   config
+   templates
    customisation
    pylons_sample
    ext/*

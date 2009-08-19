@@ -177,3 +177,6 @@ latex_documents = [
 
 # If false, no module index is generated.
 #latex_use_modindex = True
+
+# Also add __init__'s doc to `autoclass` calls
+autoclass_content = 'both'

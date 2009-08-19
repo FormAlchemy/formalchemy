@@ -41,6 +41,7 @@ except ImportError:
 def prettify(text):
     """
     Turn an attribute name into something prettier, for a default label where none is given.
+
     >>> prettify("my_column_name")
     'My column name'
     """
@@ -70,69 +71,95 @@ class SimpleMultiDict(dict):
 
 class ModelRenderer(object):
     """
-    The `ModelRenderer` class is the superclass for all classes needing to deal with `model`
-    access and supporting rendering capabilities.
+    The `ModelRenderer` class is the superclass for all classes needing to deal 
+    with `model` access and supporting rendering capabilities.
     """
     prettify = staticmethod(prettify)
 
     def __init__(self, model, session=None, data=None, prefix=None):
         """ 
-        !FormAlchemy FieldSet and Table constructors take three parameters:
-        
-          * `model`:
-                a SQLAlchemy mapped class or instance
-          * `session=None`:
-                the session to use for queries (for relations). If `model` is
-                associated with a session, that will be used by
-                default. (Objects mapped with a
-                [http://www.sqlalchemy.org/docs/04/session.html#unitofwork_contextual
-                scoped_session] will always have a session. Other objects will
-                also have a session if they were loaded by a Query.)
-          * `data={}`:
-                dictionary of user-submitted data to validate and/or sync to
-                the `model`. Scalar attributes should have a single value in
-                the dictionary; multi-valued relations should have a list,
-                even if there are zero or one values submitted.
-        
+        - `model`: 
+              a SQLAlchemy mapped class or instance.  New object creation
+              should be done by passing the class, which will need a default
+              (no-parameter) constructor.  After construction or binding of
+              the :class:`~formalchemy.forms.FieldSet`, the instantiated object will be available as
+              the `.model` attribute.
+
+        - `session=None`: 
+              the session to use for queries (for relations). If `model` is associated
+              with a session, that will be used by default. (Objects mapped with a
+              `scoped_session
+              <http://www.sqlalchemy.org/docs/05/session.html#contextual-thread-local-sessions>`_
+              will always have a session. Other objects will
+              also have a session if they were loaded by a Query.)
+
+        - `data=None`: 
+              dictionary-like object of user-submitted data to validate and/or
+              sync to the `model`. Scalar attributes should have a single
+              value in the dictionary; multi-valued relations should have a
+              list, even if there are zero or one values submitted.  Currently,
+              pylons request.params() objects and plain dictionaries are known
+              to work.
+
+        - `prefix=None`:
+              the prefix to prepend to html name attributes. This is useful to avoid 
+              field name conflicts when there are two fieldsets creating objects
+              from the same model in one html page.  (This is not needed when
+              editing existing objects, since the object primary key is used as part
+              of the field name.)
+
+
         Only the `model` parameter is required.
-        
+
+        After binding, :class:`~formalchemy.forms.FieldSet`'s `model` attribute will always be an instance.
+        If you bound to a class, `FormAlchemy` will call its constructor with no
+        arguments to create an appropriate instance. 
+
+        .. NOTE::
+
+          This instance will not be added to the current session, even if you are using `Session.mapper`.
+
         All of these parameters may be overridden by the `bind` or `rebind`
         methods.  The `bind` method returns a new instance bound as specified,
-        while `rebind` modifies the current `FieldSet` or `Table` and has no
-        return value. (You may not `bind` to a different type of SQLAlchemy
+        while `rebind` modifies the current :class:`~formalchemy.forms.FieldSet` and has
+        no return value. (You may not `bind` to a different type of SQLAlchemy
         model than the initial one -- if you initially bind to a `User`, you
-        must subsequently bind `User`s to that `FieldSet`.)
-        
-        Typically, you will configure a `FieldSet` or `Table` once in a common
-        form library, then `bind` specific instances later for editing.  (The
+        must subsequently bind `User`'s to that :class:`~formalchemy.forms.FieldSet`.)
+
+        Typically, you will configure a :class:`~formalchemy.forms.FieldSet` once in
+        your common form library, then `bind` specific instances later for editing. (The
         `bind` method is thread-safe; `rebind` is not.)  Thus:
+
+        load stuff:
+
+        >>> from formalchemy.tests import FieldSet, User, session
+
+        now, in `library.py`
+
+        >>> fs = FieldSet(User)
+        >>> fs.configure(options=[]) # put all configuration stuff here
         
-        {{{
-        # library.py
-        fs = FieldSet(User)
-        fs.configure(...)
+        and in `controller.py`
         
-        # controller.py
-        from library import fs
-        user = session.query(User).get(id)
-        fs2 = fs.bind(user)
-        fs2.render()
-        }}}
-        
-        The `render_fields` attribute is an OrderedDict of all the `Field`s
+        >>> from library import fs
+        >>> user = session.query(User).first()
+        >>> fs2 = fs.bind(user)
+        >>> html = fs2.render()
+
+        The `render_fields` attribute is an OrderedDict of all the `Field`'s
         that have been configured, keyed by name. The order of the fields
         is the order in `include`, or the order they were declared
         in the SQLAlchemy model class if no `include` is specified.
 
-        The `_fields` attribute is an OrderedDict of all the `Field`s
+        The `_fields` attribute is an OrderedDict of all the `Field`'s
         the ModelRenderer knows about, keyed by name, in their
         unconfigured state.  You should not normally need to access
         `_fields` directly.
         
-        (Note that although equivalent `Field`s (fields referring to
+        (Note that although equivalent `Field`'s (fields referring to
         the same attribute on the SQLAlchemy model) will equate with
         the == operator, they are NOT necessarily the same `Field`
-        instance.  Stick to referencing `Field`s from their parent
+        instance.  Stick to referencing `Field`'s from their parent
         `FieldSet` to always get the "right" instance.)
         """
         self._fields = OrderedDict()
@@ -187,7 +214,7 @@ class ModelRenderer(object):
     def render_fields(self):
         """
         The set of attributes that will be rendered, as a (ordered)
-        dict of {fieldname: Field} pairs
+        dict of `{fieldname: Field}` pairs
         """
         if not self._render_fields:
             self._render_fields = OrderedDict([(field.key, field) for field in self._get_fields()])
@@ -198,10 +225,10 @@ class ModelRenderer(object):
         """
         The `configure` method specifies a set of attributes to be rendered.
         By default, all attributes are rendered except primary keys and
-        foreign keys.  But, relations _based on_ foreign keys _will_ be
+        foreign keys.  But, relations `based on` foreign keys `will` be
         rendered.  For example, if an `Order` has a `user_id` FK and a `user`
         relation based on it, `user` will be rendered (as a select box of
-        `User`s, by default) but `user_id` will not.
+        `User`'s, by default) but `user_id` will not.
 
         Parameters:
           * `pk=False`:
@@ -215,7 +242,7 @@ class ModelRenderer(object):
           * `options=[]`:
                 an iterable of modified attributes.  The set of attributes to
                 be rendered is unaffected
-          * `global_validator=None`: `
+          * `global_validator=None`:
                 global_validator` should be a function that performs
                 validations that need to know about the entire form.
           * `focus=True`:
@@ -236,36 +263,34 @@ class ModelRenderer(object):
         model with primary key `id` and attributes `name` and `email`, and a
         relation `orders` of related Order objects, the default will be to
         render `name`, `email`, and `orders`. To render the orders list as
-        checkboxes instead of a select, you could specify
+        checkboxes instead of a select, you could specify::
 
-        {{{
-        fs.configure(options=[fs.orders.checkbox()])
-        }}}
+        >>> from formalchemy.tests import FieldSet, User
+        >>> fs = FieldSet(User)
+        >>> fs.configure(options=[fs.orders.checkbox()])
 
         To render only name and email,
 
-        {{{
-        fs.configure(include=[fs.name, fs.email])
-        # or
-        fs.configure(exclude=[fs.options])
-        }}}
+        >>> fs.configure(include=[fs.name, fs.email])
+        
+        or
+
+        >>> fs.configure(exclude=[fs.orders])
 
         Of course, you can include modifications to a field in the `include`
         parameter, such as here, to render name and options-as-checkboxes:
 
-        {{{
-        fs.configure(include=[fs.name, fs.options.checkbox()])
-        }}}
+        >>> fs.configure(include=[fs.name, fs.orders.checkbox()])
         """
         self._render_fields = OrderedDict([(field.key, field) for field in self._get_fields(pk, exclude, include, options)])
 
     def bind(self, model=None, session=None, data=None):
         """
-        Return a copy of this FieldSet or Table, bound to the given
+        Return a copy of this FieldSet or Grid, bound to the given
         `model`, `session`, and `data`. The parameters to this method are the
         same as in the constructor.
 
-        Often you will create and `configure` a FieldSet or Table at application
+        Often you will create and `configure` a FieldSet or Grid at application
         startup, then `bind` specific instances to it for actual editing or display.
         """
         if not (model or session or data):

@@ -56,6 +56,38 @@ class AbstractFieldSet(base.EditableRenderer):
         `global_validator` should be a function that performs validations that need
         to know about the entire form.  The other parameters are passed directly
         to `ModelRenderer.configure`.
+
+        - `pk=False`: 
+              set to True to include primary key columns
+
+        - `exclude=[]`: 
+              an iterable of attributes to exclude.  Other attributes will
+              be rendered normally
+
+        - `include=[]`: 
+              an iterable of attributes to include.  Other attributes will
+              not be rendered
+
+        - `options=[]`: 
+              an iterable of modified attributes.  The set of attributes to
+              be rendered is unaffected
+
+        - `global_validator=None`: 
+              `global_validator` should be a function that performs
+              validations that need to know about the entire form.
+
+        Only one of {`include`, `exclude`} may be specified.
+        
+        Note that there is no option to include foreign keys.  This is
+        deliberate.  Use `include` if you really need to manually edit FKs.
+
+        If `include` is specified, fields will be rendered in the order given
+        in `include`.  Otherwise, fields will be rendered in order of declaration,
+        with table fields before mapped properties.  (However, mapped property order
+        is sometimes ambiguous, e.g. when backref is involved.  In these cases,
+        FormAlchemy will take its best guess, but you may have to force the 
+        "right" order with `include`.)
+
         """
         base.EditableRenderer.configure(self, pk, exclude, include, options)
         self.validator = global_validator
@@ -103,65 +135,6 @@ class FieldSet(AbstractFieldSet):
     creating new instances) and can render a form for editing that instance,
     perform validation, and sync the form data back to the bound instance.
 
-    You can create a `FieldSet` from non-SQLAlchemy, new-style (inheriting from
-    `object`) classes, like this::
-
-        >>> from formalchemy import fatypes as types
-        >>> from formalchemy.fields import Field
-        >>> class Manual(object):
-        ...    a = Field()
-        ...    b = Field(type=types.Integer).dropdown([('one', 1), ('two', 2)])
-        >>> fs = FieldSet(Manual)
-
-    Field declaration is the same as for adding fields to a
-    SQLAlchemy-based `FieldSet`, except that you do not give the Field a
-    name (the attribute name is used).
-
-    You can still validate and sync a non-SQLAlchemy class instance, but
-    obviously persisting any data post-sync is up to you.
-
-    Customization
-
-    There are three parts you can customize in a `FieldSet` subclass short
-    of writing your own render method.  These are `default_renderers`, and `prettify`.
-    As in::
-
-        >>> def myprettify(value):
-        ...     return value
-
-        >>> def myrender(**kwargs):
-        ...     return template % kwargs
-
-        >>> class MyFieldSet(FieldSet):
-        ...     default_renderers = {
-        ...         types.String: fields.TextFieldRenderer,
-        ...         types.Integer: fields.IntegerFieldRenderer,
-        ...         # ...
-        ...     }
-        ...     prettify = staticmethod(myprettify)
-        ...     _render = staticmethod(myrender)
-
-    `default_renderers` is a dict of callables returning a FieldRenderer.  Usually these
-    will be FieldRenderer subclasses, but this is not required.  For instance,
-    to make Booleans render as select fields with Yes/No options by default,
-    you could write::
-
-        >>> class BooleanSelectRenderer(fields.SelectFieldRenderer):
-        ...     def render(self, **kwargs):
-        ...         kwargs['options'] = [('Yes', True), ('No', False)]
-        ...         return fields.SelectFieldRenderer.render(self, **kwargs)
-
-        >>> FieldSet.default_renderers[types.Boolean] = BooleanSelectRenderer
-
-    `prettify` is a function that, given an attribute name ('user_name')
-    turns it into something usable as an HTML label ('User name').
-
-    You can also override these on a per-`FieldSet` basis::
-
-        >>> from formalchemy.tests import One
-        >>> fs = FieldSet(One)
-        >>> fs.prettify = myprettify
-
     """
     engine = _render = _render_readonly = None
 
@@ -172,11 +145,25 @@ class FieldSet(AbstractFieldSet):
 
     def configure(self, pk=False, exclude=[], include=[], options=[], global_validator=None, focus=True, readonly=False):
         """
-        Besides the options in `AbstractFieldSet.configure`,
+        Besides the options in :meth:`AbstractFieldSet.configure`,
         `FieldSet.configure` takes the `focus` parameter, which should be the
         attribute (e.g., `fs.orders`) whose rendered input element gets focus. Default value is
         True, meaning, focus the first element. False means do not focus at
         all.
+
+        This `configure` adds two parameters:
+
+        - `focus=True`: 
+              the attribute (e.g., `fs.orders`) whose rendered input element
+              gets focus. Default value is True, meaning, focus the first
+              element. False means do not focus at all.
+
+        - `readonly=False`:
+              if true, the fieldset will be rendered as a table (tbody)
+              instead of a group of input elements.  Opening and closing
+              table tags are not included.
+
+
         """
         AbstractFieldSet.configure(self, pk, exclude, include, options, global_validator)
         self.focus = focus

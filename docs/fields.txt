@@ -1,5 +1,5 @@
-:mod:`formalchemy.fields` -- Fields and Renderers
-=================================================
+:mod:`formalchemy.fields` -- `Fields` and `Renderers`
+=====================================================
 
 .. automodule:: formalchemy.fields
 

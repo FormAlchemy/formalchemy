@@ -1,5 +1,5 @@
-:mod:`formalchemy.forms` -- Form generation
-********************************************
+:mod:`formalchemy.forms` -- `FieldSet`: Form generation
+*******************************************************
 
 .. Commented imports
 
@@ -10,80 +10,25 @@
 Configuring and rendering forms
 ===============================
 
-A note on Sessions
-------------------
+In FormAlchemy, forms are rendered using the `FieldSet` object.
 
-`FormAlchemy` can save you the most time if you use 
-contextual Sessions: 
-http://www.sqlalchemy.org/docs/05/session.html#contextual-thread-local-sessions.
-Otherwise, you will have to manually pass Session objects when you bind
-:class:`~formalchemy.forms.FieldSet` and :class:`~formalchemy.tables.Grid`
-instances to your data.
+There are several operations that can be made on a FieldSet. They can be `bound`, `configured`, `validated`, and `sync'd`.
+
+* `Binding` attaches a model object to the `FieldSet`.
+* `Configuration` tells the `FieldSet` which fields to include, in which order, etc.
+* `Validation` checks the form-submitted parameters for correctness against the FieldSet's validators and field definitions.
+* `Synchronization` fills the model object with values taken from the web form submission.
 
 
 Binding
 -------
 
-`FormAlchemy` :class:`~formalchemy.forms.FieldSet` constructors take three parameters:
+Binding occurs at first on :class:`FieldSet` object creation.
 
-- `model`: 
-      a SQLAlchemy mapped class or instance.  New object creation
-      should be done by passing the class, which will need a default
-      (no-parameter) constructor.  After construction or binding of
-      the :class:`~formalchemy.forms.FieldSet`, the instantiated object will be available as
-      the `.model` attribute.
+The :class:`~formalchemy.forms.FieldSet` object constructor takes it's parameters and calls it's base class's constructor (:meth:`ModelRenderer.__init__`). It looks like:
 
-- `session=None`: 
-      the session to use for queries (for relations). If `model` is associated
-      with a session, that will be used by default. (Objects mapped with a
-      `scoped_session
-      <http://www.sqlalchemy.org/docs/05/session.html#contextual-thread-local-sessions>`_
-      will always have a session. Other objects will
-      also have a session if they were loaded by a Query.)
+.. automethod:: formalchemy.base.ModelRenderer.__init__
 
-- `data=None`: 
-      dictionary-like object of user-submitted data to validate and/or
-      sync to the `model`. Scalar attributes should have a single
-      value in the dictionary; multi-valued relations should have a
-      list, even if there are zero or one values submitted.  Currently,
-      pylons request.params() objects and plain dictionaries are known
-      to work.
-
-- `prefix=None`:
-      the prefix to prepend to html name attributes. This is useful to avoid 
-      field name conflicts when there are two fieldsets creating objects
-      from the same model in one html page.  (This is not needed when
-      editing existing objects, since the object primary key is used as part
-      of the field name.)
-
-
-Only the `model` parameter is required.
-
-After binding, the :class:`~formalchemy.forms.FieldSet`.model attribute will always be an instance.
-If you bound to a class, `FormAlchemy` will call its constructor with no
-arguments to create an appropriate instance.  (This instance will not
-be added to the current session, even if you are using Session.mapper.)
-
-All of these parameters may be overridden by the `bind` or `rebind`
-methods.  The `bind` method returns a new instance bound as specified,
-while `rebind` modifies the current :class:`~formalchemy.forms.FieldSet` and has no
-return value. (You may not `bind` to a different type of SQLAlchemy
-model than the initial one -- if you initially bind to a `User`, you
-must subsequently bind `User`s to that :class:`~formalchemy.forms.FieldSet`.)
-
-Typically, you will configure a :class:`~formalchemy.forms.FieldSet` once in a common
-form library, then `bind` specific instances later for editing.  (The
-`bind` method is thread-safe; `rebind` is not.)  Thus::
-
-  # library.py
-  >>> fs = FieldSet(User)
-  >>> fs.configure(options=[]) # put all configuration stuff here
-
-  # controller.py
-  >>> from library import fs
-  >>> user = session.query(User).first()
-  >>> fs2 = fs.bind(user)
-  >>> html = fs2.render()
 
 Fields
 ------
@@ -95,7 +40,7 @@ A :mod:`Field <formalchemy.fields>` knows how to render itself, and most
 customization is done by telling a :mod:`Field <formalchemy.fields>` to modify
 itself appropriately.
 
-:mod:`Field <formalchemy.fields>` s are accessed simply as attributes of the
+:mod:`Field <formalchemy.fields>`-s are accessed simply as attributes of the
 :class:`~formalchemy.forms.FieldSet`::
 
   >>> fs = FieldSet(bill)
@@ -210,25 +155,11 @@ Adding Fields
 You can add additional fields not in your SQLAlchemy model with the `add` 
 method, which takes a :mod:`Field <formalchemy.fields>` object as parameter.
 
-The :mod:`Field <formalchemy.fields>` constructor takes these parameters (see
-also the :class:`formalchemy.fields.Field` class):
+Here is `Field`'s constructor:
 
+.. automethod:: formalchemy.fields.Field.__init__
 
-- `name`: 
-      field name
-
-- `type=types.String`: 
-      data type, from formalchemy.types (Integer, Float, String, Binary,
-      Boolean, Date, DateTime, Time) or a custom type
-
-- `value=None`: 
-      default value.  If value is a callable, it will be passed the current
-      bound model instance when the value is read.  This allows creating a
-      Field whose value depends on the model once, then binding different
-      instances to it later.
-  
-Other modification of manually created Fields must be done with the
-methods described above, under "Field Modification."
+Fields can be modified and tweaked as needed. See :doc:`fields` for documentation.
 
 
 Fields to render
@@ -238,51 +169,9 @@ The `configure` method specifies a set of attributes to be rendered.  By
 default, all attributes are rendered except primary keys and foreign keys.
 But, relations **based on** foreign keys **will** be rendered.  For example, if
 an `Order` has a `user_id` FK and a `user` relation based on it, `user` will be
-rendered (as a select box of `User`s, by default) but `user_id` will not.
+rendered (as a select box of `User`'s, by default) but `user_id` will not.
 
-Parameters:
-
-
-- `pk=False`: 
-      set to True to include primary key columns
-
-- `exclude=[]`: 
-      an iterable of attributes to exclude.  Other attributes will
-      be rendered normally
-
-- `include=[]`: 
-      an iterable of attributes to include.  Other attributes will
-      not be rendered
-
-- `options=[]`: 
-      an iterable of modified attributes.  The set of attributes to
-      be rendered is unaffected
-
-- `global_validator=None`: 
-      `global_validator` should be a function that performs
-      validations that need to know about the entire form.
-
-- `focus=True`: 
-      the attribute (e.g., `fs.orders`) whose rendered input element
-      gets focus. Default value is True, meaning, focus the first
-      element. False means do not focus at all.
-
-- `readonly=False`:
-      if true, the fieldset will be rendered as a table (tbody)
-      instead of a group of input elements.  Opening and closing
-      table tags are not included.
-
-Only one of {`include`, `exclude`} may be specified.
-
-Note that there is no option to include foreign keys.  This is
-deliberate.  Use `include` if you really need to manually edit FKs.
-
-If `include` is specified, fields will be rendered in the order given
-in `include`.  Otherwise, fields will be rendered in order of declaration,
-with table fields before mapped properties.  (However, mapped property order
-is sometimes ambiguous, e.g. when backref is involved.  In these cases,
-FormAlchemy will take its best guess, but you may have to force the 
-"right" order with `include`.)
+See parameters in :meth:`AbstractFieldSet.configure`.
 
 Examples: given a :class:`~formalchemy.forms.FieldSet` `fs` bound to a `User`
 instance as a model with primary key `id` and attributes `name` and `email`,
@@ -402,21 +291,58 @@ not give the Field a name (the attribute name is used).
 You can still validate and sync a non-SQLAlchemy class instance, but
 obviously persisting any data post-sync is up to you.
 
+You can also have a look at :mod:`formalchemy.ext.zope`.
+
+A note on Sessions
+==================
+
+`FormAlchemy` can save you the most time if you use 
+contextual Sessions: 
+http://www.sqlalchemy.org/docs/05/session.html#contextual-thread-local-sessions.
+Otherwise, you will have to manually pass Session objects when you bind
+:class:`~formalchemy.forms.FieldSet` and :class:`~formalchemy.tables.Grid`
+instances to your data.
+
+
 
 Advanced Customization: Form Templates
 ======================================
 
-There are two parts you can customize in a :class:`~formalchemy.forms.FieldSet`
-subclass short of writing your own `render` method.  These are `prettify` and
-`_render`.  As in::
-    
-  class MyFieldSet(FieldSet):
-      prettify = staticmethod(myprettify)
-      _render = staticmethod(myrender)
-          
-`prettify` is a function that, given an attribute name ('user_name') turns it
-into something usable as an HTML label ('User name').
-    
+There are three parts you can customize in a `FieldSet` subclass short
+of writing your own render method.  These are `default_renderers`, and `prettify`.
+As in::
+
+    >>> from formalchemy import fields
+    >>> def myprettify(value):
+    ...     return value
+
+    >>> def myrender(**kwargs):
+    ...     return template % kwargs
+
+    >>> class MyFieldSet(FieldSet):
+    ...     default_renderers = {
+    ...         types.String: fields.TextFieldRenderer,
+    ...         types.Integer: fields.IntegerFieldRenderer,
+    ...         # ...
+    ...     }
+    ...     prettify = staticmethod(myprettify)
+    ...     _render = staticmethod(myrender)
+
+`default_renderers` is a dict of callables returning a FieldRenderer.  Usually these
+will be FieldRenderer subclasses, but this is not required.  For instance,
+to make Booleans render as select fields with Yes/No options by default,
+you could write::
+
+    >>> class BooleanSelectRenderer(fields.SelectFieldRenderer):
+    ...     def render(self, **kwargs):
+    ...         kwargs['options'] = [('Yes', True), ('No', False)]
+    ...         return fields.SelectFieldRenderer.render(self, **kwargs)
+
+    >>> FieldSet.default_renderers[types.Boolean] = BooleanSelectRenderer
+
+`prettify` is a function that, given an attribute name ('user_name')
+turns it into something usable as an HTML label ('User name').
+
 `_render` should be a template rendering method, such as `Template.render` from
 a mako Template or `Template.substitute` from a Tempita Template.
 
@@ -481,12 +407,18 @@ Classes definitions
 AbstractFieldSet
 ----------------
 
-.. autoclass:: AbstractFieldSet
+.. autoclass:: formalchemy.forms.AbstractFieldSet
    :members:
 
 FieldSet
 --------
 
-.. autoclass:: FieldSet
+.. autoclass:: formalchemy.forms.FieldSet
    :members:
 
+
+ModelRenderer
+-------------
+
+.. autoclass:: formalchemy.base.ModelRenderer
+   :members:

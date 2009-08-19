@@ -6,6 +6,7 @@ eggs
 parts
 develop-eggs
 Paste*.egg
+docs/_build
 .installed.cfg
 .coverage
 *.egg-info

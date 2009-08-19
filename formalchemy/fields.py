@@ -666,6 +666,26 @@ class AbstractField(object):
     """
     Contains the information necessary to render (and modify the rendering of)
     a form field
+
+    Methods taking an `options` parameter will accept several ways of
+    specifying those options:
+
+    - an iterable of SQLAlchemy objects; `str()` of each object will be the description, and the primary key the value
+    - a SQLAlchemy query; the query will be executed with `all()` and the objects returned evaluated as above
+    - an iterable of (description, value) pairs
+    - a dictionary of {description: value} pairs
+
+    Options can be "chained" indefinitely because each modification returns a new
+    :mod:`Field <formalchemy.fields>` instance, so you can write::
+
+    >>> from formalchemy.tests import FieldSet, User
+    >>> fs = FieldSet(User)
+    >>> fs.add(Field('foo').dropdown(options=[('one', 1), ('two', 2)]).radio())
+
+    or::
+
+    >>> fs.configure(options=[fs.name.label('Username').readonly()])
+
     """
     _null_option = (u'None', u'')
 
@@ -996,6 +1016,7 @@ class AbstractField(object):
         raw value from model, transformed if necessary for use as a form input value.
         """
         raise NotImplementedError()
+    model_value = property(model_value)
         
     def raw_value(self):
         """
@@ -1014,6 +1035,21 @@ class Field(AbstractField):
     """
     def __init__(self, name=None, type=fatypes.String, value=None):
         """
+        Create a new Field object.
+
+        - `name`: 
+              field name
+
+        - `type=types.String`: 
+              data type, from formalchemy.types (Integer, Float, String, Binary,
+              Boolean, Date, DateTime, Time) or a custom type
+
+        - `value=None`: 
+              default value.  If value is a callable, it will be passed the current
+              bound model instance when the value is read.  This allows creating a
+              Field whose value depends on the model once, then binding different
+              instances to it later.
+
           * `name`: field name
           * `type`: data type, from formalchemy.types (Boolean, Integer, String, etc.),
             or a custom type for which you have added a renderer.
