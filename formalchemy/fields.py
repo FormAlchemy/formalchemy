@@ -775,14 +775,15 @@ class AbstractField(object):
             setattr(copied, attr, value)
         return copied
 
-    def update(self, **kwattrs):
+    def set(self, **kwattrs):
         """
         Update field attributes in place. Allowed attributes are: validate,
-        renderer, readonly, nul_as, label, multiple, options, size::
+        renderer, readonly, nul_as, label, multiple, options, size,
+        instructions, metadata::
 
             >>> field = Field('myfield')
-            >>> field.update(label='My field', renderer=SelectFieldRenderer,
-            ...              options=[('Value', 1)])
+            >>> field.set(label='My field', renderer=SelectFieldRenderer,
+            ...            options=[('Value', 1)])
             AttributeField(myfield)
             >>> field.label_text
             'My field'
@@ -799,6 +800,10 @@ class AbstractField(object):
             value = kwattrs.pop(attr)
             if attr == 'validate':
                 self.validators.append(value)
+            elif attr == 'metadata':
+                self.metadata.update(value)
+            elif attr == 'instructions':
+                self.metadata['instructions'] = value
             elif attr in mapping:
                 attr = mapping.get(attr)
                 setattr(self, attr, value)
@@ -806,6 +811,8 @@ class AbstractField(object):
                 if attr == 'options' and value is not None:
                     value = _normalized_options(value)
                 self.render_opts[attr] = value
+            else:
+                raise ValueError('Invalid argument %s' % attr)
         return self
 
     def with_null_as(self, option):
@@ -1065,12 +1072,12 @@ class Field(AbstractField):
         self._value = value
         self.is_relation = False
         self.is_scalar_relation = False
-        self.update(**kwattrs)
+        self.set(**kwattrs)
 
-    def update(self, **kwattrs):
+    def set(self, **kwattrs):
         if 'value' in kwattrs:
             self._value = kwattrs.pop('value')
-        return AbstractField.update(self, **kwattrs)
+        return AbstractField.set(self, **kwattrs)
 
     def model_value(self):
         return self.raw_value

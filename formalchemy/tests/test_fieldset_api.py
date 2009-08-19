@@ -84,27 +84,40 @@ def delete():
 
     """
 
-def field_update():
+def field_set():
     """
     >>> fs = FieldSet(User)
     >>> fs.insert(fs.password, Field('login'))
     >>> def validate(value, field):
     ...     if len(value) < 2: raise ValidationError('Need more than 2 chars')
-    >>> fs.password.update(renderer=PasswordFieldRenderer, validate=validate)
+    >>> fs.password.set(renderer=PasswordFieldRenderer, validate=validate)
     AttributeField(password)
     >>> fs.password.renderer
     <PasswordFieldRenderer for AttributeField(password)>
     >>> fs.password.validators # doctest: +ELLIPSIS
     [<function required at ...>, <function validate at ...>]
 
+    >>> fs.password.set(instructions='Put a password here')
+    AttributeField(password)
+    >>> fs.password.metadata
+    {'instructions': 'Put a password here'}
+
     >>> field = Field('password', value='passwd', renderer=PasswordFieldRenderer)
     >>> field.renderer
     <PasswordFieldRenderer for AttributeField(password)>
     >>> field.raw_value
     'passwd'
-    >>> field.update(value='new_passwd')
+
+    >>> field.set(value='new_passwd')
     AttributeField(password)
     >>> field.raw_value
     'new_passwd'
+
+    >>> field.set(non_exist=True)
+    Traceback (most recent call last):
+    ...
+    ValueError: Invalid argument non_exist
+    
+
     """
 
