@@ -29,7 +29,9 @@ single attribute) are under the key `None`.
 
 Rendering a :class:`~formalchemy.forms.FieldSet` with errors will result in
 error messages being displayed inline.  Here's what this looks like for a
-required field that was not supplied with a value::
+required field that was not supplied with a value:
+
+.. sourcecode:: html
 
   <div>
    <label class="field_req" for="foo">

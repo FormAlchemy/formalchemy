@@ -1,6 +1,11 @@
 1.2.1
 -----
 
+* Added fs.append(field) fs.insert(field, new_field) and del fs.field to
+  Fieldset. fs.add() is deprecated.
+
+* Added field.set() to modify the field inplace.
+
 * bug fixes: issues 70, 80, 82, 97
 
 * added spanish tanslation (thanks to robarago)
