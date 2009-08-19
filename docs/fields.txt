@@ -39,7 +39,7 @@ TextFieldRenderer
 Render a string field::
 
     >>> fs = FieldSet(One)
-    >>> fs.add(Field(name='text', type=types.String, value='a value'))
+    >>> fs.append(Field(name='text', type=types.String, value='a value'))
 
 Edit mode::
 
@@ -66,7 +66,7 @@ PasswordFieldRenderer
 Render a string field::
 
     >>> fs = FieldSet(One)
-    >>> fs.add(Field(name='passwd').with_renderer(PasswordFieldRenderer))
+    >>> fs.append(Field(name='passwd').with_renderer(PasswordFieldRenderer))
 
 Edit mode::
 
@@ -87,7 +87,7 @@ TextAreaFieldRenderer
 Render a string field::
 
     >>> fs = FieldSet(One)
-    >>> fs.add(Field(name='text',value='a value').with_renderer(TextAreaFieldRenderer))
+    >>> fs.append(Field(name='text',value='a value').with_renderer(TextAreaFieldRenderer))
 
 Edit mode::
 
@@ -108,7 +108,7 @@ HiddenFieldRenderer
 Render a string field::
 
     >>> fs = FieldSet(One)
-    >>> fs.add(Field(name='text', value='h').with_renderer(HiddenFieldRenderer))
+    >>> fs.append(Field(name='text', value='h').with_renderer(HiddenFieldRenderer))
 
 Edit mode::
 
@@ -142,7 +142,7 @@ Render a date field::
 
     >>> date = datetime(2000, 12, 31, 9, 00)
     >>> fs = FieldSet(One)
-    >>> fs.add(Field(name='date', type=types.Date, value=date))
+    >>> fs.append(Field(name='date', type=types.Date, value=date))
 
 Edit mode::
 
@@ -187,7 +187,7 @@ Render a time field::
 
     >>> time = datetime(2000, 12, 31, 9, 03, 30).time()
     >>> fs = FieldSet(One)
-    >>> fs.add(Field(name='time', type=types.Time, value=time))
+    >>> fs.append(Field(name='time', type=types.Time, value=time))
 
 Edit mode::
 
@@ -260,7 +260,7 @@ Render a datetime field::
 
     >>> datetime = datetime(2000, 12, 31, 9, 03, 30)
     >>> fs = FieldSet(One)
-    >>> fs.add(Field(name='datetime', type=types.DateTime, value=datetime))
+    >>> fs.append(Field(name='datetime', type=types.DateTime, value=datetime))
 
 Edit mode::
 
@@ -444,7 +444,7 @@ Then bind it to a specific field::
 
   >>> from formalchemy.tests import *
   >>> fs = FieldSet(One)
-  >>> fs.add(Field('link', value='http://www.formalchemy.org'))
+  >>> fs.append(Field('link', value='http://www.formalchemy.org'))
   >>> fs.configure(include=[fs.link.with_renderer(LinkFieldRenderer)])
 
 Here is the result for edit mode::

@@ -132,7 +132,7 @@ specifying those options:
 Options can be "chained" indefinitely because each modification returns a new
 :mod:`Field <formalchemy.fields>` instance, so you can write::
 
-  >>> fs.add(Field('foo').dropdown(options=[('one', 1), ('two', 2)]).radio())
+  >>> fs.append(Field('foo').dropdown(options=[('one', 1), ('two', 2)]).radio())
 
 or::
 

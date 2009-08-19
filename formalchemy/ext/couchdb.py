@@ -48,7 +48,7 @@ class FieldSet(BaseFieldSet):
                 except AttributeError:
                     raise NotImplementedError('%s is not mapped to a type' % v.__class__)
                 else:
-                    self.add(Field(name=k, type=t))
+                    self.append(Field(name=k, type=t))
                     if v.required:
                         self._fields[k].validators.append(validators.required)
 

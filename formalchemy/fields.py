@@ -683,7 +683,7 @@ class AbstractField(object):
 
     >>> from formalchemy.tests import FieldSet, User
     >>> fs = FieldSet(User)
-    >>> fs.add(Field('foo').dropdown(options=[('one', 1), ('two', 2)]).radio())
+    >>> fs.append(Field('foo').dropdown(options=[('one', 1), ('two', 2)]).radio())
 
     or::
 

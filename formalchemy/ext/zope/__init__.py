@@ -76,7 +76,7 @@ class FieldSet(BaseFieldSet):
             except KeyError:
                 raise NotImplementedError('%s is not mapped to a type' % field.__class__)
             else:
-                self.add(Field(name=name, type=t))
+                self.append(Field(name=name, type=t))
                 if field.title:
                     self._fields[name].label_text = field.title
                 if field.required:

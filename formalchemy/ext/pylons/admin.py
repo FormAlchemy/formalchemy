@@ -84,7 +84,7 @@ def get_forms(controller, model_module, forms):
                                 label)
         old_include = grid.render_fields.values() # grab this now, or .add will change it if user didn't call configure yet
         for action in ['edit', 'delete']:
-            grid.add(Field(action, types.String, get_linker(action)))
+            grid.append(Field(action, types.String, get_linker(action)))
         grid.configure(include=old_include + [grid.edit, grid.delete], readonly=True)
 
     return {'_model_fieldsets':model_fieldsets, '_model_grids':model_grids}

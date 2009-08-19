@@ -185,7 +185,7 @@ class ModelRenderer(object):
                     if field.name and field.name != key:
                         raise Exception('Fields in a non-mapped class have the same name as their attribute.  Do not manually give them a name.')
                     field.name = field.key = key
-                    self.add(field)
+                    self.append(field)
             if not self._fields:
                 raise Exception("not bound to a SA instance, and no manual Field definitions found")
         else:
