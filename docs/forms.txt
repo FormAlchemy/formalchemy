@@ -149,18 +149,37 @@ Here is a callable exemple::
   <option value="1">Bill</option></select>
 
 
-Adding Fields
--------------
+Manipulating Fields
+--------------------
   
-You can add additional fields not in your SQLAlchemy model with the `add` 
-method, which takes a :mod:`Field <formalchemy.fields>` object as parameter.
+You can add additional fields not in your SQLAlchemy model with the `append` 
+method, which takes a :mod:`Field <formalchemy.fields>` object as parameter::
+
+  >>> fs3 = FieldSet(bill)
+  >>> fs3.configure(include=[fs3.name, fs3.email])
+  >>> fs3.append(Field('password', renderer='password'))
+  >>> fs3.render_fields.keys()
+  ['name', 'email', 'password']
+
+You can also `insert` fields. Here we add a country before the password field::
+
+  >>> fs3.insert(fs3.password, Field('country'))
+  >>> fs3.render_fields.keys()
+  ['name', 'email', 'country', 'password']
+
+And finally, you can `delete` fields::
+
+  >>> del fs3.country
+  >>> fs3.render_fields.keys()
+  ['name', 'email', 'password']
+
+  >>> del fs3['password']
+  >>> fs3.render_fields.keys()
+  ['name', 'email']
 
 Here is `Field`'s constructor:
 
 .. automethod:: formalchemy.fields.Field.__init__
-
-Fields can be modified and tweaked as needed. See :doc:`fields` for documentation.
-
 
 Fields to render
 ----------------
