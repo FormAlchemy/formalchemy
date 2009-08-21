@@ -2,6 +2,7 @@
 from formalchemy.forms import FieldSet as BaseFieldSet
 from formalchemy.tables import Grid as BaseGrid
 from formalchemy.fields import Field as BaseField
+from formalchemy.fields import _stringify
 from formalchemy.base import SimpleMultiDict
 from formalchemy import fields
 from formalchemy import validators
@@ -13,8 +14,8 @@ from zope.schema import interfaces
 from zope import interface
 
 FIELDS_MAPPING = {
-        schema.TextLine: fatypes.String,
-        schema.Text: fatypes.String,
+        schema.TextLine: fatypes.Unicode,
+        schema.Text: fatypes.Unicode,
         schema.Int: fatypes.Integer,
         schema.Bool: fatypes.Boolean,
         schema.Float: fatypes.Float,
@@ -43,11 +44,15 @@ class Field(BaseField):
 
         value = self._deserialize()
 
+        if isinstance(self.type, fatypes.Unicode) and not isinstance(value, unicode):
+            value = _stringify(value)
+
         field = self.parent.iface[self.name]
         bound = field.bind(self.model)
         try:
             bound.validate(value)
         except schema.ValidationError, e:
+            import pdb;pdb.set_trace()
             self.errors.append(e.doc())
 
         return not self.errors
@@ -68,6 +73,7 @@ class FieldSet(BaseFieldSet):
         self.readonly = False
         self.focus = True
         self._errors = []
+        self.validator = None
         self.iface = model
         focus = True
         for name, field in schema.getFieldsInOrder(model):
