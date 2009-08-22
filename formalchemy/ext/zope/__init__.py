@@ -93,19 +93,19 @@ Look nice ! Let's use the grid::
     ...
       <tr class="even">
         <td>
-          <textarea id="PetAdapter--name" name="PetAdapter--name">minou</textarea>
+          <textarea id="Pet--name" name="Pet--name">minou</textarea>
         </td>
         <td>
-          <input id="PetAdapter--type" name="PetAdapter--type" type="text" value="cat" />
+          <input id="Pet--type" name="Pet--type" type="text" value="cat" />
         </td>
         <td>
-          <input id="PetAdapter--age" name="PetAdapter--age" type="text" />
+          <input id="Pet--age" name="Pet--age" type="text" />
         </td>
         <td>
-          <input id="PetAdapter--owner" name="PetAdapter--owner" type="text" value="gawel" />
+          <input id="Pet--owner" name="Pet--owner" type="text" value="gawel" />
         </td>
         <td>
-          <span id="PetAdapter--birthdate"><select id="PetAdapter--birthdate__month" name="PetAdapter--birthdate__month">...
+          <span id="Pet--birthdate"><select id="Pet--birthdate__month" name="Pet--birthdate__month">...
 
 """
 from formalchemy.forms import FieldSet as BaseFieldSet
@@ -212,7 +212,7 @@ def gen_model(iface, klass=None, dict_like=False):
     adapter = _model_registry.get((iface.__name__, class_name), None)
     if adapter is not None:
         return adapter
-    new_klass = type('%sAdapter' % name, (FlexibleModel,), dict(_is_dict=dict_like))
+    new_klass = type(name, (FlexibleModel,), dict(_is_dict=dict_like))
     def adapter(context=None, **kwargs):
         adapted = new_klass(context=context, **kwargs)
         interface.directlyProvides(adapted, [iface])
@@ -314,11 +314,11 @@ class FieldSet(BaseFieldSet):
                                              [field.bind(mr) for field in self._render_fields.itervalues()]])
         return mr
 
-    def gen_model(self, model=None):
+    def gen_model(self, model=None, **kwargs):
         if model and self.iface.providedBy(model):
             return model
         factory = gen_model(self.iface, model)
-        model = factory(model)
+        model = factory(context=model, **kwargs)
         return model
 
     def rebind(self, model, session=None, data=None):
