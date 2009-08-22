@@ -34,6 +34,16 @@ class Field(BaseField):
         return getattr(self.model, self.name)
     value = property(value)
 
+    def raw_value(self):
+        try:
+            return getattr(self.model, self.name)
+        except (KeyError, AttributeError):
+            pass
+        if callable(self._value):
+            return self._value(self.model)
+        return self._value
+    raw_value = property(raw_value)
+
     def _validate(self):
         if self.is_readonly():
             return True
@@ -77,16 +87,19 @@ class FieldSet(BaseFieldSet):
         self.iface = model
         focus = True
         for name, field in schema.getFieldsInOrder(model):
+            klass = field.__class__
             try:
-                t = FIELDS_MAPPING[field.__class__]
+                t = FIELDS_MAPPING[klass]
             except KeyError:
-                raise NotImplementedError('%s is not mapped to a type' % field.__class__)
+                raise NotImplementedError('%s is not mapped to a type' % klass)
             else:
                 self.append(Field(name=name, type=t))
                 if field.title:
                     self._fields[name].label_text = field.title
                 if field.required:
                     self._fields[name].validators.append(validators.required)
+                if klass is schema.Text:
+                    self._fields[name].set(renderer=fields.TextAreaFieldRenderer)
 
     def bind(self, model, session=None, data=None):
         """Bind to an instance"""
@@ -122,6 +135,29 @@ class FieldSet(BaseFieldSet):
                 self.data = SimpleMultiDict(data)
             except:
                 raise Exception('unsupported data object %s.  currently only dicts and Paste multidicts are supported' % self.data)
+
+class Grid(BaseGrid, FieldSet):
+    def __init__(self, cls, instances=[], session=None, data=None, prefix=None):
+        FieldSet.__init__(self, cls, session, data, prefix)
+        self.rows = instances
+        self.readonly = False
+        self._errors = {}
+
+    def _get_errors(self):
+        return self._errors
+
+    def _set_errors(self, value):
+        self._errors = value
+    errors = property(_get_errors, _set_errors)
+
+    def rebind(self, instances=None, session=None, data=None):
+        self.session = session
+        self.data = data
+        if instances is not None:
+            self.rows = instances
+
+    def _set_active(self, instance, session=None):
+        FieldSet.rebind(self, instance, session or self.session, self.data)
 
 def test_fieldset():
 
