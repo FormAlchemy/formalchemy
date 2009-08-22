@@ -449,7 +449,7 @@ class ModelRenderer(object):
                 if not isinstance(field, fields.AbstractField):
                     raise TypeError('non-AbstractField object `%s` found in `%s`' % (field, iterable))
                 if field not in self._fields.values():
-                    raise ValueError('Unrecognized Field `%s` in `%s` -- did you mean to call add() first?' % (field, iterable))
+                    raise ValueError('Unrecognized Field `%s` in `%s` -- did you mean to call append() first?' % (field, iterable))
 
         # if include is given, those are the fields used.  otherwise, include those not explicitly (or implicitly) excluded.
         if not include:
@@ -487,7 +487,7 @@ class ModelRenderer(object):
     def __setattr__(self, attrname, value):
         if attrname not in ('_fields', '__dict__', 'focus') and \
            (attrname in self._fields or isinstance(value, fields.AbstractField)):
-            raise AttributeError('Do not set field attributes manually.  Use add() or configure() instead')
+            raise AttributeError('Do not set field attributes manually.  Use append() or configure() instead')
         object.__setattr__(self, attrname, value)
 
     def __delattr__(self, attrname):
