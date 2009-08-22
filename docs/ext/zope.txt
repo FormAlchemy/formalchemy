@@ -3,83 +3,32 @@
 
 .. automodule:: formalchemy.ext.zope
 
-This module provides an experimental subclass of :class:`~formalchemy.forms.FieldSet` to support zope.schema_'s schema. 
-`Simple validation`_ is supported. `Invariant`_ is not supported.
-
-.. _zope.schema: http://pypi.python.org/pypi/zope.schema
-.. _simple validation: http://pypi.python.org/pypi/zope.schema#simple-usage
-.. _invariant: http://pypi.python.org/pypi/zope.schema#schema-validation
-
-Available fields
-================
-
-Not all fields are supported. You can use TextLine, Text, Int, Bool, Float,
-Date, Datetime, Time.
-
-Usage
-=====
-
-Simple example::
-
-  >>> from zope import interface
-  >>> from zope import schema
-  >>> class IPet(interface.Interface):
-  ...     name = schema.TextLine(title=u'Name', required=True)
-  ...     type = schema.TextLine(title=u'Type', required=True)
-  ...     birthdate = schema.Date(title=u'Birth date')
-  ...     owner = schema.TextLine(title=u'Owner')
-
-  >>> class Pet(object):
-  ...     interface.implements(IPet)
-  ...     def __init__(self):
-  ...         self.name = self.type = self.birthdate = self.owner = ''
-
-  >>> from formalchemy.ext.zope import FieldSet
-  >>> fs = FieldSet(IPet)
-  >>> p = Pet()
-  >>> p.name = 'dewey'
-  >>> p.type = 'cat'
-  >>> p.owner = 'gawel'
-  >>> fs = fs.bind(p)
-
-  >>> print fs.render().strip() #doctest: +ELLIPSIS
-  <div>
-    <label class="field_req" for="Pet--name">Name</label>
-    <input id="Pet--name" name="Pet--name" type="text" value="dewey" />
-  </div>
-  <BLANKLINE>
-  <script type="text/javascript">
-  //<![CDATA[
-  document.getElementById("Pet--name").focus();
-  //]]>
-  </script>
-  <div>
-    <label class="field_req" for="Pet--type">Type</label>
-    <input id="Pet--type" name="Pet--type" type="text" value="cat" />
-  </div>
-  <BLANKLINE>
-  <div>
-    <label class="field_req" for="Pet--birthdate">Birth date</label>
-    <span id="Pet--birthdate"><select id="Pet--birthdate__month" name="Pet--birthdate__month"><option value="MM">Month</option>
-  <option value="1">January</option>
-  <option value="2">February</option>
-  <option value="3">March</option>
-  <option value="4">April</option>
-  ...
-  <div>
-    <label class="field_req" for="Pet--owner">Owner</label>
-    <input id="Pet--owner" name="Pet--owner" type="text" value="gawel" />
-  </div>
-
-
 
 Classes definitions
 ===================
+
+
+Field
+--------
+
+.. autoclass:: Field
 
 FieldSet
 --------
 
 .. autoclass:: FieldSet
-   :members:
 
+Grid
+--------
+
+.. autoclass:: Grid
+
+Utilities
+----------
+
+.. autoclass:: FlexibleModel
+
+.. autoclass:: FlexibleDict
+
+.. autofunction:: gen_model
 
