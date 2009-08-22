@@ -19,15 +19,10 @@ Usage
 Here is a simple example. First we need a schema::
 
     >>> class IPet(interface.Interface):
-    ...     name = schema.Text(
-    ...         title=u'Name',
-    ...         required=True)
-    ...     type = schema.TextLine(
-    ...         title=u'Type',
-    ...         required=True)
+    ...     name = schema.Text(title=u'Name', required=True)
+    ...     type = schema.TextLine(title=u'Type', required=True)
     ...     age = schema.Int(min=1)
-    ...     owner = schema.TextLine(
-    ...         title=u'Owner')
+    ...     owner = schema.TextLine(title=u'Owner')
     ...     birthdate = schema.Date(title=u'Birth date')
 
 Initialize FieldSet with schema::
@@ -79,7 +74,38 @@ Ok, let's assume that validation and syncing works::
     >>> fs.age.errors
     [u'Value is too small']
 
-Look nice !
+Look nice ! Let's use the grid::
+
+    >>> grid = Grid(IPet)
+    >>> grid = grid.bind([p])
+    >>> print grid.render().strip() #doctest: +ELLIPSIS
+    <thead>
+      <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>age</th>
+          <th>Owner</th>
+          <th>Birth date</th>
+      </tr>
+    </thead>
+    ...
+    <tbody>
+    ...
+      <tr class="even">
+        <td>
+          <textarea id="PetAdapter--name" name="PetAdapter--name">minou</textarea>
+        </td>
+        <td>
+          <input id="PetAdapter--type" name="PetAdapter--type" type="text" value="cat" />
+        </td>
+        <td>
+          <input id="PetAdapter--age" name="PetAdapter--age" type="text" />
+        </td>
+        <td>
+          <input id="PetAdapter--owner" name="PetAdapter--owner" type="text" value="gawel" />
+        </td>
+        <td>
+          <span id="PetAdapter--birthdate"><select id="PetAdapter--birthdate__month" name="PetAdapter--birthdate__month">...
 
 """
 from formalchemy.forms import FieldSet as BaseFieldSet
@@ -117,6 +143,7 @@ class FlexibleModel(object):
         True
 
     """
+    _is_dict = False
     def __init__(self, context=None, **kwargs):
         if context is None:
             self._context = dict(**kwargs)
@@ -150,7 +177,7 @@ class FlexibleDict(FlexibleModel, dict):
 
     .. sourcecode:: python
 
-        >>> obj = FlexibleModel(owner='gawel')
+        >>> obj = FlexibleDict(owner='gawel')
         >>> obj.owner == obj.get('owner') == obj['owner'] == 'gawel'
         True
         >>> isinstance(obj, dict)
@@ -288,6 +315,8 @@ class FieldSet(BaseFieldSet):
         return mr
 
     def gen_model(self, model=None):
+        if model and self.iface.providedBy(model):
+            return model
         factory = gen_model(self.iface, model)
         model = factory(model)
         return model
@@ -329,7 +358,13 @@ class Grid(BaseGrid, FieldSet):
         if instances is not None:
             self.rows = instances
 
+    def bind(self, instances=None, session=None, data=None):
+        mr = FieldSet.bind(self, self.iface, session, data)
+        mr.rows = instances
+        return mr
+
     def _set_active(self, instance, session=None):
+        instance = self.gen_model(instance)
         FieldSet.rebind(self, instance, session or self.session, self.data)
 
 
