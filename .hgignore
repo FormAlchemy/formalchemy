@@ -8,7 +8,7 @@ develop-eggs
 Paste*.egg
 docs/_build
 pylonsapp/data/
-pylonsapp/pylonsapp/public/*/*.txt
+pylonsapp/pylonsapp/public/*/*/*/*.txt
 .installed.cfg
 .coverage
 *.egg-info

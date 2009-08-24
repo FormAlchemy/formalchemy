@@ -118,20 +118,10 @@ from formalchemy import validators
 from formalchemy import fatypes
 from sqlalchemy.util import OrderedDict
 from datetime import datetime
+from uuid import UUID
 from zope import schema
 from zope.schema import interfaces
 from zope import interface
-
-FIELDS_MAPPING = {
-        schema.TextLine: fatypes.Unicode,
-        schema.Text: fatypes.Unicode,
-        schema.Int: fatypes.Integer,
-        schema.Bool: fatypes.Boolean,
-        schema.Float: fatypes.Float,
-        schema.Date: fatypes.Date,
-        schema.Datetime: fatypes.DateTime,
-        schema.Time: fatypes.Time,
-    }
 
 class FlexibleModel(object):
     """A flexible object to easy adapt most python classes:
@@ -141,36 +131,56 @@ class FlexibleModel(object):
         >>> obj = FlexibleModel(owner='gawel')
         >>> obj.owner == obj.get('owner') == obj['owner'] == 'gawel'
         True
+        >>> obj._pk is None
+        True
+
+    If your object provide an uuid attribute then FormAlchemy will use it has primary key:
+
+    .. sourcecode:: python
+
+        >>> import uuid
+        >>> obj = FlexibleModel(uuid=uuid.uuid4())
+        >>> obj._pk is None
+        False
 
     """
+    interface.implements(interface.Interface)
     _is_dict = False
     def __init__(self, context=None, **kwargs):
         if context is None:
-            self._context = dict(**kwargs)
+            self.context = dict(**kwargs)
         else:
-            self._context = context
+            self.context = context
+        if getattr(self, 'uuid', None):
+            uuid = self.uuid
+            if isinstance(uuid, UUID):
+                self._pk = str(int(uuid))
+            else:
+                self._pk = _stringify(self.uuid)
+        else:
+            self._pk = None
 
     def __getattr__(self, attr):
         """flexible __getattr__. also used for __getitem__ and get"""
-        if hasattr(self._context, attr):
-            return getattr(self._context, attr, None)
-        elif self._is_dict or isinstance(self._context, dict):
-            return self._context.get(attr)
-        raise AttributeError('%r as no attribute %s' % (self._context, attr))
+        if hasattr(self.context, attr):
+            return getattr(self.context, attr, None)
+        elif self._is_dict or isinstance(self.context, dict):
+            return self.context.get(attr)
+        raise AttributeError('%r as no attribute %s' % (self.context, attr))
     __getitem__ = get = __getattr__
 
     def __setattr__(self, attr, value):
         """flexible __getattr__"""
-        if attr.startswith('_'):
-            return object.__setattr__(self, attr, value)
-        elif not self._is_dict and hasattr(self._context, attr):
-            setattr(self._context, attr, value)
-        elif self._is_dict or isinstance(self._context, dict):
-            self._context[attr] = value
+        if attr.startswith('_') or attr == 'context':
+            object.__setattr__(self, attr, value)
+        elif not self._is_dict and hasattr(self.context, attr):
+            setattr(self.context, attr, value)
+        elif self._is_dict or isinstance(self.context, dict):
+            self.context[attr] = value
         else:
-            raise AttributeError('%r as no attribute %s' % (self._context, attr))
+            raise AttributeError('%r as no attribute %s' % (self.context, attr))
     def __repr__(self):
-        return '<%s for %s>' % (self.__class__.__name__, repr(self._context))
+        return '<%s adapter for %s>' % (self.__class__.__name__, repr(self.context))
 
 class FlexibleDict(FlexibleModel, dict):
     """like FlexibleModel but inherit from dict:
@@ -182,14 +192,29 @@ class FlexibleDict(FlexibleModel, dict):
         True
         >>> isinstance(obj, dict)
         True
+        >>> 'owner' in obj
+        True
 
     """
+    interface.implements(interface.Interface)
     _is_dict = True
+    def keys(self):
+        return self.context.keys()
+    def values(self):
+        return self.context.values()
+    def items(self):
+        return self.context.items()
+    def copy(self):
+        return self.context.copy()
+    def __iter__(self):
+        return iter(self.context)
+    def __contains__(self, value):
+        return value in self.context
 
 _model_registry = {}
 
 def gen_model(iface, klass=None, dict_like=False):
-    """return a new FlexibleModel factory who provide iface:
+    """return a new FlexibleModel or FlexibleDict factory who provide iface:
 
     .. sourcecode:: python
 
@@ -197,9 +222,27 @@ def gen_model(iface, klass=None, dict_like=False):
         ...     title = schema.TextLine(title=u'title')
 
         >>> factory = gen_model(ITitle)
-        >>> obj = factory()
-        >>> ITitle.providedBy(obj)
+        >>> adapted = factory()
+        >>> ITitle.providedBy(adapted)
         True
+
+        >>> class Title(object):
+        ...     title = None
+        >>> obj = Title()
+        >>> adapted = factory(obj)
+        >>> adapted.context is obj
+        True
+        >>> adapted.title = 'my title'
+        >>> obj.title
+        'my title'
+
+        >>> obj = dict()
+        >>> adapted = factory(obj)
+        >>> adapted.context is obj
+        True
+        >>> adapted.title = 'my title'
+        >>> obj['title']
+        'my title'
 
     """
     if klass:
@@ -212,7 +255,7 @@ def gen_model(iface, klass=None, dict_like=False):
     adapter = _model_registry.get((iface.__name__, class_name), None)
     if adapter is not None:
         return adapter
-    new_klass = type(name, (FlexibleModel,), dict(_is_dict=dict_like))
+    new_klass = type(name, (dict_like and FlexibleDict or FlexibleModel,), {})
     def adapter(context=None, **kwargs):
         adapted = new_klass(context=context, **kwargs)
         interface.directlyProvides(adapted, [iface])
@@ -270,8 +313,18 @@ class Field(BaseField):
 
 class FieldSet(BaseFieldSet):
     """FieldSet aware of zope schema. See :class:`formalchemy.forms.FieldSet` for full api."""
-    auto_adapt = True
-    auto_gen = True
+
+    _fields_mapping = {
+        schema.TextLine: fatypes.Unicode,
+        schema.Text: fatypes.Unicode,
+        schema.Int: fatypes.Integer,
+        schema.Bool: fatypes.Boolean,
+        schema.Float: fatypes.Float,
+        schema.Date: fatypes.Date,
+        schema.Datetime: fatypes.DateTime,
+        schema.Time: fatypes.Time,
+    }
+
     def __init__(self, model, session=None, data=None, prefix=None):
         self._fields = OrderedDict()
         self._render_fields = OrderedDict()
@@ -287,7 +340,7 @@ class FieldSet(BaseFieldSet):
         for name, field in schema.getFieldsInOrder(model):
             klass = field.__class__
             try:
-                t = FIELDS_MAPPING[klass]
+                t = self._fields_mapping[klass]
             except KeyError:
                 raise NotImplementedError('%s is not mapped to a type' % klass)
             else:
@@ -314,10 +367,10 @@ class FieldSet(BaseFieldSet):
                                              [field.bind(mr) for field in self._render_fields.itervalues()]])
         return mr
 
-    def gen_model(self, model=None, **kwargs):
+    def gen_model(self, model=None, dict_like=False, **kwargs):
         if model and self.iface.providedBy(model):
             return model
-        factory = gen_model(self.iface, model)
+        factory = gen_model(self.iface, model, dict_like=dict_like)
         model = factory(context=model, **kwargs)
         return model
 
@@ -326,7 +379,7 @@ class FieldSet(BaseFieldSet):
             if model and not self.iface.providedBy(model):
                 model = self.gen_model(model)
         self.model = model
-        self._bound_pk = None
+        self._bound_pk = getattr(model, '_pk', None) and model._pk or None
         if data is None:
             self.data = None
         elif hasattr(data, 'getall') and hasattr(data, 'getone'):
