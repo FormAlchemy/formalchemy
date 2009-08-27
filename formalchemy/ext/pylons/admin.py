@@ -145,8 +145,8 @@ class AdminController(object):
                 message = F_(message) % (modelname.encode('utf-8', 'ignore'),
                                          _pk(c.fs.model))
                 flash(message)
-                redirect_to(modelname=modelname,
-                            action='list', id=None)
+                redirect_to(url(controller=self._name,
+                                modelname=modelname, action='list'))
         return self._engine('admin_edit', c=c,
                                     action=title, id=id,
                                     controller=self._name,
@@ -166,7 +166,7 @@ class AdminController(object):
         message = F_(_('Deleted %s %s')) % (modelname.encode('utf-8', 'ignore'),
                                             key)
         flash(message)
-        redirect_to(controller=self._name, modelname=modelname, action='list', id=None)
+        redirect_to(url(controller=self._name, modelname=modelname, action='list'))
 
     def static(self, id):
         filename = os.path.basename(id)
