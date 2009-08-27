@@ -4,11 +4,9 @@ import logging
 log = logging.getLogger(__name__)
 
 from pylons import request, response, session, config
-try:
-    from pylons import tmpl_context as c
-except ImportError:
-    from pylons import c
+from pylons import tmpl_context as c
 
+from pylons import url
 from pylons.controllers.util import redirect_to
 import pylons.controllers.util as h
 from webhelpers.paginate import Page
@@ -75,7 +73,7 @@ def get_forms(controller, model_module, forms):
             _ = get_translator().gettext
             label = action == 'edit' and _('edit') or _('delete')
             return lambda item: '<a href="%s" title="%s" class="icon %s">%s</a>' % (
-                                h.url_for(controller=controller,
+                                url(controller=controller,
                                           modelname=modelname,
                                           action=action,
                                           id=_pk(item)),
