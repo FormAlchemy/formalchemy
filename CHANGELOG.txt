@@ -10,9 +10,9 @@
 
 * added spanish tanslation (thanks to robarago)
 
-* added the `.with_html(**kwargs)` method to :class:`AbstractField` which will be
+* added the `.with_html` method to `AbstractField` which will be
   passed to the renderers, allowing to add some HTML attributes to rendered
-  HTML tags.  Removed **html_options from render method.  (See issue #60)
+  HTML tags.  Removed html_options from render method.  (See issue #60)
 
 * validators are now passed as second argument the `field` being validated. WARN:
   this will mean adding the parameter to your functions to be backwards compatible.
@@ -21,7 +21,7 @@
 
 * ext.couchdb now use couchdbkit instead of py-simplecouchdb
 
-* added the `.with_metadata(**attrs)` method to :class:`AbstractField` which allows
+* added the `.with_metadata` method to `AbstractField` which allows
   you to add metadata to your field. The difference with `.with_html()` is that
   the attributes passed in will not be rendered in the HTML element, but are there
   only to be used in your templates, to tweak the output according to those
@@ -97,7 +97,7 @@
 
 * mapper property alias support (gael.pasgrimaud)
 
-* add `**kwargs` to FieldSet and Grid render methods, which are passed
+* add `kwargs` to FieldSet and Grid render methods, which are passed
   on to the template.  this allows easy custom template use w/o having
   to subclass.  (lbruno)
 
