@@ -31,3 +31,20 @@ def test_lazy_filtered_dropdown():
      </option>
     </select>
     """
+
+def test_lazy_record():
+    """
+    >>> fs = FieldSet(bill)
+    >>> r = engine.execute('select quantity, user_id from orders').fetchall()
+    >>> r = engine.execute("select 'Swedish' as name, 'sv_SE' as iso_code union all select 'English', 'en_US'").fetchall()
+    >>> fs.configure(include=[fs.orders.dropdown(options=r)])
+    >>> print pretty_html(fs.orders.render())
+    <select id="User-1-orders" multiple="multiple" name="User-1-orders" size="5">
+     <option value="sv_SE">
+      Swedish
+     </option>
+     <option value="en_US">
+      English
+     </option>
+    </select>
+    """
