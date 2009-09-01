@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from setuptools import setup
+from setuptools import setup, find_packages
 import xml.sax.saxutils
 import os
 
@@ -27,11 +27,7 @@ setup(name='FormAlchemy',
       url='http://formalchemy.googlecode.com',
       download_url='http://code.google.com/p/formalchemy/downloads/list',
       install_requires=['SQLAlchemy', 'Tempita'],
-      packages=['formalchemy',
-                'formalchemy.ext',
-                'formalchemy.ext.pylons',
-                'formalchemy.ext.zope',
-                ],
+      packages=find_packages(exclude=['ez_setup']),
       package_data={'formalchemy': ['*.tmpl', 'i18n_resources/*/LC_MESSAGES/formalchemy.mo',
                                     'ext/pylons/*.mako', 'ext/pylons/*.css', 'ext/pylons/*.png',
                                     'tests/data/mako/*.mako', 'tests/data/genshi/*.html',
