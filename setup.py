@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from setuptools import setup
+from setuptools import setup, find_packages
 import xml.sax.saxutils
 import os
 
@@ -19,7 +19,7 @@ long_description = '.. contents::\n\n' +\
 
 setup(name='FormAlchemy',
       license='MIT License',
-      version='1.2.2',
+      version='1.2.3',
       description='FormAlchemy greatly speeds development with SQLAlchemy mapped classes (models) in a HTML forms environment.',
       long_description=long_description,
       author='Alexandre Conrad, Jonathan Ellis, Gaël Pasgrimaud',
@@ -27,16 +27,13 @@ setup(name='FormAlchemy',
       url='http://formalchemy.googlecode.com',
       download_url='http://code.google.com/p/formalchemy/downloads/list',
       install_requires=['SQLAlchemy', 'Tempita'],
-      packages=['formalchemy',
-                'formalchemy.ext',
-                'formalchemy.ext.pylons',
-                'formalchemy.ext.zope',
-               ],
+      packages=find_packages(),
       package_data={'formalchemy': ['*.tmpl', 'i18n_resources/*/LC_MESSAGES/formalchemy.mo',
                                     'ext/pylons/*.mako', 'ext/pylons/*.css', 'ext/pylons/*.png',
                                     'tests/data/mako/*.mako', 'tests/data/genshi/*.html',
                                     'paster_templates/pylons_fa/+package+/*/*_tmpl',
                                     ]},
+      include_package_data=True,
       classifiers=[
           'Development Status :: 5 - Production/Stable',
           'Intended Audience :: Developers',
