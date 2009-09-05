@@ -292,6 +292,9 @@ fieldset select {
 	color:#777;
 	font:90% Verdana;
 	padding:4px;
+}
+
+fieldset textarea {
 	width:430px;
 }
 
@@ -314,7 +317,7 @@ fieldset p {
 	margin:0;
 }
 fieldset div {
-	margin:5px 0;
+	padding:5px 0;
 	position:relative;
 }
 fieldset div div {
