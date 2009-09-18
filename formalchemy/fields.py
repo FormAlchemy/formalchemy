@@ -979,8 +979,10 @@ class AbstractField(object):
 
     def _get_renderer(self):
         for t in self.parent.default_renderers:
-            if not isinstance(t, basestring):
-                if type(self.type) is t or isinstance(self.type, t):
+            if not isinstance(t, basestring) and type(self.type) is t:
+                    return self.parent.default_renderers[t]
+        for t in self.parent.default_renderers:
+            if not isinstance(t, basestring) and isinstance(self.type, t):
                     return self.parent.default_renderers[t]
         raise TypeError(
                 'No renderer found for field %s. '

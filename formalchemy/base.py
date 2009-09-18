@@ -507,6 +507,8 @@ class ModelRenderer(object):
 class EditableRenderer(ModelRenderer):
     default_renderers = {
         fatypes.String: fields.TextFieldRenderer,
+        fatypes.Unicode: fields.TextFieldRenderer,
+        fatypes.Text: fields.TextFieldRenderer,
         fatypes.Integer: fields.IntegerFieldRenderer,
         fatypes.Float: fields.FloatFieldRenderer,
         fatypes.Numeric: fields.FloatFieldRenderer,

@@ -1,6 +1,6 @@
 # This module is part of FormAlchemy and is released under
 # the MIT License: http://www.opensource.org/licenses/mit-license.php
 
-from sqlalchemy.types import Integer, Float, String, Unicode, Binary, Boolean, Date, DateTime, Time, Numeric
+from sqlalchemy.types import Integer, Float, String, Unicode, Text, Binary, Boolean, Date, DateTime, Time, Numeric
 
 sa_types = set([Integer, Float, String, Unicode, Binary, Boolean, Date, DateTime, Time, Numeric])
