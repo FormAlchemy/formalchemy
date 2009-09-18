@@ -9,11 +9,12 @@
 <tbody>
 {{for i, row in enumerate(collection.rows):}}
   {{collection._set_active(row)}}
+  {{py:row_errors = collection.get_errors(row)}}
   <tr class="{{i % 2 and 'odd' or 'even'}}">
   {{for field in collection.render_fields.itervalues()}}
     <td>
       {{field.render()}}
-      {{for error in field.errors}}
+      {{for error in row_errors.get(field, []):}}
       <span class="grid_error">{{error}}</span>
       {{endfor}}
     </td>

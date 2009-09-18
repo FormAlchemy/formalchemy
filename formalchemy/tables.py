@@ -108,6 +108,11 @@ class Grid(base.EditableRenderer):
     def _set_active(self, instance, session=None):
         base.EditableRenderer.rebind(self, instance, session or self.session, self.data)
 
+    def get_errors(self, row):
+        if self.errors:
+            return self.errors.get(row, {})
+        return {}
+
     def validate(self):
         """These are the same as in `FieldSet`"""
         if self.data is None:
