@@ -342,6 +342,22 @@ class ModelRenderer(object):
                                              [field.bind(mr) for field in self._render_fields.itervalues()]])
         return mr
 
+    def copy(self, *args):
+        """return a copy of the fieldset. args is a list of field names or field
+        objects to render in the new fieldset"""
+        mr = self.bind(self.model, self.session, self.data)
+        _fields = self._render_fields or self._fields
+        _new_fields = []
+        if args:
+            for field in args:
+                if isinstance(field, basestring):
+                    field = getattr(_fields, field)
+                assert isinstance(field, fields.AbstractField)
+                field.bind(mr)
+                _new_fields.append(field)
+            mr._render_fields = OrderedDict([(field.key, field) for field in _new_fields])
+        return mr
+
     def rebind(self, model=None, session=None, data=None):
         """
         Like `bind`, but acts on this instance.  No return value.

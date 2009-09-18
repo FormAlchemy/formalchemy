@@ -2,6 +2,17 @@
 from formalchemy.tests import *
 from formalchemy.fields import PasswordFieldRenderer
 
+def copy():
+    """
+    >>> fs = FieldSet(User)
+    >>> fs1 = fs.copy(fs.id, fs.email)
+    >>> fs1._render_fields.keys()
+    ['id', 'email']
+    >>> fs2 = fs.copy(fs.name, fs.email)
+    >>> fs2._render_fields.keys()
+    ['name', 'email']
+    """
+
 def append():
     """
     >>> fs = FieldSet(User)
