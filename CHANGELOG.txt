@@ -1,3 +1,11 @@
+1.2.4
+-----
+
+* Add date formats to config module.
+
+* add fs.copy()
+
+
 1.2.1
 -----
 

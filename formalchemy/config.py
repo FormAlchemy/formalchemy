@@ -5,9 +5,13 @@ from formalchemy import templates
 __doc__ = """
 There is two configuration settings available in a global config object.
 
-- encoding: the global encoding used by FormAlchemy to deal with unicode
+- encoding: the global encoding used by FormAlchemy to deal with unicode. Default: utf-8
 
 - engine: A valide :class:`~formalchemy.templates.TemplateEngine`
+
+- date_format: Used to format date fields. Default to %Y-%d-%m
+
+- date_edit_format: Used to retrieve field order. Default to m-d-y
 
 Here is a simple example::
 
@@ -40,6 +44,8 @@ class Config(object):
     __file__ = __file__
     __data = dict(
         encoding='utf-8',
+        date_format='%Y-%m-%d',
+        date_edit_format='m-d-y',
         engine = templates.default_engine,
     )
 

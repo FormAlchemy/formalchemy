@@ -378,8 +378,12 @@ def _ternary(condition, first, second):
 
 class DateFieldRenderer(FieldRenderer):
     """Render a date field"""
-    format = '%Y-%m-%d'
-    edit_format = 'm-d-y'
+    def format(self):
+        return config.date_format
+    format = property(format)
+    def edit_format(self):
+        return config.date_edit_format
+    edit_format = property(edit_format)
     def render_readonly(self, **kwargs):
         value = self.field.raw_value
         return value and value.strftime(self.format) or ''
