@@ -11,7 +11,7 @@ Available fields
 ================
 
 Not all fields are supported. You can use TextLine, Text, Int, Bool, Float,
-Date, Datetime, Time.
+Date, Datetime, Time, and Choice.
 
 Usage
 =====
@@ -24,18 +24,20 @@ Here is a simple example. First we need a schema::
     ...     age = schema.Int(min=1)
     ...     owner = schema.TextLine(title=u'Owner')
     ...     birthdate = schema.Date(title=u'Birth date')
+    ...     colour = schema.Choice(title=u'Colour',
+    ...                            values=['Brown', 'Black'])
 
 Initialize FieldSet with schema::
 
     >>> fs = FieldSet(IPet)
 
-Create a class to store values. If your class does not implement the form interface the FieldSet will generate an adapter for you::
+Create a class to store values. If your class does not implement the form interface the FieldSet will generate an adapter for you:
 
     >>> class Pet(FlexibleDict):pass
     >>> p = Pet(name='dewey', type='cat', owner='gawel')
     >>> fs = fs.bind(p)
 
-Fields are aware of schema attributes::
+Fields are aware of schema attributes:
 
     >>> fs.name.is_required()
     True
@@ -52,10 +54,14 @@ We can use the form::
       <label class="field_req" for="Pet--birthdate">Birth date</label>
       <span id="Pet--birthdate"><select id="Pet--birthdate__month" name="Pet--birthdate__month"><option value="MM">Month</option>
     <option value="1">January</option>
-    <option value="2">February</option>
     ...
+      <label class="field_req" for="Pet--colour">Colour</label>
+      <select id="Pet--colour" name="Pet--colour"><option value="Brown">Brown</option>
+    <option value="Black">Black</option></select>
+    </div>
 
-Ok, let's assume that validation and syncing works::
+
+Ok, let's assume that validation and syncing works:
 
     >>> fs.configure(include=[fs.name])
     >>> fs.rebind(p, data={'Pet--name':'minou'})
@@ -73,8 +79,24 @@ Ok, let's assume that validation and syncing works::
     False
     >>> fs.age.errors
     [u'Value is too small']
+    >>> fs.configure(include=[fs.colour])
+    >>> fs.rebind(p, data={'Pet--colour':'Yellow'})
+    >>> fs.validate()
+    False
+    >>> fs.colour.errors
+    [u'Constraint not satisfied']
 
-Look nice ! Let's use the grid::
+    >>> fs.rebind(p, data={'Pet--colour':'Brown'})
+    >>> fs.validate()
+    True
+    >>> fs.sync()
+    >>> fs.colour.value
+    'Brown'
+    >>> p.colour
+    'Brown'
+
+
+Looks nice ! Let's use the grid:
 
     >>> grid = Grid(IPet)
     >>> grid = grid.bind([p])
@@ -86,12 +108,8 @@ Look nice ! Let's use the grid::
           <th>age</th>
           <th>Owner</th>
           <th>Birth date</th>
-      </tr>
-    </thead>
+          <th>Colour</th>
     ...
-    <tbody>
-    ...
-      <tr class="even">
         <td>
           <textarea id="Pet--name" name="Pet--name">minou</textarea>
         </td>
@@ -105,7 +123,17 @@ Look nice ! Let's use the grid::
           <input id="Pet--owner" name="Pet--owner" type="text" value="gawel" />
         </td>
         <td>
-          <span id="Pet--birthdate"><select id="Pet--birthdate__month" name="Pet--birthdate__month">...
+          <span id="Pet--birthdate"><select id="Pet--birthdate__month" name="Pet--birthdate__month"><option value="MM">Month</option>
+    <option value="1">January</option>
+    ...
+    <option value="31">31</option></select> <input id="Pet--birthdate__year" maxlength="4" name="Pet--birthdate__year" size="4" type="text" value="YYYY" /></span>
+        </td>
+        <td>
+          <select id="Pet--colour" name="Pet--colour"><option value="Brown" selected="selected">Brown</option>
+    <option value="Black">Black</option></select>
+        </td>
+      </tr>
+    </tbody>
 
 """
 from formalchemy.forms import FieldSet as BaseFieldSet
@@ -302,6 +330,8 @@ class Field(BaseField):
             bound.validate(value)
         except schema.ValidationError, e:
             self.errors.append(e.doc())
+        except schema._bootstrapinterfaces.ConstraintNotSatisfied, e:
+            self.errors.append(e.doc())
 
         return not self.errors
 
@@ -323,6 +353,7 @@ class FieldSet(BaseFieldSet):
         schema.Date: fatypes.Date,
         schema.Datetime: fatypes.DateTime,
         schema.Time: fatypes.Time,
+        schema.Choice: fatypes.Unicode,
     }
 
     def __init__(self, model, session=None, data=None, prefix=None):
@@ -352,6 +383,14 @@ class FieldSet(BaseFieldSet):
                     self._fields[name].validators.append(validators.required)
                 if klass is schema.Text:
                     self._fields[name].set(renderer=fields.TextAreaFieldRenderer)
+                if klass is schema.Choice:
+                    sourcelist = self.model[name].source.by_value.values()
+                    if sourcelist[0].title is None:
+                        options = [term.value for term in sourcelist]
+                    else:
+                        options = [(term.title, term.value) for term in sourcelist]
+                    self._fields[name].set(renderer=fields.SelectFieldRenderer,
+                                           options=options)
 
     def bind(self, model, session=None, data=None):
         if not (model is not None or session or data):
