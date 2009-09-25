@@ -29,6 +29,11 @@ class ValidationError(Exception):
     def __repr__(self):
         return 'ValidationError(%r,)' % self.message
 
+def accepts_none(func):
+    """validator decorator to validate None value"""
+    func.accepts_none = False
+    return func
+
 def required(value, field=None):
     """Successful if value is neither None nor the empty string (yes, including empty lists)"""
     if value is None or value == '':
