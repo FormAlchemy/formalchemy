@@ -7,8 +7,6 @@ __doc__ = """This module provides an experimental subclass of
 Usage
 =====
 
-..sourcecode:: py
-
     >>> from rdfalchemy.samples.company import Company
     >>> c = Company(stockDescription='description', symbol='FA',
     ...             cik='cik', companyName='fa corp',
