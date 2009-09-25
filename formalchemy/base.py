@@ -501,7 +501,7 @@ class ModelRenderer(object):
     __getitem__ = __getattr__
 
     def __setattr__(self, attrname, value):
-        if attrname not in ('_fields', '__dict__', 'focus') and \
+        if attrname not in ('_fields', '__dict__', 'focus', 'model', 'session', 'data') and \
            (attrname in self._fields or isinstance(value, fields.AbstractField)):
             raise AttributeError('Do not set field attributes manually.  Use append() or configure() instead')
         object.__setattr__(self, attrname, value)

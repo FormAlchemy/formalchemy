@@ -77,6 +77,13 @@ class Binaries(Base):
     id = Column(Integer, primary_key=True)
     file = Column(Binary, nullable=True)
 
+class ConflictNames(Base):
+    __tablename__ = 'conflict_names'
+    id = Column(Integer, primary_key=True)
+    model = Column(String, nullable=True)
+    data = Column(String, nullable=True)
+    session = Column(String, nullable=True)
+
 
 vertices = Table('vertices', Base.metadata,
     Column('id', Integer, primary_key=True),
@@ -289,6 +296,8 @@ norder2 = NaturalOrder(user=njohn, quantity=5)
 
 orderuser1 = OrderUser(user_id=1, order_id=1)
 orderuser2 = OrderUser(user_id=1, order_id=2)
+
+conflict_names = ConflictNames(data='data', model='model', session='session')
 
 session.commit()
 

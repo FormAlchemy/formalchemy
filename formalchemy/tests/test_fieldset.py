@@ -1099,6 +1099,13 @@ document.getElementById("Two--foo").focus();
 >>> fs_prop = FieldSet(Property)
 >>> fs_prop.foo.is_readonly()
 True
+
+>>> fs_conflict = FieldSet(ConflictNames)
+>>> fs_conflict.rebind(conflict_names)
+>>> print fs_conflict.render() #doctest: +ELLIPSIS
+<div>
+...
+
 """
 
 if __name__ == '__main__':
