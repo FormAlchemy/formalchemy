@@ -533,6 +533,8 @@ class EditableRenderer(ModelRenderer):
         fatypes.Date: fields.DateFieldRenderer,
         fatypes.Time: fields.TimeFieldRenderer,
         fatypes.Binary: fields.FileFieldRenderer,
+        fatypes.List: fields.SelectFieldRenderer,
+        fatypes.Set: fields.SelectFieldRenderer,
         'dropdown': fields.SelectFieldRenderer,
         'checkbox': fields.CheckBoxSet,
         'radio': fields.RadioSet,

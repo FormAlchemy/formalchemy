@@ -1127,6 +1127,8 @@ class Field(AbstractField):
     model_value = property(model_value)
 
     def is_collection(self):
+        if isinstance(self.type, (fatypes.List, fatypes.Set)):
+            return True
         return self.render_opts.get('multiple', False) or isinstance(self.renderer, self.parent.default_renderers['checkbox'])
     is_collection = property(is_collection)
 

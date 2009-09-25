@@ -1,0 +1,26 @@
+:mod:`formalchemy.ext.rdf` -- rdfalchemy support
+**************************************************
+
+.. automodule:: formalchemy.ext.rdf
+
+
+Classes definitions
+===================
+
+
+Field
+--------
+
+.. autoclass:: Field
+
+FieldSet
+--------
+
+.. autoclass:: FieldSet
+
+Grid
+--------
+
+.. autoclass:: Grid
+
+
