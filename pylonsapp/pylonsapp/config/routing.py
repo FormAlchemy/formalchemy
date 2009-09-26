@@ -23,6 +23,8 @@ def make_map():
     # Map the /admin url to FA's AdminController
     maps.admin_map(map, controller='admin', url='/admin')
 
+    map.resource('rest', 'rest')
+
     map.connect('/{controller}/{action}')
     map.connect('/{controller}/{action}/{id}')
 
