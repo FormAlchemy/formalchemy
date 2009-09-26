@@ -33,15 +33,15 @@ First, generate a controller in your application::
 
   $ paster controller admin
 
-Next, edit your `controllers/admin.py`, replacing `yourapp` with your application name:
+Next, edit your ``controllers/admin.py``, replacing ``pylonsapp`` with your application name:
 
 .. literalinclude:: ../../pylonsapp/pylonsapp/controllers/admin.py
 
-Add these lines in `config/routing.py`:
+Add these lines in ``config/routing.py``:
 
 .. literalinclude:: ../../pylonsapp/pylonsapp/config/routing.py
 
-All done!  Now you can go to the `/admin/` url.
+All done!  Now you can go to the ``/admin/`` url.
 
 
 Customization
@@ -94,4 +94,81 @@ Sample app
 You can have a look at the complete `source
 <http://code.google.com/p/formalchemy/source/browse/#svn/trunk/pylonsapp>`_ of
 the application used for FA's testing.
+
+.. _restfulcontroller:
+
+RESTful controller
+******************
+
+.. automodule:: formalchemy.ext.pylons.controller
+
+You can use your fieldset as a REST resource.
+
+Listing::
+
+    GET /owners
+
+Get objects url via json::
+
+    GET /owners.json
+
+    GET /owners.json?page=2
+
+    GET /owners
+    Accept: application/json
+
+New object with form::
+
+    GET /owners/new
+
+New object with json POST::
+
+    POST /owners
+    Accept: application/json
+
+    {"name": "name", "animals": []}
+
+View object with form::
+
+    GET /owners/1
+
+Get jsonify fieldset::
+
+    GET /owners/1.json
+
+Edit object with form::
+
+    GET /owners/1/edit
+
+Edit object with json PUT::
+
+    PUT /owners/1
+    Accept: application/json
+
+    {"name": "name", "animals": []}
+
+
+Usage
+------
+
+Use the FieldSetController to wrap your Pylons controller:
+
+.. autofunction:: formalchemy.ext.pylons.controller.FieldSetController
+
+.. literalinclude:: ../../pylonsapp/pylonsapp/controllers/owners.py
+
+Add this to your ``config/routing.py``:
+
+.. sourcecode:: py
+
+  map.resource('owner', 'owners')
+
+Customisation
+--------------
+
+You can override the following methods:
+
+.. autoclass:: formalchemy.ext.pylons.controller._FieldSetController
+   :members:
+
 

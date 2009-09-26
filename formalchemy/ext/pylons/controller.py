@@ -1,4 +1,6 @@
 # -*- coding: utf-8 -*-
+__doc__ = """This module provide a RESTful controller for formalchemy's FieldSets.
+"""
 from pylons import request, response, session, tmpl_context as c
 from pylons.controllers.util import abort, redirect_to
 from pylons.templating import render_mako as render
@@ -17,15 +19,27 @@ class _FieldSetController(object):
     template = '/restfieldset.mako'
 
     def Session(self):
-        """return a Session object."""
+        """return a Session object. You **must** override this."""
         raise NotImplementedError()
 
     def get_model(self):
-        """return SA mapper class"""
+        """return SA mapper class. You **must** override this."""
         raise NotImplementedError()
 
     def sync(self, fs, id=None):
-        """sync a record. If ``id`` is None add a new record else save current one"""
+        """sync a record. If ``id`` is None add a new record else save current one.
+
+        Default is:
+
+        .. sourcecode:: py
+
+            S = self.Session()
+            if id:
+                S.update(fs.model)
+            else:
+                S.add(fs.model)
+            S.commit()
+        """
         S = self.Session()
         if id:
             S.update(fs.model)
@@ -34,12 +48,13 @@ class _FieldSetController(object):
         S.commit()
 
     def render(self, format='html', **kwargs):
-        """render the form as html"""
+        """render the form as html or json"""
         if format == 'json':
             return self.render_json(**kwargs)
         return render(self.template, extra_vars=kwargs)
 
     def render_grid(self, format='html', **kwargs):
+        """render the grid as html or json"""
         return self.render(format=format, is_grid=True, **kwargs)
 
     def render_json(self, fs=None, **kwargs):
@@ -56,12 +71,32 @@ class _FieldSetController(object):
         return json.dumps(data)
 
     def query(self):
-        """return an iterable used for index listing"""
+        """return an iterable used for index listing.
+
+        Default is:
+
+        .. sourcecode:: py
+
+            S = self.Session()
+            return S.query(self.get_model())
+        """
         S = self.Session()
         return S.query(self.get_model())
 
     def get(self, id=None):
-        """return a Session and the correct record for ``id``"""
+        """return correct record for ``id``.
+
+        Default is:
+
+        .. sourcecode:: py
+
+            S = self.Session()
+            model = self.get_model()
+            if id:
+                return S.query(model).get(id)
+            else:
+                return model()
+        """
         S = self.Session()
         model = self.get_model()
         if id:
@@ -70,7 +105,16 @@ class _FieldSetController(object):
             return model()
 
     def get_fieldset(self, id=None):
-        """return a FieldSet object bound to the correct record for ``id``"""
+        """return a FieldSet object bound to the correct record for ``id``.
+
+        Default is:
+
+        .. sourcecode:: py
+
+            fs = FieldSet(self.get(id))
+            fs.__name__ = fs.model.__class__.__name__
+            return fs
+        """
         fs = FieldSet(self.get(id))
         fs.__name__ = fs.model.__class__.__name__
         return fs
@@ -184,6 +228,7 @@ class _FieldSetController(object):
             return self.render(format=format, fs=fs, status=1)
 
 def FieldSetController(cls, singular, plural):
+    """wrap a controller with :class:~formalchemy.ext.pylons.controller._FieldSetController"""
     return type(cls.__name__, (cls, _FieldSetController),
                 dict(singular=singular, plural=plural))
 

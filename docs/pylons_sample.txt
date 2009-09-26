@@ -33,3 +33,5 @@ fieldsets. This is a standard and allow you to use the
 :mod:`formalchemy.ext.pylons` extension
 
 .. _Pylons: http://pylonshq.com/
+
+You can also have a look at the :ref:`RESTful Controller <restfulcontroller>`
