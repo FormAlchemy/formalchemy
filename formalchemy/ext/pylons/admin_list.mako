@@ -3,23 +3,22 @@
 from pylons import url
 %>\
 <%def name="title()">
-${c.modelname}
+${modelname}
 </%def>
 
 <%def name="sidebar()">
+%if clsnames:
 <div id="sidebar">
 <div class="box">
 <h2>${F_('Related types')}</h2>
   <table>
-  %for field in c.grid._fields.itervalues():
-    %if field.is_relation:
-      <% clsname = field.relation_type().__name__ %>
-      <tr><td><a href="${url(controller=controller, modelname=clsname, action='list')}">${clsname}</a></td></tr>
-    %endif
+  %for clsname in clsnames:
+    <tr><td><a href="${url('models', modelname=clsname)}">${clsname}</a></td></tr>
   %endfor
   </table>
 </div>
 </div>
+%endif
 </%def>
 
 <div class="box">
@@ -30,9 +29,9 @@ ${F_('Existing objects')}
 ${page.pager()}
 </div>
 <table>
-  ${c.grid.render()}
+  ${grid.render()}
 </table>
-<a class="icon add" title="${F_('New object')}" href="${url(controller=controller, modelname=c.modelname, action='edit')}">
+<a class="icon add" title="${F_('New object')}" href="${url('new_model', modelname=c.modelname)}">
 ${F_('New object')}
 </a>
 </div>

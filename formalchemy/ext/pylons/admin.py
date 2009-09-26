@@ -17,6 +17,7 @@ from formalchemy.i18n import _, get_translator
 from formalchemy.fields import _pk
 from formalchemy.templates import MakoEngine
 
+import simplejson as json
 
 __all__ = ['FormAlchemyAdminController']
 
@@ -42,7 +43,7 @@ def flash(msg):
     session.save()
 
 
-def get_forms(controller, model_module, forms):
+def get_forms(model_module, forms):
     """scan model and forms"""
     if forms is not None:
         model_fieldsets = dict((form.model.__class__.__name__, form)
@@ -69,19 +70,23 @@ def get_forms(controller, model_module, forms):
             model_grids[key] = Grid(obj)
     # add Edit + Delete link to grids
     for modelname, grid in model_grids.iteritems():
-        def get_linker(action, modelname=modelname):
-            _ = get_translator().gettext
-            label = action == 'edit' and _('edit') or _('delete')
-            return lambda item: '<a href="%s" title="%s" class="icon %s">%s</a>' % (
-                                url(controller=controller,
-                                          modelname=modelname,
-                                          action=action,
-                                          id=_pk(item)),
-                                label,
-                                action,
-                                label)
-        for action in ['edit', 'delete']:
-            grid.append(Field(action, types.String, get_linker(action)))
+        def edit_link():
+            model_url = url('models', modelname=modelname)
+            return lambda item: '<a href="%(url)s/%(id)s" title="%(label)s" class="icon edit">%(label)s</a>' % dict(
+                                url=model_url, id=_pk(item),
+                                label=get_translator().gettext('edit'))
+        def delete_link():
+            label = _('delete')
+            model_url = url('models', modelname=modelname)
+            return lambda item: '''<form action="%(url)s/%(id)s" method="POST">
+                                    <input type="submit" class="icon delete" title="%(label)s" value="" />
+                                    <input type="hidden" name="_method" value="DELETE" />
+                                    </form>
+                                ''' % dict(
+                                    url=model_url, id=_pk(item),
+                                    label=get_translator().gettext('delete'))
+        grid.append(Field('edit', types.String, edit_link()))
+        grid.append(Field('delete', types.String, delete_link()))
         grid.readonly = True
 
     return {'_model_fieldsets':model_fieldsets, '_model_grids':model_grids}
@@ -91,44 +96,101 @@ class AdminController(object):
     """Base class to generate administration interface in Pylons"""
     _custom_css = _custom_js = ''
 
-    def index(self):
+    def render_json(self, fs=None, **kwargs):
+        response.content_type = 'text/javascript'
+        if fs:
+            fields = dict([(field.key, field.model_value) for field in fs.render_fields.values()])
+            data = dict(fields=fields)
+            pk = _pk(fs.model)
+            if pk:
+                data['url'] = url('view_model', modelname=fs.model.__class__.__name__, id=pk)
+        else:
+            data = {}
+        data.update(kwargs)
+        return json.dumps(data)
+
+    def index(self, format='html'):
         """List model types"""
         modelnames = sorted(self._model_grids.keys())
+        if format == 'json':
+            return self.render_json(**dict([(m, url('models', modelname=m)) for m in modelnames]))
         return self._engine('admin_index', c=c, modelname=None,
-                                     controller=self._name,
                                      modelnames=modelnames,
                                      custom_css = self._custom_css,
                                      custom_js = self._custom_js)
 
-    def list(self, modelname):
+    def list(self, modelname, format='html'):
         """List instances of a model type"""
-        grid = self._model_grids[modelname]
         S = self.Session()
+        grid = self._model_grids[modelname]
         query = S.query(grid.model.__class__)
+        if format == 'json':
+            values = []
+            for item in query.all():
+                pk = _pk(item)
+                values.append((pk, url('view_model', pk)))
+            return self.render_json(**dict(values))
         page = Page(query, page=int(request.GET.get('page', '1')), **self._paginate)
-        c.grid = grid.bind(page)
-        c.modelname = modelname
+        grid = grid.bind(instances=page, session=None)
+        clsnames = [f.relation_type().__name__ for f in grid._fields.itervalues() if f.is_relation]
         return self._engine('admin_list', c=c,
+                            grid=grid,
                             page=page,
-                            controller=self._name,
+                            clsnames=clsnames,
                             modelname=modelname,
                             custom_css = self._custom_css,
                             custom_js = self._custom_js)
 
     def edit(self, modelname, id=None):
         """Edit (or create, if `id` is None) an instance of the given model type"""
+
+        saved = False
+
+        format = 'html'
+        if id and id.endswith('.json'):
+            id = id[:-5]
+            format = 'json'
+
+        if request.method == 'POST' or request.method == 'PUT':
+            if id:
+                prefix = '%s-%s' % (modelname, id)
+            else:
+                prefix = '%s-' % modelname
+
+            if request.method == 'PUT':
+                items = json.load(request.body_file).items()
+                request.method = 'POST'
+                format = 'json'
+            elif '_method' not in request.POST:
+                items = request.POST.items()
+                format = 'json'
+            else:
+                items = None
+                format = 'html'
+
+            if items:
+                for k, v in items:
+                    if not k.startswith(prefix):
+                        if isinstance(v, list):
+                            for val in v:
+                                request.POST.add('%s-%s' % (prefix, k), val)
+                        else:
+                            request.POST.add('%s-%s' % (prefix, k), v)
+
         F_ = get_translator().gettext
         fs = self._model_fieldsets[modelname]
         S = self.Session()
+
         if id:
             instance = S.query(fs.model.__class__).get(id)
-            c.fs = fs.bind(instance)
+            assert instance, id
             title = 'Edit'
         else:
-            c.fs = fs.bind(fs.model.__class__, session=S)
+            instance = fs.model.__class__
             title = 'New object'
+
         if request.method == 'POST':
-            c.fs = c.fs.bind(data=request.params, session=not id and S or None)
+            c.fs = fs.bind(instance, data=request.POST, session=not id and S or None)
             log.debug('saving %s w/ %s' % (c.fs.model.id, request.POST))
             if c.fs.validate():
                 c.fs.sync()
@@ -136,23 +198,30 @@ class AdminController(object):
                 if not id:
                     # needed if the object does not exist in db
                     if not object_session(c.fs.model):
-                        S.save(c.fs.model)
+                        S.add(c.fs.model)
                     message = _('Created %s %s')
                 else:
                     S.refresh(c.fs.model)
                     message = _('Modified %s %s')
                 S.commit()
-                message = F_(message) % (modelname.encode('utf-8', 'ignore'),
-                                         _pk(c.fs.model))
-                flash(message)
-                redirect_to(url(controller=self._name,
-                                modelname=modelname, action='list'))
-        return self._engine('admin_edit', c=c,
-                                    action=title, id=id,
-                                    controller=self._name,
-                                    modelname=modelname,
-                                    custom_css = self._custom_css,
-                                    custom_js = self._custom_js)
+                saved = True
+
+                if format == 'html':
+                    message = F_(message) % (modelname.encode('utf-8', 'ignore'),
+                                             _pk(c.fs.model))
+                    flash(message)
+                    redirect_to(url('models', modelname=modelname))
+        else:
+            c.fs = fs.bind(instance, session=not id and S or None)
+
+        if format == 'html':
+            return self._engine('admin_edit', c=c,
+                                        action=title, id=id,
+                                        modelname=modelname,
+                                        custom_css = self._custom_css,
+                                        custom_js = self._custom_js)
+        else:
+            return self.render_json(fs=c.fs, saved=saved, model=modelname)
 
     def delete(self, modelname, id):
         """Delete an instance of the given model type"""
@@ -163,10 +232,12 @@ class AdminController(object):
         key = _pk(instance)
         S.delete(instance)
         S.commit()
-        message = F_(_('Deleted %s %s')) % (modelname.encode('utf-8', 'ignore'),
-                                            key)
-        flash(message)
-        redirect_to(url(controller=self._name, modelname=modelname, action='list'))
+
+        if request.method != 'DELETE':
+            message = F_(_('Deleted %s %s')) % (modelname.encode('utf-8', 'ignore'),
+                                                key)
+            flash(message)
+            redirect_to(url('models', modelname=modelname))
 
     def static(self, id):
         filename = os.path.basename(id)
@@ -190,19 +261,14 @@ class TemplateEngine(MakoEngine):
     directories = [os.path.join(p, 'fa_admin') for p in config['pylons.paths']['templates']] + [template_dir]
     _templates = ['base', 'admin_index', 'admin_list', 'admin_edit']
 
-def FormAlchemyAdminController(cls, engine=None, controller=None,
-                               paginate=dict()):
+def FormAlchemyAdminController(cls, engine=None, paginate=dict(), **kwargs):
     """
     Generate a controller that is a subclass of `AdminController`
     and the Pylons BaseController `cls`
     """
-    if not controller:
-        controller = cls.__name__.lower().split('controller')[0]
-
-    kwargs = get_forms(controller, cls.model, cls.forms)
+    kwargs = get_forms(cls.model, cls.forms)
     log.info('creating admin controller with args %s' % kwargs)
 
-    kwargs['_name'] = controller
     kwargs['_paginate'] = paginate
     if engine is not None:
         kwargs['_engine'] = engine

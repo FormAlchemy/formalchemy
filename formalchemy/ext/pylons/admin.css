@@ -393,11 +393,29 @@ fieldset p.label {
     overflow:hidden;
 }
 
+input.icon {
+    border:none;
+    width:16px;
+    height:16px;
+    padding:0;
+    cursor:pointer;
+}
+
 #pager {
     text-align: center;
+    margin-top: 0.5em;
 }
-#pager .pager_curpage {
-    text-decoration:underline;
+#pager a, #pager .pager_curpage {
+    padding: 0 0.2em;
+    border:thin solid #114477;
+    background: #73A0C5;
+    color: white;
+}
+
+#pager a:hover, #pager .pager_curpage {
+    text-decoration:none;
+    background:white;
     color:#114477;
 }
+
 /*****************************/

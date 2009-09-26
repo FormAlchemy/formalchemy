@@ -1,22 +1,22 @@
 <%
-from pylons import url
+from pylons import url, request
 %>\
 <html>
 <head>
 <title>${self.title()}</title>
-<style media="screen" type="text/css"><!-- @import url(${url(controller=controller, modelname='static_contents', action='admin.css')}); --></style>
+<style media="screen" type="text/css"><!-- @import url(${url('static_contents', id='admin.css')}); --></style>
 <style type="text/css">
 .add {
     margin-left:1em;
     margin-bottom: 0.3em;
-    background: url('${url(controller=controller, modelname='static_contents', action='add.png')}');
+    background: url('${url('static_contents', id='add.png')}');
 }
 .delete {
-    background: url('${url(controller=controller, modelname='static_contents', action='delete.png')}');
+    background: url('${url('static_contents', id='delete.png')}');
     float:left;
 }
 .edit {
-    background: url('${url(controller=controller, modelname='static_contents', action='edit.png')}');
+    background: url('${url('static_contents', id='edit.png')}');
     float:left;
 }
 </style>
@@ -28,8 +28,13 @@ ${custom_js}
     <div id="title"><h1>${self.title()}</h1></div>
     <div id="nav">
     %if modelname:
-      <a href="${url(controller=controller)}">
-        ${F_('Models')}
+      <a href="${url('admin')}">
+        ${F_('Home')}
+      </a>
+    %endif
+    %if modelname and (id or request.path_info.endswith('/new')):
+      <a href="${url('models', modelname=modelname)}">
+        ${F_(modelname)} ${F_('listing')}
       </a>
     %endif
     </div>
