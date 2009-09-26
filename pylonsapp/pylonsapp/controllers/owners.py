@@ -11,17 +11,12 @@ from formalchemy.ext.pylons.controller import FieldSetController
 
 log = logging.getLogger(__name__)
 
-class RestController(BaseController):
+class OwnersController(BaseController):
 
     def Session(self):
         return meta.Session
 
-    def render(self, format='html', **kwargs):
-        if format == 'json':
-            return self.render_json(**kwargs)
-        return render('/rest.mako', extra_vars=kwargs)
+    def get_model(self):
+        return model.Owner
 
-    def render_grid(self, format='html', **kwargs):
-        return render('/rest.mako', extra_vars=kwargs)
-
-RestController = FieldSetController(RestController, 'rest', model.Owner)
+OwnersController = FieldSetController(OwnersController, 'owner', 'owners')

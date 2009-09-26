@@ -76,7 +76,6 @@ def get_forms(model_module, forms):
                                 url=model_url, id=_pk(item),
                                 label=get_translator().gettext('edit'))
         def delete_link():
-            label = _('delete')
             model_url = url('models', modelname=modelname)
             return lambda item: '''<form action="%(url)s/%(id)s" method="POST">
                                     <input type="submit" class="icon delete" title="%(label)s" value="" />
@@ -124,13 +123,13 @@ class AdminController(object):
         S = self.Session()
         grid = self._model_grids[modelname]
         query = S.query(grid.model.__class__)
+        page = Page(query, page=int(request.GET.get('page', '1')), **self._paginate)
         if format == 'json':
             values = []
-            for item in query.all():
+            for item in page:
                 pk = _pk(item)
                 values.append((pk, url('view_model', pk)))
-            return self.render_json(**dict(values))
-        page = Page(query, page=int(request.GET.get('page', '1')), **self._paginate)
+            return self.render_json(records=dict(values), page_count=page.page_count, page=page.page)
         grid = grid.bind(instances=page, session=None)
         clsnames = [f.relation_type().__name__ for f in grid._fields.itervalues() if f.is_relation]
         return self._engine('admin_list', c=c,
