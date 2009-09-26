@@ -141,17 +141,16 @@ class AdminController(object):
                             custom_css = self._custom_css,
                             custom_js = self._custom_js)
 
-    def edit(self, modelname, id=None):
+    def edit(self, modelname, id=None, format='html'):
         """Edit (or create, if `id` is None) an instance of the given model type"""
 
-        saved = False
+        saved = 1
 
-        format = 'html'
         if id and id.endswith('.json'):
             id = id[:-5]
             format = 'json'
 
-        if request.method == 'POST' or request.method == 'PUT':
+        if request.method == 'POST' or format == 'json':
             if id:
                 prefix = '%s-%s' % (modelname, id)
             else:
@@ -160,13 +159,11 @@ class AdminController(object):
             if request.method == 'PUT':
                 items = json.load(request.body_file).items()
                 request.method = 'POST'
-                format = 'json'
             elif '_method' not in request.POST:
                 items = request.POST.items()
                 format = 'json'
             else:
                 items = None
-                format = 'html'
 
             if items:
                 for k, v in items:
@@ -177,7 +174,6 @@ class AdminController(object):
                         else:
                             request.POST.add('%s-%s' % (prefix, k), v)
 
-        F_ = get_translator().gettext
         fs = self._model_fieldsets[modelname]
         S = self.Session()
 
@@ -190,6 +186,7 @@ class AdminController(object):
             title = 'New object'
 
         if request.method == 'POST':
+            F_ = get_translator().gettext
             c.fs = fs.bind(instance, data=request.POST, session=not id and S or None)
             log.debug('saving %s w/ %s' % (c.fs.model.id, request.POST))
             if c.fs.validate():
@@ -204,7 +201,7 @@ class AdminController(object):
                     S.refresh(c.fs.model)
                     message = _('Modified %s %s')
                 S.commit()
-                saved = True
+                saved = 0
 
                 if format == 'html':
                     message = F_(message) % (modelname.encode('utf-8', 'ignore'),
@@ -221,9 +218,9 @@ class AdminController(object):
                                         custom_css = self._custom_css,
                                         custom_js = self._custom_js)
         else:
-            return self.render_json(fs=c.fs, saved=saved, model=modelname)
+            return self.render_json(fs=c.fs, status=saved, model=modelname)
 
-    def delete(self, modelname, id):
+    def delete(self, modelname, id, format='html'):
         """Delete an instance of the given model type"""
         F_ = get_translator().gettext
         fs = self._model_fieldsets[modelname]
@@ -233,11 +230,13 @@ class AdminController(object):
         S.delete(instance)
         S.commit()
 
-        if request.method != 'DELETE':
+        if format == 'html':
             message = F_(_('Deleted %s %s')) % (modelname.encode('utf-8', 'ignore'),
                                                 key)
             flash(message)
             redirect_to(url('models', modelname=modelname))
+        else:
+            return self.render_json(status=0)
 
     def static(self, id):
         filename = os.path.basename(id)

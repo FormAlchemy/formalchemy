@@ -71,16 +71,18 @@ class TestAdminController(TestController):
         ## Simple model
 
         # add page
-        response = self.app.post(url('models', modelname='Foo'), dict(bar='value'))
+        response = self.app.post(url('models', modelname='Foo'), dict(bar='value'), extra_environ={'HTTP_ACCEPT':'application/json'})
         response.mustcontain('"bar": "value"')
         data = json.loads(response.body)
 
         # get data
+        response = self.app.get(data['url'], extra_environ={'HTTP_ACCEPT':'application/json'})
+        response.mustcontain('"bar": "value"')
         response = self.app.get('%s.json' % data['url'])
         response.mustcontain('"bar": "value"')
 
         # edit page
-        response = self.app.put(data['url'], '{"bar": "new value"}')
+        response = self.app.put(data['url'], '{"bar": "new value"}', extra_environ={'HTTP_ACCEPT':'application/json'})
         response.mustcontain('"bar": "new value"')
 
         # delete
