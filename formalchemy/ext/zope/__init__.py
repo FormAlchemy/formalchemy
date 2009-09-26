@@ -26,15 +26,17 @@ Here is a simple example. First we need a schema::
     ...     birthdate = schema.Date(title=u'Birth date')
     ...     colour = schema.Choice(title=u'Colour',
     ...                            values=['Brown', 'Black'])
+    ...     friends = schema.List(title=u'Friends')
 
 Initialize FieldSet with schema::
 
     >>> fs = FieldSet(IPet)
+    >>> fs.configure(options=[fs.friends.dropdown(options=['cat', 'dog', 'bulldog'])])
 
 Create a class to store values. If your class does not implement the form interface the FieldSet will generate an adapter for you:
 
     >>> class Pet(FlexibleDict):pass
-    >>> p = Pet(name='dewey', type='cat', owner='gawel')
+    >>> p = Pet(name='dewey', type='cat', owner='gawel', friends=['cat', 'dog'])
     >>> fs = fs.bind(p)
 
 Fields are aware of schema attributes:
@@ -59,6 +61,14 @@ We can use the form::
       <select id="Pet--colour" name="Pet--colour"><option value="Brown">Brown</option>
     <option value="Black">Black</option></select>
     </div>
+    ...
+    <div>
+      <label class="field_req" for="Pet--friends">Friends</label>
+      <select id="Pet--friends" name="Pet--friends"><option value="cat" selected="selected">cat</option>
+    <option value="dog" selected="selected">dog</option>
+    <option value="bulldog">bulldog</option></select>
+    </div>
+
 
 
 Ok, let's assume that validation and syncing works:
@@ -99,6 +109,7 @@ Ok, let's assume that validation and syncing works:
 Looks nice ! Let's use the grid:
 
     >>> grid = Grid(IPet)
+    >>> grid.configure(options=[grid.friends.dropdown(options=['cat', 'dog', 'bulldog'])])
     >>> grid = grid.bind([p])
     >>> print grid.render().strip() #doctest: +ELLIPSIS
     <thead>
@@ -131,6 +142,11 @@ Looks nice ! Let's use the grid:
         <td>
           <select id="Pet--colour" name="Pet--colour"><option value="Brown" selected="selected">Brown</option>
     <option value="Black">Black</option></select>
+        </td>
+        <td>
+          <select id="Pet--friends" name="Pet--friends"><option value="cat" selected="selected">cat</option>
+    <option value="dog" selected="selected">dog</option>
+    <option value="bulldog">bulldog</option></select>
         </td>
       </tr>
     </tbody>
@@ -354,6 +370,7 @@ class FieldSet(BaseFieldSet):
         schema.Datetime: fatypes.DateTime,
         schema.Time: fatypes.Time,
         schema.Choice: fatypes.Unicode,
+        schema.List: fatypes.List,
     }
 
     def __init__(self, model, session=None, data=None, prefix=None):
