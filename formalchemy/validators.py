@@ -31,7 +31,7 @@ class ValidationError(Exception):
 
 def accepts_none(func):
     """validator decorator to validate None value"""
-    func.accepts_none = False
+    func.accepts_none = True
     return func
 
 def required(value, field=None):
@@ -39,6 +39,7 @@ def required(value, field=None):
     if value is None or value == '':
         msg = isinstance(value, list) and _('Please select a value') or _('Please enter a value')
         raise ValidationError(msg)
+required = accepts_none(required)
 
 # other validators will not be called for empty values
 
