@@ -85,15 +85,17 @@ class _FieldSetController(object):
     def update(self, id, format='html'):
         S, model = self.get(id)
         if format == 'json':
-            data = json.load(request.body)
-            req = Request.blanck('/')
-
+            data = json.load(request.body_file)
+            request.body = ''
+            name = model.__class__.__name__
             for k, v in data.items():
-                req.POST['%s-%s-%s' % (name, id, k)] = v
-        else:
-            req = request
+                if isinstance(v, list):
+                    for val in v:
+                        request.POST.add('%s-%s-%s' % (name, id, k), str(val))
+                else:
+                    request.POST.add('%s-%s-%s' % (name, id, k), str(v))
 
-        fs = self.fieldset.bind(model, data=req.POST)
+        fs = self.fieldset.bind(model, data=request.POST)
         if fs.validate():
             fs.sync()
             S.update(model)
