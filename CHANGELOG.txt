@@ -5,6 +5,14 @@
 
 * add fs.copy()
 
+* zope.schema.List and zope.schema.Choice support (thanks to Christophe Combelles)
+
+* Experimental RDFAlchemy support
+
+* fix issues 107, 113, 114, 117
+
+* css improvement for pylons admin interface
+
 
 1.2.1
 -----
