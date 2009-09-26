@@ -26,12 +26,11 @@ Here is a simple example. First we need a schema::
     ...     birthdate = schema.Date(title=u'Birth date')
     ...     colour = schema.Choice(title=u'Colour',
     ...                            values=['Brown', 'Black'])
-    ...     friends = schema.List(title=u'Friends')
+    ...     friends = schema.List(title=u'Friends', value_type=schema.Choice(['cat', 'dog', 'bulldog']))
 
 Initialize FieldSet with schema::
 
     >>> fs = FieldSet(IPet)
-    >>> fs.configure(options=[fs.friends.dropdown(options=['cat', 'dog', 'bulldog'])])
 
 Create a class to store values. If your class does not implement the form interface the FieldSet will generate an adapter for you:
 
@@ -64,10 +63,11 @@ We can use the form::
     ...
     <div>
       <label class="field_req" for="Pet--friends">Friends</label>
-      <select id="Pet--friends" name="Pet--friends"><option value="cat" selected="selected">cat</option>
+      <select id="Pet--friends" multiple="multiple" name="Pet--friends"><option value="bulldog">bulldog</option>
     <option value="dog" selected="selected">dog</option>
-    <option value="bulldog">bulldog</option></select>
+    <option value="cat" selected="selected">cat</option></select>
     </div>
+    
 
 
 
@@ -109,7 +109,6 @@ Ok, let's assume that validation and syncing works:
 Looks nice ! Let's use the grid:
 
     >>> grid = Grid(IPet)
-    >>> grid.configure(options=[grid.friends.dropdown(options=['cat', 'dog', 'bulldog'])])
     >>> grid = grid.bind([p])
     >>> print grid.render().strip() #doctest: +ELLIPSIS
     <thead>
@@ -144,9 +143,9 @@ Looks nice ! Let's use the grid:
     <option value="Black">Black</option></select>
         </td>
         <td>
-          <select id="Pet--friends" name="Pet--friends"><option value="cat" selected="selected">cat</option>
+          <select id="Pet--friends" multiple="multiple" name="Pet--friends"><option value="bulldog">bulldog</option>
     <option value="dog" selected="selected">dog</option>
-    <option value="bulldog">bulldog</option></select>
+    <option value="cat" selected="selected">cat</option></select>
         </td>
       </tr>
     </tbody>
@@ -309,6 +308,16 @@ def gen_model(iface, klass=None, dict_like=False):
 
 class Field(BaseField):
     """Field aware of zope schema. See :class:`formalchemy.fields.AbstractField` for full api."""
+
+    def set(self, options=[], **kwargs):
+        if isinstance(options, schema.Choice):
+            sourcelist = options.source.by_value.values()
+            if sourcelist[0].title is None:
+                options = [term.value for term in sourcelist]
+            else:
+                options = [(term.title, term.value) for term in sourcelist]
+        BaseField.set(self, options=options, **kwargs)
+
     def value(self):
         if not self.is_readonly() and self.parent.data is not None:
             v = self._deserialize()
@@ -400,14 +409,15 @@ class FieldSet(BaseFieldSet):
                     self._fields[name].validators.append(validators.required)
                 if klass is schema.Text:
                     self._fields[name].set(renderer=fields.TextAreaFieldRenderer)
-                if klass is schema.Choice:
-                    sourcelist = self.model[name].source.by_value.values()
-                    if sourcelist[0].title is None:
-                        options = [term.value for term in sourcelist]
+                if klass is schema.List:
+                    value_type = self.model[name].value_type
+                    if isinstance(value_type, schema.Choice):
+                        self._fields[name].set(options=value_type, multiple=True)
                     else:
-                        options = [(term.title, term.value) for term in sourcelist]
+                        self._fields[name].set(multiple=True)
+                elif klass is schema.Choice:
                     self._fields[name].set(renderer=fields.SelectFieldRenderer,
-                                           options=options)
+                                           options=self.model[name])
 
     def bind(self, model, session=None, data=None):
         if not (model is not None or session or data):
