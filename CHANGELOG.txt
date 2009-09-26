@@ -9,7 +9,7 @@
 
 * Experimental RDFAlchemy support
 
-* fix issues 107, 113, 114, 117
+* fix issues 107, 113, 114, 117, 118
 
 * css improvement for pylons admin interface
 

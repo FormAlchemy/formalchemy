@@ -128,7 +128,7 @@ class AdminController(object):
             c.fs = fs.bind(fs.model.__class__, session=S)
             title = 'New object'
         if request.method == 'POST':
-            c.fs = c.fs.bind(data=request.params)
+            c.fs = c.fs.bind(data=request.params, session=not id and S or None)
             log.debug('saving %s w/ %s' % (c.fs.model.id, request.POST))
             if c.fs.validate():
                 c.fs.sync()
