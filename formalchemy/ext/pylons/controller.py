@@ -60,7 +60,10 @@ class _FieldSetController(object):
     def render_json(self, fs=None, **kwargs):
         response.content_type = 'text/javascript'
         if fs:
-            fields = dict([(field.key, field.model_value) for field in fs.render_fields.values()])
+            try:
+                fields = fs.jsonify()
+            except AttributeError:
+                fields = dict([(field.key, field.model_value) for field in fs.render_fields.values()])
             data = dict(fields=fields)
             pk = _pk(fs.model)
             if pk:
