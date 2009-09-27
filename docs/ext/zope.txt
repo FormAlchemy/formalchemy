@@ -26,6 +26,8 @@ Grid
 Utilities
 ----------
 
+.. autoclass:: Pk
+
 .. autoclass:: FlexibleModel
 
 .. autoclass:: FlexibleDict

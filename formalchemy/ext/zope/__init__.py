@@ -166,6 +166,40 @@ from zope import schema
 from zope.schema import interfaces
 from zope import interface
 
+class Pk(property):
+    """FormAlchemy use a ``_pk`` attribute to identify objects. You can use
+    this property to bind another attribute as a primary key::
+
+        >>> class Content(object):
+        ...     _pk = Pk()
+        ...     __name__ = 'primary_key'
+
+        >>> content = Content()
+        >>> content._pk
+        'primary_key'
+
+        >>> content._pk = 'another_key'
+        >>> content.__name__
+        'another_key'
+
+        >>> class Content(object):
+        ...     _pk = Pk('uid')
+        ...     uid = 'primary_key'
+
+        >>> content = Content()
+        >>> content._pk
+        'primary_key'
+    """
+
+    def __init__(self, attr='__name__'):
+        self.attr = attr
+
+    def __get__(self, instance, cls):
+        return getattr(instance, self.attr, None) or None
+
+    def __set__(self, instance, value):
+        setattr(instance, self.attr, value)
+
 class FlexibleModel(object):
     """A flexible object to easy adapt most python classes:
 
