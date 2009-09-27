@@ -123,10 +123,9 @@ New object with form::
 
 New object with json POST::
 
-    POST /owners
-    Accept: application/json
-
-    {"name": "name", "animals": []}
+    POST /owners.json
+    name:name
+    animals: 1
 
 View object with form::
 
@@ -142,8 +141,7 @@ Edit object with form::
 
 Edit object with json PUT::
 
-    PUT /owners/1
-    Accept: application/json
+    PUT /owners/1.json
 
     {"name": "name", "animals": []}
 

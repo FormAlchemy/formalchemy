@@ -163,12 +163,32 @@ class _FieldSetController(object):
         fs.readonly = True
         return self.render_grid(format=format, page=page, fs=fs, id=None)
 
-    def create(self):
+    def create(self, format='html'):
         fs = self.get_fieldset()
+        if format == 'json':
+            data = request.POST.copy()
+            request.body = ''
+            if hasattr(fs, 'model'):
+                # this should bread if fs is a non standard fieldset
+                name = '%s-' % fs.model.__class__.__name__
+                for k, v in data.items():
+                    if not k.startswith(name):
+                        if isinstance(v, list):
+                            for val in v:
+                                request.POST.add('%s-%s' % (name, k), str(val))
+                        else:
+                            request.POST.add('%s-%s' % (name, k), str(v))
+        else:
+            data = request.POST
+
+        fs = fs.bind(fs.model, data=request.POST, session=self.Session())
         if fs.validate():
             fs.sync()
             self.sync(fs)
-            redirect_to(self.url())
+            if format == 'html':
+                redirect_to(self.url())
+            else:
+                return self.render_json(fs=fs)
         action = self.url()
         return self.render(format=format, fs=fs, action=action, id=None)
 
