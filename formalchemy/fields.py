@@ -579,6 +579,9 @@ def _pk(instance):
     try:
         columns = class_mapper(type(instance)).primary_key
     except InvalidRequestError:
+        # try to get pk from model attribute
+        if hasattr(instance, '_pk'):
+            return getattr(instance, '_pk', None) or None
         return None
     if len(columns) == 1:
         return _pk_one_column(instance, columns[0])

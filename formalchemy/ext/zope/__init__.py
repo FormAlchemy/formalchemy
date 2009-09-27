@@ -189,6 +189,9 @@ class Pk(property):
         >>> content = Content()
         >>> content._pk
         'primary_key'
+
+        >>> fields._pk(content)
+        'primary_key'
     """
 
     def __init__(self, attr='__name__'):
@@ -479,7 +482,7 @@ class FieldSet(BaseFieldSet):
             if model and not self.iface.providedBy(model):
                 model = self.gen_model(model)
         self.model = model
-        self._bound_pk = getattr(model, '_pk', None) and model._pk or None
+        self._bound_pk = fields._pk(model)
         if data is None:
             self.data = None
         elif hasattr(data, 'getall') and hasattr(data, 'getone'):
