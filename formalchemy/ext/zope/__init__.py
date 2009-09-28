@@ -443,6 +443,8 @@ class FieldSet(BaseFieldSet):
     def rebind(self, model, session=None, data=None):
         if model is not self.iface:
             if model and not self.iface.providedBy(model):
+                if getattr(model, '__implemented__', None) is not None:
+                    raise ValueError('%r does not provide %r' % (model, self.iface))
                 model = self.gen_model(model)
         self.model = model
         self._bound_pk = getattr(model, '_pk', None) and model._pk or None
