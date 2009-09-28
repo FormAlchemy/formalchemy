@@ -353,7 +353,7 @@ class Field(BaseField):
                 options = [term.value for term in sourcelist]
             else:
                 options = [(term.title, term.value) for term in sourcelist]
-        BaseField.set(self, options=options, **kwargs)
+        return BaseField.set(self, options=options, **kwargs)
 
     def value(self):
         if not self.is_readonly() and self.parent.data is not None:
@@ -480,6 +480,8 @@ class FieldSet(BaseFieldSet):
     def rebind(self, model, session=None, data=None):
         if model is not self.iface:
             if model and not self.iface.providedBy(model):
+                if getattr(model, '__implemented__', None) is not None:
+                    raise ValueError('%r does not provide %r' % (model, self.iface))
                 model = self.gen_model(model)
         self.model = model
         self._bound_pk = fields._pk(model)
