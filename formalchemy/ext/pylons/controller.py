@@ -17,6 +17,7 @@ import simplejson as json
 class _FieldSetController(object):
 
     template = '/restfieldset.mako'
+    engine = None
 
     def Session(self):
         """return a Session object. You **must** override this."""
@@ -52,7 +53,10 @@ class _FieldSetController(object):
         if format == 'json':
             return self.render_json(**kwargs)
         kwargs.update(collection=self.plural, member=self.singular)
-        return render(self.template, extra_vars=kwargs)
+        if self.engine:
+            return self.engine.render(self.template, **kwargs)
+        else:
+            return render(self.template, extra_vars=kwargs)
 
     def render_grid(self, format='html', **kwargs):
         """render the grid as html or json"""
@@ -74,21 +78,23 @@ class _FieldSetController(object):
         data.update(kwargs)
         return json.dumps(data)
 
-    def query(self):
-        """return an iterable used for index listing.
+    def get_page(self):
+        """return a ``webhelpers.paginate.Page`` used to display ``Grid``.
 
         Default is:
 
         .. sourcecode:: py
 
             S = self.Session()
-            return S.query(self.get_model())
+            query = S.query(self.get_model())
+            return Page(query, page=int(request.GET.get('page', '1')))
         """
         S = self.Session()
-        return S.query(self.get_model())
+        query = S.query(self.get_model())
+        return Page(query, page=int(request.GET.get('page', '1')))
 
     def get(self, id=None):
-        """return correct record for ``id``.
+        """return correct record for ``id`` or a new instance.
 
         Default is:
 
@@ -97,19 +103,22 @@ class _FieldSetController(object):
             S = self.Session()
             model = self.get_model()
             if id:
-                return S.query(model).get(id)
+                model = S.query(model).get(id)
             else:
-                return model()
+                model = model()
+            return model or abort(404)
+
         """
         S = self.Session()
         model = self.get_model()
         if id:
-            return S.query(model).get(id)
+            model = S.query(model).get(id)
         else:
-            return model()
+            model = model()
+        return model or abort(404)
 
     def get_fieldset(self, id=None):
-        """return a FieldSet object bound to the correct record for ``id``.
+        """return a ``FieldSet`` object bound to the correct record for ``id``.
 
         Default is:
 
@@ -117,10 +126,30 @@ class _FieldSetController(object):
 
             fs = FieldSet(self.get(id))
             fs.__name__ = fs.model.__class__.__name__
+            fs.engine = self.engine
             return fs
         """
         fs = FieldSet(self.get(id))
         fs.__name__ = fs.model.__class__.__name__
+        fs.engine = self.engine
+        return fs
+
+    def get_add_fieldset(self):
+        """return a ``FieldSet`` used for add form.
+
+        Default is:
+
+        .. sourcecode:: py
+            fs = self.get_fieldset()
+            for field in fs.render_fields.itervalues():
+                if field.is_readonly():
+                    del fs[field.name]
+            return fs
+        """
+        fs = self.get_fieldset()
+        for field in fs.render_fields.itervalues():
+            if field.is_readonly():
+                del fs[field.name]
         return fs
 
     def get_grid(self):
@@ -131,34 +160,36 @@ class _FieldSetController(object):
         .. sourcecode:: py
 
             grid = Grid(self.get_model())
+            grid.engine = self.engine
             self.update_grid(grid)
             return grid
         """
         grid = Grid(self.get_model())
+        grid.engine = self.engine
         self.update_grid(grid)
         return grid
 
 
     def update_grid(self, grid):
-        """Add edit and delete button to Grid"""
+        """Add edit and delete buttons to ``Grid``"""
         try:
             grid.edit
         except AttributeError:
             def edit_link():
-                return lambda item: '''<form action="%(url)s" method="GET">
-                                        <input type="submit" class="icon edit" title="%(label)s" value="%(label)s" />
-                                        </form>
-                                    ''' % dict(
-                                    url=url('edit_%s' % self.singular, id=_pk(item)),
-                                    label=get_translator().gettext('edit'))
+                return lambda item: '''
+                <form action="%(url)s" method="GET" class="ui-grid-icon ui-widget-header ui-corner-all">
+                <input type="submit" class="ui-grid-icon ui-icon ui-icon-pencil" title="%(label)s" value="%(label)s" />
+                </form>
+                ''' % dict(url=url('edit_%s' % self.singular, id=_pk(item)),
+                            label=get_translator().gettext('edit'))
             def delete_link():
-                return lambda item: '''<form action="%(url)s" method="POST">
-                                        <input type="submit" class="icon delete" title="%(label)s" value="%(label)s" />
-                                        <input type="hidden" name="_method" value="DELETE" />
-                                        </form>
-                                    ''' % dict(
-                                        url=url(self.singular, id=_pk(item)),
-                                        label=get_translator().gettext('delete'))
+                return lambda item: '''
+                <form action="%(url)s" method="POST" class="ui-grid-icon ui-state-error ui-corner-all">
+                <input type="submit" class="ui-icon ui-icon-circle-close" title="%(label)s" value="%(label)s" />
+                <input type="hidden" name="_method" value="DELETE" />
+                </form>
+                ''' % dict(url=url(self.singular, id=_pk(item)),
+                           label=get_translator().gettext('delete'))
             grid.append(Field('edit', fatypes.String, edit_link()))
             grid.append(Field('delete', fatypes.String, delete_link()))
             grid.readonly = True
@@ -171,8 +202,7 @@ class _FieldSetController(object):
         return u
 
     def index(self, format='html'):
-        query = self.query()
-        page = Page(query, page=int(request.GET.get('page', '1')))
+        page = self.get_page()
         if format == 'json':
             values = []
             for item in page:
@@ -185,7 +215,7 @@ class _FieldSetController(object):
         return self.render_grid(format=format, page=page, fs=fs, id=None)
 
     def create(self, format='html'):
-        fs = self.get_fieldset()
+        fs = self.get_add_fieldset()
         if format == 'json':
             data = request.POST.copy()
             request.body = ''
@@ -228,9 +258,9 @@ class _FieldSetController(object):
         fs.readonly = True
         return self.render(format=format, fs=fs, id=id)
 
-    def new(self, id=None, format='html'):
-        fs = self.get_fieldset(id)
-        fs = fs.bind(session=S)
+    def new(self, id, format='html'):
+        fs = self.get_add_fieldset()
+        fs = fs.bind(session=self.Session())
         action = self.url()
         return self.render(format=format, fs=fs, action=action, id=id)
 
