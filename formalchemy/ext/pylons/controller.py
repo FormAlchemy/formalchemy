@@ -51,6 +51,7 @@ class _FieldSetController(object):
         """render the form as html or json"""
         if format == 'json':
             return self.render_json(**kwargs)
+        kwargs.update(collection=self.plural, member=self.singular)
         return render(self.template, extra_vars=kwargs)
 
     def render_grid(self, format='html', **kwargs):
@@ -123,27 +124,44 @@ class _FieldSetController(object):
         return fs
 
     def get_grid(self):
-        """return a Grid object"""
+        """return a Grid object
+
+        Default is:
+
+        .. sourcecode:: py
+
+            grid = Grid(self.get_model())
+            self.update_grid(grid)
+            return grid
+        """
         grid = Grid(self.get_model())
-        def edit_link():
-            return lambda item: '''<form action="%(url)s" method="GET">
-                                    <input type="submit" class="icon edit" title="%(label)s" value="%(label)s" />
-                                    </form>
-                                ''' % dict(
-                                url=url('edit_%s' % self.singular, id=_pk(item)),
-                                label=get_translator().gettext('edit'))
-        def delete_link():
-            return lambda item: '''<form action="%(url)s" method="POST">
-                                    <input type="submit" class="icon delete" title="%(label)s" value="%(label)s" />
-                                    <input type="hidden" name="_method" value="DELETE" />
-                                    </form>
-                                ''' % dict(
-                                    url=url(self.singular, id=_pk(item)),
-                                    label=get_translator().gettext('delete'))
-        grid.append(Field('edit', fatypes.String, edit_link()))
-        grid.append(Field('delete', fatypes.String, delete_link()))
-        grid.readonly = True
+        self.update_grid(grid)
         return grid
+
+
+    def update_grid(self, grid):
+        """Add edit and delete button to Grid"""
+        try:
+            grid.edit
+        except AttributeError:
+            def edit_link():
+                return lambda item: '''<form action="%(url)s" method="GET">
+                                        <input type="submit" class="icon edit" title="%(label)s" value="%(label)s" />
+                                        </form>
+                                    ''' % dict(
+                                    url=url('edit_%s' % self.singular, id=_pk(item)),
+                                    label=get_translator().gettext('edit'))
+            def delete_link():
+                return lambda item: '''<form action="%(url)s" method="POST">
+                                        <input type="submit" class="icon delete" title="%(label)s" value="%(label)s" />
+                                        <input type="hidden" name="_method" value="DELETE" />
+                                        </form>
+                                    ''' % dict(
+                                        url=url(self.singular, id=_pk(item)),
+                                        label=get_translator().gettext('delete'))
+            grid.append(Field('edit', fatypes.String, edit_link()))
+            grid.append(Field('delete', fatypes.String, delete_link()))
+            grid.readonly = True
 
     def url(self, *args):
         """return url for the controller and add args to path"""
