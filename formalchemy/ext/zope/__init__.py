@@ -316,7 +316,7 @@ class Field(BaseField):
                 options = [term.value for term in sourcelist]
             else:
                 options = [(term.title, term.value) for term in sourcelist]
-        BaseField.set(self, options=options, **kwargs)
+        return BaseField.set(self, options=options, **kwargs)
 
     def value(self):
         if not self.is_readonly() and self.parent.data is not None:
