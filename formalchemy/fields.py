@@ -930,7 +930,7 @@ class AbstractField(object):
     def password(self):
         """Render the field as a password input, hiding its value."""
         field = deepcopy(self)
-        field._renderer = lambda: field.parent.default_renderers['password']
+        field._renderer = lambda f: f.parent.default_renderers['password']
         field.render_opts = {}
         return field
     def textarea(self, size=None):
@@ -939,14 +939,14 @@ class AbstractField(object):
         (`"25x10"`) or tuple (`25, 10`).
         """
         field = deepcopy(self)
-        field._renderer = lambda: field.parent.default_renderers['textarea']
+        field._renderer = lambda f: f.parent.default_renderers['textarea']
         if size:
             field.render_opts = {'size': size}
         return field
     def radio(self, options=None):
         """Render the field as a set of radio buttons."""
         field = deepcopy(self)
-        field._renderer = lambda: field.parent.default_renderers['radio']
+        field._renderer = lambda f: f.parent.default_renderers['radio']
         if options is None:
             options = self.render_opts.get('options')
         else:
@@ -956,7 +956,7 @@ class AbstractField(object):
     def checkbox(self, options=None):
         """Render the field as a set of checkboxes."""
         field = deepcopy(self)
-        field._renderer = lambda: field.parent.default_renderers['checkbox']
+        field._renderer = lambda f: f.parent.default_renderers['checkbox']
         if options is None:
             options = self.render_opts.get('options')
         else:
@@ -969,7 +969,7 @@ class AbstractField(object):
         (With the `multiple` option this is not really a 'dropdown'.)
         """
         field = deepcopy(self)
-        field._renderer = lambda: field.parent.default_renderers['dropdown']
+        field._renderer = lambda f: f.parent.default_renderers['dropdown']
         if options is None:
             options = self.render_opts.get('options')
         else:
@@ -998,13 +998,11 @@ class AbstractField(object):
     def renderer(self):
         if self._renderer is None:
             self._renderer = self._get_renderer()
-        if callable(self._renderer):
-            # invoke potential lambda
-            try:
-                self._renderer = self._renderer()
-            except TypeError:
-                pass
-        if callable(self._renderer):
+        try:
+            self._renderer = self._renderer(self)
+        except TypeError:
+            pass
+        if not isinstance(self._renderer, FieldRenderer):
             # must be a Renderer class.  instantiate.
             self._renderer = self._renderer(self)
         return self._renderer
