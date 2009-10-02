@@ -88,8 +88,12 @@ class _RESTController(object):
 
     def render(self, format='html', **kwargs):
         """render the form as html or json"""
-        if format == 'json':
-            return self.render_json(**kwargs)
+        if format != 'html':
+            meth = getattr(self, 'render_%s_format' % format, None)
+            if meth is not None:
+                return meth(**kwargs)
+            else:
+                abort(404)
         kwargs.update(model_name=self.model_name or self.member_name,
                       prefix_name=self.prefix_name,
                       collection_name=self.collection_name,
@@ -104,7 +108,7 @@ class _RESTController(object):
         """render the grid as html or json"""
         return self.render(format=format, is_grid=True, **kwargs)
 
-    def render_json(self, fs=None, **kwargs):
+    def render_json_format(self, fs=None, **kwargs):
         response.content_type = 'text/javascript'
         if fs:
             try:
@@ -243,7 +247,7 @@ class _RESTController(object):
                 values.append(dict(pk=pk,
                                    url=model_url(self.member_name, id=pk),
                                    value=value))
-            return self.render_json(records=values, page_count=page.page_count, page=page.page)
+            return self.render_json_format(records=values, page_count=page.page_count, page=page.page)
         fs = self.get_grid()
         fs = fs.bind(instances=page)
         fs.readonly = True
@@ -276,7 +280,7 @@ class _RESTController(object):
             if format == 'html':
                 redirect_to(self.url())
             else:
-                return self.render_json(fs=fs)
+                return self.render_json_format(fs=fs)
         return self.render(format=format, fs=fs, action='new', id=None)
 
     def delete(self, id, format='html', **kwargs):
@@ -288,7 +292,7 @@ class _RESTController(object):
             S.commit()
         if format == 'html':
             redirect_to(self.url())
-        return self.render_json(id=id)
+        return self.render(format=format, id=id)
 
     def show(self, id=None, format='html', **kwargs):
         """REST api"""
