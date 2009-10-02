@@ -1,7 +1,7 @@
 :mod:`formalchemy.ext.pylons` -- Pylons extensions
 ==================================================
 
-.. automodule:: formalchemy.ext.pylons
+.. automodule:: formalchemy.ext.pylons.controller
 
 Administration interface
 ************************
@@ -47,12 +47,13 @@ All done!  Now you can go to the ``/admin/`` url.
 Customization
 -------------
 
-`ModelsController` creates a new class having `AdminControllerBase`
-and the internal FA admin controller (:class:`formalchemy.ext.pylons._ModelsController`) 
-as its parent classes, in that order.  
+:class:`~formalchemy.ext.pylons.controller.ModelsController` creates a new
+class having `AdminControllerBase` and the internal FA models controller
+(:class:`~formalchemy.ext.pylons.controller._ModelsController`) as its parent
+classes, in that order.  
 
-So, you can do simple customization just by overriding the admin controller
-methods (`models`, `index`, `new`, `create` `edit`, `update`, `delete`) in
+So, you can do simple customization just by overriding the
+:class:`~formalchemy.ext.pylons.controller._ModelsController` methods  in
 `AdminControllerBase`, e.g.,::
 
   class AdminControllerBase(BaseController):
@@ -72,6 +73,13 @@ automatically get edit and delete links added, and be made readonly.)
 
 See :mod:`~formalchemy.forms` for details on form configuration.
 
+API
+---
+
+.. autofunction:: ModelsController
+
+.. autoclass:: _ModelsController
+   :members:
 
 Troubleshooting
 ---------------
@@ -95,7 +103,7 @@ the application used for FA's testing.
 RESTful controller
 ******************
 
-.. automodule:: formalchemy.ext.pylons.controller
+This module provide a RESTful controller for formalchemy's FieldSets.
 
 You can use your fieldset as a REST resource.
 

@@ -35,6 +35,7 @@ _('Create form')
 # templates
 
 template_dir = os.path.dirname(__file__)
+static_dir = os.path.join(template_dir, 'resources')
 
 def flash(msg):
     """Add 'msg' to the users flashest list in the users session"""
@@ -239,9 +240,9 @@ class AdminController(object):
 
     def static(self, id):
         filename = os.path.basename(id)
-        if filename not in os.listdir(template_dir):
+        if filename not in os.listdir(static_dir):
             raise IOError('Invalid filename: %s' % filename)
-        filepath = os.path.join(template_dir, filename)
+        filepath = os.path.join(static_dir, filename)
         if filename.endswith('.css'):
             response.headers['Content-type'] = "text/css"
         elif filename.endswith('.js'):

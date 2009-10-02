@@ -122,6 +122,18 @@ p {
     text-decoration:none;
 }
 
+h1#header {
+    color: white;
+    height: 1.5em;
+    padding: 0.3em 1em;
+}
+
+h1#header a {
+    color: white;
+}
+
+.breadcrumb { float:right; font-size: 0.7em;}
+
 #nav {
     bottom:0;
     position:absolute;
@@ -352,6 +364,8 @@ fieldset p.label {
 #sidebar .submit {
 	text-align:right;
 }
+
+.ui-widget-link, 
 .submit input,
 #sidebar .submit input {
 	background-color:#F9F9F9;
@@ -362,6 +376,41 @@ fieldset p.label {
 	padding:0 21px;
 	text-transform:lowercase;
 	width:auto;
+}
+
+.ui-widget-link input {
+    border:0px;
+    background:transparent;
+}
+
+a.ui-widget-link {
+    color:#777777;
+    font-family:Verdana;
+}
+
+.ui-widget-link {
+    cursor:pointer;
+    margin-right:0.3em;
+}
+
+
+td form { text-align:center;}
+
+td input.ui-icon {
+    background-color:transparent;
+    border:0px;
+    width:16px;
+    height: 0px;
+    overflow:hidden;
+    padding-bottom:13px;
+    cursor:pointer;
+}
+
+.ui-icon-pencil {
+    background-image: url(./edit.png);
+}
+.ui-icon-circle-close {
+    background-image: url(./delete.png);
 }
 
 #sidebar input {

@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
-__doc__ = """This module provide a RESTful controller for formalchemy's FieldSets.
-"""
+import os
+from paste.urlparser import StaticURLParser
 from pylons import request, response, session, tmpl_context as c
 from pylons.controllers.util import abort, redirect_to
 from pylons.templating import render_mako as render
@@ -32,7 +32,7 @@ class Session(object):
 
 class _RESTController(object):
 
-    template = '/restfieldset.mako'
+    template = '/forms/restfieldset.mako'
     engine = prefix_name = None
     pager_args = dict(link_attr={'class': 'ui-pager-link ui-state-default ui-corner-all'},
                       curpage_attr={'class': 'ui-pager-curpage ui-state-highlight ui-corner-all'})
@@ -53,9 +53,7 @@ class _RESTController(object):
     def sync(self, fs, id=None):
         """sync a record. If ``id`` is None add a new record else save current one.
 
-        Default is:
-
-        .. sourcecode:: py
+        Default is::
 
             S = self.Session()
             if id:
@@ -125,9 +123,7 @@ class _RESTController(object):
     def get_page(self):
         """return a ``webhelpers.paginate.Page`` used to display ``Grid``.
 
-        Default is:
-
-        .. sourcecode:: py
+        Default is::
 
             S = self.Session()
             query = S.query(self.get_model())
@@ -140,9 +136,7 @@ class _RESTController(object):
     def get(self, id=None):
         """return correct record for ``id`` or a new instance.
 
-        Default is:
-
-        .. sourcecode:: py
+        Default is::
 
             S = self.Session()
             model = self.get_model()
@@ -164,9 +158,7 @@ class _RESTController(object):
     def get_fieldset(self, id=None):
         """return a ``FieldSet`` object bound to the correct record for ``id``.
 
-        Default is:
-
-        .. sourcecode:: py
+        Default is::
 
             fs = FieldSet(self.get(id))
             fs.engine = fs.engine or self.engine
@@ -179,9 +171,7 @@ class _RESTController(object):
     def get_add_fieldset(self):
         """return a ``FieldSet`` used for add form.
 
-        Default is:
-
-        .. sourcecode:: py
+        Default is::
 
             fs = self.get_fieldset()
             for field in fs.render_fields.itervalues():
@@ -198,9 +188,7 @@ class _RESTController(object):
     def get_grid(self):
         """return a Grid object
 
-        Default is:
-
-        .. sourcecode:: py
+        Default is::
 
             grid = Grid(self.get_model())
             grid.engine = self.engine
@@ -245,6 +233,7 @@ class _RESTController(object):
         return u
 
     def index(self, format='html', **kwargs):
+        """REST api"""
         page = self.get_page()
         if format == 'json':
             values = []
@@ -261,6 +250,7 @@ class _RESTController(object):
         return self.render_grid(format=format, fs=fs, id=None, pager=page.pager(**self.pager_args))
 
     def create(self, format='html', **kwargs):
+        """REST api"""
         fs = self.get_add_fieldset()
         if format == 'json':
             data = request.POST.copy()
@@ -290,6 +280,7 @@ class _RESTController(object):
         return self.render(format=format, fs=fs, action='new', id=None)
 
     def delete(self, id, format='html', **kwargs):
+        """REST api"""
         record = self.get(id)
         if record:
             S = self.Session()
@@ -300,21 +291,25 @@ class _RESTController(object):
         return self.render_json(id=id)
 
     def show(self, id=None, format='html', **kwargs):
+        """REST api"""
         fs = self.get_fieldset(id=id)
         fs.readonly = True
         return self.render(format=format, fs=fs, action='show', id=id)
 
     def new(self, format='html', **kwargs):
+        """REST api"""
         fs = self.get_add_fieldset()
         fs = fs.bind(session=self.Session())
         action = self.url()
         return self.render(format=format, fs=fs, action='new', id=None)
 
     def edit(self, id=None, format='html', **kwargs):
+        """REST api"""
         fs = self.get_fieldset(id)
         return self.render(format=format, fs=fs, action='edit', id=id)
 
     def update(self, id, format='html', **kwargs):
+        """REST api"""
         fs = self.get_fieldset(id)
         if format == 'json':
             data = json.load(request.body_file)
@@ -352,20 +347,33 @@ class _ModelsController(_RESTController):
     engine = None
     model = forms = None
 
+    _static_app = StaticURLParser(os.path.join(os.path.dirname(__file__), 'resources'))
+
     def Session(self):
         return meta.Session
 
     def models(self, format='html', **kwargs):
+        """Models index page"""
+        models = self.get_models()
+        return self.render(models=models, format=format)
+
+    def static(self):
+        """Serve static files from the formalchemy package"""
+        return self._static_app(request.environ, self.start_response)
+
+    def get_models(self):
+        """return a dict containing all model names as key and url as value"""
         models = {}
         for key, obj in self.model.__dict__.iteritems():
-            try:
-                class_mapper(obj)
-            except:
-                continue
-            if not isinstance(obj, type):
-                continue
-            models[key] = model_url(self.collection_name, model_name=key)
-        return self.render(models=models, format=format)
+            if not key.startswith('_'):
+                try:
+                    class_mapper(obj)
+                except:
+                    continue
+                if not isinstance(obj, type):
+                    continue
+                models[key] = model_url(self.collection_name, model_name=key)
+        return models
 
     def get_model(self):
         if hasattr(self.model, self.model_name):

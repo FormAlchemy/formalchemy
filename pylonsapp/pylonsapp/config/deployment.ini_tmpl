@@ -17,6 +17,8 @@ port = 5000
 [app:main]
 use = egg:pylonsapp
 full_stack = true
+static_files = true
+
 cache_dir = %(here)s/data
 beaker.session.key = pylonsapp
 beaker.session.secret = ${app_instance_secret}
@@ -30,7 +32,6 @@ app_instance_uuid = ${app_instance_uuid}
 
 # SQLAlchemy database URL
 sqlalchemy.url = sqlite:///production.db
-sqlalchemy.echo = False
 
 # WARNING: *THE LINE BELOW MUST BE UNCOMMENTED ON A PRODUCTION ENVIRONMENT*
 # Debug mode will enable the interactive debugging tool, allowing ANYONE to

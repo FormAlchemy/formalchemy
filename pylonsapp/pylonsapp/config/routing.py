@@ -21,10 +21,15 @@ def make_map():
 
     # CUSTOM ROUTES HERE
     # Map the /admin url to FA's AdminController
+    # Map static files
+    map.connect('fa_static', '/admin/_static/{path_info:.*}', controller='admin', action='static')
+    # Index page
     map.connect('admin', '/admin', controller='admin', action='models')
     map.connect('formatted_admin', '/admin.json', controller='admin', action='models', format='json')
+    # Models
     map.resource('model', 'models', path_prefix='/admin/{model_name}', controller='admin')
 
+    # serve Owner Model as resource
     map.resource('owner', 'owners')
 
     map.connect('/{controller}/{action}')

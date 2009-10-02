@@ -21,13 +21,13 @@ fa_config.encoding = 'utf-8'
 {{if template_engine == 'mako'}}
 class TemplateEngine(templates.TemplateEngine):
     def render(self, name, **kwargs):
-        return render('/%s.mako' % name, extra_vars=kwargs)
+        return render('/forms/%s.mako' % name, extra_vars=kwargs)
 fa_config.engine = TemplateEngine()
 {{else}}
 ## You can use this class to override the default template engine
 #class TemplateEngine(templates.TemplateEngine):
 #    def render(self, name, **kwargs):
-#        return render('/%s.mako' % name, extra_vars=kwargs)
+#        return render('/forms/%s.mako' % name, extra_vars=kwargs)
 #fa_config.engine = TemplateEngine()
 {{endif}}
 
