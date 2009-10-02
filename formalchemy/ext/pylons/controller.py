@@ -158,8 +158,6 @@ class _RESTController(object):
         model = self.get_model()
         if id:
             model = S.query(model).get(id)
-        else:
-            model = model()
         return model or abort(404)
 
     def get_fieldset(self, id=None):
@@ -397,7 +395,7 @@ class _ModelsController(_RESTController):
         model_name = self.model_name
         if self.forms and hasattr(self.forms, '%sGrid' % model_name):
             g = getattr(self.forms, '%sGrid' % model_name)
-        if hasattr(self.model, model_name):
+        elif hasattr(self.model, model_name):
             model = getattr(self.model, model_name)
             g = Grid(model)
         else:
