@@ -172,4 +172,11 @@ You can override the following methods:
 .. autoclass:: formalchemy.ext.pylons.controller._RESTController
    :members:
 
+Helpers
+-------
+
+.. autofunction:: model_url
+
+.. autoclass:: Session
+
 

@@ -16,11 +16,14 @@ from formalchemy import fatypes
 import simplejson as json
 
 def model_url(*args, **kwargs):
+    """wrap ``pylons.url`` and take care about ``model_name`` in
+    ``pylons.routes_dict`` if any"""
     if 'model_name' in request.environ['pylons.routes_dict']:
         kwargs['model_name'] = request.environ['pylons.routes_dict']['model_name']
     return url(*args, **kwargs)
 
 class Session(object):
+    """A session to implement other backend than SA"""
     def add(self, record):
         """add a record"""
     def update(self, record):
