@@ -121,7 +121,7 @@ class _RESTController(object):
             data = dict(fields=fields)
             pk = _pk(fs.model)
             if pk:
-                data['url'] = self.url(pk)
+                data['url'] = model_url(self.member_name, id=pk)
         else:
             data = {}
         data.update(kwargs)
@@ -232,13 +232,6 @@ class _RESTController(object):
             grid.append(Field('delete', fatypes.String, delete_link()))
             grid.readonly = True
 
-    def url(self, *args):
-        """return url for the controller and add args to path"""
-        u = model_url(self.collection_name)
-        if args:
-            u += '/' + '/'.join([str(a) for a in args])
-        return u
-
     def index(self, format='html', **kwargs):
         """REST api"""
         page = self.get_page()
@@ -281,7 +274,7 @@ class _RESTController(object):
             fs.sync()
             self.sync(fs)
             if format == 'html':
-                redirect_to(self.url())
+                redirect_to(model_url(self.collection_name))
             else:
                 return self.render_json_format(fs=fs)
         return self.render(format=format, fs=fs, action='new', id=None)
@@ -294,7 +287,7 @@ class _RESTController(object):
             S.delete(record)
             S.commit()
         if format == 'html':
-            redirect_to(self.url())
+            redirect_to(model_url(self.collection_name))
         return self.render(format=format, id=id)
 
     def show(self, id=None, format='html', **kwargs):
@@ -307,7 +300,6 @@ class _RESTController(object):
         """REST api"""
         fs = self.get_add_fieldset()
         fs = fs.bind(session=self.Session())
-        action = self.url()
         return self.render(format=format, fs=fs, action='new', id=None)
 
     def edit(self, id=None, format='html', **kwargs):
@@ -336,7 +328,7 @@ class _RESTController(object):
             fs.sync()
             self.sync(fs, id)
             if format == 'html':
-                redirect_to(self.url(id))
+                redirect_to(model_url(self.member_name, id=id))
             else:
                 return self.render(format=format, fs=fs, status=0)
         if format == 'html':

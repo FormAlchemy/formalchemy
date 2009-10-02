@@ -178,5 +178,6 @@ Helpers
 .. autofunction:: model_url
 
 .. autoclass:: Session
+   :members:
 
 
