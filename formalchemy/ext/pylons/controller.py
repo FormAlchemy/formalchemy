@@ -30,7 +30,7 @@ class Session(object):
     def commit(self):
         """commit transaction"""
 
-class _FieldSetController(object):
+class _RESTController(object):
 
     template = '/restfieldset.mako'
     engine = prefix_name = None
@@ -254,7 +254,7 @@ class _FieldSetController(object):
                 values.append(dict(pk=pk,
                                    url=model_url(self.member_name, id=pk),
                                    value=value))
-            return self.render_json(records=dict(values), page_count=page.page_count, page=page.page)
+            return self.render_json(records=values, page_count=page.page_count, page=page.page)
         fs = self.get_grid()
         fs = fs.bind(instances=page)
         fs.readonly = True
@@ -265,6 +265,7 @@ class _FieldSetController(object):
         if format == 'json':
             data = request.POST.copy()
             request.body = ''
+            #raise ValueError(data)
             if hasattr(fs, 'model'):
                 # this should bread if fs is a non standard fieldset
                 name = '%s-' % fs.model.__class__.__name__
@@ -289,16 +290,17 @@ class _FieldSetController(object):
         return self.render(format=format, fs=fs, action='new', id=None)
 
     def delete(self, id, format='html', **kwargs):
-        S, record = self.get(id)
+        record = self.get(id)
         if record:
+            S = self.Session()
             S.delete(record)
             S.commit()
         if format == 'html':
             redirect_to(self.url())
         return self.render_json(id=id)
 
-    def show(self, id, format='html', **kwargs):
-        fs = self.get_fieldset(id)
+    def show(self, id=None, format='html', **kwargs):
+        fs = self.get_fieldset(id=id)
         fs.readonly = True
         return self.render(format=format, fs=fs, action='show', id=id)
 
@@ -306,7 +308,7 @@ class _FieldSetController(object):
         fs = self.get_add_fieldset()
         fs = fs.bind(session=self.Session())
         action = self.url()
-        return self.render(format=format, fs=fs, action='new')
+        return self.render(format=format, fs=fs, action='new', id=None)
 
     def edit(self, id=None, format='html', **kwargs):
         fs = self.get_fieldset(id)
@@ -340,12 +342,12 @@ class _FieldSetController(object):
         else:
             return self.render(format=format, fs=fs, status=1)
 
-def FieldSetController(cls, member_name, collection_name):
-    """wrap a controller with :class:~formalchemy.ext.pylons.controller._FieldSetController"""
-    return type(cls.__name__, (cls, _FieldSetController),
+def RESTController(cls, member_name, collection_name):
+    """wrap a controller with :class:~formalchemy.ext.pylons.controller._RESTController"""
+    return type(cls.__name__, (cls, _RESTController),
                 dict(member_name=member_name, collection_name=collection_name))
 
-class _FieldSetsController(_FieldSetController):
+class _ModelsController(_RESTController):
 
     engine = None
     model = forms = None
@@ -353,7 +355,7 @@ class _FieldSetsController(_FieldSetController):
     def Session(self):
         return meta.Session
 
-    def models(self, **kwargs):
+    def models(self, format='html', **kwargs):
         models = {}
         for key, obj in self.model.__dict__.iteritems():
             try:
@@ -363,7 +365,7 @@ class _FieldSetsController(_FieldSetController):
             if not isinstance(obj, type):
                 continue
             models[key] = model_url(self.collection_name, model_name=key)
-        return self.render(models=models)
+        return self.render(models=models, format=format)
 
     def get_model(self):
         if hasattr(self.model, self.model_name):
@@ -375,14 +377,14 @@ class _FieldSetsController(_FieldSetController):
             fs = getattr(self.forms, self.model_name)
             fs.engine = fs.engine or self.engine
             return id and fs.bind(self.get(id)) or fs
-        return _FieldSetController.get_fieldset(self, id)
+        return _RESTController.get_fieldset(self, id)
 
     def get_add_fieldset(self):
         if self.forms and hasattr(self.forms, '%sAdd' % self.model_name):
             fs = getattr(self.forms, '%sAdd' % self.model_name)
             fs.engine = fs.engine or self.engine
-            return id and fs.bind(self.get(id)) or fs
-        return _FieldSetController.get_fieldset(self, id)
+            return fs
+        return _RESTController.get_fieldset(self)
 
     def get_grid(self):
         model_name = self.model_name
@@ -398,8 +400,8 @@ class _FieldSetsController(_FieldSetController):
         self.update_grid(g)
         return g
 
-def FieldSetsController(cls, prefix_name, member_name, collection_name):
-    """wrap a controller with :class:~formalchemy.ext.pylons.controller._FieldSetsController"""
-    return type(cls.__name__, (cls, _FieldSetsController),
+def ModelsController(cls, prefix_name, member_name, collection_name):
+    """wrap a controller with :class:~formalchemy.ext.pylons.controller._ModelsController"""
+    return type(cls.__name__, (cls, _ModelsController),
                 dict(prefix_name=prefix_name, member_name=member_name, collection_name=collection_name))
 

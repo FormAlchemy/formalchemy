@@ -47,13 +47,13 @@ All done!  Now you can go to the ``/admin/`` url.
 Customization
 -------------
 
-`FormAlchemyAdminController` creates a new class having `AdminControllerBase`
-and the internal FA admin controller (formalchemy.ext.pylons.AdminController) 
+`ModelsController` creates a new class having `AdminControllerBase`
+and the internal FA admin controller (:class:`formalchemy.ext.pylons._ModelsController`) 
 as its parent classes, in that order.  
 
 So, you can do simple customization just by overriding the admin controller
-methods (`index`, `list`, `edit`, `delete` -- create is just edit with `id=None`) 
-in `AdminControllerBase`, e.g.,::
+methods (`models`, `index`, `new`, `create` `edit`, `update`, `delete`) in
+`AdminControllerBase`, e.g.,::
 
   class AdminControllerBase(BaseController):
       ...
@@ -76,11 +76,6 @@ See :mod:`~formalchemy.forms` for details on form configuration.
 Troubleshooting
 ---------------
 
-If you click on a model link from the top-level admin page and get
-"NotImplementedError: Action '<modelname>' is not implemented," then
-your routing hasn't been properly configured for the admin app.  See
-"Add these lines in `config/routing.py`" above.
-
 If you don't see all your models on the top-level admin page, you'll
 need to import them into your model module, or tell `FormAlchemy` the
 correct module to look in (the "model = " line in the controller class
@@ -92,7 +87,7 @@ Sample app
 ----------
 
 You can have a look at the complete `source
-<http://code.google.com/p/formalchemy/source/browse/#svn/trunk/pylonsapp>`_ of
+<http://code.google.com/p/formalchemy/source/browse/#hg/trunk/pylonsapp>`_ of
 the application used for FA's testing.
 
 .. _restfulcontroller:
@@ -151,7 +146,7 @@ Usage
 
 Use the FieldSetController to wrap your Pylons controller:
 
-.. autofunction:: formalchemy.ext.pylons.controller.FieldSetController
+.. autofunction:: formalchemy.ext.pylons.controller.RESTController
 
 .. literalinclude:: ../../pylonsapp/pylonsapp/controllers/owners.py
 
@@ -166,7 +161,7 @@ Customisation
 
 You can override the following methods:
 
-.. autoclass:: formalchemy.ext.pylons.controller._FieldSetController
+.. autoclass:: formalchemy.ext.pylons.controller._RESTController
    :members:
 
 

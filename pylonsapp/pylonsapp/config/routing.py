@@ -21,7 +21,9 @@ def make_map():
 
     # CUSTOM ROUTES HERE
     # Map the /admin url to FA's AdminController
-    maps.admin_map(map, controller='admin', url='/admin')
+    map.connect('admin', '/admin', controller='admin', action='models')
+    map.connect('formatted_admin', '/admin.json', controller='admin', action='models', format='json')
+    map.resource('model', 'models', path_prefix='/admin/{model_name}', controller='admin')
 
     map.resource('owner', 'owners')
 

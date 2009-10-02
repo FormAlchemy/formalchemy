@@ -7,7 +7,7 @@ class TestOwnersController(TestController):
         resp.mustcontain('gawel')
 
         resp = self.app.get(url('formatted_owners', format='json'))
-        resp.mustcontain('{"records": {"1": "/owners/1",')
+        resp.mustcontain('{"records": [{"url": "/owners/1", "pk": 1, "value": "gawel"}')
 
     def test_add(self):
         resp = self.app.post(url('/owners.json'), {"animals": '1', "name": "gawel"})
@@ -22,7 +22,8 @@ class TestOwnersController(TestController):
 
     def test_edit(self):
         resp = self.app.get(url('/owners/1/edit'))
-        resp.mustcontain('Edit', 'gawel')
+        resp.mustcontain('<form action="/owners/1" method="POST" enctype="multipart/form-data">',
+                         'gawel')
 
     def test_update(self):
         resp = self.app.put(url('/owners/31.json'), '{"animals": [1], "name": "gawel"}')

@@ -7,7 +7,7 @@ from pylonsapp.lib.base import BaseController, render
 from pylonsapp import model
 from pylonsapp.model import meta
 
-from formalchemy.ext.pylons.controller import FieldSetController
+from formalchemy.ext.pylons.controller import RESTController
 
 log = logging.getLogger(__name__)
 
@@ -19,4 +19,4 @@ class OwnersController(BaseController):
     def get_model(self):
         return model.Owner
 
-OwnersController = FieldSetController(OwnersController, 'owner', 'owners')
+OwnersController = RESTController(OwnersController, 'owner', 'owners')
