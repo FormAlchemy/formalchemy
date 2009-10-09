@@ -37,6 +37,8 @@ class _RESTController(object):
 
     template = '/forms/restfieldset.mako'
     engine = prefix_name = None
+    FieldSet = FieldSet
+    Grid = Grid
     pager_args = dict(link_attr={'class': 'ui-pager-link ui-state-default ui-corner-all'},
                       curpage_attr={'class': 'ui-pager-curpage ui-state-highlight ui-corner-all'})
 
@@ -169,7 +171,7 @@ class _RESTController(object):
             fs.engine = fs.engine or self.engine
             return fs
         """
-        fs = FieldSet(self.get(id))
+        fs = self.FieldSet(self.get(id))
         fs.engine = fs.engine or self.engine
         return fs
 
@@ -195,12 +197,12 @@ class _RESTController(object):
 
         Default is::
 
-            grid = Grid(self.get_model())
+            grid = self.Grid(self.get_model())
             grid.engine = self.engine
             self.update_grid(grid)
             return grid
         """
-        grid = Grid(self.get_model())
+        grid = self.Grid(self.get_model())
         grid.engine = self.engine
         self.update_grid(grid)
         return grid
@@ -361,19 +363,28 @@ class _ModelsController(_RESTController):
     def get_models(self):
         """return a dict containing all model names as key and url as value"""
         models = {}
-        for key, obj in self.model.__dict__.iteritems():
-            if not key.startswith('_'):
-                try:
-                    class_mapper(obj)
-                except:
-                    continue
-                if not isinstance(obj, type):
-                    continue
+        if isinstance(self.model, list):
+            for model in self.model:
+                key = model.__name__
                 models[key] = model_url(self.collection_name, model_name=key)
+        else:
+            for key, obj in self.model.__dict__.iteritems():
+                if not key.startswith('_'):
+                    try:
+                        class_mapper(obj)
+                    except:
+                        continue
+                    if not isinstance(obj, type):
+                        continue
+                    models[key] = model_url(self.collection_name, model_name=key)
         return models
 
     def get_model(self):
-        if hasattr(self.model, self.model_name):
+        if isinstance(self.model, list):
+            for model in self.model:
+                if model.__name__ == self.model_name:
+                    return model
+        elif hasattr(self.model, self.model_name):
             return getattr(self.model, self.model_name)
         abort(404)
 
@@ -395,15 +406,11 @@ class _ModelsController(_RESTController):
         model_name = self.model_name
         if self.forms and hasattr(self.forms, '%sGrid' % model_name):
             g = getattr(self.forms, '%sGrid' % model_name)
-        elif hasattr(self.model, model_name):
-            model = getattr(self.model, model_name)
-            g = Grid(model)
-        else:
-            abort(404)
-        g.engine = g.engine or self.engine
-        g.readonly = True
-        self.update_grid(g)
-        return g
+            g.engine = g.engine or self.engine
+            g.readonly = True
+            self.update_grid(g)
+            return g
+        return _RESTController.get_grid(self)
 
 def ModelsController(cls, prefix_name, member_name, collection_name):
     """wrap a controller with :class:~formalchemy.ext.pylons.controller._ModelsController"""

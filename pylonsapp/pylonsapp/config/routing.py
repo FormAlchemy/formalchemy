@@ -29,6 +29,11 @@ def make_map():
     # Models
     map.resource('model', 'models', path_prefix='/admin/{model_name}', controller='admin')
 
+    # serve couchdb's Pets as resource
+    map.connect('couchdb', '/couchdb', controller='couchdb', action='models')
+    # Models
+    map.resource('node', 'nodes', path_prefix='/couchdb/{model_name}', controller='couchdb')
+
     # serve Owner Model as resource
     map.resource('owner', 'owners')
 

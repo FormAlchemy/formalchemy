@@ -12,7 +12,56 @@ from couchdbkit import schema
 from datetime import datetime
 
 
-__all__ = ['Field', 'FieldSet']
+__all__ = ['Field', 'FieldSet', 'Session', 'Document']
+
+class Pk(property):
+    def __init__(self, attr='_id'):
+        self.attr = attr
+    def __get__(self, instance, cls):
+        return getattr(instance, self.attr, None) or None
+    def __set__(self, instance, value):
+        setattr(instance, self.attr, value)
+
+class Document(schema.Document):
+    _pk = Pk()
+
+class Query(list):
+
+    def __init__(self, model):
+        self.model = model
+        self._init = False
+    def get(self, id):
+        return self.model.get(id)
+    def view(self, view_name, *args, **kwargs):
+        if not self._init:
+            self.extend([r for r in self.model.view('%s/%s' % (self.model.__name__.lower(), view_name), *args, **kwargs)])
+            self._init = True
+        return self
+    def all(self, *args, **kwargs):
+        return self.view('all', *args, **kwargs)
+    def __len__(self):
+        if not self._init:
+            self.all()
+        return list.__len__(self)
+
+class Session(object):
+    """A SA like Session to implement couchdb"""
+    def __init__(self, db):
+        self.db = db
+    def add(self, record):
+        """add a record"""
+        record.save()
+    def update(self, record):
+        """update a record"""
+        record.save()
+    def delete(self, record):
+        """delete a record"""
+        del self.db[record._id]
+    def query(self, model, *args, **kwargs):
+        """return records from the view ``{model}/all``"""
+        return Query(model)
+    def commit(self):
+        """do nothing since there is no transaction in couchdb"""
 
 class Field(BaseField):
     """"""
@@ -24,6 +73,16 @@ class Field(BaseField):
         return getattr(self.model, self.name)
     value = property(value)
 
+    def raw_value(self):
+        try:
+            return getattr(self.model, self.name)
+        except (KeyError, AttributeError):
+            pass
+        if callable(self._value):
+            return self._value(self.model)
+        return self._value
+    raw_value = property(raw_value)
+
     def sync(self):
         """Set the attribute's value in `model` to the value given in `data`"""
         if not self.is_readonly():
@@ -34,14 +93,21 @@ class FieldSet(BaseFieldSet):
         self._fields = OrderedDict()
         self._render_fields = OrderedDict()
         self.model = self.session = None
-        BaseFieldSet.rebind(self, model, data=data)
-        self.prefix = prefix
+        if model is not None and isinstance(model, schema.Document):
+            BaseFieldSet.rebind(self, model.__class__, data=data)
+            self.doc = model.__class__
+            self._bound_pk = fields._pk(model)
+        else:
+            BaseFieldSet.rebind(self, model, data=data)
+            self.doc = model
         self.model = model
+        self.prefix = prefix
+        self.validator = None
         self.readonly = False
         self.focus = True
         self._errors = []
         focus = True
-        for k, v in model().iteritems():
+        for k, v in self.doc().iteritems():
             if not k.startswith('_'):
                 try:
                     t = getattr(fatypes, v.__class__.__name__.replace('Property',''))
@@ -52,14 +118,14 @@ class FieldSet(BaseFieldSet):
                     if v.required:
                         self._fields[k].validators.append(validators.required)
 
-    def bind(self, model, session=None, data=None):
+    def bind(self, model=None, session=None, data=None):
         """Bind to an instance"""
         if not (model or session or data):
             raise Exception('must specify at least one of {model, session, data}')
         if not model:
             if not self.model:
                 raise Exception('model must be specified when none is already set')
-            model = fields._pk(self.model) is None and type(self.model) or self.model
+            model = fields._pk(self.model) is None and self.doc() or self.model
         # copy.copy causes a stacktrace on python 2.5.2/OSX + pylons.  unable to reproduce w/ simpler sample.
         mr = object.__new__(self.__class__)
         mr.__dict__ = dict(self.__dict__)
@@ -71,15 +137,20 @@ class FieldSet(BaseFieldSet):
                                              [field.bind(mr) for field in self._render_fields.itervalues()]])
         return mr
 
-    def rebind(self, model, session=None, data=None):
-        if model:
-            if isinstance(model, type):
+    def rebind(self, model=None, session=None, data=None):
+        if model is not None and model is not self.doc:
+            if not isinstance(model, self.doc):
                 try:
                     model = model()
-                except:
-                    raise Exception('%s appears to be a class, not an instance, but FormAlchemy cannot instantiate it.  (Make sure all constructor parameters are optional!)' % model)
-            self.model = model
-            self._bound_pk = model._doc.get('_id', None)
+                except Exception, e:
+                    raise Exception('''%s appears to be a class, not an instance,
+                            but FormAlchemy cannot instantiate it.  (Make sure
+                            all constructor parameters are optional!) %r - %s''' % (
+                            model, self.doc, e))
+        else:
+            model = self.doc()
+        self.model = model
+        self._bound_pk = fields._pk(model)
         if data is None:
             self.data = None
         elif hasattr(data, 'getall') and hasattr(data, 'getone'):
@@ -105,15 +176,20 @@ class Grid(BaseGrid, FieldSet):
     errors = property(_get_errors, _set_errors)
 
     def rebind(self, instances=None, session=None, data=None):
-        FieldSet.rebind(data=data)
+        FieldSet.rebind(self, self.model, data=data)
         if instances is not None:
             self.rows = instances
+
+    def bind(self, instances=None, session=None, data=None):
+        mr = FieldSet.bind(self, self.model, session, data)
+        mr.rows = instances
+        return mr
 
     def _set_active(self, instance, session=None):
         FieldSet.rebind(self, instance, session or self.session, self.data)
 
 def test_fieldset():
-    class Pet(schema.Document):
+    class Pet(Document):
         name = schema.StringProperty(required=True)
         type = schema.StringProperty(required=True)
         birthdate = schema.DateProperty(auto_now=True)
