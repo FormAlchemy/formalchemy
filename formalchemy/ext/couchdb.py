@@ -161,6 +161,11 @@ class FieldSet(BaseFieldSet):
             except:
                 raise Exception('unsupported data object %s.  currently only dicts and Paste multidicts are supported' % self.data)
 
+    def jsonify(self):
+        if isinstance(self.model, schema.Document):
+            return self.model.to_json()
+        return self.doc().to_json()
+
 class Grid(BaseGrid, FieldSet):
     def __init__(self, cls, instances=[], session=None, data=None, prefix=None):
         FieldSet.__init__(self, cls, session, data, prefix)

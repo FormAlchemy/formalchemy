@@ -47,12 +47,17 @@ class TestCouchdbController(TestController):
         for k in form.fields.keys():
             if k and k.endswith('name'):
                 form[k] = 'new value'
+                node_id = k.split('-')[1]
         form['_method'] = 'PUT'
         response = form.submit()
         response = response.follow()
 
         # model index
         response.mustcontain('<td>new value</td>')
+
+        # json response
+        response = self.app.get('%s.json' % url('node', model_name='Pet', id=node_id))
+        response.mustcontain('"fields": {"doc_type": "Pet", "name": "new value",')
 
         # delete
         response = self.app.get(url('nodes', model_name='Pet'))
