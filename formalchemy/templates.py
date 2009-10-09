@@ -21,7 +21,7 @@ except ImportError:
 
 MAKO_TEMPLATES = os.path.join(
         os.path.dirname(__file__),
-        'paster_templates','pylons_fa','+package+','templates')
+        'paster_templates','pylons_fa','+package+','templates', 'forms')
 
 class TemplateEngine(object):
     """Base class for templates engines
