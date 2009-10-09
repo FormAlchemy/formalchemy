@@ -1,34 +1,14 @@
 :mod:`formalchemy.ext.couchdb` -- CouchDB support
 **************************************************
 
-.. automodule:: formalchemy.ext.couchdb
+This module provides a subclass of :class:`~formalchemy.forms.FieldSet` to support couchdbkit_'s schema. 
 
-This module provides an experimental subclass of :class:`~formalchemy.forms.FieldSet` to support couchdbkit_'s schema. 
-
-.. _couchdbkit: http://bitbucket.org/benoitc/couchdbkit/wiki/Home
+.. _couchdbkit: http://couchdbkit.org/ 
 
 Usage
 =====
 
-Simple example::
-
-    from formalchemy.ext.couchdb import FieldSet
-    from couchdbkit import schema
-
-    class Pet(schema.Document):
-        name = schema.StringProperty(required=True)
-        type = schema.StringProperty(required=True)
-        birthdate = schema.DateProperty(auto_now=True)
-        weight_in_pounds = schema.IntegerProperty()
-        spayed_or_neutered = schema.BooleanProperty()
-        owner = schema.StringProperty()
-
-    fs = FieldSet(Pet)
-    p = Pet()
-    p.name = 'dewey'
-    p.type = 'cat'
-    p.owner = 'gawel'
-    fs = fs.bind(p)
+.. automodule:: formalchemy.ext.couchdb
 
 Classes definitions
 ===================
@@ -37,8 +17,21 @@ FieldSet
 --------
 
 .. autoclass:: FieldSet
-   :members:
+
+Grid
+--------
 
 .. autoclass:: Grid
+
+Session
+--------
+
+.. autoclass:: Session
+   :members:
+
+Query
+--------
+
+.. autoclass:: Query
    :members:
 

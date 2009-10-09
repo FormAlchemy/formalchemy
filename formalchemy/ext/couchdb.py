@@ -1,4 +1,80 @@
 # -*- coding: utf-8 -*-
+__doc__ = """
+
+Define a couchdbkit schema::
+
+    >>> from couchdbkit import schema
+    >>> from formalchemy.ext import couchdb
+    >>> class Pet(couchdb.Document):
+    ...     name = schema.StringProperty(required=True)
+    ...     type = schema.StringProperty(required=True)
+    ...     birthdate = schema.DateProperty(auto_now=True)
+    ...     weight_in_pounds = schema.IntegerProperty()
+    ...     spayed_or_neutered = schema.BooleanProperty()
+    ...     owner = schema.StringProperty()
+
+Configure your FieldSet::
+
+    >>> fs = couchdb.FieldSet(Pet)
+    >>> fs.configure(include=[fs.name, fs.type, fs.birthdate, fs.weight_in_pounds])
+    >>> p = Pet(name='dewey')
+    >>> p.name = 'dewey'
+    >>> p.type = 'cat'
+    >>> fs = fs.bind(p)
+
+Render it::
+
+    >>> # rendering
+    >>> fs.name.is_required()
+    True
+    >>> print fs.render() # doctest: +ELLIPSIS +NORMALIZE_WHITESPACE
+    <div>
+      <label class="field_req" for="Pet--name">Name</label>
+      <input id="Pet--name" name="Pet--name" type="text" value="dewey" />
+    </div>
+    <BLANKLINE>
+    <script type="text/javascript">
+    //<![CDATA[
+    document.getElementById("Pet--name").focus();
+    //]]>
+    </script>
+    <div>
+      <label class="field_req" for="Pet--type">Type</label>
+      <input id="Pet--type" name="Pet--type" type="text" value="cat" />
+    </div>
+    <BLANKLINE>
+    <div>
+      <label class="field_opt" for="Pet--birthdate">Birthdate</label>
+      <span id="Pet--birthdate"><select id="Pet--birthdate__month" name="Pet--birthdate__month"><option value="MM">Month</option>
+    <option value="1">January</option>
+    ...
+    
+Same for grids::
+
+    >>> # grid
+    >>> grid = couchdb.Grid(Pet, [p, Pet()])
+    >>> grid.configure(include=[grid.name, grid.type, grid.birthdate, grid.weight_in_pounds])
+    >>> print grid.render() # doctest: +ELLIPSIS +NORMALIZE_WHITESPACE
+    <thead>
+      <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Birthdate</th>
+          <th>Weight in pounds</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr class="even">
+        <td>
+          <input id="Pet--name" name="Pet--name" type="text" value="dewey" />
+        </td>
+        <td>
+          <input id="Pet--type" name="Pet--type" type="text" value="cat" />
+        </td>
+        <td>
+          <span id="Pet--birthdate">...
+
+"""
 from formalchemy.forms import FieldSet as BaseFieldSet
 from formalchemy.tables import Grid as BaseGrid
 from formalchemy.fields import Field as BaseField
@@ -26,19 +102,27 @@ class Document(schema.Document):
     _pk = Pk()
 
 class Query(list):
+    """A list like object to emulate SQLAlchemy's Query. This mostly exist to
+    work with ``webhelpers.paginate.Page``"""
 
-    def __init__(self, model):
+    def __init__(self, model, **option):
         self.model = model
         self._init = False
+        self.options = kwargs
     def get(self, id):
+        """Get a record by id"""
         return self.model.get(id)
-    def view(self, view_name, *args, **kwargs):
+    def view(self, view_name, **kwargs):
+        """set self to a list of record returned by view named ``{model_name}/{view_name}``"""
+        kwargs = kwargs or self.options
         if not self._init:
-            self.extend([r for r in self.model.view('%s/%s' % (self.model.__name__.lower(), view_name), *args, **kwargs)])
+            self.extend([r for r in self.model.view('%s/%s' % (self.model.__name__.lower(), view_name), **kwargs)])
             self._init = True
         return self
-    def all(self, *args, **kwargs):
-        return self.view('all', *args, **kwargs)
+    def all(self, **kwargs):
+        """set self to a list of record returned by view named ``{model_name}/all``"""
+        kwargs = kwargs or self.options
+        return self.view('all', **kwargs)
     def __len__(self):
         if not self._init:
             self.all()
@@ -58,8 +142,8 @@ class Session(object):
         """delete a record"""
         del self.db[record._id]
     def query(self, model, *args, **kwargs):
-        """return records from the view ``{model}/all``"""
-        return Query(model)
+        """return a :class:`~formalchemy.ext.couchdb.Query` bound to model object"""
+        return Query(model, *args, **kwargs)
     def commit(self):
         """do nothing since there is no transaction in couchdb"""
 
@@ -89,6 +173,7 @@ class Field(BaseField):
             setattr(self.model, self.name, self._deserialize())
 
 class FieldSet(BaseFieldSet):
+    """See :class:`~formalchemy.forms.FieldSet`"""
     def __init__(self, model, session=None, data=None, prefix=None):
         self._fields = OrderedDict()
         self._render_fields = OrderedDict()
@@ -167,6 +252,7 @@ class FieldSet(BaseFieldSet):
         return self.doc().to_json()
 
 class Grid(BaseGrid, FieldSet):
+    """See :class:`~formalchemy.tables.Grid`"""
     def __init__(self, cls, instances=[], session=None, data=None, prefix=None):
         FieldSet.__init__(self, cls, session, data, prefix)
         self.rows = instances
@@ -192,42 +278,4 @@ class Grid(BaseGrid, FieldSet):
 
     def _set_active(self, instance, session=None):
         FieldSet.rebind(self, instance, session or self.session, self.data)
-
-def test_fieldset():
-    class Pet(Document):
-        name = schema.StringProperty(required=True)
-        type = schema.StringProperty(required=True)
-        birthdate = schema.DateProperty(auto_now=True)
-        weight_in_pounds = schema.IntegerProperty()
-        spayed_or_neutered = schema.BooleanProperty()
-        owner = schema.StringProperty()
-
-    fs = FieldSet(Pet)
-    p = Pet()
-    p.name = 'dewey'
-    p.type = 'cat'
-    p.owner = 'gawel'
-    p.owner = 'gawel'
-    fs = fs.bind(p)
-
-    # rendering
-    assert fs.name.is_required() == True, fs.name.is_required()
-    assert fs.owner.value == 'gawel'
-    html = fs.render()
-    assert 'class="field_req" for="Pet--name"' in html, html
-    assert 'value="gawel"' in html, html
-
-    # syncing
-    fs.configure(include=[fs.name])
-    fs.rebind(p, data={'Pet--name':'minou'})
-    fs.validate()
-    fs.sync()
-    assert fs.name.value == 'minou', fs.render_fields
-    assert p.name == 'minou', p.name
-
-    # grid
-    fs = Grid(Pet, [p, Pet()])
-    html = fs.render()
-    assert '<thead>' in html, html
-    assert 'value="gawel"' in html, html
 

@@ -1,3 +1,5 @@
+__doc__ = """This is an example on ow to setup a CRUD UI with couchdb as
+backend"""
 import os
 import logging
 import pylonsapp
@@ -5,12 +7,12 @@ from couchdbkit import *
 from webhelpers.paginate import Page
 from pylonsapp.lib.base import BaseController, render
 from couchdbkit.loaders import FileSystemDocsLoader
-from formalchemy.ext.couchdb import FieldSet, Grid, Document, Session
+from formalchemy.ext import couchdb
 from formalchemy.ext.pylons.controller import ModelsController
 
 log = logging.getLogger(__name__)
 
-class Pet(Document):
+class Pet(couchdb.Document):
     """A Pet node"""
     name = StringProperty(required=True)
     type = StringProperty(required=True)
@@ -42,12 +44,12 @@ else:
 class CouchdbController(BaseController):
 
     # override default classes to use couchdb fieldsets
-    FieldSet = FieldSet
-    Grid = Grid
+    FieldSet = couchdb.FieldSet
+    Grid = couchdb.Grid
     model = [Pet]
 
     def Session(self):
         """return a formalchemy.ext.couchdb.Session"""
-        return Session(db)
+        return couchdb.Session(db)
 
 CouchdbController = ModelsController(CouchdbController, prefix_name='couchdb', member_name='node', collection_name='nodes')

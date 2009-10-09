@@ -1,5 +1,11 @@
-1.2.4
+1.3
 -----
+
+* new controllers to generate CRUD interfaces based on pylons RESTController
+
+* couchdb support improvement (allow to use RESTController)
+
+* Experimental RDFAlchemy support
 
 * Add date formats to config module.
 
@@ -7,12 +13,9 @@
 
 * zope.schema.List and zope.schema.Choice support (thanks to Christophe Combelles)
 
-* Experimental RDFAlchemy support
-
 * fix issues 107, 113, 114, 117, 118
 
 * css improvement for pylons admin interface
-
 
 1.2.1
 -----
