@@ -105,10 +105,10 @@ class Query(list):
     """A list like object to emulate SQLAlchemy's Query. This mostly exist to
     work with ``webhelpers.paginate.Page``"""
 
-    def __init__(self, model, **option):
+    def __init__(self, model, **options):
         self.model = model
         self._init = False
-        self.options = kwargs
+        self.options = options
     def get(self, id):
         """Get a record by id"""
         return self.model.get(id)
