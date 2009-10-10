@@ -22,6 +22,7 @@ import simplejson as json
 __all__ = ['FormAlchemyAdminController']
 
 # misc labels
+_('Add')
 _('Edit')
 _('Delete')
 _('Cancel')

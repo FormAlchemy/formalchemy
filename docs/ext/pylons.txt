@@ -33,11 +33,14 @@ First, generate a controller in your application::
 
   $ paster controller admin
 
-Next, edit your ``controllers/admin.py``, replacing ``pylonsapp`` with your application name:
+Next, edit your ``controllers/admin.py``, replacing ``pylonsapp`` with your
+application name:
 
 .. literalinclude:: ../../pylonsapp/pylonsapp/controllers/admin.py
 
-Add these lines in ``config/routing.py``:
+Now you need to configure your routing. As an example here is the
+``routing.py`` used for testing the UI. Check ``fa_static`` and the ``/admin``
+part:
 
 .. literalinclude:: ../../pylonsapp/pylonsapp/config/routing.py
 
@@ -79,7 +82,20 @@ API
 .. autofunction:: ModelsController
 
 .. autoclass:: _ModelsController
-   :members:
+
+   See also :class:`~formalchemy.ext.pylons.controller._RESTController`
+
+   **model**
+      Models module or list of models
+
+   **forms**
+      Forms module or None
+
+   **FieldSet**
+      A FieldSet class. Default to :class:`~formalchemy.forms.FieldSet`
+
+   **Grid**
+      A Grid class. Default to :class:`~formalchemy.tables.Grid``
 
 Troubleshooting
 ---------------
@@ -105,49 +121,7 @@ RESTful controller
 
 This module provide a RESTful controller for formalchemy's FieldSets.
 
-You can use your fieldset as a REST resource.
-
-Listing::
-
-    GET /owners
-
-Get objects url via json::
-
-    GET /owners.json
-
-    GET /owners.json?page=2
-
-    GET /owners
-    Accept: application/json
-
-New object with form::
-
-    GET /owners/new
-
-New object with json POST::
-
-    POST /owners.json
-    name:name
-    animals: 1
-
-View object with form::
-
-    GET /owners/1
-
-Get jsonify fieldset::
-
-    GET /owners/1.json
-
-Edit object with form::
-
-    GET /owners/1/edit
-
-Edit object with json PUT::
-
-    PUT /owners/1.json
-
-    {"name": "name", "animals": []}
-
+You can use your fieldset as a REST resource. And yes, it's also work with JSON.
 
 Usage
 ------
@@ -170,7 +144,11 @@ Customisation
 You can override the following methods:
 
 .. autoclass:: formalchemy.ext.pylons.controller._RESTController
-   :members:
+   :members: Session, get_model, get, get_fieldset, get_add_fieldset, get_grid, get_page, sync
+
+Here is a customisation sample to use CouchDB as backend using the :class:`~formalchemy.ext.pylons.controller.ModelsController` (~= API):
+
+.. literalinclude:: ../../pylonsapp/pylonsapp/controllers/couchdb.py
 
 Helpers
 -------

@@ -13,6 +13,11 @@ from formalchemy.i18n import get_translator
 from formalchemy.fields import Field
 from formalchemy import fatypes
 
+try:
+    from formalchemy.ext.couchdb import Document
+except ImportError:
+    Document = None
+
 import simplejson as json
 
 def model_url(*args, **kwargs):
@@ -23,7 +28,7 @@ def model_url(*args, **kwargs):
     return url(*args, **kwargs)
 
 class Session(object):
-    """A session to implement other backend than SA"""
+    """A abstract class to implement other backend than SA"""
     def add(self, record):
         """add a record"""
     def update(self, record):
@@ -34,6 +39,7 @@ class Session(object):
         """commit transaction"""
 
 class _RESTController(object):
+    """A RESTful Controller bound to a model"""
 
     template = '/forms/restfieldset.mako'
     engine = prefix_name = None
@@ -167,7 +173,7 @@ class _RESTController(object):
 
         Default is::
 
-            fs = FieldSet(self.get(id))
+            fs = self.FieldSet(self.get(id))
             fs.engine = fs.engine or self.engine
             return fs
         """
@@ -337,11 +343,13 @@ class _RESTController(object):
             return self.render(format=format, fs=fs, status=1)
 
 def RESTController(cls, member_name, collection_name):
-    """wrap a controller with :class:~formalchemy.ext.pylons.controller._RESTController"""
+    """wrap a controller with :class:`~formalchemy.ext.pylons.controller._RESTController`"""
     return type(cls.__name__, (cls, _RESTController),
                 dict(member_name=member_name, collection_name=collection_name))
 
 class _ModelsController(_RESTController):
+    """A RESTful Controller bound to more tha one model. The ``model`` and
+    ``forms`` attribute can be a list of object or a module"""
 
     engine = None
     model = forms = None
@@ -370,6 +378,14 @@ class _ModelsController(_RESTController):
         else:
             for key, obj in self.model.__dict__.iteritems():
                 if not key.startswith('_'):
+                    if Document is not None:
+                        try:
+                            if issubclass(obj, Document):
+                                models[key] = model_url(self.collection_name, model_name=key)
+                        except:
+                            pass
+                        else:
+                            continue
                     try:
                         class_mapper(obj)
                     except:
@@ -400,7 +416,7 @@ class _ModelsController(_RESTController):
             fs = getattr(self.forms, '%sAdd' % self.model_name)
             fs.engine = fs.engine or self.engine
             return fs
-        return _RESTController.get_fieldset(self)
+        return self.get_fieldset(id=None)
 
     def get_grid(self):
         model_name = self.model_name
@@ -413,7 +429,7 @@ class _ModelsController(_RESTController):
         return _RESTController.get_grid(self)
 
 def ModelsController(cls, prefix_name, member_name, collection_name):
-    """wrap a controller with :class:~formalchemy.ext.pylons.controller._ModelsController"""
+    """wrap a controller with :class:`~formalchemy.ext.pylons.controller._ModelsController`"""
     return type(cls.__name__, (cls, _ModelsController),
                 dict(prefix_name=prefix_name, member_name=member_name, collection_name=collection_name))
 

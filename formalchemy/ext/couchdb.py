@@ -146,6 +146,7 @@ class Session(object):
         return Query(model, *args, **kwargs)
     def commit(self):
         """do nothing since there is no transaction in couchdb"""
+    remove = commit
 
 class Field(BaseField):
     """"""
