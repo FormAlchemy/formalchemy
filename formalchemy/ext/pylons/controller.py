@@ -382,10 +382,9 @@ class _ModelsController(_RESTController):
                         try:
                             if issubclass(obj, Document):
                                 models[key] = model_url(self.collection_name, model_name=key)
+                                continue
                         except:
                             pass
-                        else:
-                            continue
                     try:
                         class_mapper(obj)
                     except:
