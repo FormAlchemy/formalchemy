@@ -24,6 +24,8 @@ __all__ = ['FormAlchemyAdminController']
 # misc labels
 _('Add')
 _('Edit')
+_('New')
+_('Save')
 _('Delete')
 _('Cancel')
 _('Models')

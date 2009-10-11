@@ -109,7 +109,8 @@ class _RESTController(object):
                       prefix_name=self.prefix_name,
                       collection_name=self.collection_name,
                       member_name=self.member_name,
-                      breadcrumb=self.breadcrumb(**kwargs))
+                      breadcrumb=self.breadcrumb(**kwargs),
+                      F_=get_translator().gettext)
         if self.engine:
             return self.engine.render(self.template, **kwargs)
         else:
