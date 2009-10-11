@@ -9,7 +9,7 @@ msgstr ""
 "Project-Id-Version: FormAlchemy 0.5.1\n"
 "Report-Msgid-Bugs-To: robarago@gmail.com\n"
 "POT-Creation-Date: 2008-08-27 17:18+0200\n"
-"PO-Revision-Date: 2009-10-11 16:57+0200\n"
+"PO-Revision-Date: 2009-10-11 17:10+0200\n"
 "Last-Translator: Roberto Aragón <robarago@gmail.com>\n"
 "Language-Team: es <LL@li.org>\n"
 "Plural-Forms: nplurals=2; plural=(n != 1)\n"
@@ -172,7 +172,7 @@ msgstr "Fichero de imagen no válido. Debe ser %s, "
 
 #: formalchemy/ext/pylons/admin.py:25
 msgid "Add"
-msgstr ""
+msgstr "Agrerar"
 
 #: formalchemy/ext/pylons/admin.py:26
 msgid "Edit"
@@ -180,11 +180,11 @@ msgstr "Editar"
 
 #: formalchemy/ext/pylons/admin.py:27
 msgid "New"
-msgstr ""
+msgstr "Nuevo"
 
 #: formalchemy/ext/pylons/admin.py:28
 msgid "Save"
-msgstr ""
+msgstr "Salvar"
 
 #: formalchemy/ext/pylons/admin.py:29
 msgid "Delete"
