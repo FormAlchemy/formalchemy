@@ -9,6 +9,7 @@ exclude RELEASE_NOTES.txt
 recursive-exclude pylonsapp *
 recursive-include formalchemy *tmpl
 recursive-include formalchemy *mako
+recursive-include formalchemy *css
 recursive-include formalchemy *png
 recursive-include formalchemy/i18n_resources *
 recursive-include formalchemy/tests/data *
