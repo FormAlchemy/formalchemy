@@ -1,7 +1,34 @@
 # -*- coding: utf-8 -*-
 from setuptools import setup, find_packages
 import xml.sax.saxutils
+from os.path import join
+import sys
 import os
+
+try:
+    from msgfmt import Msgfmt
+except:
+    sys.path.insert(0, join(os.getcwd(), 'formalchemy'))
+    from msgfmt import Msgfmt
+
+def compile_po(path):
+    for language in os.listdir(path):
+        lc_path = join(path, language, 'LC_MESSAGES')
+        if os.path.isdir(lc_path):
+            for domain_file in os.listdir(lc_path):
+                if domain_file.endswith('.po'):
+                    file_path = join(lc_path, domain_file)
+                    mo_file = join(lc_path, '%s.mo' % domain_file[:-3])
+                    mo_content = Msgfmt(file_path, name=file_path).get()
+                    mo = open(mo_file, 'wb')
+                    mo.write(mo_content)
+                    mo.close()
+
+try:
+    compile_po(join(os.getcwd(), 'formalchemy', 'i18n_resources'))
+except Exception, e:
+    print 'Error while building .mo files'
+    print '%r - %s' % (e, e)
 
 def read(filename):
     text = open(filename).read()
