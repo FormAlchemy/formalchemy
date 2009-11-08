@@ -264,7 +264,7 @@ class _RESTController(object):
             request.body = ''
             #raise ValueError(data)
             if hasattr(fs, 'model'):
-                # this should bread if fs is a non standard fieldset
+                # this should break if fs is a non standard fieldset
                 name = '%s-' % fs.model.__class__.__name__
                 for k, v in data.items():
                     if not k.startswith(name):
@@ -276,7 +276,7 @@ class _RESTController(object):
         else:
             data = request.POST
 
-        fs = fs.bind(fs.model, data=request.POST, session=self.Session())
+        fs = fs.bind(self.get_model(), data=request.POST, session=self.Session())
         if fs.validate():
             fs.sync()
             self.sync(fs)
