@@ -143,11 +143,13 @@ class _RESTController(object):
 
             S = self.Session()
             query = S.query(self.get_model())
-            return Page(query, page=int(request.GET.get('page', '1')))
+            kwargs = request.environ.get('pylons.routes_dict', {})
+            return Page(query, page=int(request.GET.get('page', '1')), **kwargs)
         """
         S = self.Session()
         query = S.query(self.get_model())
-        return Page(query, page=int(request.GET.get('page', '1')))
+        kwargs = request.environ.get('pylons.routes_dict', {})
+        return Page(query, page=int(request.GET.get('page', '1')), **kwargs)
 
     def get(self, id=None):
         """return correct record for ``id`` or a new instance.
