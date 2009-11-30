@@ -191,7 +191,6 @@ class AdminController(object):
         if request.method == 'POST':
             F_ = get_translator().gettext
             c.fs = fs.bind(instance, data=request.POST, session=not id and S or None)
-            log.debug('saving %s w/ %s' % (c.fs.model.id, request.POST))
             if c.fs.validate():
                 c.fs.sync()
                 S.flush()
