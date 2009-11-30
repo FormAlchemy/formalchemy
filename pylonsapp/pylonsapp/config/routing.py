@@ -6,7 +6,6 @@ refer to the routes manual at http://routes.groovie.org/docs/
 """
 from pylons import config
 from routes import Mapper
-from formalchemy.ext.pylons import maps # routes generator
 
 def make_map():
     """Create, configure and return the routes Mapper"""
