@@ -12,7 +12,7 @@ def test_dropdown():
      <option value="3">
       Quantity: 6
      </option>
-     <option value="1" selected="selected">
+     <option selected="selected" value="1">
       Quantity: 10
      </option>
     </select>
@@ -26,7 +26,7 @@ def test_lazy_filtered_dropdown():
     >>> fs.configure(include=[fs.orders.dropdown(options=available_orders)])
     >>> print pretty_html(fs.orders.render())
     <select id="User-1-orders" multiple="multiple" name="User-1-orders" size="5">
-     <option value="1" selected="selected">
+     <option selected="selected" value="1">
       Quantity: 10
      </option>
     </select>

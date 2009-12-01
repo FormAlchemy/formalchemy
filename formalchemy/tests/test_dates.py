@@ -649,7 +649,7 @@ __doc__ = r"""
   <option value="5">
    May
   </option>
-  <option value="6" selected="selected">
+  <option selected="selected" value="6">
    June
   </option>
   <option value="7">
@@ -681,7 +681,7 @@ __doc__ = r"""
   <option value="2">
    2
   </option>
-  <option value="3" selected="selected">
+  <option selected="selected" value="3">
    3
   </option>
   <option value="4">
@@ -820,7 +820,7 @@ __doc__ = r"""
   <option value="13">
    13
   </option>
-  <option value="14" selected="selected">
+  <option selected="selected" value="14">
    14
   </option>
   <option value="15">
@@ -904,7 +904,7 @@ __doc__ = r"""
   <option value="15">
    15
   </option>
-  <option value="16" selected="selected">
+  <option selected="selected" value="16">
    16
   </option>
   <option value="17">
@@ -1096,7 +1096,7 @@ __doc__ = r"""
   <option value="17">
    17
   </option>
-  <option value="18" selected="selected">
+  <option selected="selected" value="18">
    18
   </option>
   <option value="19">
@@ -1246,7 +1246,7 @@ __doc__ = r"""
   <option value="5">
    May
   </option>
-  <option value="6" selected="selected">
+  <option selected="selected" value="6">
    June
   </option>
   <option value="7">
@@ -1278,7 +1278,7 @@ __doc__ = r"""
   <option value="2">
    2
   </option>
-  <option value="3" selected="selected">
+  <option selected="selected" value="3">
    3
   </option>
   <option value="4">
@@ -1413,7 +1413,7 @@ __doc__ = r"""
   <option value="13">
    13
   </option>
-  <option value="14" selected="selected">
+  <option selected="selected" value="14">
    14
   </option>
   <option value="15">
@@ -1497,7 +1497,7 @@ __doc__ = r"""
   <option value="15">
    15
   </option>
-  <option value="16" selected="selected">
+  <option selected="selected" value="16">
    16
   </option>
   <option value="17">
@@ -1689,7 +1689,7 @@ __doc__ = r"""
   <option value="17">
    17
   </option>
-  <option value="18" selected="selected">
+  <option selected="selected" value="18">
    18
   </option>
   <option value="19">
@@ -1828,7 +1828,7 @@ __doc__ = r"""
   <option value="1">
    January
   </option>
-  <option value="2" selected="selected">
+  <option selected="selected" value="2">
    February
   </option>
   <option value="3">
@@ -1863,7 +1863,7 @@ __doc__ = r"""
   </option>
  </select>
  <select id="Dt--foo__day" name="Dt--foo__day">
-  <option value="DD" selected="selected">
+  <option selected="selected" value="DD">
    Day
   </option>
   <option value="1">
@@ -1965,7 +1965,7 @@ __doc__ = r"""
 >>> print pretty_html(fs.bar.render())
 <span id="Dt--bar">
  <select id="Dt--bar__hour" name="Dt--bar__hour">
-  <option value="HH" selected="selected">
+  <option selected="selected" value="HH">
    HH
   </option>
   <option value="0">
@@ -2064,7 +2064,7 @@ __doc__ = r"""
   <option value="5">
    5
   </option>
-  <option value="6" selected="selected">
+  <option selected="selected" value="6">
    6
   </option>
   <option value="7">
@@ -2256,7 +2256,7 @@ __doc__ = r"""
   <option value="7">
    7
   </option>
-  <option value="8" selected="selected">
+  <option selected="selected" value="8">
    8
   </option>
   <option value="9">

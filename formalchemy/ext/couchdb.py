@@ -32,7 +32,6 @@ Render it::
       <label class="field_req" for="Pet--name">Name</label>
       <input id="Pet--name" name="Pet--name" type="text" value="dewey" />
     </div>
-    <BLANKLINE>
     <script type="text/javascript">
     //<![CDATA[
     document.getElementById("Pet--name").focus();
@@ -42,10 +41,10 @@ Render it::
       <label class="field_req" for="Pet--type">Type</label>
       <input id="Pet--type" name="Pet--type" type="text" value="cat" />
     </div>
-    <BLANKLINE>
     <div>
       <label class="field_opt" for="Pet--birthdate">Birthdate</label>
-      <span id="Pet--birthdate"><select id="Pet--birthdate__month" name="Pet--birthdate__month"><option value="MM">Month</option>
+      <span id="Pet--birthdate"><select id="Pet--birthdate__month" name="Pet--birthdate__month">
+    <option value="MM">Month</option>
     <option value="1">January</option>
     ...
     

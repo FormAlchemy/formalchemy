@@ -156,7 +156,7 @@ Edit mode::
        January
       </option>
     ...
-      <option value="12" selected="selected">
+      <option selected="selected" value="12">
        December
       </option>
      </select>
@@ -168,7 +168,7 @@ Edit mode::
        1
       </option>
     ...
-      <option value="31" selected="selected">
+      <option selected="selected" value="31">
        31
       </option>
      </select>
@@ -201,7 +201,7 @@ Edit mode::
        0
       </option>
     ...
-      <option value="9" selected="selected">
+      <option selected="selected" value="9">
        9
       </option>
     ...
@@ -218,7 +218,7 @@ Edit mode::
        0
       </option>
     ...
-      <option value="3" selected="selected">
+      <option selected="selected" value="3">
        3
       </option>
     ...
@@ -235,7 +235,7 @@ Edit mode::
        0
       </option>
     ...
-      <option value="30" selected="selected">
+      <option selected="selected" value="30">
        30
       </option>
     ...
@@ -271,7 +271,7 @@ Edit mode::
        Month
       </option>
     ...
-      <option value="12" selected="selected">
+      <option selected="selected" value="12">
        December
       </option>
      </select>
@@ -280,7 +280,7 @@ Edit mode::
        Day
       </option>
     ...
-      <option value="31" selected="selected">
+      <option selected="selected" value="31">
        31
       </option>
      </select>
@@ -290,7 +290,7 @@ Edit mode::
        HH
       </option>
     ...
-      <option value="9" selected="selected">
+      <option selected="selected" value="9">
        9
       </option>
     ...
@@ -301,7 +301,7 @@ Edit mode::
        MM
       </option>
     ...
-      <option value="3" selected="selected">
+      <option selected="selected" value="3">
        3
       </option>
     ...
@@ -312,7 +312,7 @@ Edit mode::
        SS
       </option>
     ...
-      <option value="30" selected="selected">
+      <option selected="selected" value="30">
        30
       </option>
     ...

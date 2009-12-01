@@ -38,6 +38,7 @@ def make_map():
 
     # serve Owner Model as resource
     map.resource('owner', 'owners')
+    map.resource('foaf', 'foafs')
 
     map.connect('/{controller}/{action}')
     map.connect('/{controller}/{action}/{id}')

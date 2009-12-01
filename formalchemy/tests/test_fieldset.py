@@ -278,8 +278,11 @@ False
 
 >>> assert fs.foo.radio(options=['one', 'two']).render() == fs.foo.dropdown(options=['one', 'two']).radio().render()
 >>> print fs.foo.radio(options=['one', 'two']).dropdown().render()
-<select id="Two--foo" name="Two--foo"><option value="one">one</option>
-<option value="two">two</option></select>
+<select id="Two--foo" name="Two--foo">
+<option value="one">one</option>
+<option value="two">two</option>
+</select>
+
 >>> assert fs.foo.dropdown(options=['one', 'two']).render() == fs.foo.radio(options=['one', 'two']).dropdown().render()
 >>> print pretty_html(fs.foo.dropdown(options=['one', 'two'], multiple=True).checkbox().render())
 <input id="Two--foo_0" name="Two--foo" type="checkbox" value="one" />
@@ -345,7 +348,7 @@ True
  <option value="3">
   Quantity: 6
  </option>
- <option value="1" selected="selected">
+ <option selected="selected" value="1">
   Quantity: 10
  </option>
 </select>
@@ -376,10 +379,10 @@ True
 >>> fs = FieldSet(bill, data={'User-1-orders': ['2', '3']})
 >>> print pretty_html(fs.orders.render())
 <select id="User-1-orders" multiple="multiple" name="User-1-orders" size="5">
- <option value="2" selected="selected">
+ <option selected="selected" value="2">
   Quantity: 5
  </option>
- <option value="3" selected="selected">
+ <option selected="selected" value="3">
   Quantity: 6
  </option>
  <option value="1">
@@ -393,8 +396,10 @@ True
 
 >>> fs = FieldSet(Two)
 >>> print fs.foo.dropdown([('option1', 'value1'), ('option2', 'value2')]).render()
-<select id="Two--foo" name="Two--foo"><option value="value1">option1</option>
-<option value="value2">option2</option></select>
+<select id="Two--foo" name="Two--foo">
+<option value="value1">option1</option>
+<option value="value2">option2</option>
+</select>
 
 >>> fs = FieldSet(Order, session)
 >>> print fs.render()
@@ -454,7 +459,7 @@ document.getElementById("Order-1-id").focus();
   User
  </label>
  <select id="Order-1-user_id" name="Order-1-user_id">
-  <option value="1" selected="selected">
+  <option selected="selected" value="1">
    Bill
   </option>
   <option value="2">
@@ -773,7 +778,7 @@ True
   <option value="1">
    1
   </option>
-  <option value="2" selected="selected">
+  <option selected="selected" value="2">
    2
   </option>
  </select>
@@ -800,10 +805,10 @@ True
   <option value="1">
    1
   </option>
-  <option value="2" selected="selected">
+  <option selected="selected" value="2">
    2
   </option>
-  <option value="3" selected="selected">
+  <option selected="selected" value="3">
    3
   </option>
  </select>
@@ -832,8 +837,10 @@ False
 >>> fs = FieldSet(CheckBox)
 >>> fs.default_renderers = d
 >>> print fs.field.render()
-<select id="CheckBox--field" name="CheckBox--field"><option value="True">Yes</option>
-<option value="False">No</option></select>
+<select id="CheckBox--field" name="CheckBox--field">
+<option value="True">Yes</option>
+<option value="False">No</option>
+</select>
 
 # test setter rejection
 >>> fs = FieldSet(One)
@@ -1032,7 +1039,7 @@ True
 ('No user', '')
 >>> print pretty_html(fs_oo.user.render())
 <select id="OptionalOrder--user_id" name="OptionalOrder--user_id">
- <option value="">
+ <option selected="selected" value="">
   No user
  </option>
  <option value="1">

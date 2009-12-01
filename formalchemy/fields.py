@@ -250,7 +250,7 @@ class EscapingReadonlyRenderer(FieldRenderer):
         return self._renderer.render(**kwargs)
 
     def render_readonly(self, **kwargs):
-        return h.html_escape(self._renderer.render_readonly(**kwargs))
+        return h.HTML(self._renderer.render_readonly(**kwargs))
 
 
 class TextFieldRenderer(FieldRenderer):
@@ -322,7 +322,7 @@ class FileFieldRenderer(FieldRenderer):
     def render(self, **kwargs):
         if self.field.model_value:
             checkbox_name = '%s--remove' % self.name
-            return '%s %s %s' % (
+            return h.literal('%s %s %s') % (
                    h.file_field(self.name, **kwargs),
                    h.check_box(checkbox_name),
                    h.label(self.remove_label, for_=checkbox_name))
@@ -390,7 +390,7 @@ class DateFieldRenderer(FieldRenderer):
     def _render(self, **kwargs):
         data = self._params
         F_ = self.get_translator(**kwargs)
-        month_options = [(F_('Month'), 'MM')] + [(F_('month_%02i' % i), str(i)) for i in xrange(1, 13)]
+        month_options = [(F_('Month'), 'MM')] + [(unicode(F_('month_%02i' % i), 'utf-8'), str(i)) for i in xrange(1, 13)]
         day_options = [(F_('Day'), 'DD')] + [(i, str(i)) for i in xrange(1, 32)]
         mm_name = self.name + '__month'
         dd_name = self.name + '__day'
@@ -403,11 +403,11 @@ class DateFieldRenderer(FieldRenderer):
         else:
             yyyy = str(self.field.model_value and self.field.model_value.year or 'YYYY')
         selects = dict(
-                m=h.select(mm_name, h.options_for_select(month_options, selected=mm), **kwargs),
-                d=h.select(dd_name, h.options_for_select(day_options, selected=dd), **kwargs),
+                m=h.select(mm_name, [mm], month_options, **kwargs),
+                d=h.select(dd_name, [dd], day_options, **kwargs),
                 y=h.text_field(yyyy_name, value=yyyy, maxlength=4, size=4, **kwargs))
         value = [selects.get(l) for l in self.edit_format.split('-')]
-        return ' '.join(value)
+        return h.literal('\n').join(value)
     def render(self, **kwargs):
         return h.content_tag('span', self._render(**kwargs), id=self.name)
 
@@ -432,9 +432,10 @@ class TimeFieldRenderer(FieldRenderer):
         hh = _ternary((data is not None and hh_name in data), lambda: data[hh_name], lambda: str(self.field.model_value and self.field.model_value.hour))
         mm = _ternary((data is not None and mm_name in data), lambda: data[mm_name], lambda: str(self.field.model_value and self.field.model_value.minute))
         ss = _ternary((data is not None and ss_name in data), lambda: data[ss_name], lambda: str(self.field.model_value and self.field.model_value.second))
-        return h.select(hh_name, h.options_for_select(hour_options, selected=hh), **kwargs) \
-               + ':' + h.select(mm_name, h.options_for_select(minute_options, selected=mm), **kwargs) \
-               + ':' + h.select(ss_name, h.options_for_select(second_options, selected=ss), **kwargs)
+        return h.literal(':').join([
+                    h.select(hh_name, [hh], hour_options, **kwargs),
+                    h.select(mm_name, [mm], minute_options, **kwargs),
+                    h.select(ss_name, [ss], second_options, **kwargs)])
     def render(self, **kwargs):
         return h.content_tag('span', self._render(**kwargs), id=self.name)
 
@@ -446,7 +447,7 @@ class DateTimeFieldRenderer(DateFieldRenderer, TimeFieldRenderer):
     """Render a date time field"""
     format = '%Y-%m-%d %H:%M:%S'
     def render(self, **kwargs):
-        return h.content_tag('span', DateFieldRenderer._render(self, **kwargs) + ' ' + TimeFieldRenderer._render(self, **kwargs), id=self.name)
+        return h.content_tag('span', DateFieldRenderer._render(self, **kwargs) + h.literal(' ') + TimeFieldRenderer._render(self, **kwargs), id=self.name)
 
     def _serialized_value(self):
         return DateFieldRenderer._serialized_value(self) + ' ' + TimeFieldRenderer._serialized_value(self)
@@ -487,9 +488,9 @@ class RadioSet(FieldRenderer):
             choice_id = '%s_%i' % (self.name, i)
             radio = self.widget(self.name, choice_value, id=choice_id,
                                 checked=self._is_checked(choice_value), **kwargs)
-            label = h.content_tag('label', choice_name, for_=choice_id)
-            self.radios.append(self.format % dict(field=radio,
-                                                  label=label))
+            label = h.label(choice_name, for_=choice_id)
+            self.radios.append(h.literal(self.format % dict(field=radio,
+                                                            label=label)))
         return h.tag("br").join(self.radios)
 
 
@@ -526,7 +527,7 @@ class SelectFieldRenderer(FieldRenderer):
                 L = [(k, self.stringify_value(v)) for k, v in L]
             else:
                 L = [_stringify(k) for k in L]
-        return h.select(self.name, h.options_for_select(L, selected=self._value), **kwargs)
+        return h.select(self.name, self._value, L, **kwargs)
 
     def render_readonly(self, options=None, **kwargs):
         """render a string representation of the field value.

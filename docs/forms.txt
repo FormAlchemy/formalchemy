@@ -145,8 +145,10 @@ Here is a callable exemple::
   >>> fs3 = FieldSet(bill)
   >>> fs3.configure(options=[fs3.name.dropdown(options=custom_query)])
   >>> print fs3.name.render()
-  <select id="User-1-name" name="User-1-name"><option value="">None</option>
-  <option value="1">Bill</option></select>
+  <select id="User-1-name" name="User-1-name">
+  <option value="">None</option>
+  <option value="1">Bill</option>
+  </select>
 
 
 Manipulating Fields
@@ -261,7 +263,7 @@ including in your page::
       <option value="3">
        Quantity: 6
       </option>
-      <option value="1" selected="selected">
+      <option selected="selected" value="1">
        Quantity: 10
       </option>
      </select>

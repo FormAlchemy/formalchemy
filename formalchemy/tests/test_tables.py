@@ -40,7 +40,7 @@ Explicitly test rebind + render:
     <option value="3">
      Quantity: 6
     </option>
-    <option value="1" selected="selected">
+    <option selected="selected" value="1">
      Quantity: 10
     </option>
    </select>
@@ -58,10 +58,10 @@ Explicitly test rebind + render:
   </td>
   <td>
    <select id="User-2-orders" multiple="multiple" name="User-2-orders" size="5">
-    <option value="2" selected="selected">
+    <option selected="selected" value="2">
      Quantity: 5
     </option>
-    <option value="3" selected="selected">
+    <option selected="selected" value="3">
      Quantity: 6
     </option>
     <option value="1">
@@ -162,7 +162,7 @@ Explicitly test rebind + render:
     <option value="3">
      Quantity: 6
     </option>
-    <option value="1" selected="selected">
+    <option selected="selected" value="1">
      Quantity: 10
     </option>
    </select>
@@ -180,10 +180,10 @@ Explicitly test rebind + render:
   </td>
   <td>
    <select id="myprefix-User-2-orders" multiple="multiple" name="myprefix-User-2-orders" size="5">
-    <option value="2" selected="selected">
+    <option selected="selected" value="2">
      Quantity: 5
     </option>
-    <option value="3" selected="selected">
+    <option selected="selected" value="3">
      Quantity: 6
     </option>
     <option value="1">

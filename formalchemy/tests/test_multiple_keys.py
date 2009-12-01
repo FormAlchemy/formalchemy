@@ -52,7 +52,7 @@ def test_foreign_keys():
 
         >>> print pretty_html(fs.user.render())
         <select id="OrderUser-1_2-user_id" name="OrderUser-1_2-user_id">
-         <option value="1" selected="selected">
+         <option selected="selected" value="1">
           Bill
          </option>
          <option value="2">
@@ -65,7 +65,7 @@ def test_foreign_keys():
          <option value="1">
           Quantity: 10
          </option>
-         <option value="2" selected="selected">
+         <option selected="selected" value="2">
           Quantity: 5
          </option>
          <option value="3">

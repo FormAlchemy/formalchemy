@@ -22,7 +22,7 @@ __doc__ = r"""
 >>> fs = FieldSet(order4)
 >>> print fs.render() #doctest: +ELLIPSIS
 <div>
-...Jos&#233;...
+...José...
 
 >>> fs.readonly = True
 >>> print fs.render() #doctest: +ELLIPSIS

@@ -316,7 +316,9 @@ else:
     raise ImportError('mako is required for testing')
 
 def pretty_html(html):
-    soup = BeautifulSoup(html)
+    if isinstance(html, unicode):
+        html = html.encode('utf-8')
+    soup = BeautifulSoup(str(html))
     return soup.prettify().strip()
 
 class FieldSet(DefaultFieldSet):

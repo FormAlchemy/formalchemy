@@ -45,32 +45,55 @@ Fields are aware of schema attributes:
 
 We can use the form::
 
-    >>> print fs.render().strip() #doctest: +ELLIPSIS
+    >>> print fs.render().strip() #doctest: +ELLIPSIS +NORMALIZE_WHITESPACE
     <div>
       <label class="field_req" for="Pet--name">Name</label>
       <textarea id="Pet--name" name="Pet--name">dewey</textarea>
     </div>
-    ...
+    <script type="text/javascript">
+    //<![CDATA[
+    document.getElementById("Pet--name").focus();
+    //]]>
+    </script>
+    <div>
+      <label class="field_req" for="Pet--type">Type</label>
+      <input id="Pet--type" name="Pet--type" type="text" value="cat" />
+    </div>
+    <div>
+      <label class="field_req" for="Pet--age">age</label>
+      <input id="Pet--age" name="Pet--age" type="text" />
+    </div>
+    <div>
+      <label class="field_req" for="Pet--owner">Owner</label>
+      <input id="Pet--owner" name="Pet--owner" type="text" value="gawel" />
+    </div>
     <div>
       <label class="field_req" for="Pet--birthdate">Birth date</label>
-      <span id="Pet--birthdate"><select id="Pet--birthdate__month" name="Pet--birthdate__month"><option value="MM">Month</option>
+      <span id="Pet--birthdate"><select id="Pet--birthdate__month" name="Pet--birthdate__month">
+    <option value="MM">Month</option>
     <option value="1">January</option>
+    <option value="2">February</option>
     ...
-      <label class="field_req" for="Pet--colour">Colour</label>
-      <select id="Pet--colour" name="Pet--colour"><option value="Brown">Brown</option>
-    <option value="Black">Black</option></select>
+    <option value="31">31</option>
+    </select>
+    <input id="Pet--birthdate__year" maxlength="4" name="Pet--birthdate__year" size="4" type="text" value="YYYY" /></span>
     </div>
-    ...
+    <div>
+      <label class="field_req" for="Pet--colour">Colour</label>
+      <select id="Pet--colour" name="Pet--colour">
+    <option value="Brown">Brown</option>
+    <option value="Black">Black</option>
+    </select>
+    </div>
     <div>
       <label class="field_req" for="Pet--friends">Friends</label>
-      <select id="Pet--friends" multiple="multiple" name="Pet--friends"><option value="bulldog">bulldog</option>
-    <option value="dog" selected="selected">dog</option>
-    <option value="cat" selected="selected">cat</option></select>
+      <select id="Pet--friends" multiple="multiple" name="Pet--friends">
+    <option value="bulldog">bulldog</option>
+    <option selected="selected" value="dog">dog</option>
+    <option selected="selected" value="cat">cat</option>
+    </select>
     </div>
     
-
-
-
 Ok, let's assume that validation and syncing works:
 
     >>> fs.configure(include=[fs.name])
@@ -119,7 +142,10 @@ Looks nice ! Let's use the grid:
           <th>Owner</th>
           <th>Birth date</th>
           <th>Colour</th>
+          <th>Friends</th>
+      </tr>
     ...
+      <tr class="even">
         <td>
           <textarea id="Pet--name" name="Pet--name">minou</textarea>
         </td>
@@ -133,19 +159,41 @@ Looks nice ! Let's use the grid:
           <input id="Pet--owner" name="Pet--owner" type="text" value="gawel" />
         </td>
         <td>
-          <span id="Pet--birthdate"><select id="Pet--birthdate__month" name="Pet--birthdate__month"><option value="MM">Month</option>
+          <span id="Pet--birthdate"><select id="Pet--birthdate__month" name="Pet--birthdate__month">
+    <option value="MM">Month</option>
     <option value="1">January</option>
+    <option value="2">February</option>
+    <option value="3">March</option>
+    <option value="4">April</option>
+    <option value="5">May</option>
+    <option value="6">June</option>
+    <option value="7">July</option>
+    <option value="8">August</option>
+    <option value="9">September</option>
+    <option value="10">October</option>
+    <option value="11">November</option>
+    <option value="12">December</option>
+    </select>
+    <select id="Pet--birthdate__day" name="Pet--birthdate__day">
+    <option value="DD">Day</option>
+    <option value="1">1</option>
     ...
-    <option value="31">31</option></select> <input id="Pet--birthdate__year" maxlength="4" name="Pet--birthdate__year" size="4" type="text" value="YYYY" /></span>
+    <option value="31">31</option>
+    </select>
+    <input id="Pet--birthdate__year" maxlength="4" name="Pet--birthdate__year" size="4" type="text" value="YYYY" /></span>
         </td>
         <td>
-          <select id="Pet--colour" name="Pet--colour"><option value="Brown" selected="selected">Brown</option>
-    <option value="Black">Black</option></select>
+          <select id="Pet--colour" name="Pet--colour">
+    <option selected="selected" value="Brown">Brown</option>
+    <option value="Black">Black</option>
+    </select>
         </td>
         <td>
-          <select id="Pet--friends" multiple="multiple" name="Pet--friends"><option value="bulldog">bulldog</option>
-    <option value="dog" selected="selected">dog</option>
-    <option value="cat" selected="selected">cat</option></select>
+          <select id="Pet--friends" multiple="multiple" name="Pet--friends">
+    <option value="bulldog">bulldog</option>
+    <option selected="selected" value="dog">dog</option>
+    <option selected="selected" value="cat">cat</option>
+    </select>
         </td>
       </tr>
     </tbody>

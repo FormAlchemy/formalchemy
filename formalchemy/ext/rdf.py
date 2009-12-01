@@ -18,7 +18,7 @@ Usage
     >>> fs.stock.value
     ['value1']
 
-    >>> print fs.render().strip() # doctest: +ELLIPSIS
+    >>> print fs.render().strip() # doctest: +ELLIPSIS +NORMALIZE_WHITESPACE
     <div>
       <label class="field_opt" for="Company--stockDescription">Stockdescription</label>
       <input id="Company--stockDescription" name="Company--stockDescription" type="text" value="description" />
@@ -26,14 +26,16 @@ Usage
     ...
     <div>
       <label class="field_opt" for="Company--stock">Stock</label>
-      <select id="Company--stock" name="Company--stock"><option value="value1" selected="selected">value1</option>
-    <option value="value2">value2</option></select>
+      <select id="Company--stock" name="Company--stock">
+    <option selected="selected" value="value1">value1</option>
+    <option value="value2">value2</option>
+    </select>
     </div>
     
 
     >>> fs = Grid(Company, [c])
     >>> fs.configure(options=[fs.stock.set(options=['value1', 'value2'])], readonly=True)
-    >>> print fs.render().strip()
+    >>> print fs.render().strip() #doctest: +NORMALIZE_WHITESPACE
     <thead>
       <tr>
           <th>Stockdescription</th>
@@ -43,9 +45,7 @@ Usage
           <th>Stock</th>
       </tr>
     </thead>
-    <BLANKLINE>
     <tbody>
-    <BLANKLINE>
       <tr class="even">
         <td>description</td>
         <td>fa corp</td>
@@ -71,6 +71,22 @@ from datetime import datetime
 
 
 __all__ = ['Field', 'FieldSet']
+
+class Session(object):
+    """A SA like Session to implement rdf"""
+    def add(self, record):
+        """add a record"""
+        record.save()
+    def update(self, record):
+        """update a record"""
+        record.save()
+    def delete(self, record):
+        """delete a record"""
+    def query(self, model, *args, **kwargs):
+        raise NotImplementedError()
+    def commit(self):
+        """do nothing since there is no transaction in couchdb"""
+    remove = commit
 
 class Field(BaseField):
     """"""
@@ -118,14 +134,15 @@ class FieldSet(BaseFieldSet):
                 if t:
                     self.append(Field(name=k, type=t))
 
-    def bind(self, model, session=None, data=None):
+    def bind(self, model=None, session=None, data=None):
         """Bind to an instance"""
         if not (model or session or data):
             raise Exception('must specify at least one of {model, session, data}')
         if not model:
             if not self.model:
                 raise Exception('model must be specified when none is already set')
-            model = fields._pk(self.model) is None and type(self.model) or self.model
+            else:
+                model = self.model()
         # copy.copy causes a stacktrace on python 2.5.2/OSX + pylons.  unable to reproduce w/ simpler sample.
         mr = object.__new__(self.__class__)
         mr.__dict__ = dict(self.__dict__)
