@@ -193,12 +193,17 @@ class ModelRenderer(object):
             # load synonyms so we can ignore them
             synonyms = set(p for p in class_mapper(cls).iterate_properties 
                            if isinstance(p, SynonymProperty))
+            # load discriminators so we can ignore them
+            discs = set(p for p in class_mapper(cls).iterate_properties
+                        if hasattr(p, '_is_polymorphic_discriminator')
+                        and p._is_polymorphic_discriminator)
             # attributes we're interested in
             attrs = []
             for p in class_mapper(cls).iterate_properties:
                 attr = _get_attribute(cls, p)
                 if ((isinstance(p, SynonymProperty) or attr.property.key not in (s.name for s in synonyms))
-                    and not isinstance(attr.impl, DynamicAttributeImpl)):
+                    and not isinstance(attr.impl, DynamicAttributeImpl)
+                    and p not in discs):
                     attrs.append(attr)
             # sort relations last before storing in the OrderedDict
             L = [fields.AttributeField(attr, self) for attr in attrs]
