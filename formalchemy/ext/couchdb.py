@@ -45,7 +45,6 @@ Render it::
       <label class="field_opt" for="Pet--birthdate">Birthdate</label>
       <span id="Pet--birthdate"><select id="Pet--birthdate__month" name="Pet--birthdate__month">
     <option value="MM">Month</option>
-    <option value="1">January</option>
     ...
     
 Same for grids::
@@ -192,12 +191,15 @@ class FieldSet(BaseFieldSet):
         self.focus = True
         self._errors = []
         focus = True
-        for k, v in self.doc().iteritems():
-            if not k.startswith('_'):
+        values = self.doc._properties.values()
+        values.sort(lambda a, b: cmp(a.creation_counter, b.creation_counter))
+        for v in values:
+            if getattr(v, 'name'):
+                k = v.name
                 try:
                     t = getattr(fatypes, v.__class__.__name__.replace('Property',''))
                 except AttributeError:
-                    raise NotImplementedError('%s is not mapped to a type' % v.__class__)
+                    raise NotImplementedError('%s is not mapped to a type for field %s (%s)' % (v.__class__, k, v.__class__.__name__))
                 else:
                     self.append(Field(name=k, type=t))
                     if v.required:
