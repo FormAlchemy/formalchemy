@@ -283,7 +283,10 @@ class _RESTController(object):
             fs.sync()
             self.sync(fs)
             if format == 'html':
-                redirect_to(model_url(self.collection_name))
+                if not request.is_xhr:
+                    redirect_to(model_url(self.collection_name))
+                else:
+                    fs = fs.bind(self.get_model(), data=None, session=self.Session())
             else:
                 return self.render_json_format(fs=fs)
         return self.render(format=format, fs=fs, action='new', id=None)
@@ -337,7 +340,8 @@ class _RESTController(object):
             fs.sync()
             self.sync(fs, id)
             if format == 'html':
-                redirect_to(model_url(self.member_name, id=id))
+                if not request.is_xhr:
+                    redirect_to(model_url(self.member_name, id=id))
             else:
                 return self.render(format=format, fs=fs, status=0)
         if format == 'html':
