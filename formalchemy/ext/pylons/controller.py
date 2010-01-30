@@ -283,10 +283,10 @@ class _RESTController(object):
             fs.sync()
             self.sync(fs)
             if format == 'html':
-                if not request.is_xhr:
-                    redirect_to(model_url(self.collection_name))
-                else:
-                    fs = fs.bind(self.get_model(), data=None, session=self.Session())
+                if request.is_xhr:
+                    response.content_type = 'text/javascript'
+                    return json.dumps(dict(status=0))
+                redirect_to(model_url(self.collection_name))
             else:
                 return self.render_json_format(fs=fs)
         return self.render(format=format, fs=fs, action='new', id=None)
@@ -299,6 +299,9 @@ class _RESTController(object):
             S.delete(record)
             S.commit()
         if format == 'html':
+            if request.is_xhr:
+                response.content_type = 'text/javascript'
+                return json.dumps(dict(status=0, id=id))
             redirect_to(model_url(self.collection_name))
         return self.render(format=format, id=id)
 
@@ -340,8 +343,10 @@ class _RESTController(object):
             fs.sync()
             self.sync(fs, id)
             if format == 'html':
-                if not request.is_xhr:
-                    redirect_to(model_url(self.member_name, id=id))
+                if request.is_xhr:
+                    response.content_type = 'text/javascript'
+                    return json.dumps(dict(status=0, id=id))
+                redirect_to(model_url(self.member_name, id=id))
             else:
                 return self.render(format=format, fs=fs, status=0)
         if format == 'html':
