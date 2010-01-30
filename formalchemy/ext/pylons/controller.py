@@ -284,8 +284,8 @@ class _RESTController(object):
             self.sync(fs)
             if format == 'html':
                 if request.is_xhr:
-                    response.content_type = 'text/javascript'
-                    return json.dumps(dict(status=0))
+                    response.content_type = 'text/plain'
+                    return ''
                 redirect_to(model_url(self.collection_name))
             else:
                 return self.render_json_format(fs=fs)
@@ -300,8 +300,8 @@ class _RESTController(object):
             S.commit()
         if format == 'html':
             if request.is_xhr:
-                response.content_type = 'text/javascript'
-                return json.dumps(dict(status=0, id=id))
+                response.content_type = 'text/plain'
+                return ''
             redirect_to(model_url(self.collection_name))
         return self.render(format=format, id=id)
 
@@ -344,8 +344,8 @@ class _RESTController(object):
             self.sync(fs, id)
             if format == 'html':
                 if request.is_xhr:
-                    response.content_type = 'text/javascript'
-                    return json.dumps(dict(status=0, id=id))
+                    response.content_type = 'text/plain'
+                    return ''
                 redirect_to(model_url(self.member_name, id=id))
             else:
                 return self.render(format=format, fs=fs, status=0)
