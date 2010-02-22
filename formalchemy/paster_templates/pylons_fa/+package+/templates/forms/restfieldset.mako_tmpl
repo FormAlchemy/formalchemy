@@ -87,7 +87,7 @@ from pylons import url
 </div>
 <script type="text/javascript">
   var icons = document.getElementsByClassName('ui-icon')
-  for (var i = 0; icons.length-1; i++) {
+  for (var i = 0; i < icons.length-1; i++) {
     icons[i].setAttribute('value', ' ');
   } 
 </script>
