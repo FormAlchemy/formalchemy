@@ -7,7 +7,7 @@ from pylons import request, response, session, config
 from pylons import tmpl_context as c
 
 from pylons import url
-from pylons.controllers.util import redirect_to
+from pylons.controllers.util import redirect
 import pylons.controllers.util as h
 from webhelpers.paginate import Page
 
@@ -209,7 +209,7 @@ class AdminController(object):
                     message = F_(message) % (modelname.encode('utf-8', 'ignore'),
                                              _pk(c.fs.model))
                     flash(message)
-                    redirect_to(url('models', modelname=modelname))
+                    redirect(url('models', modelname=modelname))
         else:
             c.fs = fs.bind(instance, session=not id and S or None)
 
@@ -236,7 +236,7 @@ class AdminController(object):
             message = F_(_('Deleted %s %s')) % (modelname.encode('utf-8', 'ignore'),
                                                 key)
             flash(message)
-            redirect_to(url('models', modelname=modelname))
+            redirect(url('models', modelname=modelname))
         else:
             return self.render_json(status=0)
 

@@ -2,7 +2,7 @@
 import os
 from paste.urlparser import StaticURLParser
 from pylons import request, response, session, tmpl_context as c
-from pylons.controllers.util import abort, redirect_to
+from pylons.controllers.util import abort, redirect
 from pylons.templating import render_mako as render
 from pylons import url
 from webhelpers.paginate import Page
@@ -286,7 +286,7 @@ class _RESTController(object):
                 if request.is_xhr:
                     response.content_type = 'text/plain'
                     return ''
-                redirect_to(model_url(self.collection_name))
+                redirect(model_url(self.collection_name))
             else:
                 return self.render_json_format(fs=fs)
         return self.render(format=format, fs=fs, action='new', id=None)
@@ -302,7 +302,7 @@ class _RESTController(object):
             if request.is_xhr:
                 response.content_type = 'text/plain'
                 return ''
-            redirect_to(model_url(self.collection_name))
+            redirect(model_url(self.collection_name))
         return self.render(format=format, id=id)
 
     def show(self, id=None, format='html', **kwargs):
@@ -346,7 +346,7 @@ class _RESTController(object):
                 if request.is_xhr:
                     response.content_type = 'text/plain'
                     return ''
-                redirect_to(model_url(self.member_name, id=id))
+                redirect(model_url(self.member_name, id=id))
             else:
                 return self.render(format=format, fs=fs, status=0)
         if format == 'html':
