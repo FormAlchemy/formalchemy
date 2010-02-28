@@ -5,13 +5,25 @@ Define a couchdbkit schema::
 
     >>> from couchdbkit import schema
     >>> from formalchemy.ext import couchdb
+    >>> class Person(couchdb.Document):
+    ...     name = schema.StringProperty(required=True)
+    ...     @classmethod
+    ...     def _render_options(self, fs):
+    ...         return [(gawel, gawel._id), (benoitc, benoitc._id)]
+    ...     def __unicode__(self): return getattr(self, 'name', None) or u''
+    >>> gawel = Person(name='gawel')
+    >>> gawel._id = '123'
+    >>> benoitc = Person(name='benoitc')
+    >>> benoitc._id = '456'
+
     >>> class Pet(couchdb.Document):
     ...     name = schema.StringProperty(required=True)
     ...     type = schema.StringProperty(required=True)
     ...     birthdate = schema.DateProperty(auto_now=True)
     ...     weight_in_pounds = schema.IntegerProperty()
     ...     spayed_or_neutered = schema.BooleanProperty()
-    ...     owner = schema.StringProperty()
+    ...     owner = schema.SchemaProperty(Person)
+    ...     friends = schema.SchemaListProperty(Person)
 
 Configure your FieldSet::
 
@@ -20,6 +32,8 @@ Configure your FieldSet::
     >>> p = Pet(name='dewey')
     >>> p.name = 'dewey'
     >>> p.type = 'cat'
+    >>> p.owner = gawel
+    >>> p.friends = [gawel, benoitc]
     >>> fs = fs.bind(p)
 
 Render it::
@@ -51,7 +65,7 @@ Same for grids::
 
     >>> # grid
     >>> grid = couchdb.Grid(Pet, [p, Pet()])
-    >>> grid.configure(include=[grid.name, grid.type, grid.birthdate, grid.weight_in_pounds])
+    >>> grid.configure(include=[grid.name, grid.type, grid.birthdate, grid.weight_in_pounds, grid.friends])
     >>> print grid.render() # doctest: +ELLIPSIS +NORMALIZE_WHITESPACE
     <thead>
       <tr>
@@ -59,6 +73,7 @@ Same for grids::
           <th>Type</th>
           <th>Birthdate</th>
           <th>Weight in pounds</th>
+          <th>Friends</th>
       </tr>
     </thead>
     <tbody>
@@ -71,6 +86,13 @@ Same for grids::
         </td>
         <td>
           <span id="Pet--birthdate">...
+        </td>
+        <td>
+          <select id="Pet--friends" multiple="multiple" name="Pet--friends">
+            <option selected="selected" value="123">gawel</option>
+            <option selected="selected" value="456">benoitc</option>
+          </select>
+        </td>...
 
 """
 from formalchemy.forms import FieldSet as BaseFieldSet
@@ -81,6 +103,7 @@ from formalchemy import fields
 from formalchemy import validators
 from formalchemy import fatypes
 from sqlalchemy.util import OrderedDict
+from couchdbkit.schema.properties_proxy import LazySchemaList
 from couchdbkit import schema
 
 from datetime import datetime
@@ -92,6 +115,8 @@ class Pk(property):
     def __init__(self, attr='_id'):
         self.attr = attr
     def __get__(self, instance, cls):
+        if not instance:
+            return self
         return getattr(instance, self.attr, None) or None
     def __set__(self, instance, value):
         setattr(instance, self.attr, value)
@@ -146,19 +171,38 @@ class Session(object):
         """do nothing since there is no transaction in couchdb"""
     remove = commit
 
+def _stringify(value):
+    if isinstance(value, (list, LazySchemaList)):
+        return [_stringify(v) for v in value]
+    if isinstance(value, schema.Document):
+        return value._id
+    return value
+
 class Field(BaseField):
     """"""
+    def __init__(self, *args, **kwargs):
+        self.schema = kwargs.pop('schema')
+        if self.schema and 'renderer' not in kwargs:
+            kwargs['renderer'] = fields.SelectFieldRenderer
+        if self.schema and 'options' not in kwargs:
+            kwargs['options'] = self.schema._render_options
+        if kwargs.get('type') == fatypes.List:
+            kwargs['multiple'] = True
+        BaseField.__init__(self, *args, **kwargs)
+
     def value(self):
         if not self.is_readonly() and self.parent.data is not None:
             v = self._deserialize()
             if v is not None:
                 return v
-        return getattr(self.model, self.name)
+        value = getattr(self.model, self.name)
+        return _stringify(value)
     value = property(value)
 
     def raw_value(self):
         try:
-            return getattr(self.model, self.name)
+            value = getattr(self.model, self.name)
+            return _stringify(value)
         except (KeyError, AttributeError):
             pass
         if callable(self._value):
@@ -169,7 +213,13 @@ class Field(BaseField):
     def sync(self):
         """Set the attribute's value in `model` to the value given in `data`"""
         if not self.is_readonly():
-            setattr(self.model, self.name, self._deserialize())
+            value = self._deserialize()
+            if self.schema:
+                if isinstance(value, list):
+                    value = [self.schema.get(v) for v in value]
+                else:
+                    value = self.schema.get(value)
+            setattr(self.model, self.name, value)
 
 class FieldSet(BaseFieldSet):
     """See :class:`~formalchemy.forms.FieldSet`"""
@@ -196,14 +246,21 @@ class FieldSet(BaseFieldSet):
         for v in values:
             if getattr(v, 'name'):
                 k = v.name
-                try:
-                    t = getattr(fatypes, v.__class__.__name__.replace('Property',''))
-                except AttributeError:
-                    raise NotImplementedError('%s is not mapped to a type for field %s (%s)' % (v.__class__, k, v.__class__.__name__))
+                sch = None
+                if isinstance(v, schema.SchemaListProperty):
+                    t = fatypes.List
+                    sch = v._schema
+                elif isinstance(v, schema.SchemaProperty):
+                    t = fatypes.String
+                    sch = v._schema
                 else:
-                    self.append(Field(name=k, type=t))
-                    if v.required:
-                        self._fields[k].validators.append(validators.required)
+                    try:
+                        t = getattr(fatypes, v.__class__.__name__.replace('Property',''))
+                    except AttributeError:
+                        raise NotImplementedError('%s is not mapped to a type for field %s (%s)' % (v.__class__, k, v.__class__.__name__))
+                self.append(Field(name=k, type=t, schema=sch))
+                if v.required:
+                    self._fields[k].validators.append(validators.required)
 
     def bind(self, model=None, session=None, data=None):
         """Bind to an instance"""
