@@ -185,7 +185,10 @@ class Field(BaseField):
         if self.schema and 'renderer' not in kwargs:
             kwargs['renderer'] = fields.SelectFieldRenderer
         if self.schema and 'options' not in kwargs:
-            kwargs['options'] = self.schema._render_options
+            if hasattr(self.schema, '_render_options'):
+                kwargs['options'] = self.schema._render_options
+            else:
+                kwargs['options'] = lambda fs: [(d, d._id) for d in Query(self.schema).all()]
         if kwargs.get('type') == fatypes.List:
             kwargs['multiple'] = True
         BaseField.__init__(self, *args, **kwargs)

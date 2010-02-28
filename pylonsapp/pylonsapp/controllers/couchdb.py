@@ -12,6 +12,12 @@ from formalchemy.ext.pylons.controller import ModelsController
 
 log = logging.getLogger(__name__)
 
+class Person(couchdb.Document):
+    """A Person node"""
+    name = StringProperty(required=True)
+    def __unicode__(self):
+        return self.name or u''
+
 class Pet(couchdb.Document):
     """A Pet node"""
     name = StringProperty(required=True)
@@ -19,8 +25,7 @@ class Pet(couchdb.Document):
     birthdate = DateProperty(auto_now=True)
     weight_in_pounds = IntegerProperty(default=0)
     spayed_or_neutered = BooleanProperty()
-    owner = StringProperty()
-
+    owner = SchemaListProperty(Person)
     def __unicode__(self):
         return self.name
 
@@ -39,14 +44,14 @@ else:
     loader = FileSystemDocsLoader(design_docs)
     loader.sync(db, verbose=True)
 
-    contain(db, Pet)
+    contain(db, Pet, Person)
 
 class CouchdbController(BaseController):
 
     # override default classes to use couchdb fieldsets
     FieldSet = couchdb.FieldSet
     Grid = couchdb.Grid
-    model = [Pet]
+    model = [Person, Pet]
 
     def Session(self):
         """return a formalchemy.ext.couchdb.Session"""
