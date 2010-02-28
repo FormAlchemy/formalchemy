@@ -8,6 +8,11 @@ from formalchemy.fields import FileFieldRenderer as Base
 from formalchemy.validators import regex
 from formalchemy.i18n import _
 
+try:
+    from pylons import config
+except ImportError:
+    config = {}
+
 __all__ = ['file_extension', 'image_extension',
            'FileFieldRenderer', 'ImageFieldRenderer']
 
@@ -46,7 +51,12 @@ def normalized_basename(path):
 class FileFieldRenderer(Base):
     """render a file input field stored on file system
     """
-    storage_path = None
+
+    @property
+    def storage_path(self):
+        if 'app_conf' in config:
+            config['app_conf'].get('storage_path', '')
+
     def __init__(self, *args, **kwargs):
         if not self.storage_path or not os.path.isdir(self.storage_path):
             raise ValueError(

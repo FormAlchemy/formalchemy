@@ -189,6 +189,8 @@ class FieldRenderer(object):
                 if data.lower() in ['0', 'f', 'false', 'no']: return False
         if data is None or data == self.field._null_option[1]:
             return None
+        if isinstance(self.field.type, fatypes.Interval):
+            return datetime.timedelta(validators.float_(data, self))
         if isinstance(self.field.type, fatypes.Integer):
             return validators.integer(data, self)
         if isinstance(self.field.type, fatypes.Float):
@@ -1326,7 +1328,9 @@ class AttributeField(AbstractField):
             # todo 2.0 this does not handle primaryjoin (/secondaryjoin) alternate join conditions
             fk_cls = self.relation_type()
             order_by = self._property.order_by or list(class_mapper(fk_cls).primary_key)
-            q = self.query(fk_cls).order_by(order_by)
+            if order_by and not isinstance(order_by, list):
+                order_by = [order_by]
+            q = self.query(fk_cls).order_by(*order_by)
             self.render_opts['options'] += _query_options(q)
             logger.debug('options for %s are %s' % (self.name, self.render_opts['options']))
         if self.is_collection and isinstance(self.renderer, self.parent.default_renderers['dropdown']):

@@ -34,6 +34,6 @@ document.getElementById("${field.renderer.name}").focus();
 % endif
 % endif
   % else:
-${field.render()}
+${field.render()|n}
   % endif
 % endfor

@@ -1,6 +1,6 @@
 import logging
-from pylons import request, response, session, tmpl_context as c
-from pylons.controllers.util import abort, redirect_to
+from pylons import request, response, session, url, tmpl_context as c
+from pylons.controllers.util import abort, redirect
 from pylonsapp.lib.base import BaseController, render
 from pylonsapp.model import meta
 from pylonsapp import model
@@ -27,5 +27,5 @@ class BasicController(BaseController):
             else:
                 meta.Session.add(record)
             meta.Session.commit()
-            redirect_to(id=record.id)
+            redirect(url.current(id=record.id))
         return render('/form.mako')

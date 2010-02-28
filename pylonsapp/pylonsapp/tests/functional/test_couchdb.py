@@ -24,7 +24,7 @@ class TestCouchdbController(TestController):
 
     @couchdb_runing
     def test_index(self):
-        response = self.app.get(url('couchdb'))
+        response = self.app.get('/couchdb')
         response.mustcontain('/couchdb/Pet/nodes')
         response = response.click('Pet')
 

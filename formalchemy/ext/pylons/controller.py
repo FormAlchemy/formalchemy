@@ -68,14 +68,18 @@ class _RESTController(object):
 
             S = self.Session()
             if id:
-                S.update(fs.model)
+                S.merge(fs.model)
             else:
                 S.add(fs.model)
             S.commit()
         """
         S = self.Session()
         if id:
-            S.update(fs.model)
+            try:
+                S.merge(fs.model)
+            except AttributeError:
+                # SA <= 0.5.6
+                S.update(fs.model)
         else:
             S.add(fs.model)
         S.commit()

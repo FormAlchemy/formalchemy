@@ -44,6 +44,11 @@ class Two(Base):
     id = Column(Integer, primary_key=True)
     foo = Column(Integer, default='133', nullable=True)
 
+class TwoInterval(Base):
+    __tablename__ = 'two_interval'
+    id = Column(Integer, primary_key=True)
+    foo = Column(Interval, nullable=False)
+
 class TwoFloat(Base):
     __tablename__ = 'two_floats'
     id = Column(Integer, primary_key=True)

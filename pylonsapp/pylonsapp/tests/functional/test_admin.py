@@ -7,7 +7,7 @@ class TestAdminController(TestController):
 
     def setUp(self):
         TestController.setUp(self)
-        meta.engine.execute(model.foo_table.delete())
+        meta.Session.bind.execute(model.foo_table.delete())
 
     def test_index(self):
         # index

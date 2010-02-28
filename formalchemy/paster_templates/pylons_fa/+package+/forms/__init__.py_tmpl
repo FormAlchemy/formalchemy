@@ -10,11 +10,6 @@ from formalchemy import tables
 from formalchemy.ext.fsblob import FileFieldRenderer
 from formalchemy.ext.fsblob import ImageFieldRenderer
 
-if 'storage_path' in config['app_conf']:
-    # set the storage_path if we can find an options in app_conf
-    FileFieldRenderer.storage_path = config['app_conf']['storage_path']
-    ImageFieldRenderer.storage_path = config['app_conf']['storage_path']
-
 fa_config.encoding = 'utf-8'
 
 
