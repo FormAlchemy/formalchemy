@@ -33,7 +33,7 @@ Configure your FieldSet::
     >>> p.name = 'dewey'
     >>> p.type = 'cat'
     >>> p.owner = gawel
-    >>> p.friends = [gawel, benoitc]
+    >>> p.friends = [benoitc]
     >>> fs = fs.bind(p)
 
 Render it::
@@ -89,7 +89,7 @@ Same for grids::
         </td>
         <td>
           <select id="Pet--friends" multiple="multiple" name="Pet--friends">
-            <option selected="selected" value="123">gawel</option>
+            <option value="123">gawel</option>
             <option selected="selected" value="456">benoitc</option>
           </select>
         </td>...
