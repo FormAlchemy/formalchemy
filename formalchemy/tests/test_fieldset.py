@@ -187,6 +187,16 @@ document.getElementById("Three--foo").focus();
 >>> print pretty_html(fs_twof.foo.render())
 <input id="TwoFloat-1-foo" name="TwoFloat-1-foo" type="text" value="32.2" />
 
+>>> import datetime
+>>> twoi = TwoInterval(id=1, foo=datetime.timedelta(2.2))
+>>> fs_twoi = FieldSet(twoi)
+>>> fs_twoi.foo.renderer
+<class 'formalchemy.fields.IntervalFieldRenderer'>
+>>> fs_twoi.foo.value
+datetime.timedelta(2, 17280)
+>>> print pretty_html(fs_twoi.foo.render())
+<input id="TwoInterval-1-foo" name="TwoInterval-1-foo" type="text" value="2.17280" />
+
 # test render and sync fatypes.Numeric
 # http://code.google.com/p/formalchemy/issues/detail?id=41
 >>> twon = TwoNumeric(id=1, foo=Decimal('2.3'))

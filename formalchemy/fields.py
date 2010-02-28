@@ -39,7 +39,9 @@ def iterable(item):
 def _stringify(k, null_value=u''):
     if k is None:
         return null_value
-    if isinstance(k, str):
+    if isinstance(k, datetime.timedelta):
+        return '%s.%s' % (k.days, k.seconds)
+    elif isinstance(k, str):
         return unicode(k, config.encoding)
     elif isinstance(k, unicode):
         return k
@@ -276,6 +278,14 @@ class FloatFieldRenderer(FieldRenderer):
     def render(self, **kwargs):
         return h.text_field(self.name, value=self._value, **kwargs)
 
+class IntervalFieldRenderer(FloatFieldRenderer):
+    """render an interval as a text field"""
+
+    def _deserialize(self):
+        value = FloatFieldRenderer.deserialize(self)
+        if isinstance(value, (float, int)):
+            return datetime.timedelta(value)
+        return value
 
 class PasswordFieldRenderer(TextFieldRenderer):
     """Render a password field"""
@@ -990,10 +1000,10 @@ class AbstractField(object):
     def _get_renderer(self):
         for t in self.parent.default_renderers:
             if not isinstance(t, basestring) and type(self.type) is t:
-                    return self.parent.default_renderers[t]
+                return self.parent.default_renderers[t]
         for t in self.parent.default_renderers:
             if not isinstance(t, basestring) and isinstance(self.type, t):
-                    return self.parent.default_renderers[t]
+                return self.parent.default_renderers[t]
         raise TypeError(
                 'No renderer found for field %s. '
                 'Type %s as no default renderer' % (self.name, self.type))
