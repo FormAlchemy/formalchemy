@@ -1,11 +1,15 @@
 1.3.2
 -----
 
+* add IntervalFieldRenderer
+
 * switch back to WebHelpers
 
 * add Hungarian translation (125)
 
 * fix bug with latest version of couchdbkit
+
+* update paster template to Pylons 1.0b1
 
 * fix issues 123, 124, 127, 128
 
