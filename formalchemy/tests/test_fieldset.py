@@ -191,7 +191,7 @@ document.getElementById("Three--foo").focus();
 >>> twoi = TwoInterval(id=1, foo=datetime.timedelta(2.2))
 >>> fs_twoi = FieldSet(twoi)
 >>> fs_twoi.foo.renderer
-<class 'formalchemy.fields.IntervalFieldRenderer'>
+<IntervalFieldRenderer for AttributeField(foo)>
 >>> fs_twoi.foo.value
 datetime.timedelta(2, 17280)
 >>> print pretty_html(fs_twoi.foo.render())
