@@ -37,7 +37,7 @@ except ImportError:
     # 0.4
     def _get_attribute(cls, p):
         return getattr(cls, p.key)
-    
+
 
 def prettify(text):
     """
@@ -72,21 +72,21 @@ class SimpleMultiDict(dict):
 
 class ModelRenderer(object):
     """
-    The `ModelRenderer` class is the superclass for all classes needing to deal 
+    The `ModelRenderer` class is the superclass for all classes needing to deal
     with `model` access and supporting rendering capabilities.
     """
     prettify = staticmethod(prettify)
 
     def __init__(self, model, session=None, data=None, prefix=None):
-        """ 
-        - `model`: 
+        """
+        - `model`:
               a SQLAlchemy mapped class or instance.  New object creation
               should be done by passing the class, which will need a default
               (no-parameter) constructor.  After construction or binding of
               the :class:`~formalchemy.forms.FieldSet`, the instantiated object will be available as
               the `.model` attribute.
 
-        - `session=None`: 
+        - `session=None`:
               the session to use for queries (for relations). If `model` is associated
               with a session, that will be used by default. (Objects mapped with a
               `scoped_session
@@ -94,7 +94,7 @@ class ModelRenderer(object):
               will always have a session. Other objects will
               also have a session if they were loaded by a Query.)
 
-        - `data=None`: 
+        - `data=None`:
               dictionary-like object of user-submitted data to validate and/or
               sync to the `model`. Scalar attributes should have a single
               value in the dictionary; multi-valued relations should have a
@@ -103,7 +103,7 @@ class ModelRenderer(object):
               to work.
 
         - `prefix=None`:
-              the prefix to prepend to html name attributes. This is useful to avoid 
+              the prefix to prepend to html name attributes. This is useful to avoid
               field name conflicts when there are two fieldsets creating objects
               from the same model in one html page.  (This is not needed when
               editing existing objects, since the object primary key is used as part
@@ -114,7 +114,7 @@ class ModelRenderer(object):
 
         After binding, :class:`~formalchemy.forms.FieldSet`'s `model` attribute will always be an instance.
         If you bound to a class, `FormAlchemy` will call its constructor with no
-        arguments to create an appropriate instance. 
+        arguments to create an appropriate instance.
 
         .. NOTE::
 
@@ -139,9 +139,9 @@ class ModelRenderer(object):
 
         >>> fs = FieldSet(User)
         >>> fs.configure(options=[]) # put all configuration stuff here
-        
+
         and in `controller.py`
-        
+
         >>> from library import fs
         >>> user = session.query(User).first()
         >>> fs2 = fs.bind(user)
@@ -156,7 +156,7 @@ class ModelRenderer(object):
         the ModelRenderer knows about, keyed by name, in their
         unconfigured state.  You should not normally need to access
         `_fields` directly.
-        
+
         (Note that although equivalent `Field`'s (fields referring to
         the same attribute on the SQLAlchemy model) will equate with
         the == operator, they are NOT necessarily the same `Field`
@@ -192,7 +192,7 @@ class ModelRenderer(object):
         else:
             # SA class.
             # load synonyms so we can ignore them
-            synonyms = set(p for p in class_mapper(cls).iterate_properties 
+            synonyms = set(p for p in class_mapper(cls).iterate_properties
                            if isinstance(p, SynonymProperty))
             # load discriminators so we can ignore them
             discs = set(p for p in class_mapper(cls).iterate_properties
@@ -310,7 +310,7 @@ class ModelRenderer(object):
         To render only name and email,
 
         >>> fs.configure(include=[fs.name, fs.email])
-        
+
         or
 
         >>> fs.configure(exclude=[fs.orders])
@@ -428,7 +428,7 @@ class ModelRenderer(object):
                 else:
                     if o_session:
                         self.session = o_session
-        # if we didn't just instantiate (in which case object_session will be None), 
+        # if we didn't just instantiate (in which case object_session will be None),
         # the session should be the same as the object_session
         if self.session and model == original_model:
             try:
@@ -452,7 +452,7 @@ class ModelRenderer(object):
 
     def _raw_fields(self):
         return self._fields.values()
-    
+
     def _get_fields(self, pk=False, exclude=[], include=[], options=[]):
         # sanity check
         if include and exclude:
@@ -481,9 +481,9 @@ class ModelRenderer(object):
                 ignore.extend([wrapper for wrapper in self._raw_fields() if wrapper.is_pk and not wrapper.is_collection])
             ignore.extend([wrapper for wrapper in self._raw_fields() if wrapper.is_raw_foreign_key])
             include = [field for field in self._raw_fields() if field not in ignore]
-            
+
         # in the returned list, replace any fields in `include` w/ the corresponding one in `options`, if present.
-        # this is a bit clunky because we want to 
+        # this is a bit clunky because we want to
         #   1. preserve the order given in `include`
         #   2. not modify `include` (or `options`) directly; that could surprise the caller
         options_dict = {} # create + update for 2.3's benefit
@@ -495,7 +495,7 @@ class ModelRenderer(object):
             else:
                 L.append(wrapper)
         return L
-    
+
     def __getattr__(self, attrname):
         try:
             return self._render_fields[attrname]
