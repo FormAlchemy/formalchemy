@@ -4,6 +4,7 @@
 # the MIT License: http://www.opensource.org/licenses/mit-license.php
 
 # todo 2.0 pass field and value (so exception can refer to field name, for instance)
+from exceptions import ValidationError
 from i18n import _
 
 if 'any' not in locals():
@@ -19,15 +20,6 @@ if 'any' not in locals():
             if o:
                 return True
         return False
-
-class ValidationError(Exception):
-    """an exception raised when the validation failed
-    """
-    def message(self):
-        return self.args[0]
-    message = property(message)
-    def __repr__(self):
-        return 'ValidationError(%r,)' % self.message
 
 def accepts_none(func):
     """validator decorator to validate None value"""

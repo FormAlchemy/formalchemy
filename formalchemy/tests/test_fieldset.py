@@ -583,7 +583,7 @@ True
 >>> print fs_2.render() #doctest: +ELLIPSIS
 Traceback (most recent call last):
 ...
-Exception: Primary key of model has changed since binding, probably due to sync()ing a new instance.  You can solve this by either binding to a model with the original primary key again, or by binding data to None.
+PkError: Primary key of model has changed since binding, probably due to sync()ing a new instance (from None to 1)...
 >>> session.rollback()
 
 >>> fs_1 = FieldSet(One, data={'One--id': '1'})
