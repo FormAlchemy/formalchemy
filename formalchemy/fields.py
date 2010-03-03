@@ -168,6 +168,17 @@ class FieldRenderer(object):
             return self._params.getall(self.name)
         return self._params.getone(self.name)
 
+    def value_objects(self):
+        """Same as `value`, except returns a list of objects instead of 
+        primary keys, when working with ForeignKeys.
+
+        Use this when your `deserialize` or `render` functions manipulates
+        ForeignKey objects; adding, removing or changing display according
+        to their contents.
+        """
+        return self.field.value_objects
+    value_objects = property(value_objects)
+
     def deserialize(self):
         """
         Turns the user-submitted data into a Python value.  (The raw
@@ -1075,6 +1086,16 @@ class AbstractField(object):
                 return self._pkify(v)
         return self.model_value
     value = property(value)
+
+    def value_objects(self):
+        """This is the same as `value`, except that when used with ForeignKeys,
+        instead of returning a list of primary keys, it will return a list of
+        objects.
+        """
+        if not self.is_readonly() and self.parent.data is not None:
+            return self._deserialize()
+        return self.model_value
+    value_objects = property(value_objects)
 
     def model_value(self):
         """
