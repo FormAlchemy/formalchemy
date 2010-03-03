@@ -829,7 +829,7 @@ class AbstractField(object):
     def set(self, **kwattrs):
         """
         Update field attributes in place. Allowed attributes are: validate,
-        renderer, readonly, nul_as, label, multiple, options, size,
+        renderer, required, readonly, nul_as, label, multiple, options, size,
         instructions, metadata::
 
             >>> field = Field('myfield')
@@ -855,6 +855,13 @@ class AbstractField(object):
                 self.metadata.update(value)
             elif attr == 'instructions':
                 self.metadata['instructions'] = value
+            elif attr == 'required':
+                if value:
+                    if validators.required not in self.validators:
+                        self.validators.append(validators.required)
+                else:
+                    if validators.required in self.validators:
+                        self.validators.remove(validators.required)
             elif attr in mapping:
                 attr = mapping.get(attr)
                 setattr(self, attr, value)
