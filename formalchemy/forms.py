@@ -10,6 +10,7 @@ logger = logging.getLogger('formalchemy.' + __name__)
 import base, fields
 from validators import ValidationError
 from formalchemy import config
+from formalchemy import exceptions
 
 from tempita import Template as TempitaTemplate # must import after base
 
@@ -181,7 +182,11 @@ class FieldSet(AbstractFieldSet):
 
     def render(self, **kwargs):
         if fields._pk(self.model) != self._bound_pk and self.data is not None:
-            raise Exception('Primary key of model has changed since binding, probably due to sync()ing a new instance.  You can solve this by either binding to a model with the original primary key again, or by binding data to None.')
+            msg = ("Primary key of model has changed since binding, "
+                   "probably due to sync()ing a new instance (from %r to %r). "
+                   "You can solve this by either binding to a model "
+                   "with the original primary key again, or by binding data to None.")
+            raise exceptions.PkError(msg % (self._bound_pk, fields._pk(self.model)))
         engine = self.engine or config.engine
         if self._render or self._render_readonly:
             warnings.warn(DeprecationWarning('_render and _render_readonly are deprecated and will be removed in 1.5. Use a TemplateEngine instead'))
