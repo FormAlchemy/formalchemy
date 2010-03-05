@@ -156,6 +156,15 @@ def field_set():
     >>> field.raw_value
     'new_passwd'
 
+    >>> field.set(required=True)
+    AttributeField(password)
+    >>> field.validators  #doctest: +ELLIPSIS
+    [<function required at ...>]
+    >>> field.set(required=False)
+    AttributeField(password)
+    >>> field.validators
+    []
+
     >>> field.set(non_exist=True)
     Traceback (most recent call last):
     ...
