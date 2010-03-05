@@ -230,7 +230,11 @@ class ModelRenderer(object):
             self.append(field)
 
     def insert(self, field, new_field):
-        """Insert a new field before an existing field"""
+        """Insert a new field *before* an existing field.
+
+        This is like the normal ``insert()`` function of ``list`` objects. It
+        takes the place of the previous element, and pushes the rest forward.
+        """
         fields_ = self._render_fields or self._fields
         if not isinstance(new_field, fields.Field):
             raise ValueError('Can only add Field objects; got %s instead' % field)
@@ -240,14 +244,43 @@ class ModelRenderer(object):
             except ValueError:
                 raise ValueError('%s not in fields' % field.name)
         else:
-            raise TypeError('field must be a Field. Got %r' % new_field)
-        items = fields_.items()
+            raise TypeError('field must be a Field. Got %r' % field)
         new_field.parent = self
+        items = list(fields_.iteritems()) # prepare for Python 3
         items.insert(index, (new_field.name, new_field))
         if self._render_fields:
             self._render_fields = OrderedDict(items)
         else:
             self._fields = OrderedDict(items)
+
+    def insert_after(self, field, new_field):
+        """Insert a new field *after* an existing field.
+
+        Use this if your business logic requires to add after a certain field,
+        and not before.
+        """
+        fields_ = self._render_fields or self._fields
+        if not isinstance(new_field, fields.Field):
+            raise ValueError('Can only add Field objects; got %s instead' % field)
+        if isinstance(field, fields.AbstractField):
+            try:
+                index = fields_.keys().index(field.name)
+            except ValueError:
+                raise ValueError('%s not in fields' % field.name)
+        else:
+            raise TypeError('field must be a Field. Got %r' % field)
+        new_field.parent = self
+        items = list(fields_.iteritems())
+        new_item = (new_field.name, new_field)
+        if index + 1 == len(items): # after the last element ?
+            items.append(new_item)
+        else:
+            items.insert(index + 1, new_item)
+        if self._render_fields:
+            self._render_fields = OrderedDict(items)
+        else:
+            self._fields = OrderedDict(items)
+
 
     def render_fields(self):
         """

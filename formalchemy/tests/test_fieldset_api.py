@@ -73,6 +73,38 @@ def insert():
     AttributeField(login)
     """
 
+def insert_after():
+    """
+    >>> fs = FieldSet(User)
+    >>> fs.insert_after(fs.password, Field('login'))
+    >>> fs._fields.keys()
+    ['id', 'email', 'password', 'login', 'name', 'orders']
+    >>> fs._render_fields.keys()
+    []
+    >>> fs.login
+    AttributeField(login)
+
+    >>> fs = FieldSet(User)
+    >>> fs.configure()
+    >>> fs.insert_after(fs.password, Field('login'))
+    >>> fs._fields.keys()
+    ['id', 'email', 'password', 'name', 'orders']
+    >>> fs._render_fields.keys()
+    ['email', 'password', 'login', 'name', 'orders']
+    >>> fs.login
+    AttributeField(login)
+
+    >>> fs.insert_after('somethingbad', Field('login'))  #doctest: +ELLIPSIS
+    Traceback (most recent call last):
+    ...
+    TypeError: field must be a Field. Got 'somethingbad'
+    >>> fs.insert_after(fs.password, ['some', 'random', 'objects'])  #doctest: +ELLIPSIS
+    Traceback (most recent call last):
+    ...
+    ValueError: Can only add Field objects; got AttributeField(password) instead
+    """
+
+
 def delete():
     """
     >>> fs = FieldSet(User)
