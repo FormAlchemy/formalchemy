@@ -378,22 +378,10 @@ element[s]) used to edit different types of fields...
 
 2. Update `FieldSet.default_renderers`.  `default_renderers` is a dict of
    FieldRenderer subclasses. The default contents of
-   default_renderers is::
+   `default_renderers` is::
 
-      default_renderers = {
-          types.String: fields.TextFieldRenderer,
-          types.Integer: fields.IntegerFieldRenderer,
-          types.Boolean: fields.BooleanFieldRenderer,
-          types.DateTime: fields.DateTimeFieldRendererRenderer,
-          types.Date: fields.DateFieldRenderer,
-          types.Time: fields.TimeFieldRenderer,
-          types.Binary: fields.FileFieldRenderer,
-          'dropdown': fields.SelectFieldRenderer,
-          'checkbox': fields.CheckBoxSet,
-          'radio': fields.RadioSet,
-          'password': fields.PasswordFieldRenderer,
-          'textarea': fields.TextAreaFieldRenderer,
-      }
+.. literalinclude:: ../formalchemy/base.py
+   :pyobject: EditableRenderer
 
 For instance, to make `Boolean` s render as select fields with Yes/No
 options by default, you could write::
