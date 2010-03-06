@@ -91,7 +91,8 @@ class AbstractFieldSet(base.EditableRenderer):
 
         """
         base.EditableRenderer.configure(self, pk, exclude, include, options)
-        self.validator = global_validator
+        if global_validator is not None:
+            self.validator = global_validator
 
     def validate(self):
         """
@@ -153,7 +154,7 @@ class FieldSet(AbstractFieldSet):
         self.focus = True
         self.readonly = False
 
-    def configure(self, pk=False, exclude=[], include=[], options=[], global_validator=None, focus=True, readonly=False):
+    def configure(self, pk=False, exclude=[], include=[], options=[], global_validator=None, focus=None, readonly=None):
         """
         Besides the options in :meth:`AbstractFieldSet.configure`,
         `FieldSet.configure` takes the `focus` parameter, which should be the
@@ -176,8 +177,10 @@ class FieldSet(AbstractFieldSet):
 
         """
         AbstractFieldSet.configure(self, pk, exclude, include, options, global_validator)
-        self.focus = focus
-        self.readonly = readonly
+        if focus is not None:
+            self.focus = focus
+        if readonly is not None:
+            self.readonly = readonly
 
     def validate(self):
         if self.readonly:
