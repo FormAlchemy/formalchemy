@@ -45,11 +45,7 @@ True
 </div>
 
 >>> fs = FieldSet(Two)
->>> fs
-<FieldSet with ['id', 'foo']>
 >>> fs.configure(pk=True)
->>> fs
-<FieldSet (configured) with ['id', 'foo']>
 >>> print fs.render()
 <div>
  <label class="field_req" for="Two--id">
