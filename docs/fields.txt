@@ -24,6 +24,18 @@ Fields
 Renderers
 ---------
 
+It is important to note that althought these objects are called
+`renderers`, they are also responsible for deserialization of data
+received from the web and insertion of those (possibly mangled) values
+back to the SQLALchemy object, if any.
+
+They also have to take into consideration that the data used when
+displaying `can` come either from the `self.params` (the dict-like
+object received from the web) or from the model. The latter case
+happens when first displaying a form, and the former when validation
+triggered an error, and the form is to be re-displayed (and still
+contain the values you entered). 
+
 FieldRenderer
 *************
 

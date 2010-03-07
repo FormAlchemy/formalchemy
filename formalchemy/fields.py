@@ -29,6 +29,12 @@ __all__ = ['Field', 'FieldRenderer',
            'DateTimeFieldRenderer',
            'CheckBoxFieldRenderer', 'CheckBoxSet']
 
+
+
+########################## RENDERER STUFF ############################
+
+
+
 def iterable(item):
     try:
         iter(item)
@@ -66,7 +72,39 @@ class FieldRenderer(object):
         assert isinstance(self.field, AbstractField)
 
     def name(self):
-        """Name of rendered input element"""
+        """Name of rendered input element.
+
+        The `name` of a field will always look like:
+          [fieldset_prefix-]ModelName-[pk]-fieldname
+        
+        The fieldset_prefix is defined when instantiating the
+        `FieldSet` object, by passing the `prefix=` keyword argument.
+
+        The `ModelName` is taken by introspection from the model
+        passed in at that same moment.
+
+        The `pk` is the primary key of the object being edited.
+        If you are creating a new object, then the `pk` is an
+        empty string.
+
+        The `fieldname` is, well, the field name.
+
+        .. note::
+         This method as the direct consequence that you can not `create`
+         two objects of the same class, using the same FieldSet, on the
+         same page. You can however, create more than one object
+         of a certain class, provided that you create multiple FieldSet
+         instances and pass the `prefix=` keyword argument.
+         
+         Otherwise, FormAlchemy deals very well with editing multiple
+         existing objects of same/different types on the same page,
+         without any name clash. Just be careful with multiple object
+         creation.
+
+        When creating your own Renderer objects, use `self.name` to
+        get the field's `name` HTML attribute, both when rendering
+        and deserializing.
+        """
         clsname = self.field.model.__class__.__name__
         pk = self.field.parent._bound_pk
         assert pk != ''
@@ -90,7 +128,7 @@ class FieldRenderer(object):
         Submitted value, or field value converted to string.
         Return value is always either None or a string.
         """
-        if not self.field.is_readonly() and self._params is not None:
+        if not self.field.is_readonly() and self.params is not None:
             # submitted value.  do not deserialize here since that requires valid data, which we might not have
             v = self._serialized_value() 
         else:
@@ -118,11 +156,23 @@ class FieldRenderer(object):
             lang = 'en'
         return get_translator(lang=lang).gettext
 
+    def errors(self):
+        """Return the errors on the FieldSet if any. Useful to know
+        if you're redisplaying a form, or showing up a fresh one.
+        """
+        return self.field.parent.errors
+    errors = property(errors)
+
     def render(self, **kwargs):
         """
         Render the field.  Use `self.name` to get a unique name for the
         input element and id.  `self._value` may also be useful if
         you are not rendering multiple input elements.
+
+        When rendering, you can verify `self.errors` to know
+        if you are rendering a new form, or re-displaying a form with
+        errors. Knowing that, you could select the data either from
+        the model, or the web form submission.
         """
         raise NotImplementedError()
 
@@ -141,8 +191,30 @@ class FieldRenderer(object):
             return value
         return _stringify(value)
 
-    def _params(self):
+    def params(self):
+        """This gives access to the POSTed data, as received from
+        the web user. You should call `.getone`, or `.getall` to 
+        retrieve a single value or multiple values for a given
+        key.
+
+        For example, when coding a renderer, you'd use:
+
+        .. sourcecode:: py
+
+           vals = self.params.getall(self.name)
+
+        to catch all the values for the renderer's form entry.
+        """
         return self.field.parent.data
+    params = property(params)
+
+    # DEPRECATED, for backwards compatibility
+    def _params(self):
+        """DEPRECATED: for backwards compatibility only."""
+        import warnings
+        warnings.warn('FieldRenderer._params is deprecated. Use '\
+                          'FieldRenderer.params instead')
+        return self.params
     _params = property(_params)
 
     def _serialized_value(self):
@@ -165,8 +237,8 @@ class FieldRenderer(object):
         in the input element corresponding to self.name.
         """
         if self.field.is_collection:
-            return self._params.getall(self.name)
-        return self._params.getone(self.name)
+            return self.params.getall(self.name)
+        return self.params.getone(self.name)
 
     def value_objects(self):
         """Same as `value`, except returns a list of objects instead of 
@@ -180,13 +252,37 @@ class FieldRenderer(object):
     value_objects = property(value_objects)
 
     def deserialize(self):
-        """
-        Turns the user-submitted data into a Python value.  (The raw
-        data will be available in self.field.parent.data, or you
-        can use `_serialized_value` if it is convenient.)  For SQLAlchemy
+        """Turns the user-submitted data into a Python value.
+
+        The raw data received from the web can be accessed via
+        `self.params`. This dict-like object usually accepts the
+        `getone()` and `getall()` method calls.
+
+        For SQLAlchemy
         collections, return a list of primary keys, and !FormAlchemy
         will take care of turning that into a list of objects.
         For manually added collections, return a list of values.
+
+        You will need to override this in a child Renderer object
+        if you want to mangle the data from your web form, before
+        it reaches your database model. For example, if your render()
+        method displays a select box filled with items you got from a
+        CSV file or another source, you will need to decide what to do
+        with those values when it's time to save them to the database
+        -- or is this field going to determine the hashing algorithm
+        for your password ?.
+
+        This function should return the value that is going to be
+        assigned to the model *and* used in the place of the model
+        value if there was an error with the form.
+
+        .. note::
+         Note that this function will be called *twice*, once when
+         the fieldset is `.validate()`'d -- with it's value only tested,
+         and a second time when the fieldset is `.sync()`'d -- and it's
+         value assigned to the model. Also note that deserialize() can
+         also raise a ValidationError() exception if it finds some
+         errors converting it's values.
 
         You should only have to override this if you are using custom
         (e.g., Composite) types.
@@ -326,7 +422,7 @@ class CheckBoxFieldRenderer(FieldRenderer):
     def render(self, **kwargs):
         return h.check_box(self.name, True, checked=_simple_eval(self._value or ''), **kwargs)
     def _serialized_value(self):
-        if self.name not in self._params:
+        if self.name not in self.params:
             return None
         return FieldRenderer._serialized_value(self)
     def deserialize(self):
@@ -389,7 +485,7 @@ class FileFieldRenderer(FieldRenderer):
             else:
                 data = None
         checkbox_name = '%s--remove' % self.name
-        if not data and not self._params.has_key(checkbox_name):
+        if not data and not self.params.has_key(checkbox_name):
             data = getattr(self.field.model, self.field.name)
         return data is not None and data or ''
 
@@ -411,7 +507,7 @@ class DateFieldRenderer(FieldRenderer):
         value = self.field.raw_value
         return value and value.strftime(self.format) or ''
     def _render(self, **kwargs):
-        data = self._params
+        data = self.params
         F_ = self.get_translator(**kwargs)
         month_options = [(F_('Month'), 'MM')] + [(unicode(F_('month_%02i' % i), 'utf-8'), str(i)) for i in xrange(1, 13)]
         day_options = [(F_('Day'), 'DD')] + [(i, str(i)) for i in xrange(1, 32)]
@@ -435,7 +531,7 @@ class DateFieldRenderer(FieldRenderer):
         return h.content_tag('span', self._render(**kwargs), id=self.name)
 
     def _serialized_value(self):
-        return '-'.join([self._params.getone(self.name + '__' + subfield) for subfield in ['year', 'month', 'day']])
+        return '-'.join([self.params.getone(self.name + '__' + subfield) for subfield in ['year', 'month', 'day']])
 
 
 class TimeFieldRenderer(FieldRenderer):
@@ -445,7 +541,7 @@ class TimeFieldRenderer(FieldRenderer):
         value = self.field.raw_value
         return value and value.strftime(self.format) or ''
     def _render(self, **kwargs):
-        data = self._params
+        data = self.params
         hour_options = ['HH'] + [(i, str(i)) for i in xrange(24)]
         minute_options = ['MM' ] + [(i, str(i)) for i in xrange(60)]
         second_options = ['SS'] + [(i, str(i)) for i in xrange(60)]
@@ -463,7 +559,7 @@ class TimeFieldRenderer(FieldRenderer):
         return h.content_tag('span', self._render(**kwargs), id=self.name)
 
     def _serialized_value(self):
-        return ':'.join([self._params.getone(self.name + '__' + subfield) for subfield in ['hour', 'minute', 'second']])
+        return ':'.join([self.params.getone(self.name + '__' + subfield) for subfield in ['hour', 'minute', 'second']])
 
 
 class DateTimeFieldRenderer(DateFieldRenderer, TimeFieldRenderer):
@@ -498,7 +594,7 @@ class RadioSet(FieldRenderer):
     format = '%(field)s%(label)s'
     
     def _serialized_value(self):
-        if self.name not in self._params:
+        if self.name not in self.params:
             return None
         return FieldRenderer._serialized_value(self)
 
@@ -521,7 +617,7 @@ class CheckBoxSet(RadioSet):
     widget = staticmethod(h.check_box)
 
     def _serialized_value(self):
-        if self.name not in self._params:
+        if self.name not in self.params:
             return []
         return FieldRenderer._serialized_value(self)
 
@@ -532,7 +628,7 @@ class CheckBoxSet(RadioSet):
 class SelectFieldRenderer(FieldRenderer):
     """render a field as select"""
     def _serialized_value(self):
-        if self.name not in self._params:
+        if self.name not in self.params:
             if self.field.is_collection:
                 return []
             return None
@@ -577,6 +673,11 @@ class SelectFieldRenderer(FieldRenderer):
         if isinstance(value, list):
             return u', '.join([_stringify(D.get(item, item)) for item in value])
         return _stringify(D.get(value, value))
+
+
+
+################## FIELDS STUFF ####################
+
 
 
 def _pk_one_column(instance, column):
@@ -784,6 +885,8 @@ class AbstractField(object):
         self.errors = []
 
         try:
+            # Call renderer.deserialize(), because the deserializer can
+            # also raise a ValidationError
             value = self._deserialize()
         except validators.ValidationError, e:
             self.errors.append(e)
