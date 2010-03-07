@@ -278,6 +278,63 @@ You can also render individual fields for more fine-grained control::
   <input id="User-1-name" maxlength="30" name="User-1-name" type="text" value="Bill" />
 
 
+
+Custom FieldSet
+===============
+
+You can customize your FieldSet, and create a ready-made derived version
+for when you need it in your application. For example, you could create
+one FieldSet per model object in your application.
+
+In this example, we create a FieldSet to edit the `User` model object:
+
+.. sourcecode:: py
+
+ from formalchemy import validators
+ class UserFieldSet(FieldSet):
+     """Used to edit users"""
+     def __init__(self):
+         """Pre-configuration"""
+         FieldSet.__init__(self, model.User)
+         
+         self.add(Field('passwd1'))
+         self.add(Field('passwd2'))
+         inc = [self.username,
+                self.passwd1.password().label(u'Password'),
+                self.passwd2.password().label(u'Confirm') \
+                    .validate(validators.passwords_match('passwd1')),
+                self.email,
+                self.firstname,
+                self.lastname,
+                ]
+         self.configure(include=inc)
+
+Then you could use it in your framework controllers as:
+
+.. sourcecode:: py
+
+  fs = UserFieldSet().bind(my_user_object, data=request.POST or None)
+  if request.POST and fs.validate():
+      fs.sync()
+      fs.model.password = fs.passwd1.value
+      ...
+
+Another option would be to create a function that generates your FieldSet,
+perhaps at the top of your controller if it's not to be reused anywhere,
+otherwise in a central lib for your application.  Then you would call your
+function instead of the `forms.UserFieldSet()` above.
+
+You can use the `.insert`, `.insert_after`, `.append`, `.extend` functions to
+tweak your FieldSet's composition afterwards.  You can also use the `del`
+keyword on ``Field`` attributes (like `fs.passwd`) to remove them from the
+FieldSet.
+
+You'll probably want to modify the default behavior for fields using the `.set`
+function on the ``Field`` attributes directly.  This will tweak the objects
+in-place.
+
+
+
 Including data from more than one class
 =======================================
 

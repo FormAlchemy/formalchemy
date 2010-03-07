@@ -27,7 +27,8 @@ __all__ = ['Field', 'FieldRenderer',
            'PasswordFieldRenderer', 'HiddenFieldRenderer',
            'DateFieldRenderer', 'TimeFieldRenderer',
            'DateTimeFieldRenderer',
-           'CheckBoxFieldRenderer', 'CheckBoxSet']
+           'CheckBoxFieldRenderer', 'CheckBoxSet',
+           'deserialize_once']
 
 
 
@@ -56,6 +57,23 @@ def _stringify(k, null_value=u''):
     else:
         return unicode(str(k), config.encoding)
 
+def deserialize_once(func):
+    """Simple deserialization caching decorator.
+
+    To be used on a Renderer object's `deserialize` function, to cache it's
+    result while it's being called once for ``validate()`` and another time
+    when doing ``sync()``.
+    """
+    def cache(self, *args, **kwargs):
+        if self._deserialization_done:
+            return self._deserialization_result
+               
+        self._deserialization_result = func(self, *args, **kwargs)
+        self._deserialization_done = True
+
+        return self._deserialization_result
+    return cache
+
 class FieldRenderer(object):
     """
     This should be the super class of all Renderer classes.
@@ -70,6 +88,9 @@ class FieldRenderer(object):
     def __init__(self, field):
         self.field = field
         assert isinstance(self.field, AbstractField)
+        # Prime cache for deserialization results
+        self._deserialization_done = False
+        self._deserialization_result = None
 
     def name(self):
         """Name of rendered input element.
@@ -284,7 +305,21 @@ class FieldRenderer(object):
          also raise a ValidationError() exception if it finds some
          errors converting it's values.
 
-        You should only have to override this if you are using custom
+        If calling this function twice poses a problem to your logic, for
+        example, if you have heavy database queries, or temporary objects
+        created in this function, consider using the ``deserialize_once``
+        decorator, provided using:
+
+        .. sourcecode:: py
+       
+          from formalchemy.fields import deserialize_once
+
+          @deserialize_once
+          def deserialize(self):
+              ... my stuff ...
+              return calculated_only_once
+
+        Finally, you should only have to override this if you are using custom
         (e.g., Composite) types.
         """
         if self.field.is_collection:
@@ -673,6 +708,8 @@ class SelectFieldRenderer(FieldRenderer):
         if isinstance(value, list):
             return u', '.join([_stringify(D.get(item, item)) for item in value])
         return _stringify(D.get(value, value))
+
+
 
 
 
