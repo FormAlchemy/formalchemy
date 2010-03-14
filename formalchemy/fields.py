@@ -65,11 +65,10 @@ def deserialize_once(func):
     when doing ``sync()``.
     """
     def cache(self, *args, **kwargs):
-        if self._deserialization_done:
+        if hasattr(self, '_deserialization_result'):
             return self._deserialization_result
                
         self._deserialization_result = func(self, *args, **kwargs)
-        self._deserialization_done = True
 
         return self._deserialization_result
     return cache
@@ -88,9 +87,6 @@ class FieldRenderer(object):
     def __init__(self, field):
         self.field = field
         assert isinstance(self.field, AbstractField)
-        # Prime cache for deserialization results
-        self._deserialization_done = False
-        self._deserialization_result = None
 
     def name(self):
         """Name of rendered input element.
