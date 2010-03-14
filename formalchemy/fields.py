@@ -419,8 +419,8 @@ class FloatFieldRenderer(FieldRenderer):
 class IntervalFieldRenderer(FloatFieldRenderer):
     """render an interval as a text field"""
 
-    def _deserialize(self):
-        value = FloatFieldRenderer.deserialize(self)
+    def _deserialize(self, data):
+        value = FloatFieldRenderer._deserialize(self, data)
         if isinstance(value, (float, int)):
             return datetime.timedelta(value)
         return value

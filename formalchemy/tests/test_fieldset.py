@@ -186,8 +186,8 @@ document.getElementById("Three--foo").focus();
 
 >>> twof = TwoFloat(id=1, foo=32.2)
 >>> fs_twof = FieldSet(twof)
->>> fs_twof.foo.value
-32.200000000000003
+>>> print '%.1f' % fs_twof.foo.value
+32.2
 >>> print pretty_html(fs_twof.foo.render())
 <input id="TwoFloat-1-foo" name="TwoFloat-1-foo" type="text" value="32.2" />
 
@@ -200,6 +200,11 @@ document.getElementById("Three--foo").focus();
 datetime.timedelta(2, 17280)
 >>> print pretty_html(fs_twoi.foo.render())
 <input id="TwoInterval-1-foo" name="TwoInterval-1-foo" type="text" value="2.17280" />
+>>> fs_twoi.rebind(data={"TwoInterval-1-foo": "3.1"})
+>>> fs_twoi.sync()
+>>> new_twoi = fs_twoi.model
+>>> new_twoi.foo == datetime.timedelta(3.1)
+True
 
 # test render and sync fatypes.Numeric
 # http://code.google.com/p/formalchemy/issues/detail?id=41
