@@ -313,6 +313,13 @@ class ModelRenderer(object):
           * `options=[]`:
                 an iterable of modified attributes.  The set of attributes to
                 be rendered is unaffected
+          * `global_validator=None`:
+                global_validator` should be a function that performs
+                validations that need to know about the entire form.
+          * `focus=True`:
+                the attribute (e.g., `fs.orders`) whose rendered input element
+                gets focus. Default value is True, meaning, focus the first
+                element. False means do not focus at all.
 
         Only one of {`include`, `exclude`} may be specified.
 
@@ -496,37 +503,38 @@ class ModelRenderer(object):
             raise ValueError('pk option must be True or False, not %s' % pk)
 
         # verify that options that should be lists of Fields, are
-        fields_vals = self._fields.values()
-        for iterable, itername in ((include, 'include'), (exclude, 'exclude'), (options, 'options')):
+        for iterable in ['include', 'exclude', 'options']:
             try:
-                iterator = iter(iterable)
-            except TypeError, e:
-                raise ValueError('`%s` parameter should be an iterable' % itername)
-            for field in iterator:
+                L = list(eval(iterable))
+            except:
+                raise ValueError('`%s` parameter should be an iterable' % iterable)
+            for field in L:
                 if not isinstance(field, fields.AbstractField):
-                    raise TypeError('non-AbstractField object `%s` found in `%s`' % (field, itername))
-                if field not in fields_vals:
-                    raise ValueError('Unrecognized Field `%s` in `%s` -- did you mean to call append() first?' % (field, itername))
+                    raise TypeError('non-AbstractField object `%s` found in `%s`' % (field, iterable))
+                if field not in self._fields.values():
+                    raise ValueError('Unrecognized Field `%s` in `%s` -- did you mean to call append() first?' % (field, iterable))
 
-        if not include and not exclude:
-            # Don't modify fields to be rendered, just apply options
-            include = self._render_fields.values()
-        elif not include:
-            # if include is given, those are the fields used.  otherwise, include those not explicitly (or implicitly) excluded.
+        # if include is given, those are the fields used.  otherwise, include those not explicitly (or implicitly) excluded.
+        if not include:
             ignore = list(exclude) # don't modify `exclude` directly to avoid surprising caller
             if not pk:
                 ignore.extend([wrapper for wrapper in self._raw_fields() if wrapper.is_pk and not wrapper.is_collection])
             ignore.extend([wrapper for wrapper in self._raw_fields() if wrapper.is_raw_foreign_key])
             include = [field for field in self._raw_fields() if field not in ignore]
-            
-        # Override with options, keeping order in `include`, based on the `name` of the field.
-        # Beware not to modify `include` or `options`' content directly; that could surprise the caller.
-        new_render_fields = include[:]
-        for override in options:
-            for i, field in enumerate(new_render_fields):
-                if field.key == override.key:
-                    new_render_fields[i] = override
-        return new_render_fields
+
+        # in the returned list, replace any fields in `include` w/ the corresponding one in `options`, if present.
+        # this is a bit clunky because we want to
+        #   1. preserve the order given in `include`
+        #   2. not modify `include` (or `options`) directly; that could surprise the caller
+        options_dict = {} # create + update for 2.3's benefit
+        options_dict.update(dict([(wrapper, wrapper) for wrapper in options]))
+        L = []
+        for wrapper in include:
+            if wrapper in options_dict:
+                L.append(options_dict[wrapper])
+            else:
+                L.append(wrapper)
+        return L
 
     def __getattr__(self, attrname):
         try:
