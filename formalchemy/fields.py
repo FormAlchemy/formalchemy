@@ -634,6 +634,8 @@ class RadioSet(FieldRenderer):
 
     def render(self, options, **kwargs):
         self.radios = []
+        if callable(options):
+            options = options(self.field.parent)
         for i, (choice_name, choice_value) in enumerate(_extract_options(options)):
             choice_id = '%s_%i' % (self.name, i)
             radio = self.widget(self.name, choice_value, id=choice_id,

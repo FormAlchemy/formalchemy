@@ -179,7 +179,7 @@ def _stringify(value):
     return value
 
 class Field(BaseField):
-    """"""
+    """Field for CouchDB FieldSet"""
     def __init__(self, *args, **kwargs):
         self.schema = kwargs.pop('schema')
         if self.schema and 'renderer' not in kwargs:
