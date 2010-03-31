@@ -170,7 +170,7 @@ class ModelRenderer(object):
 
         if not model:
             raise Exception('model parameter may not be None')
-        self.original_cls = isinstance(model, type) and model or type(model)
+        self._original_cls = isinstance(model, type) and model or type(model)
         ModelRenderer.rebind(self, model, session, data)
 
         cls = isinstance(self.model, type) and self.model or type(self.model)
@@ -437,7 +437,7 @@ class ModelRenderer(object):
                     if fields._pk(model) is None:
                         raise Exception('Mapped instances to be bound must either have a primary key set or not be in a Session.  When creating a new object, bind the class instead [i.e., bind(User), not bind(User())]')
             if (self.model and type(self.model) != type(model) and
-                not issubclass(model.__class__, self.original_cls)):
+                not issubclass(model.__class__, self._original_cls)):
                 raise ValueError('You can only bind to another object of the same type or subclass you originally bound to (%s), not %s' % (type(self.model), type(model)))
             self.model = model
             self._bound_pk = fields._pk(model)
