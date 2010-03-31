@@ -427,15 +427,32 @@ class ModelRenderer(object):
                 else:
                     if _obj_session:
                         _obj_session.expunge(model)
-            elif object_session(model):
-                # for instances of mapped classes, require that the instance have a PK already
+            else:
                 try:
-                    class_mapper(type(model))
+                    session_ = object_session(model)
                 except:
-                    pass
-                else:
+                    # non SA class
                     if fields._pk(model) is None:
-                        raise Exception('Mapped instances to be bound must either have a primary key set or not be in a Session.  When creating a new object, bind the class instead [i.e., bind(User), not bind(User())]')
+                        error = ('Mapped instances to be bound must either have '
+                                'a primary key set or not be in a Session.  When '
+                                'creating a new object, bind the class instead '
+                                '[i.e., bind(User), not bind(User())]')
+                        raise Exception(error)
+                else:
+                    if session_:
+                        # for instances of mapped classes, require that the instance
+                        # have a PK already
+                        try:
+                            class_mapper(type(model))
+                        except:
+                            pass
+                        else:
+                            if fields._pk(model) is None:
+                                error = ('Mapped instances to be bound must either have '
+                                        'a primary key set or not be in a Session.  When '
+                                        'creating a new object, bind the class instead '
+                                        '[i.e., bind(User), not bind(User())]')
+                                raise Exception(error)
             if (self.model and type(self.model) != type(model) and
                 not issubclass(model.__class__, self._original_cls)):
                 raise ValueError('You can only bind to another object of the same type or subclass you originally bound to (%s), not %s' % (type(self.model), type(model)))
