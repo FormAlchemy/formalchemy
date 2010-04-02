@@ -6,7 +6,7 @@
 
 * Docs improvements
 
-* Fix 131
+* Fix 131 to 137
 
 1.3.2
 -----
