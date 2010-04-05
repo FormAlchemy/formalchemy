@@ -130,7 +130,7 @@ class _RESTController(object):
             try:
                 fields = fs.jsonify()
             except AttributeError:
-                fields = dict([(field.key, field.model_value) for field in fs.render_fields.values()])
+                fields = dict([(field.renderer.name, field.model_value) for field in fs.render_fields.values()])
             data = dict(fields=fields)
             pk = _pk(fs.model)
             if pk:
@@ -265,24 +265,13 @@ class _RESTController(object):
     def create(self, format='html', **kwargs):
         """REST api"""
         fs = self.get_add_fieldset()
-        if format == 'json':
-            data = request.POST.copy()
-            request.body = ''
-            #raise ValueError(data)
-            if hasattr(fs, 'model'):
-                # this should break if fs is a non standard fieldset
-                name = '%s-' % fs.model.__class__.__name__
-                for k, v in data.items():
-                    if not k.startswith(name):
-                        if isinstance(v, list):
-                            for val in v:
-                                request.POST.add('%s-%s' % (name, k), str(val))
-                        else:
-                            request.POST.add('%s-%s' % (name, k), str(v))
+
+        if format == 'json' and request.method == 'PUT':
+            data = json.load(request.body_file)
         else:
             data = request.POST
 
-        fs = fs.bind(self.get_model(), data=request.POST, session=self.Session())
+        fs = fs.bind(self.get_model(), data=data, session=self.Session())
         if fs.validate():
             fs.sync()
             self.sync(fs)
@@ -329,20 +318,11 @@ class _RESTController(object):
     def update(self, id, format='html', **kwargs):
         """REST api"""
         fs = self.get_fieldset(id)
-        if format == 'json':
+        if format == 'json' and request.method == 'PUT':
             data = json.load(request.body_file)
-            request.body = ''
-            if hasattr(fs, 'model'):
-                # this should bread if fs is a non standard fieldset
-                name = fs.model.__class__.__name__
-                for k, v in data.items():
-                    if isinstance(v, list):
-                        for val in v:
-                            request.POST.add('%s-%s-%s' % (name, id, k), str(val))
-                    else:
-                        request.POST.add('%s-%s-%s' % (name, id, k), str(v))
-
-        fs = fs.bind(data=request.POST)
+        else:
+            data = request.POST
+        fs = fs.bind(data=data)
         if fs.validate():
             fs.sync()
             self.sync(fs, id)

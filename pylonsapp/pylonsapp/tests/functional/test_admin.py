@@ -74,17 +74,20 @@ class TestAdminController(TestController):
         ## Simple model
 
         # add page
-        response = self.app.post(url('formatted_models', model_name='Foo', format='json'), dict(bar='value'))
-        response.mustcontain('"bar": "value"')
+        response = self.app.post(url('formatted_models', model_name='Foo', format='json'),
+                                    {'Foo--bar': 'value'})
+        response.mustcontain('"Foo--bar": "value"')
         data = json.loads(response.body)
+
+        id = data['url'].split('/')[-1]
 
         # get data
         response = self.app.get('%s.json' % data['url'])
-        response.mustcontain('"bar": "value"')
+        response.mustcontain('"Foo-%s-bar": "value"' % id)
 
         # edit page
-        response = self.app.put('%s.json' % data['url'], '{"bar": "new value"}')
-        response.mustcontain('"bar": "new value"')
+        response = self.app.put('%s.json' % data['url'], '{"Foo-%s-bar": "new value"}' % id)
+        response.mustcontain('"Foo-%s-bar": "new value"' % id)
 
         # delete
         response = self.app.delete('%s.json' % data['url'])

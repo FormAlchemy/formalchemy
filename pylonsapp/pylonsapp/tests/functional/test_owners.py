@@ -10,7 +10,7 @@ class TestOwnersController(TestController):
         resp.mustcontain('{"records": [{"url": "/owners/1", "pk": 1, "value": "gawel"}')
 
     def test_add(self):
-        resp = self.app.post(url('/owners.json'), {"animals": '1', "name": "gawel"})
+        resp = self.app.post(url('/owners.json'), {"Owner--animals": '1', "Owner--name": "gawel"})
         resp.mustcontain('"gawel"', '/owners/')
 
     def test_view(self):
@@ -26,6 +26,6 @@ class TestOwnersController(TestController):
                          'gawel')
 
     def test_update(self):
-        resp = self.app.put(url('/owners/31.json'), '{"animals": [1], "name": "gawel"}')
+        resp = self.app.put(url('/owners/31.json'), '{"Owner-31-animals": [1], "Owner-31-name": "gawel"}')
         resp.mustcontain('"gawel"', '/owners/31')
 

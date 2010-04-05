@@ -39,6 +39,8 @@ def integer(value, field=None):
     """Successful if value is an int"""
     # the validator contract says you don't have to worry about "value is None",
     # but this is called from deserialize as well as validation
+    if isinstance(value, int):
+        return value
     if value is None or not value.strip():
         return None
     try:
