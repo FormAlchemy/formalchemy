@@ -390,8 +390,11 @@ class ModelRenderer(object):
         if args:
             for field in args:
                 if isinstance(field, basestring):
-                    field = getattr(_fields, field)
-                assert isinstance(field, fields.AbstractField)
+                    if field in _fields:
+                        field = _fields.get(field)
+                    else:
+                        raise AttributeError('%r as not field named %s' % (self, field))
+                assert isinstance(field, fields.AbstractField), field
                 field.bind(mr)
                 _new_fields.append(field)
             mr._render_fields = OrderedDict([(field.key, field) for field in _new_fields])

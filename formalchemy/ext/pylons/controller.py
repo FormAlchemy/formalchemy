@@ -288,7 +288,11 @@ class _RESTController(object):
         else:
             data = request.POST
 
-        fs = fs.bind(self.get_model(), data=data, session=self.Session())
+        try:
+            fs = fs.bind(data=data, session=self.Session())
+        except:
+            # non SA forms
+            fs = fs.bind(self.get_model(), data=data, session=self.Session())
         if fs.validate():
             fs.sync()
             self.sync(fs)
@@ -298,7 +302,7 @@ class _RESTController(object):
                     return ''
                 redirect(model_url(self.collection_name))
             else:
-                fs = self.get_fieldset(_pk(fs.model))
+                fs.rebind(fs.model, data=None)
                 return self.render(format=format, fs=fs)
         return self.render(format=format, fs=fs, action='new', id=None)
 
