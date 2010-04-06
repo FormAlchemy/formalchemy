@@ -476,6 +476,8 @@ class FieldSet(BaseFieldSet):
         self.readonly = False
         self.focus = True
         self._errors = []
+        self._bound_pk = None
+        self.data = None
         self.validator = None
         self.iface = model
         focus = True
@@ -541,7 +543,7 @@ class FieldSet(BaseFieldSet):
             try:
                 self.data = SimpleMultiDict(data)
             except:
-                raise Exception('unsupported data object %s.  currently only dicts and Paste multidicts are supported' % self.data)
+                raise Exception('unsupported data object %s. currently only dicts and Paste multidicts are supported' % self.data)
 
 class Grid(BaseGrid, FieldSet):
     """Grid aware of zope schema. See :class:`formalchemy.tables.Grid` for full api."""
