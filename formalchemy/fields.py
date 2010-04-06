@@ -655,7 +655,8 @@ class CheckBoxSet(RadioSet):
         return FieldRenderer._serialized_value(self)
 
     def _is_checked(self, choice_value):
-        return _stringify(choice_value) in self._value
+        value = self._value or []
+        return _stringify(choice_value) in value
 
 
 class SelectFieldRenderer(FieldRenderer):
