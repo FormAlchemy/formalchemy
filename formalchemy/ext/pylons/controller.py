@@ -8,6 +8,7 @@ from pylons import url
 from webhelpers.paginate import Page
 from sqlalchemy.orm import class_mapper, object_session
 from formalchemy.fields import _pk
+from formalchemy.fields import _stringify
 from formalchemy import Grid, FieldSet
 from formalchemy.i18n import get_translator
 from formalchemy.fields import Field
@@ -134,13 +135,19 @@ class _RESTController(object):
             data = dict(fields=fields)
             pk = _pk(fs.model)
             if pk:
-                data['url'] = model_url(self.member_name, id=pk)
+                data['item_url'] = model_url(self.member_name, id=pk)
         else:
             data = {}
         data.update(kwargs)
         return json.dumps(data)
 
-    def get_page(self):
+    def render_xhr_format(self, fs=None, **kwargs):
+        response.content_type = 'text/html'
+        if fs:
+            return fs.render()
+        return ''
+
+    def get_page(self, **kwargs):
         """return a ``webhelpers.paginate.Page`` used to display ``Grid``.
 
         Default is::
@@ -151,9 +158,11 @@ class _RESTController(object):
             return Page(query, page=int(request.GET.get('page', '1')), **kwargs)
         """
         S = self.Session()
-        query = S.query(self.get_model())
-        kwargs = request.environ.get('pylons.routes_dict', {})
-        return Page(query, page=int(request.GET.get('page', '1')), **kwargs)
+        options = dict(collection=S.query(self.get_model()), page=int(request.GET.get('page', '1')))
+        options.update(request.environ.get('pylons.routes_dict', {}))
+        options.update(kwargs)
+        collection = options.pop('collection')
+        return Page(collection, **options)
 
     def get(self, id=None):
         """return correct record for ``id`` or a new instance.
@@ -248,18 +257,26 @@ class _RESTController(object):
     def index(self, format='html', **kwargs):
         """REST api"""
         page = self.get_page()
+        fs = self.get_grid()
+        fs = fs.bind(instances=page)
+        fs.readonly = True
         if format == 'json':
             values = []
             for item in page:
                 pk = _pk(item)
-                value = hasattr(item, '__unicode__') and u'%s' % item or pk
-                values.append(dict(pk=pk,
-                                   url=model_url(self.member_name, id=pk),
-                                   value=value))
-            return self.render_json_format(records=values, page_count=page.page_count, page=page.page)
-        fs = self.get_grid()
-        fs = fs.bind(instances=page)
-        fs.readonly = True
+                fs._set_active(item)
+                value = dict(id=pk,
+                             item_url=model_url(self.member_name, id=pk))
+                if 'jqgrid' in request.GET:
+                    fields = [_stringify(field.render_readonly()) for field in fs.render_fields.values()]
+                    value['cell'] = [pk] + fields
+                else:
+                    value.update(dict([(field.key, field.model_value) for field in fs.render_fields.values()]))
+                values.append(value)
+            return self.render_json_format(rows=values,
+                                           records=len(values),
+                                           total=page.page_count,
+                                           page=page.page)
         return self.render_grid(format=format, fs=fs, id=None, pager=page.pager(**self.pager_args))
 
     def create(self, format='html', **kwargs):
@@ -281,7 +298,8 @@ class _RESTController(object):
                     return ''
                 redirect(model_url(self.collection_name))
             else:
-                return self.render_json_format(fs=fs)
+                fs = self.get_fieldset(_pk(fs.model))
+                return self.render(format=format, fs=fs)
         return self.render(format=format, fs=fs, action='new', id=None)
 
     def delete(self, id, format='html', **kwargs):
@@ -318,7 +336,7 @@ class _RESTController(object):
     def update(self, id, format='html', **kwargs):
         """REST api"""
         fs = self.get_fieldset(id)
-        if format == 'json' and request.method == 'PUT':
+        if format == 'json' and request.method == 'PUT' and '_method' not in request.GET:
             data = json.load(request.body_file)
         else:
             data = request.POST

@@ -7,7 +7,7 @@ class TestOwnersController(TestController):
         resp.mustcontain('gawel')
 
         resp = self.app.get(url('formatted_owners', format='json'))
-        resp.mustcontain('{"records": [{"url": "/owners/1", "pk": 1, "value": "gawel"}')
+        resp.mustcontain('"rows": [{"item_url": "/owners')
 
     def test_add(self):
         resp = self.app.post(url('/owners.json'), {"Owner--animals": '1', "Owner--name": "gawel"})
