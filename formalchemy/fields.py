@@ -57,6 +57,8 @@ def _stringify(k, null_value=u''):
     else:
         return unicode(str(k), config.encoding)
 
+NoDefault = object()
+
 def deserialize_once(func):
     """Simple deserialization caching decorator.
 
@@ -198,10 +200,6 @@ class FieldRenderer(object):
         value = self.field.raw_value
         if value is None:
             return ''
-        if self.field.is_scalar_relation:
-            q = self.field.query(self.field.relation_type())
-            v = q.get(value)
-            return _stringify(v)
         if isinstance(value, list):
             return u', '.join([_stringify(item) for item in value])
         if isinstance(value, unicode):
@@ -629,17 +627,21 @@ class RadioSet(FieldRenderer):
             return None
         return FieldRenderer._serialized_value(self)
 
-    def _is_checked(self, choice_value):
-        return self._value == _stringify(choice_value)
+    def _is_checked(self, choice_value, value=NoDefault):
+        if value is NoDefault:
+            value = self._value
+        return value == _stringify(choice_value)
 
     def render(self, options, **kwargs):
+        value = self._value
         self.radios = []
         if callable(options):
             options = options(self.field.parent)
         for i, (choice_name, choice_value) in enumerate(_extract_options(options)):
             choice_id = '%s_%i' % (self.name, i)
             radio = self.widget(self.name, choice_value, id=choice_id,
-                                checked=self._is_checked(choice_value), **kwargs)
+                                checked=self._is_checked(choice_value, value),
+                                **kwargs)
             label = h.label(choice_name, for_=choice_id)
             self.radios.append(h.literal(self.format % dict(field=radio,
                                                             label=label)))
@@ -654,8 +656,9 @@ class CheckBoxSet(RadioSet):
             return []
         return FieldRenderer._serialized_value(self)
 
-    def _is_checked(self, choice_value):
-        value = self._value or []
+    def _is_checked(self, choice_value, value=NoDefault):
+        if value is NoDefault:
+            value = self._value
         return _stringify(choice_value) in value
 
 
@@ -1445,6 +1448,8 @@ class AttributeField(AbstractField):
             return None
         if self.is_collection:
             return [_pk(item) for item in value]
+        if self.is_relation:
+            return _pk(value)
         return value
 
     def model_value(self):
@@ -1452,10 +1457,13 @@ class AttributeField(AbstractField):
     model_value = property(model_value)
 
     def raw_value(self):
-        try:
-            v = getattr(self.model, self.name)
-        except AttributeError:
+        if self.is_scalar_relation:
             v = getattr(self.model, self.key)
+        else:
+            try:
+                v = getattr(self.model, self.name)
+            except AttributeError:
+                v = getattr(self.model, self.key)
         if v is not None:
             return v
 
