@@ -52,7 +52,7 @@ class Grid(base.EditableRenderer):
         from sqlalchemy.orm import class_mapper
         if not class_mapper(cls):
             raise Exception('Grid must be bound to an SA mapped class')
-        base.EditableRenderer.__init__(self, cls, session, data, prefix) 
+        base.EditableRenderer.__init__(self, cls, session, data, prefix)
         self.rows = instances
         self.readonly = False
         self.errors = {}

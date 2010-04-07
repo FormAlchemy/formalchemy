@@ -58,27 +58,27 @@ class AbstractFieldSet(base.EditableRenderer):
         to know about the entire form.  The other parameters are passed directly
         to `ModelRenderer.configure`.
 
-        - `pk=False`: 
+        - `pk=False`:
               set to True to include primary key columns
 
-        - `exclude=[]`: 
+        - `exclude=[]`:
               an iterable of attributes to exclude.  Other attributes will
               be rendered normally
 
-        - `include=[]`: 
+        - `include=[]`:
               an iterable of attributes to include.  Other attributes will
               not be rendered
 
-        - `options=[]`: 
+        - `options=[]`:
               an iterable of modified attributes.  The set of attributes to
               be rendered is unaffected
 
-        - `global_validator=None`: 
+        - `global_validator=None`:
               `global_validator` should be a function that performs
               validations that need to know about the entire form.
 
         Only one of {`include`, `exclude`} may be specified.
-        
+
         Note that there is no option to include foreign keys.  This is
         deliberate.  Use `include` if you really need to manually edit FKs.
 
@@ -86,7 +86,7 @@ class AbstractFieldSet(base.EditableRenderer):
         in `include`.  Otherwise, fields will be rendered in order of declaration,
         with table fields before mapped properties.  (However, mapped property order
         is sometimes ambiguous, e.g. when backref is involved.  In these cases,
-        FormAlchemy will take its best guess, but you may have to force the 
+        FormAlchemy will take its best guess, but you may have to force the
         "right" order with `include`.)
 
         """
@@ -163,7 +163,7 @@ class FieldSet(AbstractFieldSet):
 
         This `configure` adds two parameters:
 
-        - `focus=True`: 
+        - `focus=True`:
               the attribute (e.g., `fs.orders`) whose rendered input element
               gets focus. Default value is True, meaning, focus the first
               element. False means do not focus at all.

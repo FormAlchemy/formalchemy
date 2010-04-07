@@ -78,7 +78,7 @@ def deserialize_once(func):
     def cache(self, *args, **kwargs):
         if hasattr(self, '_deserialization_result'):
             return self._deserialization_result
-               
+
         self._deserialization_result = func(self, *args, **kwargs)
 
         return self._deserialization_result
@@ -105,7 +105,7 @@ class FieldRenderer(object):
 
         The `name` of a field will always look like:
           [fieldset_prefix-]ModelName-[pk]-fieldname
-        
+
         The fieldset_prefix is defined when instantiating the
         `FieldSet` object, by passing the `prefix=` keyword argument.
 
@@ -124,7 +124,7 @@ class FieldRenderer(object):
          same page. You can however, create more than one object
          of a certain class, provided that you create multiple FieldSet
          instances and pass the `prefix=` keyword argument.
-         
+
          Otherwise, FormAlchemy deals very well with editing multiple
          existing objects of same/different types on the same page,
          without any name clash. Just be careful with multiple object
@@ -159,7 +159,7 @@ class FieldRenderer(object):
         """
         if not self.field.is_readonly() and self.params is not None:
             # submitted value.  do not deserialize here since that requires valid data, which we might not have
-            v = self._serialized_value() 
+            v = self._serialized_value()
         else:
             v = None
         # empty field will be '' -- use default value there, too
@@ -230,7 +230,7 @@ class FieldRenderer(object):
     @property
     def params(self):
         """This gives access to the POSTed data, as received from
-        the web user. You should call `.getone`, or `.getall` to 
+        the web user. You should call `.getone`, or `.getall` to
         retrieve a single value or multiple values for a given
         key.
 
@@ -312,7 +312,7 @@ class FieldRenderer(object):
         decorator, provided using:
 
         .. sourcecode:: py
-       
+
           from formalchemy.fields import deserialize_once
 
           @deserialize_once
@@ -631,7 +631,7 @@ class RadioSet(FieldRenderer):
     """render a field as radio"""
     widget = staticmethod(h.radio_button)
     format = '%(field)s%(label)s'
-    
+
     def _serialized_value(self):
         if self.name not in self.params:
             return None
@@ -748,7 +748,7 @@ def _pk_one_column(instance, column):
     return attr
 
 def _pk(instance):
-    # Return the value of this instance's primary key, suitable for passing to Query.get().  
+    # Return the value of this instance's primary key, suitable for passing to Query.get().
     # Will be a tuple if PK is multicolumn.
     try:
         columns = class_mapper(type(instance)).primary_key
@@ -770,13 +770,13 @@ class _SafeEval(object):
         cls = node.__class__
         meth = getattr(self,'visit'+cls.__name__,self.default)
         return meth(node, **kw)
-            
+
     def default(self, node, **kw):
         for child in node.getChildNodes():
             return self.visit(child, **kw)
-            
+
     visitExpression = default
-    
+
     def visitName(self, node, **kw):
         if node.name in ['True', 'False', 'None']:
             return eval(node.name)
@@ -786,7 +786,7 @@ class _SafeEval(object):
 
     def visitTuple(self,node, **kw):
         return tuple(self.visit(i) for i in node.nodes)
-        
+
     def visitList(self,node, **kw):
         return [self.visit(i) for i in node.nodes]
 
@@ -1237,7 +1237,7 @@ class AbstractField(object):
         a list of the primary key values of the items in the collection is returned.
 
         Invalid form data will cause an error to be raised.  Controllers should thus validate first.
-        Renderers should thus never access .value; use .model_value instead.  
+        Renderers should thus never access .value; use .model_value instead.
         """
         # TODO add ._validated flag to save users from themselves?
         if not self.is_readonly() and self.parent.data is not None:
@@ -1256,7 +1256,7 @@ class AbstractField(object):
     def raw_value(self):
         """
         raw value from model.  different from `.model_value` in SQLAlchemy fields, because for reference types,
-        `.model_value` will return the foreign key ID.  This will return the actual object 
+        `.model_value` will return the foreign key ID.  This will return the actual object
         referenced instead.
         """
         raise NotImplementedError()
@@ -1272,14 +1272,14 @@ class Field(AbstractField):
         """
         Create a new Field object.
 
-        - `name`: 
+        - `name`:
               field name
 
-        - `type=types.String`: 
+        - `type=types.String`:
               data type, from formalchemy.types (Integer, Float, String, Binary,
               Boolean, Date, DateTime, Time) or a custom type
 
-        - `value=None`: 
+        - `value=None`:
               default value.  If value is a callable, it will be passed the current
               bound model instance when the value is read.  This allows creating a
               Field whose value depends on the model once, then binding different
