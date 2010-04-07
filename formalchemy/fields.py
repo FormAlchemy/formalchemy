@@ -57,6 +57,15 @@ def _stringify(k, null_value=u''):
     else:
         return unicode(str(k), config.encoding)
 
+def _htmlify(k, null_value=u''):
+    if hasattr(k, '__html__'):
+        try:
+            return h.literal(k.__html__())
+        except TypeError:
+            # not callable. skipping
+            pass
+    return _stringify(k, null_value)
+
 NoDefault = object()
 
 def deserialize_once(func):
@@ -213,10 +222,10 @@ class FieldRenderer(object):
         if value is None:
             return ''
         if isinstance(value, list):
-            return u', '.join([_stringify(item) for item in value])
+            return h.literal(', ').join([self.stringify_value(item, as_html=True) for item in value])
         if isinstance(value, unicode):
             return value
-        return _stringify(value)
+        return self.stringify_value(value, as_html=True)
 
     @property
     def params(self):
@@ -366,7 +375,10 @@ class FieldRenderer(object):
             return datetime.datetime(dt.year, dt.month, dt.day, tm.hour, tm.minute, tm.second)
 
         return data
-    def stringify_value(self, v):
+
+    def stringify_value(self, v, as_html=False):
+        if as_html:
+            return _htmlify(v, null_value=self.field._null_option[1])
         return _stringify(v, null_value=self.field._null_option[1])
 
     def __repr__(self):

@@ -994,7 +994,7 @@ True
 
 >>> fs_or = FieldSet(order1)
 >>> print fs_or.user.render_readonly()
-Bill
+<a href="mailto:bill@example.com">Bill</a>
 
 >>> t = FieldSet(Manual)
 >>> t.configure(include=[t.a, t.b], readonly=True)

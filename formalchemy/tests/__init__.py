@@ -214,6 +214,8 @@ class User(Base):
         return self.name
     def __repr__(self):
         return '<User %s>' % self.name
+    def __html__(self):
+        return '<a href="mailto:%s">%s</a>' % (self.email, self.name)
 
 class NaturalOrder(Base):
     __tablename__ = 'natural_orders'
