@@ -1,3 +1,12 @@
+1.3.4
+------
+
+* renderer._value is deprecated. Use renderer.value
+
+* added renderer.raw_value
+
+* Model.__html__() (if any) is used to render model in read_only mode.
+
 1.3.3
 -----
 
