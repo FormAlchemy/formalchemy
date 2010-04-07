@@ -186,8 +186,10 @@ class Order(Base):
     id = Column(Integer, primary_key=True)
     user_id = Column(Integer, ForeignKey('users.id'), nullable=False)
     quantity = Column(Integer, nullable=False)
-    def __repr__(self):
+    def __unicode__(self):
         return 'Quantity: %s' % self.quantity
+    def __repr__(self):
+        return '<Order for user %s: %s>' % (self.user_id, self.quantity)
 
 class OptionalOrder(Base): # the user is optional, not the order
     __tablename__ = 'optional_orders'
@@ -195,8 +197,10 @@ class OptionalOrder(Base): # the user is optional, not the order
     user_id = Column(Integer, ForeignKey('users.id'))
     quantity = Column(Integer)
     user = relation('User')
-    def __repr__(self):
+    def __unicode__(self):
         return 'Quantity: %s' % self.quantity
+    def __repr__(self):
+        return '<OptionalOrder for user %s: %s>' % (self.user_id, self.quantity)
 
 class User(Base):
     __tablename__ = 'users'
@@ -388,7 +392,7 @@ if not hasattr(__builtins__, 'sorted'):
 
 class ImgRenderer(TextFieldRenderer):
     def render(self, *args, **kwargs):
-        return '<img src="%s">' % self._value
+        return '<img src="%s">' % self.value
 
 import fake_module
 fake_module.__dict__.update({

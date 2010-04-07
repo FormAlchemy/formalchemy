@@ -90,6 +90,7 @@ class FieldRenderer(object):
         self.field = field
         assert isinstance(self.field, AbstractField)
 
+    @property
     def name(self):
         """Name of rendered input element.
 
@@ -140,9 +141,9 @@ class FieldRenderer(object):
         if self.field.parent.prefix:
             components.insert(0, self.field.parent.prefix)
         return u"-".join(components)
-    name = property(name)
 
-    def _value(self):
+    @property
+    def value(self):
         """
         Submitted value, or field value converted to string.
         Return value is always either None or a string.
@@ -154,7 +155,18 @@ class FieldRenderer(object):
             v = None
         # empty field will be '' -- use default value there, too
         return v or self._model_value_as_string()
-    _value = property(_value)
+
+    @property
+    def _value(self):
+        warnings.warn('FieldRenderer._value is deprecated. Use '\
+                          'FieldRenderer.value instead')
+        return self.value
+
+    @property
+    def raw_value(self):
+        """return fields field.raw_value (mean real objects, not ForeignKeys)
+        """
+        return self.field.raw_value
 
     def _model_value_as_string(self):
         if self.field.model_value is None:
@@ -175,17 +187,17 @@ class FieldRenderer(object):
             lang = 'en'
         return get_translator(lang=lang).gettext
 
+    @property
     def errors(self):
         """Return the errors on the FieldSet if any. Useful to know
         if you're redisplaying a form, or showing up a fresh one.
         """
         return self.field.parent.errors
-    errors = property(errors)
 
     def render(self, **kwargs):
         """
         Render the field.  Use `self.name` to get a unique name for the
-        input element and id.  `self._value` may also be useful if
+        input element and id.  `self.value` may also be useful if
         you are not rendering multiple input elements.
 
         When rendering, you can verify `self.errors` to know
@@ -197,7 +209,7 @@ class FieldRenderer(object):
 
     def render_readonly(self, **kwargs):
         """render a string representation of the field value"""
-        value = self.field.raw_value
+        value = self.raw_value
         if value is None:
             return ''
         if isinstance(value, list):
@@ -206,6 +218,7 @@ class FieldRenderer(object):
             return value
         return _stringify(value)
 
+    @property
     def params(self):
         """This gives access to the POSTed data, as received from
         the web user. You should call `.getone`, or `.getall` to 
@@ -221,16 +234,12 @@ class FieldRenderer(object):
         to catch all the values for the renderer's form entry.
         """
         return self.field.parent.data
-    params = property(params)
 
-    # DEPRECATED, for backwards compatibility
+    @property
     def _params(self):
-        """DEPRECATED: for backwards compatibility only."""
-        import warnings
         warnings.warn('FieldRenderer._params is deprecated. Use '\
                           'FieldRenderer.params instead')
         return self.params
-    _params = property(_params)
 
     def _serialized_value(self):
         """
@@ -254,17 +263,6 @@ class FieldRenderer(object):
         if self.field.is_collection:
             return self.params.getall(self.name)
         return self.params.getone(self.name)
-
-    def value_objects(self):
-        """Same as `value`, except returns a list of objects instead of 
-        primary keys, when working with ForeignKeys.
-
-        Use this when your `deserialize` or `render` functions manipulates
-        ForeignKey objects; adding, removing or changing display according
-        to their contents.
-        """
-        return self.field.value_objects
-    value_objects = property(value_objects)
 
     def deserialize(self):
         """Turns the user-submitted data into a Python value.
@@ -395,24 +393,24 @@ class EscapingReadonlyRenderer(FieldRenderer):
 
 class TextFieldRenderer(FieldRenderer):
     """render a field as a text field"""
+    @property
     def length(self):
         return self.field.type.length
-    length = property(length)
 
     def render(self, **kwargs):
-        return h.text_field(self.name, value=self._value, maxlength=self.length, **kwargs)
+        return h.text_field(self.name, value=self.value, maxlength=self.length, **kwargs)
 
 
 class IntegerFieldRenderer(FieldRenderer):
     """render an integer as a text field"""
     def render(self, **kwargs):
-        return h.text_field(self.name, value=self._value, **kwargs)
+        return h.text_field(self.name, value=self.value, **kwargs)
 
 
 class FloatFieldRenderer(FieldRenderer):
     """render a float as a text field"""
     def render(self, **kwargs):
-        return h.text_field(self.name, value=self._value, **kwargs)
+        return h.text_field(self.name, value=self.value, **kwargs)
 
 class IntervalFieldRenderer(FloatFieldRenderer):
     """render an interval as a text field"""
@@ -426,7 +424,7 @@ class IntervalFieldRenderer(FloatFieldRenderer):
 class PasswordFieldRenderer(TextFieldRenderer):
     """Render a password field"""
     def render(self, **kwargs):
-        return h.password_field(self.name, value=self._value, maxlength=self.length, **kwargs)
+        return h.password_field(self.name, value=self.value, maxlength=self.length, **kwargs)
     def render_readonly(self):
         return '*'*6
 
@@ -435,13 +433,13 @@ class TextAreaFieldRenderer(FieldRenderer):
     def render(self, **kwargs):
         if isinstance(kwargs.get('size'), tuple):
             kwargs['size'] = 'x'.join([str(i) for i in kwargs['size']])
-        return h.text_area(self.name, content=self._value, **kwargs)
+        return h.text_area(self.name, content=self.value, **kwargs)
 
 
 class HiddenFieldRenderer(FieldRenderer):
     """render a field as an hidden field"""
     def render(self, **kwargs):
-        return h.hidden_field(self.name, value=self._value, **kwargs)
+        return h.hidden_field(self.name, value=self.value, **kwargs)
     def render_readonly(self):
         return ''
 
@@ -449,7 +447,7 @@ class HiddenFieldRenderer(FieldRenderer):
 class CheckBoxFieldRenderer(FieldRenderer):
     """render a boolean value as checkbox field"""
     def render(self, **kwargs):
-        return h.check_box(self.name, True, checked=_simple_eval(self._value or ''), **kwargs)
+        return h.check_box(self.name, True, checked=_simple_eval(self.value or ''), **kwargs)
     def _serialized_value(self):
         if self.name not in self.params:
             return None
@@ -478,7 +476,7 @@ class FileFieldRenderer(FieldRenderer):
             return h.file_field(self.name, **kwargs)
 
     def get_size(self):
-        value = self.field.raw_value
+        value = self.raw_value
         if value is None:
             return 0
         return len(value)
@@ -526,14 +524,14 @@ def _ternary(condition, first, second):
 
 class DateFieldRenderer(FieldRenderer):
     """Render a date field"""
+    @property
     def format(self):
         return config.date_format
-    format = property(format)
+    @property
     def edit_format(self):
         return config.date_edit_format
-    edit_format = property(edit_format)
     def render_readonly(self, **kwargs):
-        value = self.field.raw_value
+        value = self.raw_value
         return value and value.strftime(self.format) or ''
     def _render(self, **kwargs):
         data = self.params
@@ -567,7 +565,7 @@ class TimeFieldRenderer(FieldRenderer):
     """Render a time field"""
     format = '%H:%M:%S'
     def render_readonly(self, **kwargs):
-        value = self.field.raw_value
+        value = self.raw_value
         return value and value.strftime(self.format) or ''
     def _render(self, **kwargs):
         data = self.params
@@ -629,11 +627,11 @@ class RadioSet(FieldRenderer):
 
     def _is_checked(self, choice_value, value=NoDefault):
         if value is NoDefault:
-            value = self._value
+            value = self.value
         return value == _stringify(choice_value)
 
     def render(self, options, **kwargs):
-        value = self._value
+        value = self.value
         self.radios = []
         if callable(options):
             options = options(self.field.parent)
@@ -658,7 +656,7 @@ class CheckBoxSet(RadioSet):
 
     def _is_checked(self, choice_value, value=NoDefault):
         if value is NoDefault:
-            value = self._value
+            value = self.value
         return _stringify(choice_value) in value
 
 
@@ -683,7 +681,7 @@ class SelectFieldRenderer(FieldRenderer):
                 L = [(k, self.stringify_value(v)) for k, v in L]
             else:
                 L = [_stringify(k) for k in L]
-        return h.select(self.name, self._value, L, **kwargs)
+        return h.select(self.name, self.value, L, **kwargs)
 
     def render_readonly(self, options=None, **kwargs):
         """render a string representation of the field value.
@@ -692,7 +690,7 @@ class SelectFieldRenderer(FieldRenderer):
         if not options or self.field.is_scalar_relation:
             return FieldRenderer.render_readonly(self)
 
-        value = self.field.raw_value
+        value = self.raw_value
         if value is None:
             return ''
 
@@ -907,9 +905,9 @@ class AbstractField(object):
             wrapper._renderer.field = wrapper
         return wrapper
 
+    @property
     def requires_label(self):
         return not isinstance(self.renderer, HiddenFieldRenderer)
-    requires_label = property(requires_label)
 
     def query(self, *args, **kwargs):
         """Perform a query in the parent's session"""
@@ -957,9 +955,9 @@ class AbstractField(object):
         """True iff this Field is in readonly mode"""
         return self._readonly
 
+    @property
     def model(self):
         return self.parent.model
-    model = property(model)
 
     def _modified(self, **kwattrs):
         # return a copy of self, with the given attributes modified
@@ -1168,6 +1166,7 @@ class AbstractField(object):
                 'No renderer found for field %s. '
                 'Type %s as no default renderer' % (self.name, self.type))
 
+    @property
     def renderer(self):
         if self._renderer is None:
             self._renderer = self._get_renderer()
@@ -1179,7 +1178,6 @@ class AbstractField(object):
             # must be a Renderer class.  instantiate.
             self._renderer = self._renderer(self)
         return self._renderer
-    renderer = property(renderer)
 
     def _get_render_opts(self):
         """
@@ -1216,6 +1214,7 @@ class AbstractField(object):
         """return the PK for value, if applicable"""
         return value
 
+    @property
     def value(self):
         """
         The value of this Field: use the corresponding value in the bound `data`,
@@ -1234,25 +1233,14 @@ class AbstractField(object):
             if v is not None:
                 return self._pkify(v)
         return self.model_value
-    value = property(value)
 
-    def value_objects(self):
-        """This is the same as `value`, except that when used with ForeignKeys,
-        instead of returning a list of primary keys, it will return a list of
-        objects.
-        """
-        if not self.is_readonly() and self.parent.data is not None:
-            return self._deserialize()
-        return self.model_value
-    value_objects = property(value_objects)
-
+    @property
     def model_value(self):
         """
         raw value from model, transformed if necessary for use as a form input value.
         """
         raise NotImplementedError()
-    model_value = property(model_value)
-        
+
     def raw_value(self):
         """
         raw value from model.  different from `.model_value` in SQLAlchemy fields, because for reference types,
@@ -1306,16 +1294,17 @@ class Field(AbstractField):
             self._value = kwattrs.pop('value')
         return AbstractField.set(self, **kwattrs)
 
+    @property
     def model_value(self):
         return self.raw_value
-    model_value = property(model_value)
 
+    @property
     def is_collection(self):
         if isinstance(self.type, (fatypes.List, fatypes.Set)):
             return True
         return self.render_opts.get('multiple', False) or isinstance(self.renderer, self.parent.default_renderers['checkbox'])
-    is_collection = property(is_collection)
 
+    @property
     def raw_value(self):
         try:
             # this is NOT the same as getattr -- getattr will return the class's
@@ -1327,7 +1316,6 @@ class Field(AbstractField):
         if callable(self._value):
             return self._value(self.model)
         return self._value
-    raw_value = property(raw_value)
 
     def sync(self):
         """Set the attribute's value in `model` to the value given in `data`"""
@@ -1421,6 +1409,7 @@ class AttributeField(AbstractField):
         from sqlalchemy.sql.expression import _Label
         return AbstractField.is_readonly(self) or isinstance(self._columns[0], _Label)
 
+    @property
     def _columns(self):
         if self.is_scalar_relation:
             # If the attribute is a foreign key, return the Column that this
@@ -1433,7 +1422,6 @@ class AttributeField(AbstractField):
             # collection -- use the mapped class's PK
             assert self.is_collection, self._impl.__class__
             return self._property.mapper.primary_key
-    _columns = property(_columns)
 
     def relation_type(self):
         """
@@ -1452,10 +1440,11 @@ class AttributeField(AbstractField):
             return _pk(value)
         return value
 
+    @property
     def model_value(self):
         return self._pkify(self.raw_value)
-    model_value = property(model_value)
 
+    @property
     def raw_value(self):
         if self.is_scalar_relation:
             v = getattr(self.model, self.key)
@@ -1482,7 +1471,6 @@ class AttributeField(AbstractField):
             else:
                 return arg
         return None
-    raw_value = property(raw_value)
 
     def sync(self):
         """Set the attribute's value in `model` to the value given in `data`"""

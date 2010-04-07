@@ -244,7 +244,7 @@ True
 True
 >>> fs_cb.field.value
 False
->>> fs_cb.field.renderer._value is None
+>>> fs_cb.field.renderer.value is None
 True
 >>> print fs_cb.field.render()
 <input id="CheckBox--field" name="CheckBox--field" type="checkbox" value="True" />
@@ -408,6 +408,11 @@ True
   Quantity: 10
  </option>
 </select>
+
+>>> fs.orders.model_value
+[1]
+>>> fs.orders.raw_value
+[<Order for user 1: 10>]
 
 >>> fs = FieldSet(Two)
 >>> print fs.foo.render()
