@@ -115,6 +115,7 @@ class AbstractFieldSet(base.EditableRenderer):
                 success = False
         return success
 
+    @property
     def errors(self):
         """
         A dictionary of validation failures.  Always empty before `validate()` is run.
@@ -127,7 +128,6 @@ class AbstractFieldSet(base.EditableRenderer):
         errors.update(dict([(field, field.errors)
                             for field in self.render_fields.itervalues() if field.errors]))
         return errors
-    errors = property(errors)
 
     def __repr__(self):
         _fields = self._fields

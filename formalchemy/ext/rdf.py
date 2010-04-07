@@ -91,17 +91,17 @@ class Session(object):
 class Field(BaseField):
     """"""
 
+    @property
     def value(self):
         if not self.is_readonly() and self.parent.data is not None:
             v = self._deserialize()
             if v is not None:
                 return v
         return getattr(self.model, self.name)
-    value = property(value)
 
+    @property
     def model_value(self):
         return getattr(self.model, self.name)
-    model_value = property(model_value)
     raw_value = model_value
 
     def sync(self):

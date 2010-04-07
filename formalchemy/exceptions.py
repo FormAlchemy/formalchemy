@@ -6,9 +6,9 @@ class PkError(Exception):
 class ValidationError(Exception):
     """an exception raised when the validation failed
     """
+    @property
     def message(self):
         return self.args[0]
-    message = property(message)
     def __repr__(self):
         return 'ValidationError(%r,)' % self.message
 

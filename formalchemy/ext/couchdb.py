@@ -193,6 +193,7 @@ class Field(BaseField):
             kwargs['multiple'] = True
         BaseField.__init__(self, *args, **kwargs)
 
+    @property
     def value(self):
         if not self.is_readonly() and self.parent.data is not None:
             v = self._deserialize()
@@ -200,8 +201,8 @@ class Field(BaseField):
                 return v
         value = getattr(self.model, self.name)
         return _stringify(value)
-    value = property(value)
 
+    @property
     def raw_value(self):
         try:
             value = getattr(self.model, self.name)
@@ -211,7 +212,6 @@ class Field(BaseField):
         if callable(self._value):
             return self._value(self.model)
         return self._value
-    raw_value = property(raw_value)
 
     def sync(self):
         """Set the attribute's value in `model` to the value given in `data`"""

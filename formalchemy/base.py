@@ -282,6 +282,7 @@ class ModelRenderer(object):
             self._fields = OrderedDict(items)
 
 
+    @property
     def render_fields(self):
         """
         The set of attributes that will be rendered, as a (ordered)
@@ -290,7 +291,6 @@ class ModelRenderer(object):
         if not self._render_fields:
             self._render_fields = OrderedDict([(field.key, field) for field in self._get_fields()])
         return self._render_fields
-    render_fields = property(render_fields)
 
     def configure(self, pk=False, exclude=[], include=[], options=[]):
         """

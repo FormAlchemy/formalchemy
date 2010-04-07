@@ -403,14 +403,15 @@ class Field(BaseField):
                 options = [(term.title, term.value) for term in sourcelist]
         return BaseField.set(self, options=options, **kwargs)
 
+    @property
     def value(self):
         if not self.is_readonly() and self.parent.data is not None:
             v = self._deserialize()
             if v is not None:
                 return v
         return getattr(self.model, self.name)
-    value = property(value)
 
+    @property
     def raw_value(self):
         try:
             return getattr(self.model, self.name)
@@ -419,7 +420,6 @@ class Field(BaseField):
         if callable(self._value):
             return self._value(self.model)
         return self._value
-    raw_value = property(raw_value)
 
     def _validate(self):
         if self.is_readonly():
