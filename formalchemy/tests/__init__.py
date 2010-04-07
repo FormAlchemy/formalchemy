@@ -169,6 +169,12 @@ class OTOChild(Base):
     id = Column(Integer, primary_key=True)
     baz = Column(Text, nullable=False)
 
+    def __unicode__(self):
+        return self.baz
+
+    def __repr__(self):
+        return '<OTOChild %s>' % self.baz
+
 class OTOParent(Base):
     __tablename__ = 'one_to_one_parent'
     id = Column(Integer, primary_key=True)
@@ -202,6 +208,8 @@ class User(Base):
     orders_dl = dynamic_loader(Order)
     def __unicode__(self):
         return self.name
+    def __repr__(self):
+        return '<User %s>' % self.name
 
 class NaturalOrder(Base):
     __tablename__ = 'natural_orders'
@@ -279,6 +287,9 @@ session = Session()
 
 primary1 = PrimaryKeys(id=1, id2='22', field='value1')
 primary2 = PrimaryKeys(id=1, id2='33', field='value2')
+
+parent = OTOParent()
+parent.child = OTOChild(baz='baz')
 
 bill = User(email='bill@example.com',
             password='1234',

@@ -532,6 +532,9 @@ ValueError: ...
   Child
  </label>
  <select id="OTOParent--oto_child_id" name="OTOParent--oto_child_id">
+  <option value="1">
+   baz
+  </option>
  </select>
 </div>
 <script type="text/javascript">
@@ -539,6 +542,10 @@ ValueError: ...
 document.getElementById("OTOParent--oto_child_id").focus();
 //]]>
 </script>
+
+>>> fs.rebind(parent)
+>>> fs.child.raw_value
+<OTOChild baz>
 
 # validation + sync
 >>> fs_2 = FieldSet(Two, data={'Two--foo': ''})
