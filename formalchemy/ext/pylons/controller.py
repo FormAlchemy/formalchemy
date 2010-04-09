@@ -24,7 +24,7 @@ import simplejson as json
 def model_url(*args, **kwargs):
     """wrap ``pylons.url`` and take care about ``model_name`` in
     ``pylons.routes_dict`` if any"""
-    if 'model_name' in request.environ['pylons.routes_dict']:
+    if 'model_name' in request.environ['pylons.routes_dict'] and 'model_name' not in kwargs:
         kwargs['model_name'] = request.environ['pylons.routes_dict']['model_name']
     return url(*args, **kwargs)
 
@@ -143,7 +143,15 @@ class _RESTController(object):
 
     def render_xhr_format(self, fs=None, **kwargs):
         response.content_type = 'text/html'
-        if fs:
+        if fs is not None:
+            if 'field' in request.GET:
+                field_name = request.GET.get('field')
+                fields = fs.render_fields
+                if field_name in fields:
+                    field = fields[field_name]
+                    return field.render()
+                else:
+                    abort(404)
             return fs.render()
         return ''
 
