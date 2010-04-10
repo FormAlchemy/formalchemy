@@ -285,7 +285,11 @@ class _RESTController(object):
                                            records=len(values),
                                            total=page.page_count,
                                            page=page.page)
-        return self.render_grid(format=format, fs=fs, id=None, pager=page.pager(**self.pager_args))
+        if 'pager' not in kwargs:
+            pager = page.pager(**self.pager_args)
+        else:
+            pager = kwargs.pop('pager')
+        return self.render_grid(format=format, fs=fs, id=None, pager=pager)
 
     def create(self, format='html', **kwargs):
         """REST api"""
