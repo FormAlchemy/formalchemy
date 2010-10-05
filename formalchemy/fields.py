@@ -938,7 +938,7 @@ class AbstractField(object):
             # also raise a ValidationError
             value = self._deserialize()
         except validators.ValidationError, e:
-            self.errors.append(e)
+            self.errors.append(e.message)
             return False
 
         L = list(self.validators)
