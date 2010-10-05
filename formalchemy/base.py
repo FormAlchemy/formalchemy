@@ -213,8 +213,8 @@ class ModelRenderer(object):
 
     def append(self, field):
         """Add a form Field. By default, this Field will be included in the rendered form or table."""
-        if not isinstance(field, fields.Field):
-            raise ValueError('Can only add Field objects; got %s instead' % field)
+        if not isinstance(field, fields.Field) and not isinstance(field, fields.AttributeField):
+            raise ValueError('Can only add Field or AttributeField objects; got %s instead' % field)
         field.parent = self
         _fields = self._render_fields or self._fields
         _fields[field.name] = field
