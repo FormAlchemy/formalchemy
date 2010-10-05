@@ -579,7 +579,7 @@ False
 >>> fs_2.validate()
 False
 >>> fs_2.errors
-{AttributeField(foo): [ValidationError('Value is not an integer',)]}
+{AttributeField(foo): ['Value is not an integer']}
 >>> print fs_2.render()
 <div>
  <label class="field_req" for="Two--foo">
@@ -620,7 +620,7 @@ u'One--id'
 >>> fs_1.validate()
 False
 >>> fs_1.errors
-{AttributeField(id): [ValidationError('Value is not an integer',)]}
+{AttributeField(id): ['Value is not an integer']}
 
 # test updating _bound_pk copy
 >>> one = One(id=1)

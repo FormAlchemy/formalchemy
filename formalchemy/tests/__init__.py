@@ -80,7 +80,7 @@ class PrimaryKeys(Base):
 class Binaries(Base):
     __tablename__ = 'binaries'
     id = Column(Integer, primary_key=True)
-    file = Column(Binary, nullable=True)
+    file = Column(LargeBinary, nullable=True)
 
 class ConflictNames(Base):
     __tablename__ = 'conflict_names'

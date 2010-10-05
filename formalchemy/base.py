@@ -600,7 +600,7 @@ class EditableRenderer(ModelRenderer):
         fatypes.DateTime: fields.DateTimeFieldRenderer,
         fatypes.Date: fields.DateFieldRenderer,
         fatypes.Time: fields.TimeFieldRenderer,
-        fatypes.Binary: fields.FileFieldRenderer,
+        fatypes.LargeBinary: fields.FileFieldRenderer,
         fatypes.List: fields.SelectFieldRenderer,
         fatypes.Set: fields.SelectFieldRenderer,
         'dropdown': fields.SelectFieldRenderer,

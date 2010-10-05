@@ -2441,19 +2441,19 @@ True
 >>> fs.validate()
 False
 >>> fs.errors
-{AttributeField(foo): [ValidationError('Invalid date',)]}
+{AttributeField(foo): ['Invalid date']}
 
 >>> fs.rebind(dt, data={'Dt--foo__day': 'DD', 'Dt--foo__month': 'MM', 'Dt--foo__year': 'YYYY', 'Dt--bar__hour': 'HH', 'Dt--bar__minute': '1', 'Dt--bar__second': 'SS', 'Dt--foobar__day': 'DD', 'Dt--foobar__month': 'MM', 'Dt--foobar__year': '', 'Dt--foobar__hour': 'HH', 'Dt--foobar__minute': 'MM', 'Dt--foobar__second': 'SS'})
 >>> fs.validate()
 False
 >>> fs.errors
-{AttributeField(bar): [ValidationError('Invalid time',)]}
+{AttributeField(bar): ['Invalid time']}
 
 >>> fs.rebind(dt, data={'Dt--foo__day': 'DD', 'Dt--foo__month': 'MM', 'Dt--foo__year': 'YYYY', 'Dt--bar__hour': 'HH', 'Dt--bar__minute': 'MM', 'Dt--bar__second': 'SS', 'Dt--foobar__day': '11', 'Dt--foobar__month': '2', 'Dt--foobar__year': '1951', 'Dt--foobar__hour': 'HH', 'Dt--foobar__minute': 'MM', 'Dt--foobar__second': 'SS'})
 >>> fs.validate()
 False
 >>> fs.errors
-{AttributeField(foobar): [ValidationError('Incomplete datetime',)]}
+{AttributeField(foobar): ['Incomplete datetime']}
 """
 
 if __name__ == '__main__':

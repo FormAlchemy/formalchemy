@@ -39,7 +39,7 @@ def get_fields(data):
 
 __doc__ = r"""
 
-Notice that those tests assume that the FileFieldRenderer work with Binary type
+Notice that those tests assume that the FileFieldRenderer work with LargeBinary type
 *and* String type if you only want to store file path in your DB.
 
 Configure a fieldset with a file field

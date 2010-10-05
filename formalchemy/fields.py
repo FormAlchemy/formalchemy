@@ -1276,8 +1276,8 @@ class Field(AbstractField):
               field name
 
         - `type=types.String`:
-              data type, from formalchemy.types (Integer, Float, String, Binary,
-              Boolean, Date, DateTime, Time) or a custom type
+              data type, from formalchemy.types (Integer, Float, String,
+              LargeBinary, Boolean, Date, DateTime, Time) or a custom type
 
         - `value=None`:
               default value.  If value is a callable, it will be passed the current
