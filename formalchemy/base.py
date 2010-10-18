@@ -502,7 +502,7 @@ class ModelRenderer(object):
         if self.session and model == original_model:
             try:
                 o_session = object_session(self.model)
-            except AttributeError:
+            except (AttributeError, UnmappedInstanceError):
                 pass # non-SA object
             else:
                 if o_session and self.session is not o_session:
