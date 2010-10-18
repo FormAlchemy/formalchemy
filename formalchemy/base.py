@@ -21,6 +21,15 @@ from sqlalchemy.orm.scoping import ScopedSession
 from sqlalchemy.orm.dynamic import DynamicAttributeImpl
 from sqlalchemy.util import OrderedDict
 
+try:
+    from sqlalchemy.orm.exc import UnmappedInstanceError
+except ImportError:
+    class UnmappedInstanceError(Exception):
+        """
+            Exception to provide support for sqlalchemy < 0.6
+        """
+
+
 import fields, fatypes
 
 
@@ -425,7 +434,7 @@ class ModelRenderer(object):
                 # take object out of session, if present
                 try:
                     _obj_session = object_session(model)
-                except AttributeError:
+                except (AttributeError, UnmappedInstanceError):
                     pass # non-SA object; doesn't need session
                 else:
                     if _obj_session:
