@@ -492,7 +492,7 @@ class ModelRenderer(object):
             else:
                 try:
                     o_session = object_session(model)
-                except AttributeError:
+                except (AttributeError, UnmappedInstanceError):
                     pass # non-SA object
                 else:
                     if o_session:
