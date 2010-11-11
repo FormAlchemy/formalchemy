@@ -572,24 +572,32 @@ class DateFieldRenderer(FieldRenderer):
     def _serialized_value(self):
         return '-'.join([self.params.getone(self.name + '__' + subfield) for subfield in ['year', 'month', 'day']])
 
-
 class TimeFieldRenderer(FieldRenderer):
     """Render a time field"""
     format = '%H:%M:%S'
+    def is_time_type(self):
+        return isinstance(self.field.model_value, (datetime.datetime, datetime.date, datetime.time))
     def render_readonly(self, **kwargs):
         value = self.raw_value
-        return value and value.strftime(self.format) or ''
+        return isinstance(value, datetime.time) and value.strftime(self.format) or ''
     def _render(self, **kwargs):
         data = self.params
-        hour_options = ['HH'] + [(i, str(i)) for i in xrange(24)]
-        minute_options = ['MM' ] + [(i, str(i)) for i in xrange(60)]
-        second_options = ['SS'] + [(i, str(i)) for i in xrange(60)]
+        hour_options = ['HH'] + [str(i) for i in xrange(24)]
+        minute_options = ['MM' ] + [str(i) for i in xrange(60)]
+        second_options = ['SS'] + [str(i) for i in xrange(60)]
         hh_name = self.name + '__hour'
         mm_name = self.name + '__minute'
         ss_name = self.name + '__second'
-        hh = _ternary((data is not None and hh_name in data), lambda: data[hh_name], lambda: str(self.field.model_value and self.field.model_value.hour))
-        mm = _ternary((data is not None and mm_name in data), lambda: data[mm_name], lambda: str(self.field.model_value and self.field.model_value.minute))
-        ss = _ternary((data is not None and ss_name in data), lambda: data[ss_name], lambda: str(self.field.model_value and self.field.model_value.second))
+        is_time_type = isinstance(self.field.model_value, (datetime.datetime, datetime.date, datetime.time))
+        hh = _ternary((data is not None and hh_name in data),
+                       lambda: data[hh_name],
+                       lambda: str(is_time_type and self.field.model_value.hour))
+        mm = _ternary((data is not None and mm_name in data),
+                       lambda: data[mm_name],
+                       lambda: str(is_time_type and self.field.model_value.minute))
+        ss = _ternary((data is not None and ss_name in data),
+                       lambda: data[ss_name],
+                       lambda: str(is_time_type and self.field.model_value.second))
         return h.literal(':').join([
                     h.select(hh_name, [hh], hour_options, **kwargs),
                     h.select(mm_name, [mm], minute_options, **kwargs),

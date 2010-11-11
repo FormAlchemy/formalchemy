@@ -2454,6 +2454,25 @@ False
 False
 >>> fs.errors
 {AttributeField(foobar): ['Incomplete datetime']}
+
+>>> fs.rebind(dt)
+>>> dt.bar = datetime.time(0)
+>>> print fs.bar.render() #doctest: +ELLIPSIS
+<span id="Dt--bar"><select id="Dt--bar__hour" name="Dt--bar__hour">
+<option value="HH">HH</option>
+<option selected="selected" value="0">0</option>
+...
+
+>>> print fs.bar.render_readonly()
+00:00:00
+
+>>> fs = FieldSet(Dt)
+>>> print fs.bar.render() #doctest: +ELLIPSIS
+<span id="Dt--bar"><select id="Dt--bar__hour" name="Dt--bar__hour">
+<option value="HH">HH</option>
+<option value="0">0</option>
+...
+
 """
 
 if __name__ == '__main__':
