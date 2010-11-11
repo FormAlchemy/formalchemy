@@ -1863,7 +1863,7 @@ __doc__ = r"""
   </option>
  </select>
  <select id="Dt--foo__day" name="Dt--foo__day">
-  <option selected="selected" value="DD">
+  <option value="DD">
    Day
   </option>
   <option value="1">
@@ -1965,7 +1965,7 @@ __doc__ = r"""
 >>> print pretty_html(fs.bar.render())
 <span id="Dt--bar">
  <select id="Dt--bar__hour" name="Dt--bar__hour">
-  <option selected="selected" value="HH">
+  <option value="HH">
    HH
   </option>
   <option value="0">

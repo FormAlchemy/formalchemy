@@ -553,8 +553,8 @@ class DateFieldRenderer(FieldRenderer):
         mm_name = self.name + '__month'
         dd_name = self.name + '__day'
         yyyy_name = self.name + '__year'
-        mm = _ternary((data is not None and mm_name in data), lambda: data[mm_name],  lambda: str(self.field.model_value and self.field.model_value.month))
-        dd = _ternary((data is not None and dd_name in data), lambda: data[dd_name], lambda: str(self.field.model_value and self.field.model_value.day))
+        mm = _ternary((data is not None and mm_name in data), lambda: data[mm_name][-1],  lambda: str(self.field.model_value and self.field.model_value.month))
+        dd = _ternary((data is not None and dd_name in data), lambda: data[dd_name][-1], lambda: str(self.field.model_value and self.field.model_value.day))
         # could be blank so don't use and/or construct
         if data is not None and yyyy_name in data:
             yyyy = data[yyyy_name]
@@ -590,13 +590,13 @@ class TimeFieldRenderer(FieldRenderer):
         ss_name = self.name + '__second'
         is_time_type = isinstance(self.field.model_value, (datetime.datetime, datetime.date, datetime.time))
         hh = _ternary((data is not None and hh_name in data),
-                       lambda: data[hh_name],
+                       lambda: data[hh_name][-1],
                        lambda: str(is_time_type and self.field.model_value.hour))
         mm = _ternary((data is not None and mm_name in data),
-                       lambda: data[mm_name],
+                       lambda: data[mm_name][-1],
                        lambda: str(is_time_type and self.field.model_value.minute))
         ss = _ternary((data is not None and ss_name in data),
-                       lambda: data[ss_name],
+                       lambda: data[ss_name][-1],
                        lambda: str(is_time_type and self.field.model_value.second))
         return h.literal(':').join([
                     h.select(hh_name, [hh], hour_options, **kwargs),
