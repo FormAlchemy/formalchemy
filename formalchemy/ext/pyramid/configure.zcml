@@ -21,9 +21,9 @@
     route_name="fa_admin"
     context=".ModelListing"
     view=".ModelView"
-    attr="index"
+    attr="listing"
     request_method="GET"
-    renderer="formalchemy:ext/pyramid/forms/models.pt"
+    renderer="formalchemy:ext/pyramid/forms/listing.pt"
     />
 
 </configure>

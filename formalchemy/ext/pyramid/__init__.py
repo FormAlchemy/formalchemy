@@ -11,6 +11,7 @@ from formalchemy.fields import Field
 from formalchemy import fatypes
 from pyramid.view import view_config
 from pyramid.renderers import render
+from pyramid.renderers import get_renderer
 
 try:
     from formalchemy.ext.couchdb import Document
@@ -212,7 +213,9 @@ class ModelView(object):
                 return meth(**kwargs)
             else:
                 abort(404)
-        kwargs.update(model_name=self.model_name,
+        kwargs.update(
+                      main = get_renderer('formalchemy:ext/pyramid/forms/master.pt').implementation(),
+                      model_name=self.model_name,
                       prefix_name=self.prefix_name,
                       breadcrumb=self.breadcrumb(**kwargs),
                       F_=get_translator().gettext)
@@ -358,8 +361,8 @@ class ModelView(object):
             grid.append(Field('delete', fatypes.String, delete_link()))
             grid.readonly = True
 
-    def index(self, format='html', **kwargs):
-        """REST api"""
+    def listing(self, format='html', **kwargs):
+        """listing page"""
         page = self.get_page()
         fs = self.get_grid()
         fs = fs.bind(instances=page)

@@ -1,8 +1,8 @@
-<html>
+<html metal:define-macro="master">
     <head>
     </head>
     <body>
-        <div metal:fill-slot="main">
+        <div metal:define-slot="main">
         </div>
     </body>
 </html>
