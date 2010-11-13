@@ -1,0 +1,29 @@
+<?xml version="1.0"?>
+<configure xmlns="http://pylonshq.com/pyramid">
+
+<!-- static
+   name="fa_admin"
+   path="formalchemy:ext/pyramid/static"
+   / -->
+
+<view
+    name=""
+    route_name="fa_admin"
+    context=".AdminView"
+    view=".ModelView"
+    attr="models"
+    request_method="GET"
+    renderer="formalchemy:ext/pyramid/forms/models.pt"
+    />
+
+<view
+    name=""
+    route_name="fa_admin"
+    context=".ModelListing"
+    view=".ModelView"
+    attr="index"
+    request_method="GET"
+    renderer="formalchemy:ext/pyramid/forms/models.pt"
+    />
+
+</configure>

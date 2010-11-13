@@ -1,0 +1,8 @@
+<html>
+    <head>
+    </head>
+    <body>
+        <div metal:fill-slot="main">
+        </div>
+    </body>
+</html>

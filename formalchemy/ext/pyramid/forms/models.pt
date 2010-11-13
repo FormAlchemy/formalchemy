@@ -1,0 +1,12 @@
+<html>
+    <head>
+    </head>
+    <body>
+        <div tal:repeat="item models">
+          <div>
+            <a tal:attributes="href string:${item}"
+               tal:content="item"></a>
+          </div>
+        </div>
+    </body>
+</html>
