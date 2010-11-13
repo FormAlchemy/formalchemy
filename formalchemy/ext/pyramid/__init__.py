@@ -49,6 +49,7 @@ class AdminView(object):
 
 class ModelListing(object):
     def __init__(self, request, name):
+        self.request = request
         request.model_name = name
         self.__name__ = name
         self.__parent__ = None
@@ -79,6 +80,10 @@ class ModelView(object):
         self.request = request
         self.settings = request.registry.settings
         self.model = self.settings['fa.models']
+        try:
+            self.id = request.model_id
+        except:
+            self.id = None
 
     @property
     def model_name(self):
@@ -434,12 +439,11 @@ class ModelView(object):
             redirect(model_url(self.collection_name))
         return self.render(format=format, id=id)
 
-    @view_config(name='', request_method='GET', **VIEW_ARGS)
-    def show(self, id=None, format='html', **kwargs):
+    def show(self):
         """REST api"""
-        fs = self.get_fieldset(id=id)
+        fs = self.get_fieldset(id=self.id)
         fs.readonly = True
-        return self.render(format=format, fs=fs, action='show', id=id)
+        return self.render(fs=fs, action='show', id=id)
 
     @view_config(name='new', request_method='GET', **VIEW_ARGS)
     def new(self, format='html', **kwargs):

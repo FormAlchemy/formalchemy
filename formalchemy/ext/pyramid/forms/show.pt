@@ -1,0 +1,10 @@
+<html metal:use-macro="main.macros['master']">
+  <body>
+    <div metal:fill-slot="main">
+      <div tal:content="structure fs.render()" />
+      <div metal:use-macro="main.macros['buttons']">
+      </div>
+    </div>
+  </body>
+</html>
+

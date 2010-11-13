@@ -26,4 +26,14 @@
     renderer="formalchemy:ext/pyramid/forms/listing.pt"
     />
 
+<view
+    name=""
+    route_name="fa_admin"
+    context=".ModelItem"
+    view=".ModelView"
+    attr="show"
+    request_method="GET"
+    renderer="formalchemy:ext/pyramid/forms/show.pt"
+    />
+
 </configure>
