@@ -1,0 +1,240 @@
+# Polish translations for FormAlchemy.
+# Copyright (C) 2009 ORGANIZATION
+# This file is distributed under the same license as the FormAlchemy
+# project.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2009.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: FormAlchemy 1.3.1\n"
+"Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
+"POT-Creation-Date: 2009-11-08 12:02+0100\n"
+"PO-Revision-Date: 2010-11-22 22:41+0100\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: pl <LL@li.org>\n"
+"Plural-Forms: nplurals=3; plural=(n==1 ? 0 : n%10>=2 && n%10<=4 && "
+"(n%100<10 || n%100>=20) ? 1 : 2)\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 0.9.5\n"
+
+#: formalchemy/fields.py:316
+msgid "Remove"
+msgstr "Usuń"
+
+#: formalchemy/i18n.py:66
+msgid "Year"
+msgstr "Rok"
+
+#: formalchemy/i18n.py:67
+msgid "Month"
+msgstr "Miesiąc"
+
+#: formalchemy/i18n.py:68
+msgid "Day"
+msgstr "Dzień"
+
+#: formalchemy/i18n.py:69
+msgid "month_01"
+msgstr "styczeń"
+
+#: formalchemy/i18n.py:70
+msgid "month_02"
+msgstr "luty"
+
+#: formalchemy/i18n.py:71
+msgid "month_03"
+msgstr "marzec"
+
+#: formalchemy/i18n.py:72
+msgid "month_04"
+msgstr "kwiecień"
+
+#: formalchemy/i18n.py:73
+msgid "month_05"
+msgstr "maj"
+
+#: formalchemy/i18n.py:74
+msgid "month_06"
+msgstr "czerwiec"
+
+#: formalchemy/i18n.py:75
+msgid "month_07"
+msgstr "lipiec"
+
+#: formalchemy/i18n.py:76
+msgid "month_08"
+msgstr "sierpień"
+
+#: formalchemy/i18n.py:77
+msgid "month_09"
+msgstr "wrzesień"
+
+#: formalchemy/i18n.py:78
+msgid "month_10"
+msgstr "październik"
+
+#: formalchemy/i18n.py:79
+msgid "month_11"
+msgstr "listopad"
+
+#: formalchemy/i18n.py:80
+msgid "month_12"
+msgstr "grudzień"
+
+#: formalchemy/validators.py:40
+msgid "Please select a value"
+msgstr "Proszę wybrać wartość"
+
+#: formalchemy/validators.py:40
+msgid "Please enter a value"
+msgstr "Proszę wprowadzić wartość"
+
+#: formalchemy/validators.py:55
+msgid "Value is not an integer"
+msgstr "Wartość musi być liczbą"
+
+#: formalchemy/validators.py:66 formalchemy/validators.py:78
+msgid "Value is not a number"
+msgstr "Wartość musi być liczbą"
+
+#: formalchemy/validators.py:101
+msgid "Missing @ sign"
+msgstr "Brak znaku @"
+
+#: formalchemy/validators.py:104
+msgid "Control characters present"
+msgstr "Niepoprawne znaki"
+
+#: formalchemy/validators.py:106
+msgid "Non-ASCII characters present"
+msgstr "Niepoprawne znaki"
+
+#: formalchemy/validators.py:110
+msgid "Recipient must be non-empty"
+msgstr "Nie podano odbiorcy"
+
+#: formalchemy/validators.py:112
+msgid "Recipient must not end with '.'"
+msgstr "Odbiorca nie może kończyć się na '.'"
+
+#: formalchemy/validators.py:127
+msgid "Unterminated quoted section in recipient"
+msgstr "Niezamknięty cudzysłów w odbiorcy"
+
+#: formalchemy/validators.py:130
+msgid "Quoted section must be followed by '@' or '.'"
+msgstr "Za cudzysłowem musi być znak '@' lub '.' "
+
+#: formalchemy/validators.py:133
+msgid "Reserved character present in recipient"
+msgstr "Zarezerwowany znak w odbiorcy"
+
+#: formalchemy/validators.py:138
+msgid "Domain must be non-empty"
+msgstr "Podaj domenę"
+
+#: formalchemy/validators.py:140
+msgid "Domain must not end with '.'"
+msgstr "Domena nie może kończyć się na '.'"
+
+#: formalchemy/validators.py:142
+msgid "Domain must not contain '..'"
+msgstr "Domena nie może zawierać '..'"
+
+#: formalchemy/validators.py:144
+msgid "Reserved character present in domain"
+msgstr "Zarezerwowany znak w domenie"
+
+#: formalchemy/validators.py:154
+#, python-format
+msgid "Value must be no more than %d characters long"
+msgstr "Wartość nie może być dłuższa niż %d znaków"
+
+#: formalchemy/validators.py:163
+#, python-format
+msgid "Value must be at least %d characters long"
+msgstr "Wartość nie może być krótsza niż %d znaków"
+
+#: formalchemy/validators.py:166
+msgid "Invalid input"
+msgstr "Niepoprawna wartość"
+
+#: formalchemy/ext/fsblob.py:18
+#, python-format
+msgid "Invalid file extension. Must be %s, "
+msgstr "Niepoprawne rozszerzenie pliku. Powinno być %s, "
+
+#: formalchemy/ext/fsblob.py:25
+#, python-format
+msgid "Invalid image file. Must be %s, "
+msgstr "Niepoprawny plik z obrazem. Powinno być %s, "
+
+#: formalchemy/ext/pylons/admin.py:25
+msgid "Add"
+msgstr "Dodaj"
+
+#: formalchemy/ext/pylons/admin.py:26
+msgid "Edit"
+msgstr "Edytuj"
+
+#: formalchemy/ext/pylons/admin.py:27
+msgid "New"
+msgstr "Nowy"
+
+#: formalchemy/ext/pylons/admin.py:28
+msgid "Save"
+msgstr "Zapisz"
+
+#: formalchemy/ext/pylons/admin.py:29
+msgid "Delete"
+msgstr "Usuń"
+
+#: formalchemy/ext/pylons/admin.py:30
+msgid "Cancel"
+msgstr "Anuluj"
+
+#: formalchemy/ext/pylons/admin.py:31
+msgid "Models"
+msgstr "Modele"
+
+#: formalchemy/ext/pylons/admin.py:32 formalchemy/ext/pylons/admin.py:35
+msgid "Existing objects"
+msgstr "Istniejące obiekty"
+
+#: formalchemy/ext/pylons/admin.py:33
+msgid "New object"
+msgstr "Nowy obiekt"
+
+#: formalchemy/ext/pylons/admin.py:34
+msgid "Related types"
+msgstr "Powiązane typy"
+
+#: formalchemy/ext/pylons/admin.py:36
+msgid "Create form"
+msgstr "Stwórz formularz"
+
+#: formalchemy/ext/pylons/admin.py:81 formalchemy/ext/pylons/controller.py:229
+msgid "edit"
+msgstr "edytuj"
+
+#: formalchemy/ext/pylons/admin.py:90 formalchemy/ext/pylons/controller.py:237
+msgid "delete"
+msgstr "usuń"
+
+#: formalchemy/ext/pylons/admin.py:202
+#, python-format
+msgid "Created %s %s"
+msgstr "Stworzono %s %s"
+
+#: formalchemy/ext/pylons/admin.py:205
+#, python-format
+msgid "Modified %s %s"
+msgstr "Zmodyfikowano %s %s"
+
+#: formalchemy/ext/pylons/admin.py:237
+#, python-format
+msgid "Deleted %s %s"
+msgstr "Usunięto %s %s"
+
