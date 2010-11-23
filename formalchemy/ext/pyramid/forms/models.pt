@@ -1,12 +1,12 @@
-<html>
-    <head>
-    </head>
-    <body>
-        <div tal:repeat="item models">
-          <div>
-            <a tal:attributes="href string:${item}"
-               tal:content="item"></a>
-          </div>
+<html metal:use-macro="main.macros['master']">
+  <body>
+    <div metal:fill-slot="main">
+      <div tal:repeat="item models">
+        <div>
+          <a tal:attributes="href request.route_url('fa_admin', traverse=item)"
+             tal:content="item"></a>
         </div>
-    </body>
+      </div>
+    </div>
+  </body>
 </html>

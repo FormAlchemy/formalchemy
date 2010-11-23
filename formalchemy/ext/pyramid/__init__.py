@@ -11,6 +11,8 @@ from formalchemy.fields import Field
 from formalchemy import fatypes
 from pyramid.view import view_config
 from pyramid.renderers import render
+from pyramid.renderers import get_renderer
+from pyramid import httpexceptions as exc
 
 try:
     from formalchemy.ext.couchdb import Document
@@ -48,10 +50,13 @@ class AdminView(object):
 
 class ModelListing(object):
     def __init__(self, request, name):
+        self.request = request
         request.model_name = name
         self.__name__ = name
         self.__parent__ = None
     def __getitem__(self, item):
+        if item in ('new',):
+            raise KeyError()
         model = ModelItem(self.request, item)
         model.__parent__ = self
         return model
@@ -78,6 +83,10 @@ class ModelView(object):
         self.request = request
         self.settings = request.registry.settings
         self.model = self.settings['fa.models']
+        try:
+            self.id = request.model_id
+        except:
+            self.id = None
 
     @property
     def model_name(self):
@@ -137,7 +146,7 @@ class ModelView(object):
                     return model
         elif hasattr(self.model, self.model_name):
             return getattr(self.model, self.model_name)
-        abort(404)
+        raise exc.HTTPNotFound()
 
     def get_fieldset(self, id):
         if self.forms and hasattr(self.forms, self.model_name):
@@ -212,7 +221,9 @@ class ModelView(object):
                 return meth(**kwargs)
             else:
                 abort(404)
-        kwargs.update(model_name=self.model_name,
+        kwargs.update(
+                      main = get_renderer('formalchemy:ext/pyramid/forms/master.pt').implementation(),
+                      model_name=self.model_name,
                       prefix_name=self.prefix_name,
                       breadcrumb=self.breadcrumb(**kwargs),
                       F_=get_translator().gettext)
@@ -286,7 +297,9 @@ class ModelView(object):
         model = self.get_model()
         if id:
             model = S.query(model).get(id)
-        return model or abort(404)
+        if model:
+            return model
+        raise exc.HTTPNotFound()
 
     def get_fieldset(self, id=None):
         """return a ``FieldSet`` object bound to the correct record for ``id``.
@@ -358,8 +371,8 @@ class ModelView(object):
             grid.append(Field('delete', fatypes.String, delete_link()))
             grid.readonly = True
 
-    def index(self, format='html', **kwargs):
-        """REST api"""
+    def listing(self, format='html', **kwargs):
+        """listing page"""
         page = self.get_page()
         fs = self.get_grid()
         fs = fs.bind(instances=page)
@@ -387,10 +400,9 @@ class ModelView(object):
             pager = kwargs.pop('pager')
         return self.render_grid(format=format, fs=fs, id=None, pager=pager)
 
-    @view_config(name='', request_method='POST', **VIEW_ARGS)
-    @view_config(name='', request_method='PUT', **VIEW_ARGS)
-    def create(self, request):
+    def create(self):
         """REST api"""
+        request = self.request
         fs = self.get_add_fieldset()
 
         if format == 'json' and request.method == 'PUT':
@@ -416,7 +428,6 @@ class ModelView(object):
                 return self.render(format=format, fs=fs)
         return self.render(format=format, fs=fs, action='new', id=None)
 
-    @view_config(name='', request_method='DELETE', **VIEW_ARGS)
     def delete(self, id, format='html', **kwargs):
         """REST api"""
         record = self.get(id)
@@ -431,30 +442,26 @@ class ModelView(object):
             redirect(model_url(self.collection_name))
         return self.render(format=format, id=id)
 
-    @view_config(name='', request_method='GET', **VIEW_ARGS)
-    def show(self, id=None, format='html', **kwargs):
+    def show(self):
         """REST api"""
-        fs = self.get_fieldset(id=id)
+        fs = self.get_fieldset(id=self.id)
         fs.readonly = True
-        return self.render(format=format, fs=fs, action='show', id=id)
+        return self.render(fs=fs, action='show', id=id)
 
-    @view_config(name='new', request_method='GET', **VIEW_ARGS)
     def new(self, format='html', **kwargs):
         """REST api"""
         fs = self.get_add_fieldset()
         fs = fs.bind(session=self.Session())
         return self.render(format=format, fs=fs, action='new', id=None)
 
-    @view_config(name='edit', request_method='GET', **VIEW_ARGS)
     def edit(self, id=None, format='html', **kwargs):
         """REST api"""
         fs = self.get_fieldset(id)
         return self.render(format=format, fs=fs, action='edit', id=id)
 
-    @view_config(name='', request_method='POST', **VIEW_ARGS)
-    @view_config(name='', request_method='PUT', **VIEW_ARGS)
     def update(self, id, format='html', **kwargs):
         """REST api"""
+        request = self.request
         fs = self.get_fieldset(id)
         if format == 'json' and request.method == 'PUT' and '_method' not in request.GET:
             data = json.load(request.body_file)

@@ -1,0 +1,15 @@
+<html metal:use-macro="main.macros['master']">
+  <body>
+    <div metal:fill-slot="main">
+      <form method="POST" enctype="multipart/form-data"
+            tal:attributes="action request.route_url('fa_admin', traverse=request.model_name)"
+        >
+        <div tal:content="structure fs.render()" />
+        <div metal:use-macro="main.macros['buttons']">
+        </div>
+      </form>
+    </div>
+  </body>
+</html>
+
+

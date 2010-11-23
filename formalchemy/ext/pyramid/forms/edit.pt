@@ -1,0 +1,12 @@
+<html metal:use-macro="main.macros['master']">
+  <body>
+    <div metal:fill-slot="main">
+      <form action="" method="POST" enctype="multipart/form-data">
+        <div tal:content="structure fs.render()" />
+        <div metal:use-macro="main.macros['buttons']">
+        </div>
+      </form>
+    </div>
+  </body>
+</html>
+
