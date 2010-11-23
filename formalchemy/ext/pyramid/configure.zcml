@@ -27,6 +27,35 @@
     />
 
 <view
+    name="new"
+    route_name="fa_admin"
+    context=".ModelListing"
+    view=".ModelView"
+    attr="new"
+    request_method="GET"
+    renderer="formalchemy:ext/pyramid/forms/new.pt"
+    />
+
+<view
+    name=""
+    route_name="fa_admin"
+    context=".ModelListing"
+    view=".ModelView"
+    attr="create"
+    request_method="POST"
+    />
+
+<view
+    name="edit"
+    route_name="fa_admin"
+    context=".ModelListing"
+    view=".ModelView"
+    attr="edit"
+    request_method="GET"
+    renderer="formalchemy:ext/pyramid/forms/edit.pt"
+    />
+
+<view
     name=""
     route_name="fa_admin"
     context=".ModelItem"

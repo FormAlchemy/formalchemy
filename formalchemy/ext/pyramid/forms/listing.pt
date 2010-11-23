@@ -4,7 +4,8 @@
       <div class="ui-pager" tal:content="structure pager" />
       <table class="layout-grid" tal:content="structure fs.render()" />
       <p>
-        <a class="ui-widget-header ui-widget-link ui-corner-all" href="./new">
+        <a class="ui-widget-header ui-widget-link ui-corner-all"
+           tal:attributes="href request.route_url('fa_admin', traverse='%s/new' % request.model_name)">
             <span class="ui-icon ui-icon-circle-plus"></span>
             ${F_('New')} ${model_name}
         </a>

@@ -22,5 +22,13 @@ def main(global_config, **settings):
                        action='index')
     config.add_subscriber('pyramidapp.subscribers.add_renderer_globals',
                           'pyramid.events.BeforeRender')
+    config.load_zcml('formalchemy:configure.zcml')
+    config.add_route('fa_admin', '/admin/*traverse',
+                     factory='formalchemy.ext.pyramid.AdminView')
+    config.registry.settings.update({
+        'fa.models': config.maybe_dotted('pyramidapp.models'),
+        'fa.session_factory': config.maybe_dotted('pyramidapp.models.DBSession'),
+        })
+
     config.end()
     return config.make_wsgi_app()

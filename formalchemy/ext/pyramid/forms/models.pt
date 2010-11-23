@@ -3,7 +3,7 @@
     <div metal:fill-slot="main">
       <div tal:repeat="item models">
         <div>
-          <a tal:attributes="href string:${item}"
+          <a tal:attributes="href request.route_url('fa_admin', traverse=item)"
              tal:content="item"></a>
         </div>
       </div>

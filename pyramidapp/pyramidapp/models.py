@@ -30,6 +30,11 @@ class MyModel(Base):
     def by_name(cls, name=None):
         return DBSession.query(cls).filter(cls.name == name).first()
 
+class Foo(Base):
+    __tablename__ = 'foo'
+    id = Column(Integer, primary_key=True)
+    bar = Column(Unicode(255))
+
 def populate():
     model = MyModel(name=u'root', value=55)
     DBSession.add(model)
