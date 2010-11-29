@@ -13,6 +13,15 @@ class TestController(unittest.TestCase):
     def setUp(self):
         app = loadapp('config:%s' % os.path.join(dirname, 'development.ini'))
         self.app = TestApp(app)
+        from pyramid.configuration import Configurator
+        #from pyramidapp.models import initialize_sql
+        #self.session = initialize_sql('sqlite://')
+        self.config = Configurator()
+        self.config.begin()
+
+    def tearDown(self):
+        self.config.end()
+
 
     def test_index(self):
         # index
@@ -29,7 +38,7 @@ class TestController(unittest.TestCase):
         form = resp.forms[0]
         form['Foo--bar'] = 'value'
         resp = form.submit()
-        assert resp.headers['location'] == 'http://localhost/admin/Foo'
+        assert resp.headers['location'] == 'http://localhost/admin/Foo', resp
 
         # model index
         resp = resp.follow()
@@ -40,7 +49,7 @@ class TestController(unittest.TestCase):
         resp = form.submit()
         form = resp.forms[0]
         form['Foo-1-bar'] = 'new value'
-        form['_method'] = 'PUT'
+        #form['_method'] = 'PUT'
         resp = form.submit()
         resp = resp.follow()
 
@@ -48,7 +57,7 @@ class TestController(unittest.TestCase):
         resp.mustcontain('<td>new value</td>')
 
         # delete
-        resp = self.app.get(url('models', model_name='Foo'))
+        resp = self.app.get('/admin/Foo')
         resp.mustcontain('<td>new value</td>')
         resp = resp.forms[1].submit()
         resp = resp.follow()

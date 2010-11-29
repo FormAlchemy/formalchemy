@@ -8,6 +8,8 @@ parts
 develop-eggs
 Paste*.egg
 docs/_build
+pyramid/
+pyramidapp/*.db
 pylonsapp/data/
 pylonsapp/development.db
 pylonsapp/pylonsapp/public/*/*/*/*.txt

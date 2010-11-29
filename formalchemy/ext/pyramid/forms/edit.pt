@@ -3,6 +3,7 @@
     <div metal:fill-slot="main">
       <form action="" method="POST" enctype="multipart/form-data">
         <div tal:content="structure fs.render()" />
+        <input type="hidden" name="_method" value="PUT" />
         <div metal:use-macro="main.macros['buttons']">
         </div>
       </form>

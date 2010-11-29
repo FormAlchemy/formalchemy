@@ -48,10 +48,40 @@
 <view
     name="edit"
     route_name="fa_admin"
-    context=".ModelListing"
+    context=".ModelItem"
     view=".ModelView"
     attr="edit"
     request_method="GET"
+    renderer="formalchemy:ext/pyramid/forms/edit.pt"
+    />
+
+<view
+    name="edit"
+    route_name="fa_admin"
+    context=".ModelItem"
+    view=".ModelView"
+    attr="update"
+    request_method="POST"
+    renderer="formalchemy:ext/pyramid/forms/edit.pt"
+    />
+
+<view
+    name="delete"
+    route_name="fa_admin"
+    context=".ModelItem"
+    view=".ModelView"
+    attr="delete"
+    request_method="POST"
+    renderer="formalchemy:ext/pyramid/forms/edit.pt"
+    />
+
+<view
+    name=""
+    route_name="fa_admin"
+    context=".ModelItem"
+    view=".ModelView"
+    attr="delete"
+    request_method="DELETE"
     renderer="formalchemy:ext/pyramid/forms/edit.pt"
     />
 
