@@ -1,10 +1,10 @@
 <?xml version="1.0"?>
 <configure xmlns="http://pylonshq.com/pyramid">
 
-<!-- static
+<static
    name="fa_admin"
-   path="formalchemy:ext/pyramid/static"
-   / -->
+   path="formalchemy:ext/pyramid/resources"
+   />
 
 <view
     name=""

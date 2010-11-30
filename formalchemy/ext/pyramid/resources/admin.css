@@ -1,0 +1,470 @@
+/**
+ * Blue Box main CSS file
+ * @version 1.0.0
+ * @author Aaron D. Campbell http://xavisys.com/
+ */
+
+html, body, div, span, applet, object, iframe,
+h1, h2, h3, h4, h5, h6, p, blockquote, pre,
+a, abbr, acronym, address, big, cite, code,
+del, dfn, em, font, img, ins, kbd, q, s, samp,
+small, strike, strong, sub, sup, tt, var,
+dl, dt, dd, ol, ul, li,
+fieldset, form, label, legend,
+table, caption, tbody, tfoot, thead, tr, th, td {
+	border: 0;
+	font-family: inherit;
+	font-size: 100%;
+	font-style: inherit;
+	font-weight: inherit;
+	margin: 0;
+	outline: 0;
+	padding: 0;
+	vertical-align: baseline;
+}
+h1,h2,h3,h4,h5,h6 {
+    font-weight:bold;
+}
+h1 {
+    font-size:2em;
+}
+h2 {
+    font-size:1.5em;
+}
+h3 {
+    font-size:1.3em;
+}
+h4 {
+    font-size:1.1em;
+}
+h5 {
+    font-size:1em;
+}
+h6 {
+    font-size:.8em;
+}
+
+body {
+	background-color:#D5D6D7;
+    color:#333;
+    font:80% Verdana,"Trebuchet MS",Georgia,"Times New Roman",Times,serif;
+    margin:20px;
+    min-width:675px;
+    padding:0pt;
+}
+
+table {
+    margin:1em;
+}
+
+table, table tr {
+    border-collapse:collapse;
+    padding:0;
+}
+
+
+table th,
+table td {
+	border:thin solid #D5D6D7;
+    border-collapse:collapse;
+    margin:0;
+    padding:0.2em 0.5em;
+}
+
+table th {
+    font-weight:bold;
+    background:#EFEFEF;
+}
+
+td a {
+    display:block;
+}
+
+tr.odd {
+    background:#EFEFEF;
+}
+
+p {
+    line-height:1.5em;
+    margin:1em 0;
+}
+
+#header {
+    background-color:#73A0C5;
+    border:1px solid #666;
+    border-bottom:none;
+    height:70px;
+    position:relative;
+}
+
+#title {
+    float:left;
+    margin:5px 0 0 1em;
+}
+
+#header h1 {
+    font-size:2em;
+    padding:0pt;
+}
+#header #tagline {
+    color:#DDD;
+    font-size:0.9em;
+    font-style:italic;
+    margin:0;
+    text-align:right;
+}
+
+#header h1,
+#header h1 a,
+#header h1 a:hover,
+#header h1 a:visited {
+    color:#FFF;
+    text-decoration:none;
+}
+
+h1#header {
+    color: white;
+    height: 1.5em;
+    padding: 0.3em 1em;
+}
+
+h1#header a {
+    color: white;
+}
+
+.breadcrumb { float:right; font-size: 0.7em;}
+
+#nav {
+    bottom:0;
+    position:absolute;
+    right:0;
+}
+
+#nav a {
+    background-color:#EFEFEF;
+    border:1px solid #666;
+    border-bottom:0;
+    color:#259;
+    font-size:1.2em;
+    font-weight:bold;
+    margin:0 .1em;
+    padding:.2em;
+    padding-bottom:0;
+    text-decoration:none;
+}
+
+#nav a:hover,
+#nav a.current {
+    background-color:#FFF;
+}
+
+#content {
+	background-color:#FFF;
+    border:1px solid #666;
+    border-width:0 1px;
+	padding:1em;
+}
+#content ol {
+    margin-left:2em;
+}
+#content ul {
+    margin-left:1.5em;
+}
+#sidebar {
+    float:right;
+    margin:1em;
+    width:260px;
+}
+#sidebar .box p {
+    background-color:#F2F2F2;
+    margin:.5em;
+}
+#sidebar .box ul li {
+    border-bottom:1px solid #73A0C5;
+    list-style-type:none;
+}
+#sidebar .box ul li a {
+    display:block;
+    padding:.5em;
+}
+#sidebar .box label {
+    display:block;
+    float:left;
+    height:21px;
+    margin-right:10px;
+    width:70px;
+}
+#footer {
+    background-color:#EFEFEF;
+    border:1px solid #666;
+    border-top:none;
+    font-size:.8em;
+    padding:1em;
+    text-align:center;
+}
+#footer p {
+    margin:0;
+}
+
+a,
+a:link {
+    color:#06C;
+    text-decoration:none;
+}
+a:visited {
+    color:#147;
+}
+a:hover,
+a:active {
+    color:#147;
+    text-decoration:underline;
+}
+
+blockquote,
+code {
+    background-color:#F2F2F2;
+    border-left:4px solid #73A0C5;
+    display:block;
+    font-style:oblique;
+    line-height:20px;
+    margin:0 1em;
+    padding:0 1em;
+}
+
+code {
+    white-space:pre;
+}
+
+.box{
+	border:1px solid #999;
+	margin:0 0 1em 0;
+    overflow:auto;
+}
+.box p,
+.box ul,
+.box ol,
+.box div.cont,
+.box form {
+	margin:.5em;
+}
+.box h1,
+.box h2,
+.box h3,
+.box h4,
+.box h5,
+.box h6 {
+	background-color:#73A0C5;
+	display:block;
+	padding:0 5px;
+    color:white;
+}
+.more {
+    display:block;
+    font-size:.8em;
+    text-align:right;
+}
+
+/*********
+ * Forms *
+ *********/
+.admin-flash,
+fieldset {
+	color:#777;
+	margin-top:15px;
+	padding:10px;
+}
+
+.admin-flash {
+    background:#EFEFEF;
+	margin-bottom:15px;
+    font-weight:bold;
+}
+
+.message,
+fieldset,
+input,
+button,
+fieldset textarea,
+fieldset select {
+	border:1px solid #F5F5F5;
+	border-left-color:#DDD;
+	border-top-color:#DDD;
+}
+
+legend {
+	color:#73A0C5;
+	font-weight:bold;
+	padding:5px 10px;
+}
+
+input,
+button,
+fieldset textarea,
+fieldset select {
+	color:#777;
+	font:90% Verdana;
+	padding:4px;
+}
+
+fieldset textarea {
+	width:430px;
+}
+
+option {
+	padding:0 10px 0 5px;
+}
+fieldset label,
+fieldset p.label {
+	color:#777;
+	text-align:right;
+	width:145px;
+}
+fieldset label {
+	float:left;
+	margin:5px 0;
+	margin-right:10px;
+}
+
+fieldset p {
+	margin:0;
+}
+fieldset div {
+	padding:5px 0;
+	position:relative;
+}
+fieldset div div {
+	margin:0;
+}
+fieldset p.label {
+	left:0;
+	position:absolute;
+}
+
+.radio {
+	margin-left:160px;
+}
+.radio label,
+.radio input {
+	background:none;
+	border:none;
+	display:inline;
+	float:none;
+	vertical-align:middle;
+	width:auto;
+}
+.radio div {
+	clear:none;
+	white-space:nowrap;
+}
+#sidebar form {
+    margin:0 0 1em 0;
+}
+
+.submit,
+#sidebar .submit {
+	text-align:right;
+}
+
+.ui-widget-link, 
+.submit input,
+#sidebar .submit input {
+	background-color:#F9F9F9;
+	border:1px solid #F5F5F5;
+	border-left-color:#DDD;
+	border-top-color:#DDD;
+	cursor:pointer;
+	padding:0 21px;
+	text-transform:lowercase;
+	width:auto;
+}
+
+.ui-widget-link input {
+    border:0px;
+    background:transparent;
+}
+
+a.ui-widget-link {
+    color:#777777;
+    font-family:Verdana;
+}
+
+.ui-widget-link {
+    cursor:pointer;
+    margin-right:0.3em;
+}
+
+
+td form { text-align:center;}
+
+td input.ui-icon {
+    background-color:transparent;
+    border:0px;
+    width:16px;
+    height: 0px;
+    overflow:hidden;
+    padding-bottom:13px;
+    cursor:pointer;
+}
+
+.ui-icon-pencil {
+    background-image: url(./edit.png);
+}
+.ui-icon-circle-close {
+    background-image: url(./delete.png);
+}
+
+#sidebar input {
+	border:1px solid #DDD;
+	border-bottom-color:#F5F5F5;
+	border-right-color:#F5F5F5;
+    width:100%;
+}
+
+#sidebar label {
+    height:auto;
+    margin-bottom:0;
+    width:auto;
+}
+
+.button {
+    width:auto;
+}
+
+.form_controls {
+    margin-left:155px;
+}
+
+.icon {
+    display:block;
+    height:0px;
+    padding-top:16px;
+    width:16px;
+    overflow:hidden;
+}
+
+input.icon {
+    border:none;
+    width:16px;
+    height:16px;
+    padding:0;
+    cursor:pointer;
+}
+
+#pager {
+    text-align: center;
+    margin-top: 0.5em;
+}
+#pager a, #pager .pager_curpage {
+    padding: 0 0.2em;
+    border:thin solid #114477;
+    background: #73A0C5;
+    color: white;
+}
+
+#pager a:hover, #pager .pager_curpage {
+    text-decoration:none;
+    background:white;
+    color:#114477;
+}
+
+/*****************************/

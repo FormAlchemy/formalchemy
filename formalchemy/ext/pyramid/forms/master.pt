@@ -1,16 +1,23 @@
 <html metal:define-macro="master">
     <head>
+      <title tal:content="request.model_name or 'root'"></title>
+      <link rel="stylesheet" tal:attributes="href request.static_url('formalchemy:ext/pyramid/resources/admin.css')"></link>
     </head>
     <body>
-        <div class="breadcrumb">
-          <tal:repeat tal:repeat="item breadcrumb">
-            <a tal:attributes="href python:item[0]"
-              tal:content="python:item[1]" />
-              <span tal:condition="not repeat.item.end">/</span>
-          </tal:repeat>
-        </div>
+      <div id="content" class="ui-admin ui-widget">
+        <h1 id="header" class="ui-widget-header ui-corner-all">
+          <div class="breadcrumb">
+            <tal:repeat tal:repeat="item breadcrumb">
+              <a tal:attributes="href python:item[0]"
+                tal:content="python:item[1]" />
+                <span tal:condition="not repeat.item.end">/</span>
+            </tal:repeat>
+          </div>
+          <div tal:content="request.model_name or 'root'"></div>
+        </h1>
         <div metal:define-slot="main">
         </div>
+      </div>
     </body>
 </html>
 <div metal:define-macro="buttons">
