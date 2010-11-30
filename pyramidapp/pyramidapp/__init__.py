@@ -24,7 +24,7 @@ def main(global_config, **settings):
                           'pyramid.events.BeforeRender')
     config.load_zcml('formalchemy:configure.zcml')
     config.add_route('fa_admin', '/admin/*traverse',
-                     factory='formalchemy.ext.pyramid.AdminView')
+                     factory='formalchemy.ext.pyramid.admin.AdminView')
     config.registry.settings.update({
         'fa.models': config.maybe_dotted('pyramidapp.models'),
         'fa.session_factory': config.maybe_dotted('pyramidapp.models.DBSession'),

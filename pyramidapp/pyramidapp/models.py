@@ -22,10 +22,7 @@ class MyModel(Base):
     name = Column(Unicode(255), unique=True)
     value = Column(Integer)
 
-    def __init__(self, name, value):
-        self.name = name
-        self.value = value
-    
+
     @classmethod
     def by_name(cls, name=None):
         return DBSession.query(cls).filter(cls.name == name).first()
@@ -40,7 +37,7 @@ def populate():
     DBSession.add(model)
     DBSession.flush()
     transaction.commit()
-    
+
 def initialize_sql(db_string, db_echo=False):
     engine = create_engine(db_string, echo=db_echo)
     DBSession.configure(bind=engine)

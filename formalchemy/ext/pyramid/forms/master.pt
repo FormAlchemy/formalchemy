@@ -2,6 +2,13 @@
     <head>
     </head>
     <body>
+        <div class="breadcrumb">
+          <tal:repeat tal:repeat="item breadcrumb">
+            <a tal:attributes="href python:item[0]"
+              tal:content="python:item[1]" />
+              <span tal:condition="not repeat.item.end">/</span>
+          </tal:repeat>
+        </div>
         <div metal:define-slot="main">
         </div>
     </body>
