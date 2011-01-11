@@ -276,7 +276,14 @@ class ModelView(object):
             return Page(query, page=int(request.GET.get('page', '1')), **kwargs)
         """
         S = self.Session()
-        options = dict(collection=S.query(self.get_model()), page=int(self.request.GET.get('page', '1')))
+        def get_page_url(page, partial=None):
+            url = "%s?page=%s" % (self.request.path, page)
+            if partial:
+                url += "&partial=1"
+            return url
+        options = dict(collection=S.query(self.get_model()),
+                       page=int(self.request.GET.get('page', '1')),
+                       url=get_page_url)
         options.update(kwargs)
         collection = options.pop('collection')
         return Page(collection, **options)

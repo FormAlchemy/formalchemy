@@ -31,6 +31,10 @@ def populate():
     model = MyModel(name=u'root',value=55)
     session.add(model)
     session.flush()
+    for i in range(50):
+        model = MyModel(name=u'root%i' % i,value=i)
+        session.add(model)
+        session.flush()
     transaction.commit()
     
 def initialize_sql(engine):
