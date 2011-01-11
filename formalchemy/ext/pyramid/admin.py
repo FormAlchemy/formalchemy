@@ -37,8 +37,12 @@ class AdminView(object):
         self.request = request
         request.model_name = None
         request.model_id = None
+        request.format = 'html'
         self.__parent__ = self.__name__ = None
     def __getitem__(self, item):
+        if item in ('json',):
+            self.request.format = item
+            return self
         model = ModelListing(self.request, item)
         model.__parent__ = self
         return model
@@ -50,6 +54,9 @@ class ModelListing(object):
         self.__name__ = name
         self.__parent__ = None
     def __getitem__(self, item):
+        if item in ('json',):
+            self.request.format = item
+            return self
         if item in ('new',):
             raise KeyError()
         model = ModelItem(self.request, item)
@@ -97,29 +104,33 @@ class ModelView(object):
     def member_name(self):
         return 'fa_admin'
 
+    def route_url(self, *args):
+        return self.request.route_url('fa_admin', traverse='/'.join([str(a) for a in args]))
+
     def Session(self):
         """return a Session object. You **must** override this."""
         return self.settings['fa.session_factory']()
 
-    def models(self, format='html', **kwargs):
+    def models(self, **kwargs):
         """Models index page"""
         models = self.get_models()
-        return self.render(models=models, format=format)
+        return self.render(models=models)
 
     def get_models(self):
         """return a dict containing all model names as key and url as value"""
+        request = self.request
         models = {}
         if isinstance(self.model, list):
             for model in self.model:
                 key = model.__name__
-                models[key] = '' #model_url(self.collection_name, model_name=key)
+                models[key] = self.route_url(key, request.format)
         else:
             for key, obj in self.model.__dict__.iteritems():
                 if not key.startswith('_'):
                     if Document is not None:
                         try:
                             if issubclass(obj, Document):
-                                models[key] = '' #model_url(self.collection_name, model_name=key)
+                                models[key] = self.route_url(key, request.format)
                                 continue
                         except:
                             pass
@@ -129,7 +140,7 @@ class ModelView(object):
                         continue
                     if not isinstance(obj, type):
                         continue
-                    models[key] = '' #model_url(self.collection_name, model_name=key)
+                    models[key] = self.route_url(key, request.format)
         return models
 
     def get_model(self):
@@ -139,7 +150,7 @@ class ModelView(object):
                     return model
         elif hasattr(self.model, self.model_name):
             return getattr(self.model, self.model_name)
-        raise exc.HTTPNotFound()
+        raise exc.HTTPNotFound(description='model %s not found' % self.model_name)
 
     def get_fieldset(self, id):
         if self.forms and hasattr(self.forms, self.model_name):
@@ -179,14 +190,14 @@ class ModelView(object):
         """
         S = self.Session()
         if id:
-            try:
-                S.merge(fs.model)
-            except AttributeError:
-                # SA <= 0.5.6
-                S.update(fs.model)
+            S.merge(fs.model)
+            #try:
+            #    S.merge(fs.model)
+            #except AttributeError:
+            #    # SA <= 0.5.6
+            #    S.update(fs.model)
         else:
             S.add(fs.model)
-        #S.commit()
 
     def breadcrumb(self, fs=None, **kwargs):
         """return items to build the breadcrumb"""
@@ -194,19 +205,20 @@ class ModelView(object):
         request = self.request
         model_name = request.model_name
         id = request.model_id
-        items.append((request.route_url('fa_admin', traverse=""), 'root'))
+        items.append((self.route_url(), 'root'))
         if self.model_name:
-            items.append((request.route_url('fa_admin', traverse=model_name), model_name))
+            items.append((self.route_url(model_name), model_name))
         if id and hasattr(fs.model, '__unicode__'):
-            items.append((request.route_url('fa_admin', traverse='%s/%s' % (model_name, id)), u'%s' % fs.model))
+            items.append((self.route_url(model_name, id), u'%s' % fs.model))
         elif id:
-            items.append((request.route_url('fa_admin', traverse='%s/%s' % (model_name, id)), id))
+            items.append((self.route_url(model_name, id), id))
         return items
 
-    def render(self, format='html', **kwargs):
+    def render(self, **kwargs):
         """render the form as html or json"""
-        if format != 'html':
-            meth = getattr(self, 'render_%s_format' % format, None)
+        request = self.request
+        if request.format != 'html':
+            meth = getattr(self, 'render_%s_format' % request.format, None)
             if meth is not None:
                 return meth(**kwargs)
             else:
@@ -218,12 +230,13 @@ class ModelView(object):
                       F_=get_translator().gettext)
         return kwargs
 
-    def render_grid(self, format='html', **kwargs):
+    def render_grid(self, **kwargs):
         """render the grid as html or json"""
-        return self.render(format=format, is_grid=True, **kwargs)
+        return self.render(is_grid=True, **kwargs)
 
     def render_json_format(self, fs=None, **kwargs):
-        response.content_type = 'text/javascript'
+        request = self.request
+        request.override_renderer = 'json'
         if fs:
             try:
                 fields = fs.jsonify()
@@ -232,11 +245,11 @@ class ModelView(object):
             data = dict(fields=fields)
             pk = _pk(fs.model)
             if pk:
-                data['item_url'] = self.request.model_url(self.member_name, id=pk)
+                data['item_url'] = request.route_url('fa_admin', traverse='%s/json/%s' % (self.model_name, pk))
         else:
             data = {}
         data.update(kwargs)
-        return json.dumps(data)
+        return data
 
     def render_xhr_format(self, fs=None, **kwargs):
         response.content_type = 'text/html'
@@ -346,33 +359,33 @@ class ModelView(object):
                 <form action="%(url)s" method="GET" class="ui-grid-icon ui-widget-header ui-corner-all">
                 <input type="submit" class="ui-grid-icon ui-icon ui-icon-pencil" title="%(label)s" value="%(label)s" />
                 </form>
-                ''' % dict(url=self.request.route_url('fa_admin', traverse='%s/%s/edit' % (self.request.model_name, _pk(item))),
+                ''' % dict(url=self.route_url(self.model_name, _pk(item), 'edit'),
                             label=get_translator().gettext('edit'))
             def delete_link():
                 return lambda item: '''
                 <form action="%(url)s" method="POST" class="ui-grid-icon ui-state-error ui-corner-all">
                 <input type="submit" class="ui-icon ui-icon-circle-close" title="%(label)s" value="%(label)s" />
                 </form>
-                ''' % dict(url=self.request.route_url('fa_admin', traverse='%s/%s/delete' % (self.request.model_name, _pk(item))),
+                ''' % dict(url=self.route_url(self.model_name, _pk(item), 'delete'),
                            label=get_translator().gettext('delete'))
             grid.append(Field('edit', fatypes.String, edit_link()))
             grid.append(Field('delete', fatypes.String, delete_link()))
             grid.readonly = True
 
-    def listing(self, format='html', **kwargs):
+    def listing(self, **kwargs):
         """listing page"""
         page = self.get_page()
         fs = self.get_grid()
         fs = fs.bind(instances=page)
         fs.readonly = True
-        if format == 'json':
+        if self.request.format == 'json':
             values = []
             request = self.request
             for item in page:
                 pk = _pk(item)
                 fs._set_active(item)
                 value = dict(id=pk,
-                             item_url=request.route_url('fa_admin', traverse='%s/%s' % (request.model_name, pk)))
+                             item_url=self.route_url(request.model_name, pk))
                 if 'jqgrid' in request.GET:
                     fields = [_stringify(field.render_readonly()) for field in fs.render_fields.values()]
                     value['cell'] = [pk] + fields
@@ -387,16 +400,15 @@ class ModelView(object):
             pager = page.pager(**self.pager_args)
         else:
             pager = kwargs.pop('pager')
-        return self.render_grid(format=format, fs=fs, id=None, pager=pager)
+        return self.render_grid(fs=fs, id=None, pager=pager)
 
     def create(self):
         """REST api"""
-        format = 'html'
         request = self.request
         S = self.Session()
         fs = self.get_add_fieldset()
 
-        if format == 'json' and request.method == 'PUT':
+        if request.format == 'json' and request.method == 'PUT':
             data = json.load(request.body_file)
         else:
             data = request.POST
@@ -410,18 +422,18 @@ class ModelView(object):
             fs.sync()
             self.sync(fs)
             S.flush()
-            if format == 'html':
+            if request.format == 'html':
                 if request.is_xhr:
                     response.content_type = 'text/plain'
                     return ''
                 return exc.HTTPFound(
-                    location=request.route_url('fa_admin', traverse='%s' % (request.model_name,)))
+                    location=self.route_url(request.model_name))
             else:
                 fs.rebind(fs.model, data=None)
-                return self.render(format=format, fs=fs)
-        return self.render(format=format, fs=fs, action='new', id=None)
+                return self.render(fs=fs)
+        return self.render(fs=fs, action='new', id=None)
 
-    def delete(self, format='html', **kwargs):
+    def delete(self, **kwargs):
         """REST api"""
         request = self.request
         id = request.model_id
@@ -429,60 +441,56 @@ class ModelView(object):
         if record:
             S = self.Session()
             S.delete(record)
-            #S.commit()
-        if format == 'html':
-            if self.request.is_xhr:
+        if request.format == 'html':
+            if request.is_xhr:
                 response = Response()
                 response.content_type = 'text/plain'
                 return response
-            return exc.HTTPFound(location=request.route_url('fa_admin', traverse=request.model_name))
-        return self.render(format=format, id=id)
+            return exc.HTTPFound(location=self.route_url(request.model_name))
+        return self.render(id=id)
 
     def show(self):
         """REST api"""
-        fs = self.get_fieldset(id=self.id)
+        id = self.request.model_id
+        fs = self.get_fieldset(id=id)
         fs.readonly = True
         return self.render(fs=fs, action='show', id=id)
 
-    def new(self, format='html', **kwargs):
+    def new(self, **kwargs):
         """REST api"""
         fs = self.get_add_fieldset()
         fs = fs.bind(session=self.Session())
-        return self.render(format=format, fs=fs, action='new', id=None)
+        return self.render(fs=fs, action='new', id=None)
 
-    def edit(self, id=None, format='html', **kwargs):
+    def edit(self, id=None, **kwargs):
         """REST api"""
         id = self.request.model_id
         fs = self.get_fieldset(id)
-        return self.render(format=format, fs=fs, action='edit', id=id)
+        return self.render(fs=fs, action='edit', id=id)
 
-    def update(self, format='html', **kwargs):
+    def update(self, **kwargs):
         """REST api"""
         request = self.request
         S = self.Session()
-        id = self.request.model_id
+        id = request.model_id
         fs = self.get_fieldset(id)
-        if format == 'json' and request.method == 'PUT' and '_method' not in request.GET:
-            data = json.load(request.body_file)
-        else:
-            data = request.POST
-        fs = fs.bind(data=data)
+        if not request.POST:
+            raise ValueError(request.POST)
+        fs = fs.bind(data=request.POST)
         if fs.validate():
             fs.sync()
             self.sync(fs, id)
             S.flush()
-            if format == 'html':
+            if request.format == 'html':
                 if request.is_xhr:
                     response.content_type = 'text/plain'
                     return ''
                 return exc.HTTPFound(
-                        location=self.request.route_url(
-                                    'fa_admin',
-                                    traverse='%s/%s' % (request.model_name, _pk(fs.model))))
+                        location=self.route_url(request.model_name, _pk(fs.model)))
             else:
-                return self.render(format=format, fs=fs, status=0)
-        if format == 'html':
-            return self.render(format=format, fs=fs, action='edit', id=id)
+                return self.render(fs=fs, status=0)
+        if request.format == 'html':
+            return self.render(fs=fs, action='edit', id=id)
         else:
-            return self.render(format=format, fs=fs, status=1)
+            return self.render(fs=fs, status=1)
 

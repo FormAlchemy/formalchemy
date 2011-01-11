@@ -1,6 +1,5 @@
 import transaction
 
-from sqlalchemy import create_engine
 from sqlalchemy import Column
 from sqlalchemy import Integer
 from sqlalchemy import Unicode
@@ -22,28 +21,23 @@ class MyModel(Base):
     name = Column(Unicode(255), unique=True)
     value = Column(Integer)
 
-
-    @classmethod
-    def by_name(cls, name=None):
-        return DBSession.query(cls).filter(cls.name == name).first()
-
 class Foo(Base):
     __tablename__ = 'foo'
     id = Column(Integer, primary_key=True)
     bar = Column(Unicode(255))
 
 def populate():
-    model = MyModel(name=u'root', value=55)
-    DBSession.add(model)
-    DBSession.flush()
+    session = DBSession()
+    model = MyModel(name=u'root',value=55)
+    session.add(model)
+    session.flush()
     transaction.commit()
-
-def initialize_sql(db_string, db_echo=False):
-    engine = create_engine(db_string, echo=db_echo)
+    
+def initialize_sql(engine):
     DBSession.configure(bind=engine)
     Base.metadata.bind = engine
     Base.metadata.create_all(engine)
     try:
         populate()
     except IntegrityError:
-        pass
+        DBSession.rollback()

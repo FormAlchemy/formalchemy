@@ -9,17 +9,16 @@ CHANGES = open(os.path.join(here, 'CHANGES.txt')).read()
 
 requires = [
     'pyramid',
-    #    'pyramid_beaker',
     'SQLAlchemy',
     'transaction',
     'repoze.tm2',
     'zope.sqlalchemy',
     'WebError',
-]
+    ]
 
 if sys.version_info[:3] < (2,5,0):
     requires.append('pysqlite')
-    
+
 setup(name='pyramidapp',
       version='0.0',
       description='pyramidapp',
@@ -33,13 +32,12 @@ setup(name='pyramidapp',
       author='',
       author_email='',
       url='',
-      keywords='web pyramid pylons',
+      keywords='web wsgi bfg pylons pyramid',
       packages=find_packages(),
       include_package_data=True,
       zip_safe=False,
-      install_requires=requires,
-      tests_require=requires,
-      test_suite="pyramidapp",
+      test_suite='pyramidapp',
+      install_requires = requires,
       entry_points = """\
       [paste.app_factory]
       main = pyramidapp:main

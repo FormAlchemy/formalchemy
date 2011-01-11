@@ -67,6 +67,27 @@
     />
 
 <view
+    name=""
+    route_name="fa_admin"
+    context=".admin.ModelItem"
+    view=".admin.ModelView"
+    attr="update"
+    request_method="POST"
+    renderer="json"
+    />
+
+<view
+    name=""
+    route_name="fa_admin"
+    context=".admin.ModelItem"
+    view=".admin.ModelView"
+    attr="update"
+    request_method="PUT"
+    renderer="json"
+    />
+
+
+<view
     name="delete"
     route_name="fa_admin"
     context=".admin.ModelItem"
