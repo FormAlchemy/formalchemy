@@ -73,8 +73,6 @@ class ModelView(object):
     """A RESTful view bound to a model"""
 
     engine = prefix_name = None
-    FieldSet = FieldSet
-    Grid = Grid
     pager_args = dict(link_attr={'class': 'ui-pager-link ui-state-default ui-corner-all'},
                       curpage_attr={'class': 'ui-pager-curpage ui-state-highlight ui-corner-all'})
 
@@ -83,10 +81,9 @@ class ModelView(object):
         self.request = request
         self.settings = request.registry.settings
         self.model = self.settings['fa.models']
-        try:
-            self.id = request.model_id
-        except:
-            self.id = None
+        self.forms = self.settings.get('fa.forms', None)
+        self.FieldSet = self.settings.get('fa.fieldset', FieldSet)
+        self.Grid = self.settings.get('fa.grid', Grid)
 
     @property
     def model_name(self):
@@ -95,14 +92,6 @@ class ModelView(object):
             return self.request.model_name
         except AttributeError:
             return None
-
-    @property
-    def template(self):
-        return self.settings.get('fa.template', 'formalchemy:ext/pyramid/forms/restfieldset.pt')
-
-    @property
-    def member_name(self):
-        return 'fa_admin'
 
     def route_url(self, *args):
         return self.request.route_url('fa_admin', traverse='/'.join([str(a) for a in args]))
@@ -113,11 +102,6 @@ class ModelView(object):
 
     def models(self, **kwargs):
         """Models index page"""
-        models = self.get_models()
-        return self.render(models=models)
-
-    def get_models(self):
-        """return a dict containing all model names as key and url as value"""
         request = self.request
         models = {}
         if isinstance(self.model, list):
@@ -141,7 +125,7 @@ class ModelView(object):
                     if not isinstance(obj, type):
                         continue
                     models[key] = self.route_url(key, request.format)
-        return models
+        return self.render(models=models)
 
     def get_model(self):
         if isinstance(self.model, list):
@@ -157,7 +141,7 @@ class ModelView(object):
             fs = getattr(self.forms, self.model_name)
             fs.engine = fs.engine or self.engine
             return id and fs.bind(self.get(id)) or fs
-        return _RESTController.get_fieldset(self, id)
+        raise KeyError(self.model_name)
 
     def get_add_fieldset(self):
         if self.forms and hasattr(self.forms, '%sAdd' % self.model_name):
@@ -174,7 +158,7 @@ class ModelView(object):
             g.readonly = True
             self.update_grid(g)
             return g
-        return _RESTController.get_grid(self)
+        raise KeyError(self.model_name)
 
     def sync(self, fs, id=None):
         """sync a record. If ``id`` is None add a new record else save current one.
@@ -191,11 +175,6 @@ class ModelView(object):
         S = self.Session()
         if id:
             S.merge(fs.model)
-            #try:
-            #    S.merge(fs.model)
-            #except AttributeError:
-            #    # SA <= 0.5.6
-            #    S.update(fs.model)
         else:
             S.add(fs.model)
 
@@ -319,6 +298,10 @@ class ModelView(object):
             fs.engine = fs.engine or self.engine
             return fs
         """
+        if self.forms and hasattr(self.forms, self.model_name):
+            fs = getattr(self.forms, self.model_name)
+            fs.engine = fs.engine or self.engine
+            return id and fs.bind(self.get(id)) or fs
         fs = self.FieldSet(self.get(id))
         fs.engine = fs.engine or self.engine
         return fs
@@ -350,6 +333,13 @@ class ModelView(object):
             self.update_grid(grid)
             return grid
         """
+        model_name = self.model_name
+        if self.forms and hasattr(self.forms, '%sGrid' % model_name):
+            g = getattr(self.forms, '%sGrid' % model_name)
+            g.engine = g.engine or self.engine
+            g.readonly = True
+            self.update_grid(g)
+            return g
         grid = self.Grid(self.get_model())
         grid.engine = self.engine
         self.update_grid(grid)

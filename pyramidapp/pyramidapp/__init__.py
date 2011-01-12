@@ -17,6 +17,7 @@ def main(global_config, **settings):
                      factory='formalchemy.ext.pyramid.admin.AdminView')
     config.registry.settings.update({
         'fa.models': config.maybe_dotted('pyramidapp.models'),
+        'fa.forms': config.maybe_dotted('pyramidapp.forms'),
         'fa.session_factory': config.maybe_dotted('pyramidapp.models.DBSession'),
         })
 
