@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 import os
-from paste.urlparser import StaticURLParser
 from webhelpers.paginate import Page
 from sqlalchemy.orm import class_mapper, object_session
 from formalchemy.fields import _pk
