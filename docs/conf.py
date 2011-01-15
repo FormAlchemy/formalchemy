@@ -57,7 +57,7 @@ today_fmt = '%B %d, %Y'
 
 # List of directories, relative to source directories, that shouldn't be searched
 # for source files.
-#exclude_dirs = []
+exclude_patterns = ['_build']
 
 # The reST default role (used for this markup: `text`) to use for all documents.
 #default_role = None
@@ -83,7 +83,6 @@ pygments_style = 'sphinx'
 # The style sheet to use for HTML and HTML Help pages. A file of that name
 # must exist either in Sphinx' static/ path, or in one of the custom paths
 # given in html_static_path.
-html_style = 'default.css'
 
 # The name for this set of Sphinx documents.  If None, it defaults to
 # "<project> v<release> documentation".
@@ -180,3 +179,18 @@ latex_documents = [
 
 # Also add __init__'s doc to `autoclass` calls
 autoclass_content = 'both'
+
+html_theme = 'nature'
+from os import path
+pkg_dir = path.abspath(__file__).split('/docs')[0]
+setup = path.join(pkg_dir, 'setup.py')
+if path.isfile(setup):
+    for line_ in open(setup):
+        if line_.startswith("version"):
+            version = line_.split('=')[-1]
+            version = version.strip()
+            version = version.strip("'\"")
+            release = version
+            break
+del pkg_dir, setup, path
+

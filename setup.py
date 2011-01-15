@@ -44,9 +44,11 @@ long_description = '.. contents::\n\n' +\
                    '=======\n\n' +\
                    read('CHANGELOG.txt')
 
+version='1.3.6'
+
 setup(name='FormAlchemy',
       license='MIT License',
-      version='1.3.6',
+      version=version,
       description='FormAlchemy greatly speeds development with SQLAlchemy mapped classes (models) in a HTML forms environment.',
       long_description=long_description,
       author='Alexandre Conrad, Jonathan Ellis, Gaël Pasgrimaud',
