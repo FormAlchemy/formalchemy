@@ -1,7 +1,0 @@
-<?xml version="1.0"?>
-<configure xmlns="http://pylonshq.com/pyramid">
-
-    <include package="pyramid.includes" />
-    <include package="formalchemy.ext.pyramid" />
-
-</configure>
