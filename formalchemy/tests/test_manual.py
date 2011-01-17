@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from formalchemy.tests import FieldSet, Field, types, configure_and_render, pretty_html
+from formalchemy.tests import FieldSet, Field, EscapingReadonlyRenderer, types, configure_and_render, pretty_html
 
 class Manual(object):
     a = Field()
@@ -45,6 +45,35 @@ def test_manual(self):
     >>> fs.rebind(data={'Manual--a': 'asdf'})
     >>> print pretty_html(fs.a.render())
     <input id="Manual--a" name="Manual--a" type="text" value="asdf" />
+
+    >>> t = FieldSet(Manual)
+    >>> t.configure(include=[t.a, t.b], readonly=True)
+    >>> t.model.b = [1, 2]
+    >>> print t.render()
+    <tbody>
+     <tr>
+      <td class="field_readonly">
+       A:
+      </td>
+      <td>
+      </td>
+     </tr>
+     <tr>
+      <td class="field_readonly">
+       B:
+      </td>
+      <td>
+       one, two
+      </td>
+     </tr>
+    </tbody>
+    >>> t.model.a = 'test'
+    >>> print t.a.render_readonly()
+    test
+    >>> t.configure(readonly=True, options=[t.a.with_renderer(EscapingReadonlyRenderer)])
+    >>> t.model.a = '<test>'
+    >>> print t.a.render_readonly()
+    &lt;test&gt;
 
     """
 

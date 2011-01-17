@@ -964,35 +964,6 @@ True
 >>> print fs_or.user.render_readonly()
 <a href="mailto:bill@example.com">Bill</a>
 
->>> t = FieldSet(Manual)
->>> t.configure(include=[t.a, t.b], readonly=True)
->>> t.model.b = [1, 2]
->>> print t.render()
-<tbody>
- <tr>
-  <td class="field_readonly">
-   A:
-  </td>
-  <td>
-  </td>
- </tr>
- <tr>
-  <td class="field_readonly">
-   B:
-  </td>
-  <td>
-   one, two
-  </td>
- </tr>
-</tbody>
->>> t.model.a = 'test'
->>> print t.a.render_readonly()
-test
->>> t.configure(readonly=True, options=[t.a.with_renderer(EscapingReadonlyRenderer)])
->>> t.model.a = '<test>'
->>> print t.a.render_readonly()
-&lt;test&gt;
-
 >>> out = FieldSet(OrderUserTag)
 >>> list(sorted(out._fields))
 ['id', 'order_id', 'order_user', 'tag', 'user_id']
