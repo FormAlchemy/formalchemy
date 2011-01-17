@@ -254,12 +254,6 @@ mapper(Address, addresses)
 mapper(User2, users2, properties={'address': relation(Address)})
 
 
-class Manual(object):
-    a = Field()
-    b = Field(type=types.Integer).dropdown([('one', 1), ('two', 2)], multiple=True)
-    d = Field().textarea((80, 10))
-
-
 class OrderUser(Base):
     __tablename__ = 'order_users'
     user_id = Column(Integer, ForeignKey('users.id'), primary_key=True)

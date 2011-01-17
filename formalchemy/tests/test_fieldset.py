@@ -766,38 +766,6 @@ True
 >>> fs.foo.value
 4
 
->>> fs = FieldSet(Manual)
->>> print configure_and_render(fs, focus=None)
-<div>
- <label class="field_opt" for="Manual--a">
-  A
- </label>
- <input id="Manual--a" name="Manual--a" type="text" />
-</div>
-<div>
- <label class="field_opt" for="Manual--b">
-  B
- </label>
- <select id="Manual--b" multiple="multiple" name="Manual--b" size="5">
-  <option value="1">
-   one
-  </option>
-  <option value="2">
-   two
-  </option>
- </select>
-</div>
-<div>
- <label class="field_opt" for="Manual--d">
-  D
- </label>
- <textarea cols="80" id="Manual--d" name="Manual--d" rows="10">
- </textarea>
-</div>
->>> fs.rebind(data={'Manual--a': 'asdf'})
->>> print pretty_html(fs.a.render())
-<input id="Manual--a" name="Manual--a" type="text" value="asdf" />
-
 >>> fs = FieldSet(One)
 >>> fs.add(Field('foo', types.Integer, value=2).dropdown(options=[('1', 1), ('2', 2)]))
 >>> print configure_and_render(fs, focus=None)
