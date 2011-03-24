@@ -23,7 +23,7 @@ For manual Field definition::
 
 Advanced :mod:`~formalchemy.fields` customization::
 
-  >>> from formalchemy import FieldRenderer, AbstractFieldSet
+  >>> from formalchemy import FieldRenderer
 
 The above imports are equivalent to::
 

@@ -6,7 +6,7 @@
 import helpers as h
 
 from formalchemy import config
-from formalchemy import base
+from formalchemy.forms import FieldSet
 
 from tempita import Template as TempitaTemplate # must import after base
 
@@ -20,7 +20,7 @@ def _validate_iterable(o):
         raise Exception('instances must be an iterable, not %s' % o)
 
 
-class Grid(base.EditableRenderer):
+class Grid(FieldSet):
     """
     Besides `FieldSet`, `FormAlchemy` provides `Grid` for editing and
     rendering multiple instances at once.  Most of what you know about
@@ -49,13 +49,14 @@ class Grid(base.EditableRenderer):
     engine = _render = _render_readonly = None
 
     def __init__(self, cls, instances=[], session=None, data=None, prefix=None):
-        from sqlalchemy.orm import class_mapper
-        if not class_mapper(cls):
-            raise Exception('Grid must be bound to an SA mapped class')
-        base.EditableRenderer.__init__(self, cls, session, data, prefix)
+        if self._is_sa:
+            from sqlalchemy.orm import class_mapper
+            if not class_mapper(cls):
+                raise Exception('Grid must be bound to an SA mapped class')
+        FieldSet.__init__(self, model=cls, session=session, data=data, prefix=prefix)
         self.rows = instances
         self.readonly = False
-        self.errors = {}
+        self._errors = {}
 
     def configure(self, pk=False, exclude=[], include=[], options=[], readonly=False):
         """
@@ -63,7 +64,7 @@ class Grid(base.EditableRenderer):
         (`pk`, `exclude`, `include`, `options`, `readonly`), except there is
         no `focus` argument.
         """
-        base.EditableRenderer.configure(self, pk, exclude, include, options)
+        FieldSet.configure(self, pk, exclude, include, options)
         self.readonly = readonly
 
     def bind(self, instances, session=None, data=None):
@@ -78,7 +79,7 @@ class Grid(base.EditableRenderer):
             else:
                 from sqlalchemy.orm import object_session
                 session = object_session(instance)
-        mr = base.EditableRenderer.bind(self, self.model, session, data)
+        mr = FieldSet.bind(self, self.model, session, data)
         mr.rows = instances
         return mr
 
@@ -86,7 +87,7 @@ class Grid(base.EditableRenderer):
         """rebind to instances"""
         if instances is not None:
             _validate_iterable(instances)
-        base.EditableRenderer.rebind(self, self.model, session, data)
+        FieldSet.rebind(self, self.model, session, data)
         if instances is not None:
             self.rows = instances
 
@@ -106,12 +107,16 @@ class Grid(base.EditableRenderer):
         return engine('grid', collection=self, **kwargs)
 
     def _set_active(self, instance, session=None):
-        base.EditableRenderer.rebind(self, instance, session or self.session, self.data)
+        FieldSet.rebind(self, instance, session or self.session, self.data)
 
     def get_errors(self, row):
-        if self.errors:
-            return self.errors.get(row, {})
+        if self._errors:
+            return self._errors.get(row, {})
         return {}
+
+    @property
+    def errors(self):
+        return self._errors
 
     def validate(self):
         """These are the same as in `FieldSet`"""
@@ -119,7 +124,7 @@ class Grid(base.EditableRenderer):
             raise Exception('Cannot validate without binding data')
         if self.readonly:
             raise Exception('Cannot validate a read-only Grid')
-        self.errors.clear()
+        self._errors.clear()
         success = True
         for row in self.rows:
             self._set_active(row)
@@ -128,7 +133,7 @@ class Grid(base.EditableRenderer):
                 success = field._validate() and success
                 if field.errors:
                     row_errors[field] = field.errors
-            self.errors[row] = row_errors
+            self._errors[row] = row_errors
         return success
 
     def sync_one(self, row):
@@ -140,7 +145,7 @@ class Grid(base.EditableRenderer):
         if self.readonly:
             raise Exception('Cannot sync a read-only Grid')
         self._set_active(row)
-        base.EditableRenderer.sync(self)
+        FieldSet.sync(self)
 
     def sync(self):
         """These are the same as in `FieldSet`"""

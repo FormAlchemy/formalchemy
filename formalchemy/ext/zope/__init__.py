@@ -202,8 +202,8 @@ Looks nice ! Let's use the grid:
 from formalchemy.forms import FieldSet as BaseFieldSet
 from formalchemy.tables import Grid as BaseGrid
 from formalchemy.fields import Field as BaseField
+from formalchemy.forms import SimpleMultiDict
 from formalchemy.fields import _stringify
-from formalchemy.base import SimpleMultiDict
 from formalchemy import fields
 from formalchemy import validators
 from formalchemy import fatypes
@@ -454,6 +454,7 @@ class Field(BaseField):
 class FieldSet(BaseFieldSet):
     """FieldSet aware of zope schema. See :class:`formalchemy.forms.FieldSet` for full api."""
 
+    _is_sa = False
     _fields_mapping = {
         schema.TextLine: fatypes.Unicode,
         schema.Text: fatypes.Unicode,
@@ -467,21 +468,14 @@ class FieldSet(BaseFieldSet):
         schema.List: fatypes.List,
     }
 
-    def __init__(self, model, session=None, data=None, prefix=None):
+    def __init__(self, model, *args, **kwargs):
+        BaseFieldSet.__init__(self, model, *args,**kwargs)
+        self.iface = model
+        self.rebind(model)
         self._fields = OrderedDict()
         self._render_fields = OrderedDict()
-        self.model = self.session = None
-        self.prefix = prefix
-        self.model = model
-        self.readonly = False
-        self.focus = True
-        self._errors = []
         self._bound_pk = None
-        self.data = None
-        self.validator = None
-        self.iface = model
-        focus = True
-        for name, field in schema.getFieldsInOrder(model):
+        for name, field in schema.getFieldsInOrder(self.iface):
             klass = field.__class__
             try:
                 t = self._fields_mapping[klass]
@@ -497,14 +491,14 @@ class FieldSet(BaseFieldSet):
                 if klass is schema.Text:
                     self._fields[name].set(renderer=fields.TextAreaFieldRenderer)
                 if klass is schema.List:
-                    value_type = self.model[name].value_type
+                    value_type = self.iface[name].value_type
                     if isinstance(value_type, schema.Choice):
                         self._fields[name].set(options=value_type, multiple=True)
                     else:
                         self._fields[name].set(multiple=True)
                 elif klass is schema.Choice:
                     self._fields[name].set(renderer=fields.SelectFieldRenderer,
-                                           options=self.model[name])
+                                           options=self.iface[name])
 
     def bind(self, model, session=None, data=None):
         if not (model is not None or session or data):
@@ -547,6 +541,7 @@ class FieldSet(BaseFieldSet):
 
 class Grid(BaseGrid, FieldSet):
     """Grid aware of zope schema. See :class:`formalchemy.tables.Grid` for full api."""
+    _is_sa = False
     def __init__(self, cls, instances=[], session=None, data=None, prefix=None):
         FieldSet.__init__(self, cls, session, data, prefix)
         self.rows = instances

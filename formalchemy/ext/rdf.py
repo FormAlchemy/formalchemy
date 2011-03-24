@@ -60,7 +60,7 @@ Usage
 from formalchemy.forms import FieldSet as BaseFieldSet
 from formalchemy.tables import Grid as BaseGrid
 from formalchemy.fields import Field as BaseField
-from formalchemy.base import SimpleMultiDict
+from formalchemy.forms import SimpleMultiDict
 from formalchemy import fields
 from formalchemy import validators
 from formalchemy import fatypes
@@ -110,6 +110,7 @@ class Field(BaseField):
             setattr(self.model, self.name, self._deserialize())
 
 class FieldSet(BaseFieldSet):
+    _is_sa = False
     _mapping = {
             descriptors.rdfSingle: fatypes.String,
             descriptors.rdfMultiple: fatypes.List,
@@ -117,16 +118,8 @@ class FieldSet(BaseFieldSet):
         }
 
     def __init__(self, model, session=None, data=None, prefix=None):
-        self._fields = OrderedDict()
-        self._render_fields = OrderedDict()
-        self.model = self.session = None
+        BaseFieldSet.__init__(self, model)
         BaseFieldSet.rebind(self, model, data=data)
-        self.prefix = prefix
-        self.model = model
-        self.readonly = False
-        self.focus = True
-        self._errors = []
-        focus = True
         for k, v in model.__dict__.iteritems():
             if not k.startswith('_'):
                 descriptor = type(v)

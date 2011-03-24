@@ -12,12 +12,15 @@ Configuring and rendering forms
 
 In FormAlchemy, forms are rendered using the `FieldSet` object.
 
-There are several operations that can be made on a FieldSet. They can be `bound`, `configured`, `validated`, and `sync'd`.
+There are several operations that can be made on a FieldSet. They can be
+`bound`, `configured`, `validated`, and `sync'd`.
 
 * `Binding` attaches a model object to the `FieldSet`.
 * `Configuration` tells the `FieldSet` which fields to include, in which order, etc.
-* `Validation` checks the form-submitted parameters for correctness against the FieldSet's validators and field definitions.
-* `Synchronization` fills the model object with values taken from the web form submission.
+* `Validation` checks the form-submitted parameters for correctness against the
+  FieldSet's validators and field definitions.
+* `Synchronization` fills the model object with values taken from the web form
+  submission.
 
 
 Binding
@@ -25,9 +28,11 @@ Binding
 
 Binding occurs at first on :class:`FieldSet` object creation.
 
-The :class:`~formalchemy.forms.FieldSet` object constructor takes it's parameters and calls it's base class's constructor (:meth:`ModelRenderer.__init__`). It looks like:
+The :class:`~formalchemy.forms.FieldSet` object constructor takes it's
+parameters and calls it's base class's constructor (:meth:`FieldSet.__init__`).
+It looks like:
 
-.. automethod:: formalchemy.base.ModelRenderer.__init__
+.. automethod:: formalchemy.forms.FieldSet
 
 
 Fields

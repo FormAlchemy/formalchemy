@@ -147,8 +147,8 @@ class FieldRenderer(object):
             pk_string = u'_'.join([_stringify(k) for k in pk])
 
         components = [clsname, pk_string, self.field.name]
-        if self.field.parent.prefix:
-            components.insert(0, self.field.parent.prefix)
+        if self.field.parent._prefix:
+            components.insert(0, self.field.parent._prefix)
         return u"-".join(components)
 
     @property

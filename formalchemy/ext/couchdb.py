@@ -98,7 +98,7 @@ Same for grids::
 from formalchemy.forms import FieldSet as BaseFieldSet
 from formalchemy.tables import Grid as BaseGrid
 from formalchemy.fields import Field as BaseField
-from formalchemy.base import SimpleMultiDict
+from formalchemy.forms import SimpleMultiDict
 from formalchemy import fields
 from formalchemy import validators
 from formalchemy import fatypes
@@ -226,10 +226,9 @@ class Field(BaseField):
 
 class FieldSet(BaseFieldSet):
     """See :class:`~formalchemy.forms.FieldSet`"""
+    _is_sa = False
     def __init__(self, model, session=None, data=None, prefix=None):
-        self._fields = OrderedDict()
-        self._render_fields = OrderedDict()
-        self.model = self.session = None
+        BaseFieldSet.__init__(self, model, session=session, data=data, prefix=prefix)
         if model is not None and isinstance(model, schema.Document):
             BaseFieldSet.rebind(self, model.__class__, data=data)
             self.doc = model.__class__
@@ -237,13 +236,6 @@ class FieldSet(BaseFieldSet):
         else:
             BaseFieldSet.rebind(self, model, data=data)
             self.doc = model
-        self.model = model
-        self.prefix = prefix
-        self.validator = None
-        self.readonly = False
-        self.focus = True
-        self._errors = []
-        focus = True
         values = self.doc._properties.values()
         values.sort(lambda a, b: cmp(a.creation_counter, b.creation_counter))
         for v in values:
