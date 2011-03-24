@@ -232,13 +232,15 @@ class FieldSet(object):
         'textarea': fields.TextAreaFieldRenderer,
     }
 
-    def __init__(self, model, session=None, data=None, prefix=None):
+    def __init__(self, model, session=None, data=None, prefix=None,
+                 format=u'%(model)s-%(pk)s-%(name)s'):
         self._fields = OrderedDict()
         self._render_fields = OrderedDict()
         self.model = self.session = None
         self.readonly = False
         self.validator = None
         self.focus = True
+        self._format = format
         self._prefix = prefix
         self._errors = []
 
