@@ -1106,12 +1106,26 @@ class AbstractField(object):
         for k, v in html_options.iteritems():
             new_opts[k.rstrip('_')] = v
         return self._modified(html_options=new_opts)
-    def label(self, text):
+    def label(self, text=NoDefault):
+        """Get or set the label for the field. If a value is provided then change
+        the label associated with this field.  By default, the field name is
+        used, modified for readability (e.g., 'user_name' -> 'User name').
         """
-        Change the label associated with this field.  By default, the field name
-        is used, modified for readability (e.g., 'user_name' -> 'User name').
-        """
+        if text is NoDefault:
+            if self.label_text is not None:
+                text = self.label_text
+            else:
+                text = self.parent.prettify(self.key)
+            return h.escape_once(text)
         return self._modified(label_text=text)
+    def label_tag(self, **html_options):
+        """return the <label /> tag for the field."""
+        html_options.update(for_=self.renderer.name)
+        if 'class_' in html_options:
+            html_options['class_'] += self.is_required() and ' field_req' or ' field_opt'
+        else:
+            html_options['class_'] = self.is_required() and 'field_req' or 'field_opt'
+        return h.content_tag('label', self.label(), **html_options)
     def readonly(self, value=True):
         """Render the field readonly."""
         return self._modified(_readonly=True)

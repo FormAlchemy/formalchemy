@@ -10,7 +10,7 @@
 {{for field in fieldset.render_fields.itervalues()}}
 {{if field.requires_label}}
 <div>
-  <label class="{{field.is_required() and 'field_req' or 'field_opt'}}" for="{{field.renderer.name}}">{{html.escape_once([field.label_text, fieldset.prettify(field.key)][int(field.label_text is None)])}}</label>
+  {{field.label_tag()}}
   {{field.render()}}
   {{if 'instructions' in field.metadata}}
     <span class="instructions">{{field.metadata['instructions']}}</span>

@@ -1,7 +1,7 @@
 <thead>
   <tr>
     {{for field in collection.render_fields.itervalues()}}
-      <th>{{html.escape_once(F_(field.label_text or collection.prettify(field.key)))}}</td>
+      <th>{{field.label()}}</td>
     {{endfor}}
   </tr>
 </thead>
