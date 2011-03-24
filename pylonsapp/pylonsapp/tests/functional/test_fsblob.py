@@ -34,9 +34,5 @@ class TestFsblobController(TestController):
 
         # remove
         form = response.form
-        form['Files-1-path'] = ''
         form['Files-1-path--remove'] = True
-        response = form.submit()
-        response.mustcontain('Please enter a value')
-        assert 'test.txt' not in response, response
 

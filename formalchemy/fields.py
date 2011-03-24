@@ -272,9 +272,12 @@ class FieldRenderer(object):
         The default _serialized_value returns the submitted value(s)
         in the input element corresponding to self.name.
         """
-        if self.field.is_collection:
-            return self.params.getall(self.name)
-        return self.params.getone(self.name)
+        try:
+            if self.field.is_collection:
+                return self.params.getall(self.name)
+            return self.params.getone(self.name)
+        except KeyError:
+            raise KeyError('%s not found in %r' % (self.name, self.params))
 
     def deserialize(self):
         """Turns the user-submitted data into a Python value.
