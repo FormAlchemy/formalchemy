@@ -165,7 +165,16 @@ class FieldRenderer(object):
         else:
             v = None
         # empty field will be '' -- use default value there, too
-        return v or self._model_value_as_string()
+        if v:
+            return v
+
+        value = self.field.model_value
+        if value is None:
+            return None
+        if self.field.is_collection:
+            return [self.stringify_value(v) for v in value]
+        else:
+            return self.stringify_value(value)
 
     @property
     def _value(self):
@@ -178,14 +187,6 @@ class FieldRenderer(object):
         """return fields field.raw_value (mean real objects, not ForeignKeys)
         """
         return self.field.raw_value
-
-    def _model_value_as_string(self):
-        if self.field.model_value is None:
-            return None
-        if self.field.is_collection:
-            return [self.stringify_value(v) for v in self.field.model_value]
-        else:
-            return self.stringify_value(self.field.model_value)
 
     def get_translator(self, **kwargs):
         """return a GNUTranslations object in the most convenient way
@@ -1360,6 +1361,9 @@ class Field(AbstractField):
 
     def __repr__(self):
         return 'AttributeField(%s)' % self.name
+
+    def __unicode__(self):
+        return self.render_readonly()
 
     def __eq__(self, other):
         # we override eq so that when we configure with options=[...], we can match the renders in options

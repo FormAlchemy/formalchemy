@@ -682,7 +682,7 @@ class FieldSet(object):
                 if not isinstance(field, fields.AbstractField):
                     raise TypeError('non-AbstractField object `%s` found in `%s`' % (field, iterable))
                 if field not in self._fields.values():
-                    raise ValueError('Unrecognized Field `%s` in `%s` -- did you mean to call append() first?' % (field, iterable))
+                    raise ValueError('Unrecognized Field `%r` in `%s` -- did you mean to call append() first?' % (field, iterable))
 
         # if include is given, those are the fields used.  otherwise, include those not explicitly (or implicitly) excluded.
         if not include:
