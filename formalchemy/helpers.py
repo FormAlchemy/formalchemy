@@ -114,18 +114,6 @@ def radio_button(name, *args, **options):
     _update_fa(options, name)
     return radio(name, *args, **options)
 
-def tag_options(**options):
-    strip_unders(options)
-    if 'options' in options:
-        del options['options']
-    cleaned_options = convert_booleans(dict([(x, y) for x, y in options.iteritems() if y is not None]))
-    optionlist = ['%s="%s"' % (x, escape_once(y)) for x, y in cleaned_options.iteritems()]
-    optionlist.sort()
-    if optionlist:
-        return ' ' + ' '.join(optionlist)
-    else:
-        return ''
-
 def tag(name, open=False, **options):
     """
     Returns an XHTML compliant tag of type ``name``.
@@ -177,32 +165,6 @@ def select(name, selected, select_options, **attrs):
         select_options = [(v, k) for k, v in select_options]
     _update_fa(attrs, name)
     return tags.select(name, selected, select_options, **attrs)
-
-def options_for_select(container, selected=None):
-    import warnings
-    warnings.warn(DeprecationWarning('options_for_select will be removed in FormAlchemy 2.5'))
-    if hasattr(container, 'values'):
-        container = container.items()
-
-    if not isinstance(selected, (list, tuple)):
-        selected = (selected,)
-
-    options = []
-
-    for elem in container:
-        if isinstance(elem, (list, tuple)):
-            name, value = elem
-            n = html_escape(name)
-            v = html_escape(value)
-        else :
-            name = value = elem
-            n = v = html_escape(elem)
-
-        if value in selected:
-            options.append('<option value="%s" selected="selected">%s</option>' % (v, n))
-        else :
-            options.append('<option value="%s">%s</option>' % (v, n))
-    return "\n".join(options)
 
 def _update_fa(attrs, name):
     if 'id' not in attrs:

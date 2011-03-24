@@ -454,7 +454,7 @@ class Field(BaseField):
 class FieldSet(BaseFieldSet):
     """FieldSet aware of zope schema. See :class:`formalchemy.forms.FieldSet` for full api."""
 
-    _is_sa = False
+    __sa__ = False
     _fields_mapping = {
         schema.TextLine: fatypes.Unicode,
         schema.Text: fatypes.Unicode,
@@ -541,7 +541,7 @@ class FieldSet(BaseFieldSet):
 
 class Grid(BaseGrid, FieldSet):
     """Grid aware of zope schema. See :class:`formalchemy.tables.Grid` for full api."""
-    _is_sa = False
+    __sa__ = False
     def __init__(self, cls, instances=[], session=None, data=None, prefix=None):
         FieldSet.__init__(self, cls, session, data, prefix)
         self.rows = instances

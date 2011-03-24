@@ -12,7 +12,7 @@ along with the SQLAlchemy model.  Normally, you will retrieve `data` from a
 dict::
 
   >>> from formalchemy.tests import User, bill
-  >>> from formalchemy.forms import FieldSet, form_data
+  >>> from formalchemy.forms import FieldSet
   >>> fs = FieldSet(User)
   >>> fs.configure(include=[fs.name]) # we only use the name field here
   >>> fs.rebind(bill, data={'User-1-name': 'Sam'})

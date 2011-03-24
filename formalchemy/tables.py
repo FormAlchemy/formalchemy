@@ -49,7 +49,7 @@ class Grid(FieldSet):
     engine = _render = _render_readonly = None
 
     def __init__(self, cls, instances=[], session=None, data=None, prefix=None):
-        if self._is_sa:
+        if self.__sa__:
             from sqlalchemy.orm import class_mapper
             if not class_mapper(cls):
                 raise Exception('Grid must be bound to an SA mapped class')

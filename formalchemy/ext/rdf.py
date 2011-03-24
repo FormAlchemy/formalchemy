@@ -110,7 +110,7 @@ class Field(BaseField):
             setattr(self.model, self.name, self._deserialize())
 
 class FieldSet(BaseFieldSet):
-    _is_sa = False
+    __sa__ = False
     _mapping = {
             descriptors.rdfSingle: fatypes.String,
             descriptors.rdfMultiple: fatypes.List,

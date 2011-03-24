@@ -226,7 +226,7 @@ class Field(BaseField):
 
 class FieldSet(BaseFieldSet):
     """See :class:`~formalchemy.forms.FieldSet`"""
-    _is_sa = False
+    __sa__ = False
     def __init__(self, model, session=None, data=None, prefix=None):
         BaseFieldSet.__init__(self, model, session=session, data=data, prefix=prefix)
         if model is not None and isinstance(model, schema.Document):

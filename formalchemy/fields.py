@@ -199,13 +199,6 @@ class FieldRenderer(object):
             lang = 'en'
         return get_translator(lang=lang).gettext
 
-    @property
-    def errors(self):
-        """Return the errors on the FieldSet if any. Useful to know
-        if you're redisplaying a form, or showing up a fresh one.
-        """
-        return self.field.parent.errors
-
     def render(self, **kwargs):
         """
         Render the field.  Use `self.name` to get a unique name for the
@@ -887,12 +880,9 @@ class AbstractField(object):
     """
     _null_option = (u'None', u'')
 
-    def __init__(self, parent):
+    def __init__(self, parent, name=None, type=fatypes.String, **kwattrs):
         # the FieldSet (or any ModelRenderer) owning this instance
         self.parent = parent
-        if 0:
-            import forms
-            isinstance(self.parent, forms.FieldSet)
         # Renderer for this Field.  this will
         # be autoguessed, unless the user forces it with .dropdown,
         # .checkbox, etc.
@@ -915,7 +905,8 @@ class AbstractField(object):
         self.is_raw_foreign_key = False
         # Field metadata, for customization
         self.metadata = {}
-        return False
+        self.name = name
+        self.type = type
 
     def __deepcopy__(self, memo):
         wrapper = copy(self)
@@ -1281,6 +1272,7 @@ class AbstractField(object):
         """
         raise NotImplementedError()
 
+    @property
     def raw_value(self):
         """
         raw value from model.  different from `.model_value` in SQLAlchemy fields, because for reference types,

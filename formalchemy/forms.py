@@ -86,15 +86,7 @@ class SimpleMultiDict(dict):
 
 
 
-__all__ = ['FieldSet', 'SimpleMultiDict', 'form_data']
-
-
-def form_data(fieldset, params):
-    """
-    deprecated.  moved the "pull stuff out of a request object" stuff
-    into relevant_data().  until this is removed it is a no-op.
-    """
-    return params
+__all__ = ['FieldSet', 'SimpleMultiDict']
 
 
 class FieldSet(object):
@@ -205,7 +197,7 @@ class FieldSet(object):
         instance.  Stick to referencing `Field`'s from their parent
         `FieldSet` to always get the "right" instance.)
     """
-    _is_sa = True
+    __sa__ = True
     engine = _render = _render_readonly = None
 
     prettify = staticmethod(prettify)
@@ -249,7 +241,7 @@ class FieldSet(object):
             raise Exception('model parameter may not be None')
         self._original_cls = isinstance(model, type) and model or type(model)
 
-        if self._is_sa:
+        if self.__sa__:
             FieldSet.rebind(self, model, session, data)
 
             cls = isinstance(self.model, type) and self.model or type(self.model)
@@ -458,7 +450,7 @@ class FieldSet(object):
             except:
                 raise Exception('unsupported data object %s.  currently only dicts and Paste multidicts are supported' % self.data)
 
-        if not self._is_sa:
+        if not self.__sa__:
             return
 
         if session:
@@ -591,7 +583,7 @@ class FieldSet(object):
 
     def append(self, field):
         """Add a form Field. By default, this Field will be included in the rendered form or table."""
-        if not isinstance(field, fields.Field) and not isinstance(field, fields.AttributeField):
+        if not isinstance(field, fields.AbstractField):
             raise ValueError('Can only add Field or AttributeField objects; got %s instead' % field)
         field.parent = self
         _fields = self._render_fields or self._fields
