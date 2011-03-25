@@ -676,6 +676,8 @@ class CheckBoxSet(RadioSet):
     def _is_checked(self, choice_value, value=NoDefault):
         if value is NoDefault:
             value = self.value
+        if value is None:
+            value = []
         return _stringify(choice_value) in value
 
 

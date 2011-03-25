@@ -48,3 +48,24 @@ def test_lazy_record():
      </option>
     </select>
     """
+
+def test_manual_options():
+    """
+    >>> fs = FieldSet(bill)
+    >>> fs.append(Field(name="cb").checkbox(options=[('one', 1), ('two', 2)])) 
+    >>> print fs.render() #doctest: +ELLIPSIS
+    <div>...
+     <label class="field_opt" for="User-1-cb">
+      Cb
+     </label>
+     <input id="User-1-cb_0" name="User-1-cb" type="checkbox" value="1" />
+     <label for="User-1-cb_0">
+      one
+     </label>
+     <br />
+     <input id="User-1-cb_1" name="User-1-cb" type="checkbox" value="2" />
+     <label for="User-1-cb_1">
+      two
+     </label>
+    </div>
+    """
