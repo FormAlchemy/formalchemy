@@ -66,7 +66,7 @@ Same for grids::
     >>> # grid
     >>> grid = couchdb.Grid(Pet, [p, Pet()])
     >>> grid.configure(include=[grid.name, grid.type, grid.birthdate, grid.weight_in_pounds, grid.friends])
-    >>> print grid.render() # doctest: +ELLIPSIS +NORMALIZE_WHITESPACE
+    >>> print grid.render() # doctest: +SKIP +ELLIPSIS +NORMALIZE_WHITESPACE
     <thead>
       <tr>
           <th>Name</th>
