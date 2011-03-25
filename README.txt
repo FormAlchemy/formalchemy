@@ -9,7 +9,7 @@ also highly customizable.
 
 Please visit the FormAlchemy's homepage for documentation and more information:
 
-  http://formalchemy.googlecode.com
+  http://docs.formalchemy.org/
 
 You can subscribe to FormAlchemy's mailing list:
 
