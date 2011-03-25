@@ -1,7 +1,7 @@
 1.3.6
 -----
 
-* fix issues 150, 151, 153, 162
+* fix issues 150, 151, 153, 161, 162
 
 * Added `field.label()` and `field.label_tags()`
 

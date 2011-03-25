@@ -458,7 +458,10 @@ class HiddenFieldRenderer(FieldRenderer):
 class CheckBoxFieldRenderer(FieldRenderer):
     """render a boolean value as checkbox field"""
     def render(self, **kwargs):
-        return h.check_box(self.name, True, checked=_simple_eval(self.value or ''), **kwargs)
+        value = self.value or ''
+        return h.check_box(self.name, True,
+                           checked=_simple_eval(value.capitalize()),
+                           **kwargs)
     def _serialized_value(self):
         if self.name not in self.params:
             return None
