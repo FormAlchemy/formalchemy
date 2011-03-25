@@ -383,9 +383,10 @@ class FieldSet(object):
         """
         Like `bind`, but acts on this instance.  No return value.
         Not all parameters are treated the same; specifically, what happens if they are NOT specified is different:
-           * if `model` is not specified, the old model is used
-           * if `session` is not specified, FA tries to re-guess session from the model
-           * if data is not specified, it is rebound to None.
+
+        * if `model` is not specified, the old model is used
+        * if `session` is not specified, FA tries to re-guess session from the model
+        * if data is not specified, it is rebound to None.
         """
         original_model = model
         if model:

@@ -29,10 +29,7 @@ Binding
 Binding occurs at first on :class:`FieldSet` object creation.
 
 The :class:`~formalchemy.forms.FieldSet` object constructor takes it's
-parameters and calls it's base class's constructor (:meth:`FieldSet.__init__`).
-It looks like:
-
-.. automethod:: formalchemy.forms.FieldSet
+parameters and calls it's base class's constructor.
 
 
 Fields
@@ -197,7 +194,7 @@ But, relations **based on** foreign keys **will** be rendered.  For example, if
 an `Order` has a `user_id` FK and a `user` relation based on it, `user` will be
 rendered (as a select box of `User`'s, by default) but `user_id` will not.
 
-See parameters in :meth:`AbstractFieldSet.configure`.
+See parameters in :meth:`FieldSet.configure`.
 
 Examples: given a :class:`~formalchemy.forms.FieldSet` `fs` bound to a `User`
 instance as a model with primary key `id` and attributes `name` and `email`,
@@ -461,37 +458,9 @@ per-:class:`~formalchemy.forms.FieldSet` basis::
 The default template is `formalchemy.forms.template_text_tempita`.
 
 
-Really advanced customization
-=============================
-
-You can derive your own subclasses from :class:`~formalchemy.forms.FieldSet` or
-:class:`~formalchemy.forms.AbstractFieldSet` to provide a customized `render`
-and/or `configure`.
-
-`AbstractFieldSet` encorporates validation/errors logic and provides a default
-`configure` method.  It does _not_ provide `render`.
-
-You can write `render` by manually sticking strings together if that's
-what you want, but we recommend using a templating package for clarity
-and maintainability.  `FormAlchemy` includes the Tempita templating
-package as formalchemy.tempita; see http://pythonpaste.org/tempita/
-for documentation.
-    
-`formalchemy.forms.template_text_tempita` is the default template used
-by `FieldSet.` We recommend looking at that to get started.
-`FormAlchemy` also includes a Mako version,
-`formalchemy.forms.template_text_mako`, and will use that instead if
-Mako is available.  The rendered HTML is identical but Mako
-should be faster.
-
 Classes definitions
 ===================
 
-AbstractFieldSet
-----------------
-
-.. autoclass:: formalchemy.forms.AbstractFieldSet
-   :members:
 
 FieldSet
 --------
@@ -500,8 +469,3 @@ FieldSet
    :members:
 
 
-ModelRenderer
--------------
-
-.. autoclass:: formalchemy.base.ModelRenderer
-   :members:

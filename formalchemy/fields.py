@@ -66,7 +66,11 @@ def _htmlify(k, null_value=u''):
             pass
     return _stringify(k, null_value)
 
-NoDefault = object()
+class _NoDefault(object):
+    def __repr__(self):
+        return '<NoDefault>'
+NoDefault = _NoDefault()
+del _NoDefault
 
 def deserialize_once(func):
     """Simple deserialization caching decorator.
