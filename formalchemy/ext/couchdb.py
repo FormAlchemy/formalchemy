@@ -227,14 +227,14 @@ class Field(BaseField):
 class FieldSet(BaseFieldSet):
     """See :class:`~formalchemy.forms.FieldSet`"""
     __sa__ = False
-    def __init__(self, model, session=None, data=None, prefix=None):
-        BaseFieldSet.__init__(self, model, session=session, data=data, prefix=prefix)
+    def __init__(self, model, **kwargs):
+        BaseFieldSet.__init__(self, model, **kwargs)
         if model is not None and isinstance(model, schema.Document):
-            BaseFieldSet.rebind(self, model.__class__, data=data)
+            BaseFieldSet.rebind(self, model.__class__, data=kwargs.get('data', None))
             self.doc = model.__class__
             self._bound_pk = fields._pk(model)
         else:
-            BaseFieldSet.rebind(self, model, data=data)
+            BaseFieldSet.rebind(self, model, data=kwargs.get('data', None))
             self.doc = model
         values = self.doc._properties.values()
         values.sort(lambda a, b: cmp(a.creation_counter, b.creation_counter))
@@ -307,9 +307,9 @@ class FieldSet(BaseFieldSet):
 
 class Grid(BaseGrid, FieldSet):
     """See :class:`~formalchemy.tables.Grid`"""
-    def __init__(self, cls, instances=[], session=None, data=None, prefix=None):
-        FieldSet.__init__(self, cls, session, data, prefix)
-        self.rows = instances
+    def __init__(self, cls, instances=None, **kwargs):
+        FieldSet.__init__(self, cls, **kwargs)
+        self.rows = instances or []
         self.readonly = False
         self._errors = {}
 

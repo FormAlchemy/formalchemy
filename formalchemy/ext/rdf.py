@@ -117,9 +117,9 @@ class FieldSet(BaseFieldSet):
             descriptors.rdfList: fatypes.List,
         }
 
-    def __init__(self, model, session=None, data=None, prefix=None):
-        BaseFieldSet.__init__(self, model)
-        BaseFieldSet.rebind(self, model, data=data)
+    def __init__(self, model, **kwargs):
+        BaseFieldSet.__init__(self, model, **kwargs)
+        BaseFieldSet.rebind(self, model, data=kwargs.get('data', None))
         for k, v in model.__dict__.iteritems():
             if not k.startswith('_'):
                 descriptor = type(v)
@@ -167,9 +167,9 @@ class FieldSet(BaseFieldSet):
                 raise Exception('unsupported data object %s.  currently only dicts and Paste multidicts are supported' % self.data)
 
 class Grid(BaseGrid, FieldSet):
-    def __init__(self, cls, instances=[], session=None, data=None, prefix=None):
-        FieldSet.__init__(self, cls, session, data, prefix)
-        self.rows = instances
+    def __init__(self, cls, instances=None, **kwargs):
+        FieldSet.__init__(self, cls, **kwargs)
+        self.rows = instances or []
         self.readonly = False
         self._errors = {}
 

@@ -468,8 +468,8 @@ class FieldSet(BaseFieldSet):
         schema.List: fatypes.List,
     }
 
-    def __init__(self, model, *args, **kwargs):
-        BaseFieldSet.__init__(self, model, *args,**kwargs)
+    def __init__(self, model, **kwargs):
+        BaseFieldSet.__init__(self, model, **kwargs)
         self.iface = model
         self.rebind(model)
         self._fields = OrderedDict()
@@ -542,8 +542,8 @@ class FieldSet(BaseFieldSet):
 class Grid(BaseGrid, FieldSet):
     """Grid aware of zope schema. See :class:`formalchemy.tables.Grid` for full api."""
     __sa__ = False
-    def __init__(self, cls, instances=[], session=None, data=None, prefix=None):
-        FieldSet.__init__(self, cls, session, data, prefix)
+    def __init__(self, cls, instances=[], **kwargs):
+        FieldSet.__init__(self, cls, **kwargs)
         self.rows = instances
         self.readonly = False
         self._errors = {}
