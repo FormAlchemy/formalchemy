@@ -58,14 +58,15 @@ class Grid(FieldSet):
         self.readonly = False
         self._errors = {}
 
-    def configure(self, pk=False, exclude=[], include=[], options=[], readonly=False):
+    def configure(self, **kwargs):
         """
         The `Grid` `configure` method takes the same arguments as `FieldSet`
         (`pk`, `exclude`, `include`, `options`, `readonly`), except there is
         no `focus` argument.
         """
-        FieldSet.configure(self, pk, exclude, include, options)
-        self.readonly = readonly
+        if 'focus' in kwargs:
+            del kwargs['focus']
+        FieldSet.configure(self, **kwargs)
 
     def bind(self, instances, session=None, data=None):
         """bind to instances"""

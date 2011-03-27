@@ -44,7 +44,7 @@ long_description = '.. contents::\n\n' +\
                    '=======\n\n' +\
                    read('CHANGELOG.txt')
 
-version='1.3.6'
+version='1.3.7'
 
 setup(name='FormAlchemy',
       license='MIT License',
