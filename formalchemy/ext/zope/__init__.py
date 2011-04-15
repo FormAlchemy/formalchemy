@@ -70,7 +70,7 @@ We can use the form::
     <div>
       <label class="field_req" for="Pet--birthdate">Birth date</label>
       <span id="Pet--birthdate"><select id="Pet--birthdate__month" name="Pet--birthdate__month">
-    <option value="MM">Month</option>
+    <option selected="selected" value="MM">Month</option>
     <option value="1">January</option>
     <option value="2">February</option>
     ...
@@ -160,7 +160,7 @@ Looks nice ! Let's use the grid:
         </td>
         <td>
           <span id="Pet--birthdate"><select id="Pet--birthdate__month" name="Pet--birthdate__month">
-    <option value="MM">Month</option>
+    <option selected="selected" value="MM">Month</option>
     <option value="1">January</option>
     <option value="2">February</option>
     <option value="3">March</option>
@@ -175,7 +175,7 @@ Looks nice ! Let's use the grid:
     <option value="12">December</option>
     </select>
     <select id="Pet--birthdate__day" name="Pet--birthdate__day">
-    <option value="DD">Day</option>
+    <option selected="selected" value="DD">Day</option>
     <option value="1">1</option>
     ...
     <option value="31">31</option>

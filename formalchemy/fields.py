@@ -534,12 +534,6 @@ class FileFieldRenderer(FieldRenderer):
             data = getattr(self.field.model, self.field.name)
         return data is not None and data or ''
 
-# for when and/or is not safe b/c first might eval to false
-def _ternary(condition, first, second):
-    if condition:
-        return first()
-    return second()
-
 class DateFieldRenderer(FieldRenderer):
     """Render a date field"""
     @property
@@ -553,14 +547,26 @@ class DateFieldRenderer(FieldRenderer):
         return value and value.strftime(self.format) or ''
     def _render(self, **kwargs):
         data = self.params
+        value = self.field.model_value
         F_ = self.get_translator(**kwargs)
         month_options = [(F_('Month'), 'MM')] + [(unicode(F_('month_%02i' % i), 'utf-8'), str(i)) for i in xrange(1, 13)]
         day_options = [(F_('Day'), 'DD')] + [(i, str(i)) for i in xrange(1, 32)]
         mm_name = self.name + '__month'
         dd_name = self.name + '__day'
         yyyy_name = self.name + '__year'
-        mm = _ternary((data is not None and mm_name in data), lambda: data[mm_name][-1],  lambda: str(self.field.model_value and self.field.model_value.month))
-        dd = _ternary((data is not None and dd_name in data), lambda: data[dd_name][-1], lambda: str(self.field.model_value and self.field.model_value.day))
+        is_date_type = isinstance(value, (datetime.datetime, datetime.date, datetime.time))
+        values = []
+        for key, default in (('month', 'MM'), ('day', 'DD')):
+            name = self.name+'__'+key
+            v = default
+            if data is not None and name in data:
+                v = data[name]
+            if v.isdigit():
+                pass
+            elif is_date_type:
+                v = getattr(value, key)
+            values.append(v)
+        mm, dd = values
         # could be blank so don't use and/or construct
         if data is not None and yyyy_name in data:
             yyyy = data[yyyy_name]
@@ -588,22 +594,26 @@ class TimeFieldRenderer(FieldRenderer):
         return isinstance(value, datetime.time) and value.strftime(self.format) or ''
     def _render(self, **kwargs):
         data = self.params
+        value = self.field.model_value
         hour_options = ['HH'] + [str(i) for i in xrange(24)]
         minute_options = ['MM' ] + [str(i) for i in xrange(60)]
         second_options = ['SS'] + [str(i) for i in xrange(60)]
         hh_name = self.name + '__hour'
         mm_name = self.name + '__minute'
         ss_name = self.name + '__second'
-        is_time_type = isinstance(self.field.model_value, (datetime.datetime, datetime.date, datetime.time))
-        hh = _ternary((data is not None and hh_name in data),
-                       lambda: data[hh_name][-1],
-                       lambda: str(is_time_type and self.field.model_value.hour))
-        mm = _ternary((data is not None and mm_name in data),
-                       lambda: data[mm_name][-1],
-                       lambda: str(is_time_type and self.field.model_value.minute))
-        ss = _ternary((data is not None and ss_name in data),
-                       lambda: data[ss_name][-1],
-                       lambda: str(is_time_type and self.field.model_value.second))
+        is_time_type = isinstance(value, (datetime.datetime, datetime.date, datetime.time))
+        values = []
+        for key, default in (('hour', 'HH'), ('minute', 'MM'), ('second', 'SS')):
+            name = self.name+'__'+key
+            v = default
+            if data is not None and name in data:
+                v = data[name]
+            if v.isdigit():
+                pass
+            elif is_time_type:
+                v = getattr(value, key)
+            values.append(v)
+        hh, mm, ss = values
         return h.literal(':').join([
                     h.select(hh_name, [hh], hour_options, **kwargs),
                     h.select(mm_name, [mm], minute_options, **kwargs),
