@@ -611,9 +611,9 @@ class FieldSet(object):
             raise ValueError('Can only add Field objects; got %s instead' % field)
         if isinstance(field, fields.AbstractField):
             try:
-                index = fields_.keys().index(field.name)
+                index = fields_.keys().index(field.key)
             except ValueError:
-                raise ValueError('%s not in fields' % field.name)
+                raise ValueError('%s not in fields' % field.key)
         else:
             raise TypeError('field must be a Field. Got %r' % field)
         new_field.parent = self
@@ -635,9 +635,9 @@ class FieldSet(object):
             raise ValueError('Can only add Field objects; got %s instead' % field)
         if isinstance(field, fields.AbstractField):
             try:
-                index = fields_.keys().index(field.name)
+                index = fields_.keys().index(field.key)
             except ValueError:
-                raise ValueError('%s not in fields' % field.name)
+                raise ValueError('%s not in fields' % field.key)
         else:
             raise TypeError('field must be a Field. Got %r' % field)
         new_field.parent = self

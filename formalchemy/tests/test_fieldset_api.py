@@ -73,6 +73,26 @@ def insert():
     AttributeField(login)
     """
 
+def test_insert_after_relation():
+    """
+    >>> fs = FieldSet(OTOParent)
+    >>> fs.configure()
+    >>> fs.insert(fs.child, Field('foo'))
+    >>> fs.insert_after(fs.child, Field('bar'))
+    >>> fs._render_fields.keys()
+    ['foo', 'child', 'bar']
+    """
+
+def test_insert_after_alias():
+    """
+    >>> fs = FieldSet(Aliases)
+    >>> fs.configure()
+    >>> fs.insert(fs.text, Field('foo'))
+    >>> fs.insert_after(fs.text, Field('bar'))
+    >>> fs._render_fields.keys()
+    ['foo', 'text', 'bar']
+    """
+
 def insert_after():
     """
     >>> fs = FieldSet(User)
@@ -125,6 +145,13 @@ def delete():
     >>> fs._render_fields.keys()
     ['email', 'password', 'orders']
 
+    """
+
+def test_delete_relation():
+    """
+    >>> fs = FieldSet(OTOParent)
+    >>> fs.configure()
+    >>> del fs.child
     """
 
 def field_set():
