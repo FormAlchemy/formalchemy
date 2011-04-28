@@ -52,6 +52,8 @@ class FileFieldRenderer(Base):
     """render a file input field stored on file system
     """
 
+    url_prefix = '/'
+
     @property
     def storage_path(self):
         if 'app_conf' in config:
@@ -75,7 +77,7 @@ class FileFieldRenderer(Base):
         """return the file url. by default return the relative path stored in
         the DB
         """
-        return '/' + relative_path
+        return self.url_prefix + relative_path
 
     def get_size(self):
         relative_path = self.field.value
@@ -137,6 +139,22 @@ class FileFieldRenderer(Base):
             return self.params[old_value]
         return data is not None and data or ''
 
+    @classmethod
+    def new(cls, storage_path, url_prefix='/'):
+        """Return a new class::
+
+            >>> FileFieldRenderer.new(storage_path='/') # doctest: +ELLIPSIS
+            <class 'formalchemy.ext.fsblob.ConfiguredFileFieldRenderer_...'>
+            >>> ImageFieldRenderer.new(storage_path='/') # doctest: +ELLIPSIS
+            <class 'formalchemy.ext.fsblob.ConfiguredImageFieldRenderer_...'>
+        """
+        if url_prefix[-1] != '/':
+            url_prefix += '/'
+        name = 'Configured%s_%s' % (cls.__name__, str(random.random())[2:])
+        return type(name, (cls,),
+                    dict(storage_path=storage_path,
+                    url_prefix=url_prefix))
+
 
 class ImageFieldRenderer(FileFieldRenderer):
     def render_readonly(self, **kwargs):
@@ -150,3 +168,10 @@ class ImageFieldRenderer(FileFieldRenderer):
             tag = h.tag('img', src=url, alt=content)
             return h.content_tag('a', tag, href=url, **kwargs)
         return ''
+
+def getImageFieldRenderer(storage_path, prefix='/'):
+    class Renderer(ImageFieldRenderer):
+        url_prefix = prefix
+        storage_path = storage_path
+    return Renderer
+
