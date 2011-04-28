@@ -169,9 +169,3 @@ class ImageFieldRenderer(FileFieldRenderer):
             return h.content_tag('a', tag, href=url, **kwargs)
         return ''
 
-def getImageFieldRenderer(storage_path, prefix='/'):
-    class Renderer(ImageFieldRenderer):
-        url_prefix = prefix
-        storage_path = storage_path
-    return Renderer
-
