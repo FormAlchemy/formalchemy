@@ -9,9 +9,9 @@ try:
     from msgfmt import Msgfmt
 except:
     sys.path.insert(0, join(os.getcwd(), 'formalchemy'))
-    from msgfmt import Msgfmt
 
 def compile_po(path):
+    from msgfmt import Msgfmt
     for language in os.listdir(path):
         lc_path = join(path, language, 'LC_MESSAGES')
         if os.path.isdir(lc_path):
@@ -26,13 +26,17 @@ def compile_po(path):
 
 try:
     compile_po(join(os.getcwd(), 'formalchemy', 'i18n_resources'))
-except Exception, e:
-    print 'Error while building .mo files'
-    print '%r - %s' % (e, e)
+except Exception:
+    print('Error while building .mo files')
+else:
+    print('.mo files compilation success')
 
 def read(filename):
     text = open(filename).read()
-    text = unicode(text, 'utf-8').encode('ascii', 'xmlcharrefreplace')
+    try:
+        text = unicode(text, 'utf-8').encode('ascii', 'xmlcharrefreplace')
+    except NameError:
+        return ''
     return xml.sax.saxutils.escape(text)
 
 long_description = '.. contents::\n\n' +\
