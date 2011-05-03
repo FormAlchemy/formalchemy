@@ -102,9 +102,9 @@ Ok, let's assume that validation and syncing works:
     True
     >>> fs.sync()
     >>> fs.name.value
-    'minou'
+    u'minou'
     >>> p.name
-    'minou'
+    u'minou'
 
     >>> fs.configure(include=[fs.age])
     >>> fs.rebind(p, data={'Pet--age':'-1'})
@@ -124,9 +124,9 @@ Ok, let's assume that validation and syncing works:
     True
     >>> fs.sync()
     >>> fs.colour.value
-    'Brown'
+    u'Brown'
     >>> p.colour
-    'Brown'
+    u'Brown'
 
 
 Looks nice ! Let's use the grid:

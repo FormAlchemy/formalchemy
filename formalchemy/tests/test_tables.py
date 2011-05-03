@@ -198,7 +198,7 @@ Explicitly test rebind + render:
 True
 >>> g.sync()
 >>> bill.email
-'updatebill_@example.com'
+u'updatebill_@example.com'
 """
 
 if __name__ == '__main__':

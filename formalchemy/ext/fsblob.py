@@ -1,10 +1,13 @@
 # -*- coding: utf-8 -*-
 import os
 import stat
+import cgi
 import string
 import random
+import shutil
 import formalchemy.helpers as h
 from formalchemy.fields import FileFieldRenderer as Base
+from formalchemy.fields import FieldRenderer
 from formalchemy.validators import regex
 from formalchemy.i18n import _
 
@@ -117,9 +120,9 @@ class FileFieldRenderer(Base):
     def deserialize(self):
         if self._path:
             return self._path
-        data = Base.deserialize(self)
-        if self._data is not None and self._filename:
-            filename = normalized_basename(self._filename)
+        data = FieldRenderer.deserialize(self)
+        if isinstance(data, cgi.FieldStorage):
+            filename = normalized_basename(data.filename)
             self._path = self.relative_path(filename)
             filepath = os.path.join(self.storage_path,
                                     self._path.replace('/', os.sep))
@@ -127,9 +130,13 @@ class FileFieldRenderer(Base):
             if not os.path.isdir(dirname):
                 os.makedirs(dirname)
             fd = open(filepath, 'wb')
-            fd.write(data)
+            shutil.copyfileobj(data.file, fd)
             fd.close()
             return self._path
+        checkbox_name = '%s--remove' % self.name
+        if not data and not self.params.has_key(checkbox_name):
+            data = getattr(self.field.model, self.field.name)
+        return self._path
 
         # get value from old_value if needed
         old_value = '%s--old' % self.name

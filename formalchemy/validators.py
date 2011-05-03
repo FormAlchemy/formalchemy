@@ -41,6 +41,8 @@ def integer(value, field=None):
     # but this is called from deserialize as well as validation
     if isinstance(value, int):
         return value
+    elif isinstance(value, list):
+        return [integer(v) for v in value]
     if value is None or not value.strip():
         return None
     try:

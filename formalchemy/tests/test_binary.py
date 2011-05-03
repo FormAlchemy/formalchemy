@@ -3,6 +3,7 @@ from StringIO import StringIO
 
 from formalchemy.fields import FileFieldRenderer
 from formalchemy.tests import *
+from webob import multidict
 
 BOUNDARY='testdata'
 ENVIRON = {
@@ -35,7 +36,7 @@ Content-Type: application/x-javascript
 
 
 def get_fields(data):
-    return cgi.FieldStorage(fp=StringIO(data), environ=ENVIRON)
+    return multidict.MultiDict.from_fieldstorage(cgi.FieldStorage(fp=StringIO(data), environ=ENVIRON))
 
 __doc__ = r"""
 
@@ -117,9 +118,8 @@ Also check that this work with cgi.FieldStorage
 We need test data
 
     >>> data = get_fields(TEST_DATA)
-    >>> print data.getfirst('Binaries--file')
-    var test = null;
-    <BLANKLINE>
+    >>> print data.getone('Binaries--file')
+    FieldStorage('Binaries--file', 'test.js')
 
     >>> fs.rebind(data=data)
     >>> if fs.validate(): fs.sync()

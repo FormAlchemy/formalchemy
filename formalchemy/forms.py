@@ -21,6 +21,7 @@ from sqlalchemy.orm.session import Session
 from sqlalchemy.orm.scoping import ScopedSession
 from sqlalchemy.orm.dynamic import DynamicAttributeImpl
 from sqlalchemy.util import OrderedDict
+from webob import multidict
 
 try:
     from sqlalchemy.orm.exc import UnmappedInstanceError
@@ -63,25 +64,22 @@ def prettify(text):
     return text.replace("_", " ").capitalize()
 
 
-class SimpleMultiDict(dict):
-    """
-    Adds `getone`, `getall` methods to dict.  Assumes that values are either
-    a string or a list of strings.
-    """
-    def getone(self, key):
-        if key not in self:
-            raise KeyError(key)
-        v = dict.get(self, key)
-        if v is None or isinstance(v, basestring) or isinstance(v, cgi.FieldStorage):
-            return v
-        return v[0]
-    def getall(self, key):
-        v = dict.get(self, key)
-        if v is None:
-            return []
-        elif isinstance(v, basestring):
-            return [v]
-        return v
+class SimpleMultiDict(multidict.UnicodeMultiDict):
+    def __init__(self, *args, **kwargs):
+        multidict.UnicodeMultiDict.__init__(self, multi=multidict.MultiDict())
+        if kwargs:
+            args += (kwargs,)
+        for value in args:
+            if isinstance(value, list):
+                items = value
+            else:
+                items = value.items()
+            for k, v in items:
+                if isinstance(v, (list, tuple)):
+                    for item in v:
+                        self.add(k, item)
+                else:
+                    self.add(k, v)
 
 
 
@@ -385,7 +383,8 @@ class FieldSet(object):
 
         * if `model` is not specified, the old model is used
         * if `session` is not specified, FA tries to re-guess session from the model
-        * if data is not specified, it is rebound to None.
+        * if `data` is not specified, it is rebound to None
+        * if `with_prefix` is False then a prefix ``{Model}-{pk}`` is added to each data keys
         """
         original_model = model
         if model:
@@ -443,16 +442,20 @@ class FieldSet(object):
         if data is not None and not with_prefix:
             pk = fields._pk(self.model) or ''
             prefix = '%s-%s' % (self._original_cls.__name__, pk)
+            if self._prefix:
+                prefix = '%s-%s' % (self._prefix, prefix)
             data = SimpleMultiDict([('%s-%s' % (prefix, k), v) for k, v in data.items()])
 
         if data is None:
             self.data = None
+        elif isinstance(data, multidict.UnicodeMultiDict):
+            self.data = data
         elif hasattr(data, 'getall') and hasattr(data, 'getone'):
             self.data = data
         else:
-            try:
+            if isinstance(data, (dict, list)):
                 self.data = SimpleMultiDict(data)
-            except:
+            else:
                 raise Exception('unsupported data object %s.  currently only dicts and Paste multidicts are supported' % self.data)
 
         if not self.__sa__:
@@ -656,12 +659,27 @@ class FieldSet(object):
         else:
             self._fields = OrderedDict(items)
 
-    def to_dict(self, with_prefix=True):
+    def to_dict(self, with_prefix=True, as_string=False):
+        """This method intend to help you to work with json. Render fieldset as
+        a dict. If ``with_prefix`` is False then the prefix ``{Model}-{pk}`` is
+        not added. If ``as_string`` is True then all value are set using
+        ``field.render_readonly()`` else the pythonic value is used"""
         _fields = self._render_fields or self._fields
-        if with_prefix:
-            data = [(f.renderer.name, f.value) for f in _fields.values() if not isinstance(f.renderer, fields.PasswordFieldRenderer)]
+        def get_value(f):
+            if as_string:
+                return f.render_readonly()
+            else:
+                return f.value
+        if as_string:
+            data = [(f, f.render_readonly()) for f in _fields.values()]
         else:
-            data = [(f.name, f.value) for f in _fields.values() if not isinstance(f.renderer, fields.PasswordFieldRenderer)]
+            data = [(f, f.value) for f in _fields.values() if not isinstance(f.renderer, fields.PasswordFieldRenderer)]
+
+        if with_prefix:
+            data = [(f.renderer.name, v) for f, v in data]
+        else:
+            data = [(f.name, v) for f, v in data]
+
         return dict(data)
 
     def _raw_fields(self):

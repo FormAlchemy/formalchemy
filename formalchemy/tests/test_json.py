@@ -1,6 +1,10 @@
 # -*- coding: utf-8 -*-
 from formalchemy.tests import *
 from formalchemy.fields import PasswordFieldRenderer
+try:
+    import json
+except ImportError:
+    import simplejson as json
 
 def to_dict():
     """
@@ -18,6 +22,9 @@ def to_dict():
 
     >>> fs.to_dict(with_prefix=False)
     {'orders': [1], 'id': 1, 'name': u'Bill', 'email': u'bill@example.com'}
+
+    >>> print json.dumps(fs.to_dict(with_prefix=False, as_string=True))
+    {"orders": "Quantity: 10", "password": "******", "id": "1", "name": "Bill", "email": "bill@example.com"}
     """
 
 def bind_without_prefix():

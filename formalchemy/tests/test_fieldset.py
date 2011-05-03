@@ -575,7 +575,7 @@ False
 </div>
 >>> fs_2.rebind(data={'Two--foo': 'asdf'})
 >>> fs_2.data
-{'Two--foo': 'asdf'}
+SimpleMultiDict([('Two--foo', u'asdf')])
 >>> fs_2.validate()
 False
 >>> fs_2.errors
@@ -592,7 +592,7 @@ False
 </div>
 >>> fs_2.rebind(data={'Two--foo': '2'})
 >>> fs_2.data
-{'Two--foo': '2'}
+SimpleMultiDict([('Two--foo', u'2')])
 >>> fs_2.validate()
 True
 >>> fs_2.errors
@@ -649,7 +649,7 @@ True
 
 >>> fs_3 = FieldSet(Three, data={'Three--foo': 'asdf', 'Three--bar': 'fdsa'})
 >>> fs_3.foo.value
-'asdf'
+u'asdf'
 >>> print fs_3.foo.textarea().render()
 <textarea id="Three--foo" name="Three--foo">asdf</textarea>
 >>> print fs_3.foo.textarea("3x4").render()
@@ -657,7 +657,7 @@ True
 >>> print fs_3.foo.textarea((3,4)).render()
 <textarea cols="3" id="Three--foo" name="Three--foo" rows="4">asdf</textarea>
 >>> fs_3.bar.value
-'fdsa'
+u'fdsa'
 >>> def custom_validator(fs):
 ...   if fs.foo.value != fs.bar.value:
 ...     fs.foo.errors.append('does not match bar')
