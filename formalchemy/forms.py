@@ -65,12 +65,10 @@ def prettify(text):
 
 
 class SimpleMultiDict(multidict.UnicodeMultiDict):
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args):
         multidict.UnicodeMultiDict.__init__(self, multi=multidict.MultiDict())
-        if kwargs:
-            args += (kwargs,)
         for value in args:
-            if isinstance(value, list):
+            if isinstance(value, (list, tuple)):
                 items = value
             else:
                 items = value.items()
