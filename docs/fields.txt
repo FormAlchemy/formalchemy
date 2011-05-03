@@ -132,6 +132,11 @@ Read only mode::
     >>> print fs.text.render_readonly()
     <BLANKLINE>
 
+HiddenFieldRendererFactory
+***************************
+
+.. autofunction:: HiddenFieldRendererFactory
+
 CheckBoxFieldRenderer
 *********************
 
@@ -191,6 +196,9 @@ Read only mode::
 
     >>> print fs.date.render_readonly()
     2000-12-31
+
+TimeFieldRenderer
+*****************
 
 .. autoclass:: TimeFieldRenderer
    :members:
@@ -336,6 +344,21 @@ Read only mode::
     >>> print fs.datetime.render_readonly()
     2000-12-31 09:03:30
 
+HiddenDateFieldRenderer
+***********************
+
+.. autoclass:: HiddenDateFieldRenderer
+
+HiddenTimeFieldRenderer
+***********************
+
+.. autoclass:: HiddenTimeFieldRenderer
+
+HiddenDateTimeFieldRenderer
+***************************
+
+.. autoclass:: HiddenDateTimeFieldRenderer
+
 RadioSet
 ********
 
@@ -393,7 +416,7 @@ element[s]) used to edit different types of fields...
    `default_renderers` is::
 
 .. literalinclude:: ../formalchemy/forms.py
-   :lines: 204-226
+   :pyobject: DefaultRenderers
 
 For instance, to make `Boolean` s render as select fields with Yes/No
 options by default, you could write::

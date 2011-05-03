@@ -84,7 +84,32 @@ class SimpleMultiDict(multidict.UnicodeMultiDict):
 __all__ = ['FieldSet', 'SimpleMultiDict']
 
 
-class FieldSet(object):
+class DefaultRenderers(object):
+
+    default_renderers = {
+        fatypes.String: fields.TextFieldRenderer,
+        fatypes.Unicode: fields.TextFieldRenderer,
+        fatypes.Text: fields.TextFieldRenderer,
+        fatypes.Integer: fields.IntegerFieldRenderer,
+        fatypes.Float: fields.FloatFieldRenderer,
+        fatypes.Numeric: fields.FloatFieldRenderer,
+        fatypes.Interval: fields.IntervalFieldRenderer,
+        fatypes.Boolean: fields.CheckBoxFieldRenderer,
+        fatypes.DateTime: fields.DateTimeFieldRenderer,
+        fatypes.Date: fields.DateFieldRenderer,
+        fatypes.Time: fields.TimeFieldRenderer,
+        fatypes.LargeBinary: fields.FileFieldRenderer,
+        fatypes.List: fields.SelectFieldRenderer,
+        fatypes.Set: fields.SelectFieldRenderer,
+        'dropdown': fields.SelectFieldRenderer,
+        'checkbox': fields.CheckBoxSet,
+        'radio': fields.RadioSet,
+        'password': fields.PasswordFieldRenderer,
+        'textarea': fields.TextAreaFieldRenderer,
+    }
+
+
+class FieldSet(DefaultRenderers):
     """
     A `FieldSet` is bound to a SQLAlchemy mapped instance (or class, for
     creating new instances) and can render a form for editing that instance,
@@ -196,28 +221,6 @@ class FieldSet(object):
     engine = _render = _render_readonly = None
 
     prettify = staticmethod(prettify)
-
-    default_renderers = {
-        fatypes.String: fields.TextFieldRenderer,
-        fatypes.Unicode: fields.TextFieldRenderer,
-        fatypes.Text: fields.TextFieldRenderer,
-        fatypes.Integer: fields.IntegerFieldRenderer,
-        fatypes.Float: fields.FloatFieldRenderer,
-        fatypes.Numeric: fields.FloatFieldRenderer,
-        fatypes.Interval: fields.IntervalFieldRenderer,
-        fatypes.Boolean: fields.CheckBoxFieldRenderer,
-        fatypes.DateTime: fields.DateTimeFieldRenderer,
-        fatypes.Date: fields.DateFieldRenderer,
-        fatypes.Time: fields.TimeFieldRenderer,
-        fatypes.LargeBinary: fields.FileFieldRenderer,
-        fatypes.List: fields.SelectFieldRenderer,
-        fatypes.Set: fields.SelectFieldRenderer,
-        'dropdown': fields.SelectFieldRenderer,
-        'checkbox': fields.CheckBoxSet,
-        'radio': fields.RadioSet,
-        'password': fields.PasswordFieldRenderer,
-        'textarea': fields.TextAreaFieldRenderer,
-    }
 
     def __init__(self, model, session=None, data=None, prefix=None,
                  format=u'%(model)s-%(pk)s-%(name)s'):
