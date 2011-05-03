@@ -13,5 +13,5 @@ import formalchemy.validators as validators
 import formalchemy.fatypes as types
 
 __all__ = ["FieldSet", "Field", "FieldRenderer", "Grid", "ValidationError", "validators", "SimpleMultiDict", "types"]
-__version__ = "1.3.7"
+__version__ = "1.3.8"
 
