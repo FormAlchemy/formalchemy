@@ -30,7 +30,6 @@ except ImportError:
             Exception to provide support for sqlalchemy < 0.6
         """
 
-
 from formalchemy.validators import ValidationError
 from formalchemy import fields
 from formalchemy import config
@@ -353,7 +352,7 @@ class FieldSet(object):
         self.validator = global_validator
         self._render_fields = OrderedDict([(field.key, field) for field in self._get_fields(pk, exclude, include, options)])
 
-    def bind(self, model=None, session=None, data=None):
+    def bind(self, model=None, session=None, data=None, with_prefix=True):
         """
         Return a copy of this FieldSet or Grid, bound to the given
         `model`, `session`, and `data`. The parameters to this method are the
@@ -372,14 +371,14 @@ class FieldSet(object):
         mr = object.__new__(self.__class__)
         mr.__dict__ = dict(self.__dict__)
         # two steps so bind's error checking can work
-        FieldSet.rebind(mr, model, session, data)
+        FieldSet.rebind(mr, model, session, data, with_prefix=with_prefix)
         mr._fields = OrderedDict([(key, renderer.bind(mr)) for key, renderer in self._fields.iteritems()])
         if self._render_fields:
             mr._render_fields = OrderedDict([(field.key, field) for field in
                                              [field.bind(mr) for field in self._render_fields.itervalues()]])
         return mr
 
-    def rebind(self, model=None, session=None, data=None):
+    def rebind(self, model=None, session=None, data=None, with_prefix=True):
         """
         Like `bind`, but acts on this instance.  No return value.
         Not all parameters are treated the same; specifically, what happens if they are NOT specified is different:
@@ -440,6 +439,11 @@ class FieldSet(object):
                 raise ValueError('You can only bind to another object of the same type or subclass you originally bound to (%s), not %s' % (type(self.model), type(model)))
             self.model = model
             self._bound_pk = fields._pk(model)
+
+        if data is not None and not with_prefix:
+            pk = fields._pk(self.model) or ''
+            prefix = '%s-%s' % (self._original_cls.__name__, pk)
+            data = SimpleMultiDict([('%s-%s' % (prefix, k), v) for k, v in data.items()])
 
         if data is None:
             self.data = None
@@ -652,6 +656,13 @@ class FieldSet(object):
         else:
             self._fields = OrderedDict(items)
 
+    def to_dict(self, with_prefix=True):
+        _fields = self._render_fields or self._fields
+        if with_prefix:
+            data = [(f.renderer.name, f.value) for f in _fields.values() if not isinstance(f.renderer, fields.PasswordFieldRenderer)]
+        else:
+            data = [(f.name, f.value) for f in _fields.values() if not isinstance(f.renderer, fields.PasswordFieldRenderer)]
+        return dict(data)
 
     def _raw_fields(self):
         return self._fields.values()
