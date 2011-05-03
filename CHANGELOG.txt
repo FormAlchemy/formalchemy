@@ -1,13 +1,17 @@
 1.3.8
 -----
 
-* use webob.multidict as ``data``. This while improve unicode handling in the
+* use webob.multidict as ``data``. This will improve unicode handling in the
   future (eg: py3k migration). WebOb is now a dependency.
 
 * add to_dict() method and .bind(with_prefix=True/False) to help to work with json data
 
 * improve ext.fsblob. files are wrote on the file system using
-  shutil.copyfileobj from the cgi.FieldStorage field
+  ``shutil.copyfileobj`` from the ``cgi.FieldStorage`` field
+
+* Add a HiddenFieldRendererFactory and allow to hide Date/Time fields via
+  ``.hidden()`` and ``.set(hidden=True)`` (Thanks to tarek to put this idea in
+  my brain)
 
 * added german translation (thanks @disko for pull request)
 

@@ -451,14 +451,6 @@ class TextAreaFieldRenderer(FieldRenderer):
         return h.text_area(self.name, content=self.value, **kwargs)
 
 
-class HiddenFieldRenderer(FieldRenderer):
-    """render a field as an hidden field"""
-    def render(self, **kwargs):
-        return h.hidden_field(self.name, value=self.value, **kwargs)
-    def render_readonly(self):
-        return ''
-
-
 class CheckBoxFieldRenderer(FieldRenderer):
     """render a boolean value as checkbox field"""
     def render(self, **kwargs):
@@ -748,6 +740,30 @@ class SelectFieldRenderer(FieldRenderer):
         return _stringify(D.get(value, value))
 
 
+class HiddenFieldRenderer(FieldRenderer):
+    """render a field as an hidden field"""
+    def render(self, **kwargs):
+        return h.hidden_field(self.name, value=self.value, **kwargs)
+    def render_readonly(self):
+        return ''
+
+def HiddenFieldRendererFactory(cls):
+    """A factory to generate a new class to hide an existing renderer"""
+    class Renderer(cls, HiddenFieldRenderer):
+        def render(self, **kwargs):
+            html = super(Renderer, self).render(**kwargs)
+            return h.content_tag('div', html, style="display:none;")
+        def render_readonly(self):
+            return ''
+    attrs = dict(__doc__="""Hidden %s renderer""" % cls.__name__)
+    renderer = type('Hidden%s' % cls.__name__, (Renderer,), attrs)
+    return renderer
+
+
+HiddenDateFieldRenderer = HiddenFieldRendererFactory(DateFieldRenderer)
+HiddenTimeFieldRenderer = HiddenFieldRendererFactory(TimeFieldRenderer)
+HiddenDateTimeFieldRenderer = HiddenFieldRendererFactory(DateTimeFieldRenderer)
+
 
 
 
@@ -1005,8 +1021,8 @@ class AbstractField(object):
     def set(self, **kwattrs):
         """
         Update field attributes in place. Allowed attributes are: validate,
-        renderer, required, readonly, nul_as, label, multiple, options, size,
-        instructions, metadata::
+        renderer, hidden, required, readonly, nul_as, label, multiple, options,
+        size, instructions, metadata::
 
             >>> field = Field('myfield')
             >>> field.set(label='My field', renderer=SelectFieldRenderer,
@@ -1038,6 +1054,16 @@ class AbstractField(object):
                 else:
                     if validators.required in self.validators:
                         self.validators.remove(validators.required)
+            elif attr == 'hidden':
+                if isinstance(self.type, fatypes.Date):
+                    renderer = HiddenDateFieldRenderer
+                elif isinstance(self.type, fatypes.Time):
+                    renderer = HiddenTimeFieldRenderer
+                elif isinstance(self.type, fatypes.DateTime):
+                    renderer = HiddenDateTimeFieldRenderer
+                else:
+                    renderer = HiddenFieldRenderer
+                self._renderer = renderer
             elif attr in mapping:
                 attr = mapping.get(attr)
                 setattr(self, attr, value)
@@ -1147,7 +1173,15 @@ class AbstractField(object):
         return self._modified(_readonly=True)
     def hidden(self):
         """Render the field hidden.  (Value only, no label.)"""
-        return self._modified(_renderer=HiddenFieldRenderer, render_opts={})
+        if isinstance(self.type, fatypes.Date):
+            renderer = HiddenDateFieldRenderer
+        elif isinstance(self.type, fatypes.Time):
+            renderer = HiddenTimeFieldRenderer
+        elif isinstance(self.type, fatypes.DateTime):
+            renderer = HiddenDateTimeFieldRenderer
+        else:
+            renderer = HiddenFieldRenderer
+        return self._modified(_renderer=renderer, render_opts={})
     def password(self):
         """Render the field as a password input, hiding its value."""
         field = deepcopy(self)

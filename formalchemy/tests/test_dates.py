@@ -89,6 +89,30 @@ def test_dt_hang_up():
     datetime.datetime(2011, 12, 12, 17, 28, 49)
     """
 
+def test_hidden():
+    """
+    >>> fs = FieldSet(Dt)
+    >>> _ = fs.foo.set(hidden=True)
+    >>> print pretty_html(fs.foo.render()) #doctest: +ELLIPSIS
+    <div style="display:none;">
+     <span id="Dt--foo">
+    ...
+
+    >>> _ = fs.bar.set(hidden=True)
+    >>> print pretty_html(fs.bar.render()) #doctest: +ELLIPSIS
+    <div style="display:none;">
+     <span id="Dt--bar">
+    ...
+
+    >>> _ = fs.foobar.set(hidden=True)
+    >>> print pretty_html(fs.foobar.render()) #doctest: +ELLIPSIS
+    <div style="display:none;">
+     <span id="Dt--foobar">
+    ...
+    """
+
+
+
 __doc__ = r"""
 >>> fs = FieldSet(Dt)
 >>> fs.configure(options=[fs.foobar.with_renderer(DateTimeFieldRendererFr)])
