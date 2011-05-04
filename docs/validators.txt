@@ -177,6 +177,18 @@ a ValidationError if it is invalid.
 Function generators
 *******************
 
+.. autofunction:: length
+
+  >>> length(min=2, max=5)('a', field)
+  Traceback (most recent call last):
+  ...
+  ValidationError: Value must be at least 2 characters long
+  >>> length(min=2, max=5)('abcdef', field)
+  Traceback (most recent call last):
+  ...
+  ValidationError: Value must be no more than 5 characters long
+  >>> length(min=2, max=5)('abcde', field)
+
 .. autofunction:: minlength
 
   >>> minlength(0)('a', field)

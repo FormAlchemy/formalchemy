@@ -139,23 +139,28 @@ def email(value, field=None):
 
 
 # parameterized validators return the validation function
-def maxlength(length):
-    """Returns a validator that is successful if the input's length is at most the given one."""
-    if length <= 0:
-        raise ValueError('Invalid maximum length')
+def length(min=0, max=None):
+    """Returns a validator that is successful if the input's length is between min and max."""
+    min_ = min
+    max_ = max
     def f(value, field=None):
-        if len(value) > length:
-            raise ValidationError(_('Value must be no more than %d characters long') % length)
+        if len(value) < min_:
+            raise ValidationError(_('Value must be at least %d characters long') % min_)
+        if max_ is not None and len(value) > max_:
+            raise ValidationError(_('Value must be no more than %d characters long') % max_)
     return f
 
-def minlength(length):
+def maxlength(max):
+    """Returns a validator that is successful if the input's length is at most the given one."""
+    if max <= 0:
+        raise ValueError('Invalid maximum length')
+    return length(max=max)
+
+def minlength(min):
     """Returns a validator that is successful if the input's length is at least the given one."""
-    if length <= 0:
+    if min <= 0:
         raise ValueError('Invalid minimum length')
-    def f(value, field=None):
-        if len(value) < length:
-            raise ValidationError(_('Value must be at least %d characters long') % length)
-    return f
+    return length(min=min)
 
 def regex(exp, errormsg=_('Invalid input')):
     """
