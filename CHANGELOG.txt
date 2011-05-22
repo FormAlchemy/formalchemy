@@ -1,3 +1,8 @@
+1.3.9
+-----
+
+* fix unicode issue with non webob based framework
+
 1.3.8
 -----
 
