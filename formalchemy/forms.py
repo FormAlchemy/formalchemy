@@ -65,8 +65,10 @@ def prettify(text):
 
 
 class SimpleMultiDict(multidict.UnicodeMultiDict):
-    def __init__(self, *args):
-        multidict.UnicodeMultiDict.__init__(self, multi=multidict.MultiDict())
+    def __init__(self, *args, **kwargs):
+        encoding = kwargs.get('encoding', config.encoding)
+        multi = multidict.MultiDict()
+        multidict.UnicodeMultiDict.__init__(self, multi=multi, encoding=encoding)
         for value in args:
             if isinstance(value, (list, tuple)):
                 items = value
@@ -441,11 +443,15 @@ class FieldSet(DefaultRenderers):
             self._bound_pk = fields._pk(model)
 
         if data is not None and not with_prefix:
+            if isinstance(data, multidict.UnicodeMultiDict):
+                encoding = data.encoding
+            else:
+                encoding = config.encoding
             pk = fields._pk(self.model) or ''
             prefix = '%s-%s' % (self._original_cls.__name__, pk)
             if self._prefix:
                 prefix = '%s-%s' % (self._prefix, prefix)
-            data = SimpleMultiDict([('%s-%s' % (prefix, k), v) for k, v in data.items()])
+            data = SimpleMultiDict([('%s-%s' % (prefix, k), v) for k, v in data.items()], encoding=encoding)
 
         if data is None:
             self.data = None
@@ -453,11 +459,10 @@ class FieldSet(DefaultRenderers):
             self.data = data
         elif hasattr(data, 'getall') and hasattr(data, 'getone'):
             self.data = data
+        elif isinstance(data, (dict, list)):
+            self.data = SimpleMultiDict(data, encoding=config.encoding)
         else:
-            if isinstance(data, (dict, list)):
-                self.data = SimpleMultiDict(data)
-            else:
-                raise Exception('unsupported data object %s.  currently only dicts and Paste multidicts are supported' % self.data)
+            raise Exception('unsupported data object %s.  currently only dicts and Paste multidicts are supported' % self.data)
 
         if not self.__sa__:
             return
