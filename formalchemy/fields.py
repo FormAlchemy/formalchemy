@@ -36,24 +36,17 @@ __all__ = ['Field', 'FieldRenderer',
 
 
 
-def iterable(item):
-    try:
-        iter(item)
-    except:
-        return False
-    return True
-
 def _stringify(k, null_value=u''):
     if k is None:
         return null_value
-    if isinstance(k, datetime.timedelta):
-        return '%s.%s' % (k.days, k.seconds)
-    elif isinstance(k, str):
+    if isinstance(k, str):
         return unicode(k, config.encoding)
     elif isinstance(k, unicode):
         return k
     elif hasattr(k, '__unicode__'):
         return unicode(k)
+    elif isinstance(k, datetime.timedelta):
+        return '%s.%s' % (k.days, k.seconds)
     else:
         return unicode(str(k), config.encoding)
 
@@ -141,7 +134,7 @@ class FieldRenderer(object):
         clsname = self.field.model.__class__.__name__
         pk = self.field.parent._bound_pk
         assert pk != ''
-        if isinstance(pk, basestring) or not iterable(pk):
+        if isinstance(pk, basestring) or not hasattr(pk, '__iter__'):
             pk_string = _stringify(pk)
         else:
             # remember to use a delimiter that can be used in the DOM (specifically, no commas).
