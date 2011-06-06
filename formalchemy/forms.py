@@ -34,7 +34,7 @@ except ImportError:
 from formalchemy.validators import ValidationError
 from formalchemy import fields
 from formalchemy import config
-from formalchemy import exc as exceptions
+from formalchemy import exceptions
 from formalchemy import fatypes
 
 from tempita import Template as TempitaTemplate # must import after base
