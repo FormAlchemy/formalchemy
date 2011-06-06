@@ -15,7 +15,7 @@ import warnings
 from sqlalchemy.orm import class_mapper, Query
 from sqlalchemy.orm.attributes import ScalarAttributeImpl, ScalarObjectAttributeImpl, CollectionAttributeImpl, InstrumentedAttribute
 from sqlalchemy.orm.properties import CompositeProperty, ColumnProperty
-from sqlalchemy.exceptions import InvalidRequestError # 0.4 support
+from sqlalchemy.exc import InvalidRequestError # 0.4 support
 from formalchemy import helpers as h
 from formalchemy import fatypes, validators
 from formalchemy import config
