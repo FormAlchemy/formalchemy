@@ -16,7 +16,7 @@ if __version__.split('.') < MIN_SA_VERSION.split('.'):
 
 from sqlalchemy.orm.attributes import InstrumentedAttribute
 from sqlalchemy.orm.properties import SynonymProperty
-from sqlalchemy.orm import compile_mappers, object_session, class_mapper
+from sqlalchemy.orm import configure_mappers, object_session, class_mapper
 from sqlalchemy.orm.session import Session
 from sqlalchemy.orm.scoping import ScopedSession
 from sqlalchemy.orm.dynamic import DynamicAttributeImpl
@@ -39,7 +39,7 @@ from formalchemy import fatypes
 
 from tempita import Template as TempitaTemplate # must import after base
 
-compile_mappers() # initializes InstrumentedAttributes
+configure_mappers() # initializes InstrumentedAttributes
 
 
 try:
