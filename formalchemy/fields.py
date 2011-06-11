@@ -15,7 +15,7 @@ import warnings
 from sqlalchemy.orm import class_mapper, Query
 from sqlalchemy.orm.attributes import ScalarAttributeImpl, ScalarObjectAttributeImpl, CollectionAttributeImpl, InstrumentedAttribute
 from sqlalchemy.orm.properties import CompositeProperty, ColumnProperty
-from sqlalchemy.exceptions import InvalidRequestError # 0.4 support
+from sqlalchemy import exceptions as sqlalchemy_exceptions
 from formalchemy import helpers as h
 from formalchemy import fatypes, validators
 from formalchemy import config
@@ -787,7 +787,7 @@ def _pk(instance):
     # Will be a tuple if PK is multicolumn.
     try:
         columns = class_mapper(type(instance)).primary_key
-    except InvalidRequestError:
+    except sqlalchemy_exceptions.InvalidRequestError:
         # try to get pk from model attribute
         if hasattr(instance, '_pk'):
             return getattr(instance, '_pk', None) or None
