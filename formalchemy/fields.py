@@ -145,9 +145,8 @@ class FieldRenderer(object):
 
         components = dict(model=clsname, pk=pk_string, name=self.field.name)
         name = self.field.parent._format % components
-        prefix = self.field.parent._prefix or ''
-        if prefix:
-            return u'%s-%s' % (prefix, name)
+        if self.field.parent._prefix is not None:
+            return u'%s-%s' % (self.field.parent._prefix, name)
         return name
 
     @property
