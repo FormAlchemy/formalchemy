@@ -15,7 +15,7 @@ import warnings
 from sqlalchemy.orm import class_mapper, Query
 from sqlalchemy.orm.attributes import ScalarAttributeImpl, ScalarObjectAttributeImpl, CollectionAttributeImpl, InstrumentedAttribute
 from sqlalchemy.orm.properties import CompositeProperty, ColumnProperty
-from sqlalchemy.exceptions import InvalidRequestError # 0.4 support
+from sqlalchemy import exceptions as sqlalchemy_exceptions
 from formalchemy import helpers as h
 from formalchemy import fatypes, validators
 from formalchemy import config
@@ -145,9 +145,8 @@ class FieldRenderer(object):
 
         components = dict(model=clsname, pk=pk_string, name=self.field.name)
         name = self.field.parent._format % components
-        prefix = self.field.parent._prefix or ''
-        if prefix:
-            return u'%s-%s' % (prefix, name)
+        if self.field.parent._prefix is not None:
+            return u'%s-%s' % (self.field.parent._prefix, name)
         return name
 
     @property
@@ -794,7 +793,7 @@ def _pk(instance):
     # Will be a tuple if PK is multicolumn.
     try:
         columns = class_mapper(type(instance)).primary_key
-    except InvalidRequestError:
+    except sqlalchemy_exceptions.InvalidRequestError:
         # try to get pk from model attribute
         if hasattr(instance, '_pk'):
             return getattr(instance, '_pk', None) or None
