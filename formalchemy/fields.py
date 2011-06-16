@@ -184,6 +184,13 @@ class FieldRenderer(object):
         """
         return self.field.raw_value
 
+    @property
+    def request(self):
+        """return the ``request`` bound to the
+        :class:`~formalchemy.forms.FieldSet`` during
+        :func:`~formalchemy.forms.FieldSet.bind`"""
+        return self.field.parent._request
+
     def get_translator(self, **kwargs):
         """return a GNUTranslations object in the most convenient way
         """

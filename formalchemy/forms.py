@@ -232,6 +232,7 @@ class FieldSet(DefaultRenderers):
         self.readonly = False
         self.validator = None
         self.focus = True
+        self._request = None
         self._format = format
         self._prefix = prefix
         self._errors = []
@@ -353,7 +354,7 @@ class FieldSet(DefaultRenderers):
         self.validator = global_validator
         self._render_fields = OrderedDict([(field.key, field) for field in self._get_fields(pk, exclude, include, options)])
 
-    def bind(self, model=None, session=None, data=None, with_prefix=True):
+    def bind(self, model=None, session=None, data=None, request=None, with_prefix=True):
         """
         Return a copy of this FieldSet or Grid, bound to the given
         `model`, `session`, and `data`. The parameters to this method are the
@@ -362,12 +363,22 @@ class FieldSet(DefaultRenderers):
         Often you will create and `configure` a FieldSet or Grid at application
         startup, then `bind` specific instances to it for actual editing or display.
         """
+        if request is not None:
+            self._request = request
+
+        if data is None and request is not None:
+            if hasattr(request, 'environ') and hasattr(request, 'POST'):
+                if request.environ.get('REQUEST_METHOD', '').upper() == 'POST':
+                    data = request.POST or None
+
         if not (model is not None or session or data):
             raise Exception('must specify at least one of {model, session, data}')
+
         if not model:
             if not self.model:
                 raise Exception('model must be specified when none is already set')
             model = fields._pk(self.model) is None and type(self.model) or self.model
+
         # copy.copy causes a stacktrace on python 2.5.2/OSX + pylons.  unable to reproduce w/ simpler sample.
         mr = object.__new__(self.__class__)
         mr.__dict__ = dict(self.__dict__)
@@ -377,6 +388,7 @@ class FieldSet(DefaultRenderers):
         if self._render_fields:
             mr._render_fields = OrderedDict([(field.key, field) for field in
                                              [field.bind(mr) for field in self._render_fields.itervalues()]])
+        mr._request = request
         return mr
 
     def rebind(self, model=None, session=None, data=None, with_prefix=True):
