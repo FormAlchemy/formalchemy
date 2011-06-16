@@ -68,7 +68,7 @@ class Grid(FieldSet):
             del kwargs['focus']
         FieldSet.configure(self, **kwargs)
 
-    def bind(self, instances, session=None, data=None):
+    def bind(self, instances, session=None, data=None, request=None):
         """bind to instances"""
         _validate_iterable(instances)
         if not session:
@@ -82,6 +82,7 @@ class Grid(FieldSet):
                 session = object_session(instance)
         mr = FieldSet.bind(self, self.model, session, data)
         mr.rows = instances
+        mr._request = request
         return mr
 
     def rebind(self, instances=None, session=None, data=None):
