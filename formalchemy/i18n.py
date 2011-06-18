@@ -9,6 +9,13 @@ from gettext import GNUTranslations
 i18n_path = os.path.join(os.path.dirname(__file__), 'i18n_resources')
 
 try:
+    from pyramid.i18n import get_localizer
+    from pyramid.i18n import TranslationStringFactory
+    HAS_PYRAMID = True
+except ImportError:
+    HAS_PYRAMID = False
+
+try:
     from pylons.i18n import get_lang
     HAS_PYLONS = True
 except:
@@ -22,19 +29,23 @@ class _Translator(object):
     def gettext(self, value):
         return value
 
-def get_translator(lang=None):
+def get_translator(lang=None, request=None):
     """
     return a GNUTranslations instance for `lang`::
 
         >>> translator = get_translator('fr')
-        ... assert translator.gettext('Remove') == 'Supprimer'
-        ... assert translator.gettext('month_01') == 'Janvier'
+        ... assert translate('Remove') == 'Supprimer'
+        ... assert translate('month_01') == 'Janvier'
         >>> translator = get_translator('en')
-        ... assert translator.gettext('Remove') == 'Remove'
-        ... assert translator.gettext('month_01') == 'January'
+        ... assert translate('Remove') == 'Remove'
+        ... assert translate('month_01') == 'January'
 
     """
     # get possible fallback languages
+    if request is not None and HAS_PYRAMID:
+        localizer = get_localizer(request)
+        return localizer.translate
+
     try:
         langs = get_lang() or []
     except TypeError:
@@ -53,14 +64,17 @@ def get_translator(lang=None):
         filename = os.path.join(i18n_path, lang, 'LC_MESSAGES','formalchemy.mo')
         if os.path.isfile(filename):
             translations_path = os.path.join(i18n_path, lang, 'LC_MESSAGES','formalchemy.mo')
-            return GNUTranslations(open(translations_path, 'rb'))
+            return GNUTranslations(open(translations_path, 'rb')).gettext
 
     # dummy translator
-    return _Translator()
+    return _Translator().gettext
 
-def _(value):
-    """dummy 'translator' to mark translation strings in python code"""
-    return value
+if HAS_PYRAMID:
+    _ = TranslationStringFactory('formalchemy')
+else:
+    def _(value):
+        """dummy 'translator' to mark translation strings in python code"""
+        return value
 
 # month translation
 _('Year')

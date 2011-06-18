@@ -551,17 +551,13 @@ class FieldSet(DefaultRenderers):
                    "with the original primary key again, or by binding data to None.")
             raise exceptions.PkError(msg % (self._bound_pk, fields._pk(self.model)))
         engine = self.engine or config.engine
-        if self._render or self._render_readonly:
-            warnings.warn(DeprecationWarning('_render and _render_readonly are deprecated and will be removed in 1.5. Use a TemplateEngine instead'))
+        if 'request' not in kwargs:
+            kwargs['request'] = self._request
         if self.readonly:
-            if self._render_readonly is not None:
-                engine._update_args(kwargs)
-                return self._render_readonly(fieldset=self, **kwargs)
-            return engine('fieldset_readonly', fieldset=self, **kwargs)
-        if self._render is not None:
-            engine._update_args(kwargs)
-            return self._render(fieldset=self, **kwargs)
-        return engine('fieldset', fieldset=self, **kwargs)
+            template = 'fieldset_readonly'
+        else:
+            template = 'fieldset'
+        return engine(template, fieldset=self, **kwargs)
 
     @property
     def errors(self):
