@@ -200,7 +200,7 @@ class FieldRenderer(object):
             lang = kwargs.pop('lang')
         else:
             lang = 'en'
-        return get_translator(lang=lang).gettext
+        return get_translator(lang=lang, request=self.request)
 
     def render(self, **kwargs):
         """
