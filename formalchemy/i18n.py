@@ -41,11 +41,11 @@ def get_translator(lang=None, request=None):
         ... assert translate('month_01') == 'January'
 
     """
-    # get possible fallback languages
     if request is not None and HAS_PYRAMID:
         localizer = get_localizer(request)
         return localizer.translate
 
+    # get possible fallback languages
     try:
         langs = get_lang() or []
     except TypeError:
