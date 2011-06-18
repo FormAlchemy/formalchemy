@@ -1153,6 +1153,14 @@ class AbstractField(object):
         used, modified for readability (e.g., 'user_name' -> 'User name').
         """
         if text is NoDefault:
+            if self.parent._request is not None:
+                F_ = get_translator(request=self.parent._request)
+                try:
+                    msgid = getattr(self.model.__table__.c, self.key).info.get('msgid')
+                    if msgid:
+                        return F_(msgid)
+                except AttributeError:
+                    pass
             if self.label_text is not None:
                 text = self.label_text
             else:
