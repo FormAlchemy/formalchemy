@@ -913,6 +913,10 @@ class AbstractField(object):
 
     """
     _null_option = (u'None', u'')
+    _valide_options = [
+            'validate', 'renderer', 'hidden', 'required', 'readonly',
+            'nul_as', 'label', 'multiple', 'options',
+            'size', 'instructions', 'metadata']
 
     def __init__(self, parent, name=None, type=fatypes.String, **kwattrs):
         # the FieldSet (or any ModelRenderer) owning this instance
@@ -1153,19 +1157,12 @@ class AbstractField(object):
         used, modified for readability (e.g., 'user_name' -> 'User name').
         """
         if text is NoDefault:
-            if self.parent._request is not None:
-                F_ = get_translator(request=self.parent._request)
-                try:
-                    msgid = getattr(self.model.__table__.c, self.key).info.get('msgid')
-                    if msgid:
-                        return F_(msgid)
-                except AttributeError:
-                    pass
             if self.label_text is not None:
                 text = self.label_text
             else:
                 text = self.parent.prettify(self.key)
-            return h.escape_once(text)
+            F_ = get_translator(request=self.parent._request)
+            return h.escape_once(F_(text))
         return self._modified(label_text=text)
     def label_tag(self, **html_options):
         """return the <label /> tag for the field."""
@@ -1499,6 +1496,14 @@ class AttributeField(AbstractField):
         # smarter default "required" value
         if not self.is_collection and not self.is_readonly() and [c for c in _columns if not c.nullable]:
             self.validators.append(validators.required)
+
+        try:
+            info = getattr(self.model.__table__.c, self.key).info
+        except AttributeError:
+            pass
+        else:
+            opts = dict([(str(k), v) for k, v in info.items() if k in self._valide_options])
+            self.set(**opts)
 
     def is_readonly(self):
         from sqlalchemy.sql.expression import _Label
