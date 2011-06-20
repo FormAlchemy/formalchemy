@@ -13,6 +13,9 @@ from formalchemy.validators import ValidationError
 import formalchemy.validators as validators
 import formalchemy.fatypes as types
 
+column_options = Field._valide_options[:]
+column_options.extend(['backref_%s' % v for v in Field._valide_options])
+
 def Column(*args, **kwargs):
     """Wrap the standard Column to allow to add some FormAlchemy options to a
     model field. Basically label and renderer but all the values are passed to
@@ -31,7 +34,7 @@ def Column(*args, **kwargs):
     """
     info = kwargs.get('info', {})
     for k, v in kwargs.items():
-        if k in Field._valide_options:
+        if k in column_options:
             info[k] = kwargs.pop(k)
     if info:
         kwargs['info'] = info
