@@ -93,6 +93,29 @@ class Grid(FieldSet):
         if instances is not None:
             self.rows = instances
 
+    def copy(self, *args):
+        """return a copy of the fieldset. args is a list of field names or field
+        objects to render in the new fieldset"""
+        mr = FieldSet.bind(self, self.model, self.session)
+        mr.rows = []
+        mr.readonly = self.readonly
+        mr._errors = {}
+        _fields = self._render_fields or self._fields
+        _new_fields = []
+        if args:
+            for field in args:
+                if isinstance(field, basestring):
+                    if field in _fields:
+                        field = _fields.get(field)
+                    else:
+                        raise AttributeError('%r as not field named %s' % (self, field))
+                assert isinstance(field, fields.AbstractField), field
+                field.bind(mr)
+                _new_fields.append(field)
+            mr._render_fields = OrderedDict([(field.key, field) for field in _new_fields])
+        return mr
+
+
     def render(self, **kwargs):
         engine = self.engine or config.engine
         if self._render or self._render_readonly:
