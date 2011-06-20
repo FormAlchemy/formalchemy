@@ -587,7 +587,7 @@ class FieldSet(DefaultRenderers):
     def copy(self, *args):
         """return a copy of the fieldset. args is a list of field names or field
         objects to render in the new fieldset"""
-        mr = self.bind(self.model, self.session, self.data)
+        mr = self.bind(self.model, self.session)
         _fields = self._render_fields or self._fields
         _new_fields = []
         if args:

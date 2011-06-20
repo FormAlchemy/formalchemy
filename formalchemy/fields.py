@@ -12,6 +12,9 @@ from copy import copy, deepcopy
 import datetime
 import warnings
 
+from sqlalchemy.orm.interfaces import MANYTOMANY
+from sqlalchemy.orm.interfaces import ONETOMANY
+from sqlalchemy.orm.interfaces import MANYTOONE
 from sqlalchemy.orm import class_mapper, Query
 from sqlalchemy.orm.attributes import ScalarAttributeImpl, ScalarObjectAttributeImpl, CollectionAttributeImpl, InstrumentedAttribute
 from sqlalchemy.orm.properties import CompositeProperty, ColumnProperty
@@ -1161,8 +1164,11 @@ class AbstractField(object):
                 text = self.label_text
             else:
                 text = self.parent.prettify(self.key)
-            F_ = get_translator(request=self.parent._request)
-            return h.escape_once(F_(text))
+            if text:
+                F_ = get_translator(request=self.parent._request)
+                return h.escape_once(F_(text))
+            else:
+                return ''
         return self._modified(label_text=text)
     def label_tag(self, **html_options):
         """return the <label /> tag for the field."""
@@ -1497,13 +1503,47 @@ class AttributeField(AbstractField):
         if not self.is_collection and not self.is_readonly() and [c for c in _columns if not c.nullable]:
             self.validators.append(validators.required)
 
-        try:
-            info = getattr(self.model.__table__.c, self.key).info
-        except AttributeError:
-            pass
+        info = dict([(str(k), v) for k, v in self.info.items() if k in self._valide_options])
+        if self.is_relation and 'label' not in info:
+            m = self._property.mapper.class_
+            label = getattr(m, '__label__', None)
+            if self._property.direction in (MANYTOMANY, ONETOMANY):
+                label = getattr(m, '__plural__', label)
+            if label:
+                info['label'] = label
+        self.set(**info)
+
+    @property
+    def info(self):
+        """return the best information from SA's Column.info"""
+        info = None
+
+        if self.is_relation:
+            pairs = self._property.local_remote_pairs
+            if len(pairs):
+                for pair in reversed(pairs):
+                    for col in pair:
+                        if col.table in self._property.parent.tables and not col.primary_key:
+                            return getattr(col, 'info', None)
+                        elif col.table in self._property.mapper.tables:
+                            if col.primary_key:
+                                if self._property.direction == MANYTOMANY:
+                                    return getattr(col, 'info', None)
+                            else:
+                                parent_info = getattr(col, 'info', {})
+                                info = {}
+                                for k, v in parent_info.items():
+                                    if k.startswith('backref_'):
+                                        info[k[8:]] = v
+                                return info
         else:
-            opts = dict([(str(k), v) for k, v in info.items() if k in self._valide_options])
-            self.set(**opts)
+            try:
+                col = getattr(self.model.__table__.c, self.key)
+            except AttributeError:
+                return {}
+            else:
+                return getattr(col, 'info', None)
+        return {}
 
     def is_readonly(self):
         from sqlalchemy.sql.expression import _Label

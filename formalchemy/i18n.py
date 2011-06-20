@@ -28,6 +28,7 @@ class _Translator(object):
     """dummy translator"""
     def gettext(self, value):
         return value
+_translator = _Translator()
 
 def get_translator(lang=None, request=None):
     """
@@ -42,8 +43,12 @@ def get_translator(lang=None, request=None):
 
     """
     if request is not None and HAS_PYRAMID:
-        localizer = get_localizer(request)
-        return localizer.translate
+        translate = request.environ.get('fa.translate')
+        if translate:
+            return translate
+        translate = get_localizer(request).translate
+        request.environ['fa.translate'] = translate
+        return translate
 
     # get possible fallback languages
     try:
@@ -67,7 +72,7 @@ def get_translator(lang=None, request=None):
             return GNUTranslations(open(translations_path, 'rb')).gettext
 
     # dummy translator
-    return _Translator().gettext
+    return _translator.gettext
 
 if HAS_PYRAMID:
     _ = TranslationStringFactory('formalchemy')
