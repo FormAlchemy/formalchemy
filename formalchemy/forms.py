@@ -363,9 +363,6 @@ class FieldSet(DefaultRenderers):
         Often you will create and `configure` a FieldSet or Grid at application
         startup, then `bind` specific instances to it for actual editing or display.
         """
-        if request is not None:
-            self._request = request
-
         if data is None and request is not None:
             if hasattr(request, 'environ') and hasattr(request, 'POST'):
                 if request.environ.get('REQUEST_METHOD', '').upper() == 'POST':
