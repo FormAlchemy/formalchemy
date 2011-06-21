@@ -115,7 +115,7 @@ class _RESTController(object):
                       collection_name=self.collection_name,
                       member_name=self.member_name,
                       breadcrumb=self.breadcrumb(**kwargs),
-                      F_=get_translator().gettext)
+                      F_=get_translator())
         if self.engine:
             return self.engine.render(self.template, **kwargs)
         else:
@@ -249,7 +249,7 @@ class _RESTController(object):
                 <input type="submit" class="ui-grid-icon ui-icon ui-icon-pencil" title="%(label)s" value="%(label)s" />
                 </form>
                 ''' % dict(url=model_url('edit_%s' % self.member_name, id=_pk(item)),
-                            label=get_translator().gettext('edit'))
+                            label=get_translator()('edit'))
             def delete_link():
                 return lambda item: '''
                 <form action="%(url)s" method="POST" class="ui-grid-icon ui-state-error ui-corner-all">
@@ -257,7 +257,7 @@ class _RESTController(object):
                 <input type="hidden" name="_method" value="DELETE" />
                 </form>
                 ''' % dict(url=model_url(self.member_name, id=_pk(item)),
-                           label=get_translator().gettext('delete'))
+                           label=get_translator()('delete'))
             grid.append(Field('edit', fatypes.String, edit_link()))
             grid.append(Field('delete', fatypes.String, delete_link()))
             grid.readonly = True
