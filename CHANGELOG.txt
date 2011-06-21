@@ -1,3 +1,14 @@
+1.4
+----
+
+* Fix issue 5, 7
+
+* Allow to binf form to a webob like request
+
+* Add Column wrapper to store some form options in models
+
+* Field label translation
+
 1.3.9
 -----
 
