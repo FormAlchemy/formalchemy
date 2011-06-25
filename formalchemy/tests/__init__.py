@@ -14,6 +14,7 @@ logging.getLogger('sqlalchemy').setLevel(logging.ERROR)
 
 from formalchemy.fields import Field, SelectFieldRenderer, FieldRenderer, TextFieldRenderer, EscapingReadonlyRenderer
 import formalchemy.fatypes as types
+from formalchemy import Column
 
 def ls(*args):
     dirname = os.path.dirname(__file__)
@@ -203,6 +204,7 @@ class OptionalOrder(Base): # the user is optional, not the order
         return '<OptionalOrder for user %s: %s>' % (self.user_id, self.quantity)
 
 class User(Base):
+    __label__ = 'User'
     __tablename__ = 'users'
     id = Column(Integer, primary_key=True)
     email = Column(Unicode(40), unique=True, nullable=False)
