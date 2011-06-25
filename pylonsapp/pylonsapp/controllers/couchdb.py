@@ -27,7 +27,7 @@ class Pet(couchdb.Document):
     spayed_or_neutered = BooleanProperty()
     owner = SchemaListProperty(Person)
     def __unicode__(self):
-        return self.name
+        return self.name or u''
 
 # You don't need a try/except. This is just to allow to run FA's tests without
 # couchdb installed. Btw this have to be in another place in your app. eg: you
