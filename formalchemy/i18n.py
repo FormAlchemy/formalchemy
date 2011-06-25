@@ -41,13 +41,25 @@ def get_translator(lang=None, request=None):
         ... assert translate('Remove') == 'Remove'
         ... assert translate('month_01') == 'January'
 
+    The correct gettext method is stored in request if possible::
+
+        >>> from webob import Request
+        >>> req = Request.blank('/')
+        >>> translator = get_translator('fr', request=req)
+        ... assert translate('Remove') == 'Supprimer'
+        >>> translator = get_translator('en', request=req)
+        ... assert translate('Remove') == 'Supprimer'
+
     """
-    if request is not None and HAS_PYRAMID:
+    if request is not None:
         translate = request.environ.get('fa.translate')
         if translate:
             return translate
+
+    if HAS_PYRAMID:
         translate = get_localizer(request).translate
-        request.environ['fa.translate'] = translate
+        if request is not None:
+            request.environ['fa.translate'] = translate
         return translate
 
     # get possible fallback languages
@@ -69,9 +81,14 @@ def get_translator(lang=None, request=None):
         filename = os.path.join(i18n_path, lang, 'LC_MESSAGES','formalchemy.mo')
         if os.path.isfile(filename):
             translations_path = os.path.join(i18n_path, lang, 'LC_MESSAGES','formalchemy.mo')
-            return GNUTranslations(open(translations_path, 'rb')).gettext
+            translate = GNUTranslations(open(translations_path, 'rb')).gettext
+            if request is not None:
+                request.environ['fa.translate'] = translate
+            return translate
 
     # dummy translator
+    if request is not None:
+        request.environ['fa.translate'] = _translator.gettext
     return _translator.gettext
 
 if HAS_PYRAMID:
