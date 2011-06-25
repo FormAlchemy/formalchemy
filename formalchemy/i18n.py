@@ -27,6 +27,8 @@ if not HAS_PYLONS:
 class _Translator(object):
     """dummy translator"""
     def gettext(self, value):
+        if isinstance(value, str):
+            return unicode(value, 'utf-8')
         return value
 _translator = _Translator()
 
@@ -81,7 +83,12 @@ def get_translator(lang=None, request=None):
         filename = os.path.join(i18n_path, lang, 'LC_MESSAGES','formalchemy.mo')
         if os.path.isfile(filename):
             translations_path = os.path.join(i18n_path, lang, 'LC_MESSAGES','formalchemy.mo')
-            translate = GNUTranslations(open(translations_path, 'rb')).gettext
+            tr = GNUTranslations(open(translations_path, 'rb')).gettext
+            def translate(value):
+                value = tr(value)
+                if not isinstance(value, unicode):
+                    return unicode(value, 'utf-8')
+                return value
             if request is not None:
                 request.environ['fa.translate'] = translate
             return translate

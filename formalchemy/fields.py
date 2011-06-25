@@ -547,7 +547,7 @@ class DateFieldRenderer(FieldRenderer):
         data = self.params
         value = self.field.model_value
         F_ = self.get_translator(**kwargs)
-        month_options = [(F_('Month'), 'MM')] + [(unicode(F_('month_%02i' % i), 'utf-8'), str(i)) for i in xrange(1, 13)]
+        month_options = [(F_('Month'), 'MM')] + [(F_('month_%02i' % i), str(i)) for i in xrange(1, 13)]
         day_options = [(F_('Day'), 'DD')] + [(i, str(i)) for i in xrange(1, 32)]
         mm_name = self.name + '__month'
         dd_name = self.name + '__day'
