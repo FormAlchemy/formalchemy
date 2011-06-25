@@ -60,6 +60,8 @@ Render it::
       <span id="Pet--birthdate"><select id="Pet--birthdate__month" name="Pet--birthdate__month">
     <option value="MM">Month</option>
     ...
+    <option selected="selected" value="...">...</option>
+    ...
     
 Same for grids::
 
@@ -213,6 +215,10 @@ class Field(BaseField):
             return self._value(self.model)
         return self._value
 
+    @property
+    def model_value(self):
+        return self.raw_value
+
     def sync(self):
         """Set the attribute's value in `model` to the value given in `data`"""
         if not self.is_readonly():
@@ -232,6 +238,7 @@ class FieldSet(BaseFieldSet):
         if model is not None and isinstance(model, schema.Document):
             BaseFieldSet.rebind(self, model.__class__, data=kwargs.get('data', None))
             self.doc = model.__class__
+            self.model = model
             self._bound_pk = fields._pk(model)
         else:
             BaseFieldSet.rebind(self, model, data=kwargs.get('data', None))
