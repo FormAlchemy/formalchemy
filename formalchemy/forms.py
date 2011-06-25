@@ -509,9 +509,9 @@ class FieldSet(DefaultRenderers):
         If validation fails, the validator should raise `ValidationError`.
         """
         if self.readonly:
-            raise Exception('Cannot validate a read-only FieldSet')
+            raise ValidationError('Cannot validate a read-only FieldSet')
         if self.data is None:
-            raise Exception('Cannot validate without binding data')
+            raise ValidationError('Cannot validate without binding data')
         success = True
         for field in self.render_fields.itervalues():
             success = field._validate() and success
