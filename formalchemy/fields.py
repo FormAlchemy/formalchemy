@@ -21,6 +21,7 @@ from sqlalchemy.orm.properties import CompositeProperty, ColumnProperty
 from sqlalchemy import exceptions as sqlalchemy_exceptions
 from formalchemy import helpers as h
 from formalchemy import fatypes, validators
+from formalchemy.exceptions import FieldNotFoundError
 from formalchemy import config
 from formalchemy.i18n import get_translator
 from formalchemy.i18n import _
@@ -160,7 +161,10 @@ class FieldRenderer(object):
         """
         if not self.field.is_readonly() and self.params is not None:
             # submitted value.  do not deserialize here since that requires valid data, which we might not have
-            v = self._serialized_value()
+            try:
+                v = self._serialized_value()
+            except FieldNotFoundError, e:
+                v = None
         else:
             v = None
         # empty field will be '' -- use default value there, too
@@ -276,7 +280,7 @@ class FieldRenderer(object):
                 return self.params.getall(self.name)
             return self.params.getone(self.name)
         except KeyError:
-            raise KeyError('%s not found in %r' % (self.name, self.params))
+            raise FieldNotFoundError('%s not found in %r' % (self.name, self.params))
 
     def deserialize(self):
         """Turns the user-submitted data into a Python value.
