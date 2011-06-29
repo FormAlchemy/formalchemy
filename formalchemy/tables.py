@@ -37,6 +37,8 @@ class Grid(FieldSet):
 
     * `data=None`: as in `FieldSet`
 
+    * `request=None`: as in `FieldSet`
+
     `bind` and `rebind` take the last 3 arguments (`instances`, `session`,
     and `data`); you may not specify a different class type than the one
     given to the constructor.
