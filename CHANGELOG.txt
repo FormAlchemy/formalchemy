@@ -1,3 +1,14 @@
+1.4.1
+-----
+
+* Implemented WebOb-like request passing to FieldSet directly.
+
+* Also implemented request passing to Grid
+
+* Added support to set `.html_options` with Field.set(html={'some': 'thing'})
+
+* Improved documentation for the Field.set() method
+
 1.4
 ----
 
