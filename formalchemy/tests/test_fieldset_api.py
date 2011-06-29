@@ -192,11 +192,30 @@ def field_set():
     >>> field.validators
     []
 
+    >>> field.set(html={'this': 'that'})
+    AttributeField(password)
+    >>> field.html_options
+    {'this': 'that'}
+    >>> field.set(html={'some': 'thing'})
+    AttributeField(password)
+    >>> field.html_options
+    {'this': 'that', 'some': 'thing'}
+
+    >>> bob = lambda x: x
+    >>> field.set(validators=[bob])
+    AttributeField(password)
+    >>> field.validators  #doctest: +ELLIPSIS
+    [<function <lambda> at ...>]
+
+    >>> field.set(validators=[bob])
+    AttributeField(password)
+    >>> field.validators  #doctest: +ELLIPSIS
+    [<function <lambda> at ...>, <function <lambda> at ...>]
+
     >>> field.set(non_exist=True)
     Traceback (most recent call last):
     ...
     ValueError: Invalid argument non_exist
-    
 
     """
 
