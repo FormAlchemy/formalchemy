@@ -48,13 +48,14 @@ class Grid(FieldSet):
     """
     engine = _render = _render_readonly = None
 
-    def __init__(self, cls, instances=[], session=None, data=None, request=None, prefix=None):
+    def __init__(self, cls, instances=[], session=None, data=None,
+                 request=None, prefix=None):
         if self.__sa__:
             from sqlalchemy.orm import class_mapper
             if not class_mapper(cls):
                 raise Exception('Grid must be bound to an SA mapped class')
         FieldSet.__init__(self, model=cls, session=session, data=data,
-                          request=None, prefix=prefix)
+                          request=request, prefix=prefix)
         self.rows = instances
         self.readonly = False
         self._errors = {}
@@ -127,6 +128,8 @@ class Grid(FieldSet):
                 engine._update_args(kwargs)
                 return self._render_readonly(collection=self, **kwargs)
             return engine('grid_readonly', collection=self, **kwargs)
+        if 'request' not in kwargs:
+            kwargs['request'] = self._request
         if self._render is not None:
             engine._update_args(kwargs)
             return self._render(collection=self, **kwargs)

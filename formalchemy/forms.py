@@ -365,8 +365,8 @@ class FieldSet(DefaultRenderers):
         Often you will create and `configure` a FieldSet or Grid at application
         startup, then `bind` specific instances to it for actual editing or display.
         """
-        if not (model is not None or session or data):
-            raise Exception('must specify at least one of {model, session, data}')
+        if not (model is not None or session or data or request):
+            raise Exception('must specify at least one of {model, session, data, request}')
 
         if not model:
             if not self.model:
@@ -377,13 +377,15 @@ class FieldSet(DefaultRenderers):
         mr = object.__new__(self.__class__)
         mr.__dict__ = dict(self.__dict__)
         # two steps so bind's error checking can work
-        FieldSet.rebind(mr, model, session, data, with_prefix=with_prefix)
+        FieldSet.rebind(mr, model, session, data, request,
+                        with_prefix=with_prefix)
         mr._fields = OrderedDict([(key, renderer.bind(mr)) for key, renderer in self._fields.iteritems()])
         if self._render_fields:
             mr._render_fields = OrderedDict([(field.key, field) for field in
                                              [field.bind(mr) for field in self._render_fields.itervalues()]])
         mr._request = request
         return mr
+
 
     def rebind(self, model=None, session=None, data=None, request=None,
                with_prefix=True):
@@ -394,7 +396,9 @@ class FieldSet(DefaultRenderers):
         * if `model` is not specified, the old model is used
         * if `session` is not specified, FA tries to re-guess session from the model
         * if `data` is not specified, it is rebound to None
-        * if `request` is specified and not `data` request.POST is used as data
+        * if `request` is specified and not `data` request.POST is used as data.
+          `request` is also saved to be access by renderers (as
+          `fs.FIELD.renderer.request`).
         * if `with_prefix` is False then a prefix ``{Model}-{pk}`` is added to each data keys
         """
         if data is None and request is not None:
