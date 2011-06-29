@@ -48,12 +48,13 @@ class Grid(FieldSet):
     """
     engine = _render = _render_readonly = None
 
-    def __init__(self, cls, instances=[], session=None, data=None, prefix=None):
+    def __init__(self, cls, instances=[], session=None, data=None, request=None, prefix=None):
         if self.__sa__:
             from sqlalchemy.orm import class_mapper
             if not class_mapper(cls):
                 raise Exception('Grid must be bound to an SA mapped class')
-        FieldSet.__init__(self, model=cls, session=session, data=data, prefix=prefix)
+        FieldSet.__init__(self, model=cls, session=session, data=data,
+                          request=None, prefix=prefix)
         self.rows = instances
         self.readonly = False
         self._errors = {}
@@ -80,16 +81,16 @@ class Grid(FieldSet):
             else:
                 from sqlalchemy.orm import object_session
                 session = object_session(instance)
-        mr = FieldSet.bind(self, self.model, session, data)
+        mr = FieldSet.bind(self, self.model, session, data, request)
         mr.rows = instances
         mr._request = request
         return mr
 
-    def rebind(self, instances=None, session=None, data=None):
+    def rebind(self, instances=None, session=None, data=None, request=None):
         """rebind to instances"""
         if instances is not None:
             _validate_iterable(instances)
-        FieldSet.rebind(self, self.model, session, data)
+        FieldSet.rebind(self, self.model, session, data, request)
         if instances is not None:
             self.rows = instances
 
