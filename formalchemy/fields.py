@@ -922,8 +922,8 @@ class AbstractField(object):
     _null_option = (u'None', u'')
     _valide_options = [
             'validate', 'renderer', 'hidden', 'required', 'readonly',
-            'nul_as', 'label', 'multiple', 'options',
-            'size', 'instructions', 'metadata']
+            'null_as', 'label', 'multiple', 'options', 'validators',
+            'size', 'instructions', 'metadata', 'html']
 
     def __init__(self, parent, name=None, type=fatypes.String, **kwattrs):
         # the FieldSet (or any ModelRenderer) owning this instance
@@ -1030,13 +1030,48 @@ class AbstractField(object):
 
     def set(self, **kwattrs):
         """
-        Update field attributes in place. Allowed attributes are: validate,
-        renderer, hidden, required, readonly, nul_as, label, multiple, options,
-        size, instructions, metadata::
+        Sets different properties on the Field object. In contrast to the
+        other methods that tweak a Field, this one changes thing
+        IN-PLACE, without creating a new object and returning it.
+        This is the behavior for the other methods like ``readonly()``,
+        ``required()``, ``with_html()``, ``with_metadata``,
+        ``with_renderer()``, ``with_null_as()``, ``label()``,
+        ``hidden()``, ``validate()``, etc...
+
+        Allowed attributes are:
+
+         * ``validate`` - append one single validator
+         * ``validators`` - appends a list of validators
+         * ``renderer`` - sets the renderer used (``.with_renderer(val)``
+           equiv.)
+         * ``hidden`` - marks a field as hidden (changes the renderer)
+         * ``required`` - adds the default 'required' validator to the field
+         * ``readonly`` - sets the readonly attribute (``.readonly(val)``
+           equiv.)
+         * ``null_as`` - sets the 'null_as' attribute (``.with_null_as(val)``
+           equiv.)
+         * ``label`` - sets the label (``.label(val)`` equiv.)
+         * ``multiple`` - marks the field as a multi-select (used by some
+           renderers)
+         * ``options`` - sets `.render_opts['options']` (for selects and similar
+           fields, used by some renderers)
+         * ``size`` - sets render_opts['size'] with this val (normally an
+           attribute to ``textarea()``, ``dropdown()``, used by some renderers)
+         * ``instructions`` - shortcut to update `metadata['instructions']`
+         * ``metadata`` - dictionary that `updates` the ``.metadata`` attribute
+         * ``html`` - dictionary that updates the ``.html_options`` attribute
+           (``.with_html()`` equiv.)
+
+        NOTE: everything in ``.render_opts``, updated with everything in
+        ``.html_options`` will be passed as keyword arguments to the `render()`
+        function of the Renderer set for the field.
+
+        Example::
 
             >>> field = Field('myfield')
             >>> field.set(label='My field', renderer=SelectFieldRenderer,
-            ...            options=[('Value', 1)])
+            ...           options=[('Value', 1)],
+            ...           validators=[lambda x: x, lambda y: y])
             AttributeField(myfield)
             >>> field.label_text
             'My field'
@@ -1053,8 +1088,12 @@ class AbstractField(object):
             value = kwattrs.pop(attr)
             if attr == 'validate':
                 self.validators.append(value)
+            elif attr == 'validators':
+                self.validators.extend(value)
             elif attr == 'metadata':
                 self.metadata.update(value)
+            elif attr == 'html':
+                self.html_options.update(value)
             elif attr == 'instructions':
                 self.metadata['instructions'] = value
             elif attr == 'required':

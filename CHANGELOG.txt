@@ -1,3 +1,20 @@
+1.4.1
+-----
+
+* Implemented WebOb-like request passing to FieldSet directly.
+
+* Also implemented request passing to Grid
+
+* Added support to set `.html_options` with Field.set(html={'some': 'thing'})
+
+* Added support for set(validators=[validator1, validator2]) which adds the
+  specified validators.
+
+* Fixed the set(null_as=...), was nul_as and badly wired in.
+
+* Improved documentation for the Field.set() method
+
+
 1.4
 ----
 

@@ -158,6 +158,12 @@ class FieldSet(DefaultRenderers):
               pylons request.params() objects and plain dictionaries are known
               to work.
 
+        - `request=None`:
+              WebOb-like object that can be taken in place of `data`.
+              FormAlchemy will make sure it's a POST, and use it's 'POST'
+              attribute as the data.  Also, the request object will be
+              available to renderers as the `.request` attribute.
+
         - `prefix=None`:
               the prefix to prepend to html name attributes. This is useful to avoid
               field name conflicts when there are two fieldsets creating objects
@@ -225,14 +231,15 @@ class FieldSet(DefaultRenderers):
     prettify = staticmethod(prettify)
 
     def __init__(self, model, session=None, data=None, prefix=None,
-                 format=u'%(model)s-%(pk)s-%(name)s'):
+                 format=u'%(model)s-%(pk)s-%(name)s',
+                 request=None):
         self._fields = OrderedDict()
         self._render_fields = OrderedDict()
         self.model = self.session = None
         self.readonly = False
         self.validator = None
         self.focus = True
-        self._request = None
+        self._request = request
         self._format = format
         self._prefix = prefix
         self._errors = []
@@ -243,7 +250,7 @@ class FieldSet(DefaultRenderers):
         self._original_cls = isinstance(model, type) and model or type(model)
 
         if self.__sa__:
-            FieldSet.rebind(self, model, session, data)
+            FieldSet.rebind(self, model, session, data, request)
 
             cls = isinstance(self.model, type) and self.model or type(self.model)
             try:
@@ -354,7 +361,8 @@ class FieldSet(DefaultRenderers):
         self.validator = global_validator
         self._render_fields = OrderedDict([(field.key, field) for field in self._get_fields(pk, exclude, include, options)])
 
-    def bind(self, model=None, session=None, data=None, request=None, with_prefix=True):
+    def bind(self, model=None, session=None, data=None, request=None,
+             with_prefix=True):
         """
         Return a copy of this FieldSet or Grid, bound to the given
         `model`, `session`, and `data`. The parameters to this method are the
@@ -363,13 +371,8 @@ class FieldSet(DefaultRenderers):
         Often you will create and `configure` a FieldSet or Grid at application
         startup, then `bind` specific instances to it for actual editing or display.
         """
-        if data is None and request is not None:
-            if hasattr(request, 'environ') and hasattr(request, 'POST'):
-                if request.environ.get('REQUEST_METHOD', '').upper() == 'POST':
-                    data = request.POST or None
-
-        if not (model is not None or session or data):
-            raise Exception('must specify at least one of {model, session, data}')
+        if not (model is not None or session or data or request):
+            raise Exception('must specify at least one of {model, session, data, request}')
 
         if not model:
             if not self.model:
@@ -380,7 +383,8 @@ class FieldSet(DefaultRenderers):
         mr = object.__new__(self.__class__)
         mr.__dict__ = dict(self.__dict__)
         # two steps so bind's error checking can work
-        FieldSet.rebind(mr, model, session, data, with_prefix=with_prefix)
+        FieldSet.rebind(mr, model, session, data, request,
+                        with_prefix=with_prefix)
         mr._fields = OrderedDict([(key, renderer.bind(mr)) for key, renderer in self._fields.iteritems()])
         if self._render_fields:
             mr._render_fields = OrderedDict([(field.key, field) for field in
@@ -388,7 +392,9 @@ class FieldSet(DefaultRenderers):
         mr._request = request
         return mr
 
-    def rebind(self, model=None, session=None, data=None, with_prefix=True):
+
+    def rebind(self, model=None, session=None, data=None, request=None,
+               with_prefix=True):
         """
         Like `bind`, but acts on this instance.  No return value.
         Not all parameters are treated the same; specifically, what happens if they are NOT specified is different:
@@ -396,8 +402,16 @@ class FieldSet(DefaultRenderers):
         * if `model` is not specified, the old model is used
         * if `session` is not specified, FA tries to re-guess session from the model
         * if `data` is not specified, it is rebound to None
+        * if `request` is specified and not `data` request.POST is used as data.
+          `request` is also saved to be access by renderers (as
+          `fs.FIELD.renderer.request`).
         * if `with_prefix` is False then a prefix ``{Model}-{pk}`` is added to each data keys
         """
+        if data is None and request is not None:
+            if hasattr(request, 'environ') and hasattr(request, 'POST'):
+                if request.environ.get('REQUEST_METHOD', '').upper() == 'POST':
+                    data = request.POST or None
+
         original_model = model
         if model:
             if isinstance(model, type):
