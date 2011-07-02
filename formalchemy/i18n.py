@@ -58,11 +58,10 @@ def get_translator(lang=None, request=None):
         if translate:
             return translate
 
-    if HAS_PYRAMID:
-        translate = get_localizer(request).translate
-        if request is not None:
+        if HAS_PYRAMID:
+            translate = get_localizer(request).translate
             request.environ['fa.translate'] = translate
-        return translate
+            return translate
 
     # get possible fallback languages
     try:
