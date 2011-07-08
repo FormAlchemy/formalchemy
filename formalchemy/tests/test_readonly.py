@@ -55,10 +55,10 @@ def test_ignore_request_in_readonly():
 
     assert value in fs.render(), fs.render()
 
-    data = {'User-1-password':'yyyy',
-            'User-1-email': 'new@example.com',
+    data = {'User-1-password':bill.password,
+            'User-1-email': bill.email,
             'User-1-name': 'new name',
-            'User-1-orders': '10'}
+            'User-1-orders': [o.id for o in bill.orders]}
 
     fs.rebind(bill, data=data)
     fs.configure(options=[fs.name.readonly()])
@@ -71,8 +71,7 @@ def test_ignore_request_in_readonly():
 
     assert bill.name == value, '%s != %s' % (bill.name, value)
 
-
-    session.rollback()
+    bill.name = value
 
 
 

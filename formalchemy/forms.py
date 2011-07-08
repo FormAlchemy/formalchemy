@@ -24,6 +24,13 @@ from sqlalchemy.util import OrderedDict
 from webob import multidict
 
 try:
+    from sqlalchemy.orm.descriptor_props import CompositeProperty
+except ImportError:
+    # <= SA 0.7
+    class CompositeProperty(object):
+        pass
+
+try:
     from sqlalchemy.orm.exc import UnmappedInstanceError
 except ImportError:
     class UnmappedInstanceError(Exception):
@@ -271,19 +278,22 @@ class FieldSet(DefaultRenderers):
             else:
                 # SA class.
                 # load synonyms so we can ignore them
-                synonyms = set(p for p in class_mapper(cls).iterate_properties
-                               if isinstance(p, SynonymProperty))
-                # load discriminators so we can ignore them
-                discs = set(p for p in class_mapper(cls).iterate_properties
-                            if hasattr(p, '_is_polymorphic_discriminator')
-                            and p._is_polymorphic_discriminator)
+                ignore_keys = set()
+                for p in class_mapper(cls).iterate_properties:
+                    if isinstance(p, SynonymProperty):
+                        ignore_keys.add(p.name)
+                    elif hasattr(p, '_is_polymorphic_discriminator') and p._is_polymorphic_discriminator:
+                        ignore_keys.add(p.key)
+                    elif isinstance(p, CompositeProperty):
+                        for p in p.props:
+                            ignore_keys.add(p.key)
+
                 # attributes we're interested in
                 attrs = []
                 for p in class_mapper(cls).iterate_properties:
                     attr = _get_attribute(cls, p)
-                    if ((isinstance(p, SynonymProperty) or attr.property.key not in (s.name for s in synonyms))
-                        and not isinstance(attr.impl, DynamicAttributeImpl)
-                        and p not in discs):
+                    if ((isinstance(p, SynonymProperty) or attr.property.key not in ignore_keys)
+                        and not isinstance(attr.impl, DynamicAttributeImpl)):
                         attrs.append(attr)
                 # sort relations last before storing in the OrderedDict
                 L = [fields.AttributeField(attr, self) for attr in attrs]
