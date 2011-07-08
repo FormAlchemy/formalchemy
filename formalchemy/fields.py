@@ -19,6 +19,7 @@ from sqlalchemy.orm import class_mapper, Query
 from sqlalchemy.orm.attributes import ScalarAttributeImpl, ScalarObjectAttributeImpl, CollectionAttributeImpl, InstrumentedAttribute
 from sqlalchemy.orm.properties import CompositeProperty, ColumnProperty
 from sqlalchemy import exceptions as sqlalchemy_exceptions
+from sqlalchemy.orm import compile_mappers, object_session, class_mapper
 from formalchemy import helpers as h
 from formalchemy import fatypes, validators
 from formalchemy.exceptions import FieldNotFoundError
@@ -973,9 +974,14 @@ class AbstractField(object):
 
     def query(self, *args, **kwargs):
         """Perform a query in the parent's session"""
-        if not self.parent.session:
-            raise Exception("No session found.  Either bind a session explicitly, or specify relation options manually so FormAlchemy doesn't try to autoload them.")
-        return self.parent.session.query(*args, **kwargs)
+        if self.parent.session:
+            session = self.parent.session
+        else:
+            session = object_session(self.model)
+        if session:
+            return session.query(*args, **kwargs)
+        raise Exception(("No session found.  Either bind a session explicitly, "
+                         "or specify relation options manually so FormAlchemy doesn't try to autoload them."))
 
     def _validate(self):
         if self.is_readonly():
@@ -1600,7 +1606,10 @@ class AttributeField(AbstractField):
             return _foreign_keys(self._property)
         elif isinstance(self._impl, ScalarAttributeImpl) or self._impl.__class__.__name__ in ('ProxyImpl', '_ProxyImpl'): # 0.4 compatibility: ProxyImpl is a one-off class for each synonym, can't import it
             # normal property, mapped to a single column from the main table
-            return self._property.columns
+            prop = getattr(self._property, '_proxied_property', None)
+            if prop is None:
+                prop = self._property
+            return prop.columns
         else:
             # collection -- use the mapped class's PK
             assert self.is_collection, self._impl.__class__

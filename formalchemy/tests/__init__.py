@@ -9,6 +9,7 @@ from BeautifulSoup import BeautifulSoup # required for html prettification
 
 from sqlalchemy import *
 from sqlalchemy.orm import *
+from sqlalchemy.orm import mapper as sqla_mapper
 from sqlalchemy.ext.declarative import declarative_base
 logging.getLogger('sqlalchemy').setLevel(logging.ERROR)
 
@@ -32,9 +33,17 @@ def cat(*args):
     filename = os.path.join(os.path.dirname(__file__), *args)
     print open(filename).read()
 
+def session_mapper(scoped_session):
+    def mapper(cls, *arg, **kw):
+        cls.query = scoped_session.query_property()
+        return sqla_mapper(cls, *arg, **kw)
+    return mapper
+
+
 engine = create_engine('sqlite://')
 Session = scoped_session(sessionmaker(autoflush=False, bind=engine))
-Base = declarative_base(engine, mapper=Session.mapper)
+mapper = session_mapper(Session)
+Base = declarative_base(engine, mapper=mapper)
 
 class One(Base):
     __tablename__ = 'ones'
@@ -113,7 +122,7 @@ class Point(object):
 class Vertex(object):
     pass
 
-Session.mapper(Vertex, vertices, properties={
+mapper(Vertex, vertices, properties={
     'start':composite(Point, vertices.c.x1, vertices.c.y1),
     'end':composite(Point, vertices.c.x2, vertices.c.y2)
 })
@@ -288,32 +297,45 @@ Base.metadata.create_all()
 session = Session()
 
 primary1 = PrimaryKeys(id=1, id2='22', field='value1')
+session.add(primary1)
 primary2 = PrimaryKeys(id=1, id2='33', field='value2')
+session.add(primary2)
 
 parent = OTOParent()
+session.add(parent)
 parent.child = OTOChild(baz='baz')
 
 bill = User(email='bill@example.com',
             password='1234',
             name='Bill')
+session.add(bill)
 john = User(email='john@example.com',
             password='5678',
             name='John')
 order1 = Order(user=bill, quantity=10)
+session.add(order1)
 order2 = Order(user=john, quantity=5)
+session.add(order2)
 order3 = Order(user=john, quantity=6)
+session.add(order3)
 
 nbill = NaturalUser(email='nbill@example.com',
                     password='1234',
                     name='Natural Bill')
+session.add(nbill)
 njohn = NaturalUser(email='njohn@example.com',
                     password='5678',
                     name='Natural John')
+session.add(njohn)
 norder1 = NaturalOrder(user=nbill, quantity=10)
+session.add(norder1)
 norder2 = NaturalOrder(user=njohn, quantity=5)
+session.add(norder2)
 
 orderuser1 = OrderUser(user_id=1, order_id=1)
+session.add(orderuser1)
 orderuser2 = OrderUser(user_id=1, order_id=2)
+session.add(orderuser2)
 
 conflict_names = ConflictNames(data='data', model='model', session='session')
 
@@ -394,7 +416,7 @@ class ImgRenderer(TextFieldRenderer):
 
 import fake_module
 fake_module.__dict__.update({
-        'fs': FieldSet(User),
+        'fs': FieldSet(User, session=session),
         })
 import sys
 sys.modules['library'] = fake_module
