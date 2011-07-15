@@ -466,6 +466,7 @@ class FieldSet(BaseFieldSet):
         schema.Time: fatypes.Time,
         schema.Choice: fatypes.Unicode,
         schema.List: fatypes.List,
+        schema.Password: fatypes.Unicode,
     }
 
     def __init__(self, model, **kwargs):
@@ -488,6 +489,8 @@ class FieldSet(BaseFieldSet):
                     self._fields[name].set(instructions=field.description)
                 if field.required:
                     self._fields[name].validators.append(validators.required)
+                if klass is schema.Password:
+                    self._fields[name].set(renderer=fields.PasswordFieldRenderer)
                 if klass is schema.Text:
                     self._fields[name].set(renderer=fields.TextAreaFieldRenderer)
                 if klass is schema.List:
