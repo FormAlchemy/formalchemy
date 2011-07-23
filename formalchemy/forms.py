@@ -551,16 +551,18 @@ class FieldSet(DefaultRenderers):
                 success = False
         return success
 
-    def sync(self):
+    def sync(self, force=False):
         """
         Sync (copy to the corresponding attributes) the data passed to the constructor or `bind` to the `model`.
+
+        * if `force` is True then the KeyError will be skipped.
         """
         if self.readonly:
             raise Exception('Cannot sync a read-only FieldSet')
         if self.data is None:
             raise Exception("No data bound; cannot sync")
         for field in self.render_fields.itervalues():
-            field.sync()
+            field.sync(force=force)
         if self.session:
             self.session.add(self.model)
 
