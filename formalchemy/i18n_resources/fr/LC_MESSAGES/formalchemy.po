@@ -9,163 +9,163 @@ msgstr ""
 "Project-Id-Version: FormAlchemy 0.5.1\n"
 "Report-Msgid-Bugs-To: formalchemy@googlegroups.com\n"
 "POT-Creation-Date: 2008-08-27 12:33+0200\n"
-"PO-Revision-Date: 2009-11-08 12:02+0100\n"
+"PO-Revision-Date: 2011-06-21 16:13+0200\n"
 "Last-Translator: gael@gawel.org\n"
 "Language-Team: fr <formalchemy@googlegroups.com>\n"
 "Plural-Forms: nplurals=2; plural=(n > 1)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Generated-By: Babel 0.9.4\n"
+"Generated-By: Babel 0.9.5\n"
 
-#: formalchemy/fields.py:316
+#: formalchemy/fields.py:474
 msgid "Remove"
 msgstr "Supprimer"
 
-#: formalchemy/i18n.py:66
+#: formalchemy/i18n.py:85
 msgid "Year"
 msgstr "Année"
 
-#: formalchemy/i18n.py:67
+#: formalchemy/i18n.py:86
 msgid "Month"
 msgstr "Mois"
 
-#: formalchemy/i18n.py:68
+#: formalchemy/i18n.py:87
 msgid "Day"
 msgstr "Jour"
 
-#: formalchemy/i18n.py:69
+#: formalchemy/i18n.py:88
 msgid "month_01"
 msgstr "Janvier"
 
-#: formalchemy/i18n.py:70
+#: formalchemy/i18n.py:89
 msgid "month_02"
 msgstr "Février"
 
-#: formalchemy/i18n.py:71
+#: formalchemy/i18n.py:90
 msgid "month_03"
 msgstr "Mars"
 
-#: formalchemy/i18n.py:72
+#: formalchemy/i18n.py:91
 msgid "month_04"
 msgstr "Avril"
 
-#: formalchemy/i18n.py:73
+#: formalchemy/i18n.py:92
 msgid "month_05"
 msgstr "Mai"
 
-#: formalchemy/i18n.py:74
+#: formalchemy/i18n.py:93
 msgid "month_06"
 msgstr "Juin"
 
-#: formalchemy/i18n.py:75
+#: formalchemy/i18n.py:94
 msgid "month_07"
 msgstr "Juillet"
 
-#: formalchemy/i18n.py:76
+#: formalchemy/i18n.py:95
 msgid "month_08"
 msgstr "Aoüt"
 
-#: formalchemy/i18n.py:77
+#: formalchemy/i18n.py:96
 msgid "month_09"
 msgstr "Septembre"
 
-#: formalchemy/i18n.py:78
+#: formalchemy/i18n.py:97
 msgid "month_10"
 msgstr "Octobre"
 
-#: formalchemy/i18n.py:79
+#: formalchemy/i18n.py:98
 msgid "month_11"
 msgstr "Novembre"
 
-#: formalchemy/i18n.py:80
+#: formalchemy/i18n.py:99
 msgid "month_12"
 msgstr "Décembre"
 
-#: formalchemy/validators.py:40
+#: formalchemy/validators.py:32
 msgid "Please select a value"
 msgstr "Vous devez sélectionner une valeur"
 
-#: formalchemy/validators.py:40
+#: formalchemy/validators.py:32
 msgid "Please enter a value"
 msgstr "Vous devez saisir une valeur"
 
-#: formalchemy/validators.py:55
+#: formalchemy/validators.py:49
 msgid "Value is not an integer"
 msgstr "La valeur doit être un entier"
 
-#: formalchemy/validators.py:66 formalchemy/validators.py:78
+#: formalchemy/validators.py:60 formalchemy/validators.py:72
 msgid "Value is not a number"
 msgstr "La valeur doit être un nombre"
 
-#: formalchemy/validators.py:101
+#: formalchemy/validators.py:95
 msgid "Missing @ sign"
 msgstr "L'adresse doit contenir un '@'"
 
-#: formalchemy/validators.py:104
+#: formalchemy/validators.py:98
 msgid "Control characters present"
 msgstr "L'adresse contient des caractères de contrôle"
 
-#: formalchemy/validators.py:106
+#: formalchemy/validators.py:100
 msgid "Non-ASCII characters present"
 msgstr "La valeur ne doit pas contenir de caractères non ASCII"
 
-#: formalchemy/validators.py:110
+#: formalchemy/validators.py:104
 msgid "Recipient must be non-empty"
 msgstr "Vous devez renseigner l'adresse"
 
-#: formalchemy/validators.py:112
+#: formalchemy/validators.py:106
 msgid "Recipient must not end with '.'"
 msgstr "L'adresse ne doit pas finir par un '.'"
 
-#: formalchemy/validators.py:127
+#: formalchemy/validators.py:121
 msgid "Unterminated quoted section in recipient"
 msgstr "Guillemet non clos"
 
-#: formalchemy/validators.py:130
+#: formalchemy/validators.py:124
 msgid "Quoted section must be followed by '@' or '.'"
 msgstr "Une section entre guillemets doit être suivie de '@' ou '.'"
 
-#: formalchemy/validators.py:133
+#: formalchemy/validators.py:127
 msgid "Reserved character present in recipient"
 msgstr "Des caractères réservé sont présent dans l'adresse"
 
-#: formalchemy/validators.py:138
+#: formalchemy/validators.py:132
 msgid "Domain must be non-empty"
 msgstr "Le domaine ne peut être vide"
 
-#: formalchemy/validators.py:140
+#: formalchemy/validators.py:134
 msgid "Domain must not end with '.'"
 msgstr "Le domaine ne doit pas finir par '.'"
 
-#: formalchemy/validators.py:142
+#: formalchemy/validators.py:136
 msgid "Domain must not contain '..'"
 msgstr "Le domaine ne peut contenir '..'"
 
-#: formalchemy/validators.py:144
+#: formalchemy/validators.py:138
 msgid "Reserved character present in domain"
 msgstr "Des caractères réservés sont présent dans le domaine"
 
-#: formalchemy/validators.py:154
-#, python-format
-msgid "Value must be no more than %d characters long"
-msgstr "La valeur ne peut contenir plus de %d caractères"
-
-#: formalchemy/validators.py:163
+#: formalchemy/validators.py:148
 #, python-format
 msgid "Value must be at least %d characters long"
 msgstr "La valeur doit contenir au moins %d caractères"
 
-#: formalchemy/validators.py:166
+#: formalchemy/validators.py:150
+#, python-format
+msgid "Value must be no more than %d characters long"
+msgstr "La valeur ne peut contenir plus de %d caractères"
+
+#: formalchemy/validators.py:165
 msgid "Invalid input"
 msgstr "Valeur non valide"
 
-#: formalchemy/ext/fsblob.py:18
+#: formalchemy/ext/fsblob.py:26
 #, python-format
 msgid "Invalid file extension. Must be %s, "
 msgstr "Extension de fichier invalide. Doit être %s"
 
-#: formalchemy/ext/fsblob.py:25
+#: formalchemy/ext/fsblob.py:33
 #, python-format
 msgid "Invalid image file. Must be %s, "
 msgstr "Image invalide. Doit être au format %s"
@@ -214,25 +214,25 @@ msgstr "Types en relation"
 msgid "Create form"
 msgstr "Formulaire de création"
 
-#: formalchemy/ext/pylons/admin.py:81 formalchemy/ext/pylons/controller.py:229
+#: formalchemy/ext/pylons/admin.py:81
 msgid "edit"
 msgstr "éditer"
 
-#: formalchemy/ext/pylons/admin.py:90 formalchemy/ext/pylons/controller.py:237
+#: formalchemy/ext/pylons/admin.py:90
 msgid "delete"
 msgstr "supprimer"
 
-#: formalchemy/ext/pylons/admin.py:202
+#: formalchemy/ext/pylons/admin.py:201
 #, python-format
 msgid "Created %s %s"
 msgstr "%s %s crée"
 
-#: formalchemy/ext/pylons/admin.py:205
+#: formalchemy/ext/pylons/admin.py:204
 #, python-format
 msgid "Modified %s %s"
 msgstr "%s %s modifié"
 
-#: formalchemy/ext/pylons/admin.py:237
+#: formalchemy/ext/pylons/admin.py:236
 #, python-format
 msgid "Deleted %s %s"
 msgstr "%s %s supprimé"

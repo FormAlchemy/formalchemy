@@ -12,3 +12,5 @@ class ValidationError(Exception):
     def __repr__(self):
         return 'ValidationError(%r,)' % self.message
 
+class FieldNotFoundError(ValidationError):
+    """an exception raise when the field is not found in request data"""

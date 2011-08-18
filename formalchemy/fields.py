@@ -3,7 +3,6 @@
 # This module is part of FormAlchemy and is released under
 # the MIT License: http://www.opensource.org/licenses/mit-license.php
 
-import os
 import cgi
 import logging
 logger = logging.getLogger('formalchemy.' + __name__)
@@ -12,12 +11,16 @@ from copy import copy, deepcopy
 import datetime
 import warnings
 
+from sqlalchemy.orm.interfaces import MANYTOMANY
+from sqlalchemy.orm.interfaces import ONETOMANY
 from sqlalchemy.orm import class_mapper, Query
-from sqlalchemy.orm.attributes import ScalarAttributeImpl, ScalarObjectAttributeImpl, CollectionAttributeImpl, InstrumentedAttribute
+from sqlalchemy.orm.attributes import ScalarAttributeImpl, ScalarObjectAttributeImpl, CollectionAttributeImpl
 from sqlalchemy.orm.properties import CompositeProperty, ColumnProperty
-from sqlalchemy.exc import InvalidRequestError # 0.4 support
+from sqlalchemy import exceptions as sqlalchemy_exceptions
+from sqlalchemy.orm import object_session
 from formalchemy import helpers as h
 from formalchemy import fatypes, validators
+from formalchemy.exceptions import FieldNotFoundError
 from formalchemy import config
 from formalchemy.i18n import get_translator
 from formalchemy.i18n import _
@@ -145,9 +148,8 @@ class FieldRenderer(object):
 
         components = dict(model=clsname, pk=pk_string, name=self.field.name)
         name = self.field.parent._format % components
-        prefix = self.field.parent._prefix or ''
-        if prefix:
-            return u'%s-%s' % (prefix, name)
+        if self.field.parent._prefix is not None:
+            return u'%s-%s' % (self.field.parent._prefix, name)
         return name
 
     @property
@@ -158,7 +160,10 @@ class FieldRenderer(object):
         """
         if not self.field.is_readonly() and self.params is not None:
             # submitted value.  do not deserialize here since that requires valid data, which we might not have
-            v = self._serialized_value()
+            try:
+                v = self._serialized_value()
+            except FieldNotFoundError, e:
+                v = None
         else:
             v = None
         # empty field will be '' -- use default value there, too
@@ -185,6 +190,13 @@ class FieldRenderer(object):
         """
         return self.field.raw_value
 
+    @property
+    def request(self):
+        """return the ``request`` bound to the
+        :class:`~formalchemy.forms.FieldSet`` during
+        :func:`~formalchemy.forms.FieldSet.bind`"""
+        return self.field.parent._request
+
     def get_translator(self, **kwargs):
         """return a GNUTranslations object in the most convenient way
         """
@@ -194,7 +206,7 @@ class FieldRenderer(object):
             lang = kwargs.pop('lang')
         else:
             lang = 'en'
-        return get_translator(lang=lang).gettext
+        return get_translator(lang=lang, request=self.request)
 
     def render(self, **kwargs):
         """
@@ -267,7 +279,7 @@ class FieldRenderer(object):
                 return self.params.getall(self.name)
             return self.params.getone(self.name)
         except KeyError:
-            raise KeyError('%s not found in %r' % (self.name, self.params))
+            raise FieldNotFoundError('%s not found in %r' % (self.name, self.params))
 
     def deserialize(self):
         """Turns the user-submitted data into a Python value.
@@ -534,7 +546,7 @@ class DateFieldRenderer(FieldRenderer):
         data = self.params
         value = self.field.model_value
         F_ = self.get_translator(**kwargs)
-        month_options = [(F_('Month'), 'MM')] + [(unicode(F_('month_%02i' % i), 'utf-8'), str(i)) for i in xrange(1, 13)]
+        month_options = [(F_('Month'), 'MM')] + [(F_('month_%02i' % i), str(i)) for i in xrange(1, 13)]
         day_options = [(F_('Day'), 'DD')] + [(i, str(i)) for i in xrange(1, 32)]
         mm_name = self.name + '__month'
         dd_name = self.name + '__day'
@@ -787,7 +799,7 @@ def _pk(instance):
     # Will be a tuple if PK is multicolumn.
     try:
         columns = class_mapper(type(instance)).primary_key
-    except InvalidRequestError:
+    except sqlalchemy_exceptions.InvalidRequestError:
         # try to get pk from model attribute
         if hasattr(instance, '_pk'):
             return getattr(instance, '_pk', None) or None
@@ -907,6 +919,10 @@ class AbstractField(object):
 
     """
     _null_option = (u'None', u'')
+    _valide_options = [
+            'validate', 'renderer', 'hidden', 'required', 'readonly',
+            'null_as', 'label', 'multiple', 'options', 'validators',
+            'size', 'instructions', 'metadata', 'html']
 
     def __init__(self, parent, name=None, type=fatypes.String, **kwattrs):
         # the FieldSet (or any ModelRenderer) owning this instance
@@ -956,9 +972,14 @@ class AbstractField(object):
 
     def query(self, *args, **kwargs):
         """Perform a query in the parent's session"""
-        if not self.parent.session:
-            raise Exception("No session found.  Either bind a session explicitly, or specify relation options manually so FormAlchemy doesn't try to autoload them.")
-        return self.parent.session.query(*args, **kwargs)
+        if self.parent.session:
+            session = self.parent.session
+        else:
+            session = object_session(self.model)
+        if session:
+            return session.query(*args, **kwargs)
+        raise Exception(("No session found.  Either bind a session explicitly, "
+                         "or specify relation options manually so FormAlchemy doesn't try to autoload them."))
 
     def _validate(self):
         if self.is_readonly():
@@ -1013,13 +1034,48 @@ class AbstractField(object):
 
     def set(self, **kwattrs):
         """
-        Update field attributes in place. Allowed attributes are: validate,
-        renderer, hidden, required, readonly, nul_as, label, multiple, options,
-        size, instructions, metadata::
+        Sets different properties on the Field object. In contrast to the
+        other methods that tweak a Field, this one changes thing
+        IN-PLACE, without creating a new object and returning it.
+        This is the behavior for the other methods like ``readonly()``,
+        ``required()``, ``with_html()``, ``with_metadata``,
+        ``with_renderer()``, ``with_null_as()``, ``label()``,
+        ``hidden()``, ``validate()``, etc...
+
+        Allowed attributes are:
+
+         * ``validate`` - append one single validator
+         * ``validators`` - appends a list of validators
+         * ``renderer`` - sets the renderer used (``.with_renderer(val)``
+           equiv.)
+         * ``hidden`` - marks a field as hidden (changes the renderer)
+         * ``required`` - adds the default 'required' validator to the field
+         * ``readonly`` - sets the readonly attribute (``.readonly(val)``
+           equiv.)
+         * ``null_as`` - sets the 'null_as' attribute (``.with_null_as(val)``
+           equiv.)
+         * ``label`` - sets the label (``.label(val)`` equiv.)
+         * ``multiple`` - marks the field as a multi-select (used by some
+           renderers)
+         * ``options`` - sets `.render_opts['options']` (for selects and similar
+           fields, used by some renderers)
+         * ``size`` - sets render_opts['size'] with this val (normally an
+           attribute to ``textarea()``, ``dropdown()``, used by some renderers)
+         * ``instructions`` - shortcut to update `metadata['instructions']`
+         * ``metadata`` - dictionary that `updates` the ``.metadata`` attribute
+         * ``html`` - dictionary that updates the ``.html_options`` attribute
+           (``.with_html()`` equiv.)
+
+        NOTE: everything in ``.render_opts``, updated with everything in
+        ``.html_options`` will be passed as keyword arguments to the `render()`
+        function of the Renderer set for the field.
+
+        Example::
 
             >>> field = Field('myfield')
             >>> field.set(label='My field', renderer=SelectFieldRenderer,
-            ...            options=[('Value', 1)])
+            ...           options=[('Value', 1)],
+            ...           validators=[lambda x: x, lambda y: y])
             AttributeField(myfield)
             >>> field.label_text
             'My field'
@@ -1036,8 +1092,12 @@ class AbstractField(object):
             value = kwattrs.pop(attr)
             if attr == 'validate':
                 self.validators.append(value)
+            elif attr == 'validators':
+                self.validators.extend(value)
             elif attr == 'metadata':
                 self.metadata.update(value)
+            elif attr == 'html':
+                self.html_options.update(value)
             elif attr == 'instructions':
                 self.metadata['instructions'] = value
             elif attr == 'required':
@@ -1151,7 +1211,11 @@ class AbstractField(object):
                 text = self.label_text
             else:
                 text = self.parent.prettify(self.key)
-            return h.escape_once(text)
+            if text:
+                F_ = get_translator(request=self.parent._request)
+                return h.escape_once(F_(text))
+            else:
+                return ''
         return self._modified(label_text=text)
     def label_tag(self, **html_options):
         """return the <label /> tag for the field."""
@@ -1486,6 +1550,48 @@ class AttributeField(AbstractField):
         if not self.is_collection and not self.is_readonly() and [c for c in _columns if not c.nullable]:
             self.validators.append(validators.required)
 
+        info = dict([(str(k), v) for k, v in self.info.items() if k in self._valide_options])
+        if self.is_relation and 'label' not in info:
+            m = self._property.mapper.class_
+            label = getattr(m, '__label__', None)
+            if self._property.direction in (MANYTOMANY, ONETOMANY):
+                label = getattr(m, '__plural__', label)
+            if label:
+                info['label'] = label
+        self.set(**info)
+
+    @property
+    def info(self):
+        """return the best information from SA's Column.info"""
+        info = None
+
+        if self.is_relation:
+            pairs = self._property.local_remote_pairs
+            if len(pairs):
+                for pair in reversed(pairs):
+                    for col in pair:
+                        if col.table in self._property.parent.tables and not col.primary_key:
+                            return getattr(col, 'info', None)
+                        elif col.table in self._property.mapper.tables:
+                            if col.primary_key:
+                                if self._property.direction == MANYTOMANY:
+                                    return getattr(col, 'info', None)
+                            else:
+                                parent_info = getattr(col, 'info', {})
+                                info = {}
+                                for k, v in parent_info.items():
+                                    if k.startswith('backref_'):
+                                        info[k[8:]] = v
+                                return info
+        else:
+            try:
+                col = getattr(self.model.__table__.c, self.key)
+            except AttributeError:
+                return {}
+            else:
+                return getattr(col, 'info', None)
+        return {}
+
     def is_readonly(self):
         from sqlalchemy.sql.expression import _Label
         return AbstractField.is_readonly(self) or isinstance(self._columns[0], _Label)
@@ -1498,7 +1604,10 @@ class AttributeField(AbstractField):
             return _foreign_keys(self._property)
         elif isinstance(self._impl, ScalarAttributeImpl) or self._impl.__class__.__name__ in ('ProxyImpl', '_ProxyImpl'): # 0.4 compatibility: ProxyImpl is a one-off class for each synonym, can't import it
             # normal property, mapped to a single column from the main table
-            return self._property.columns
+            prop = getattr(self._property, '_proxied_property', None)
+            if prop is None:
+                prop = self._property
+            return prop.columns
         else:
             # collection -- use the mapped class's PK
             assert self.is_collection, self._impl.__class__

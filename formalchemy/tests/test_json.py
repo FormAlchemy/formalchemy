@@ -8,7 +8,7 @@ except ImportError:
 
 def to_dict():
     """
-    >>> fs = FieldSet(User)
+    >>> fs = FieldSet(User, session=session)
     >>> _ = fs.password.set(renderer=PasswordFieldRenderer)
 
     >>> fs.to_dict()
@@ -32,7 +32,7 @@ def bind_without_prefix():
     >>> data = {u'password': u'1', u'id': 1, u'orders': [1], u'email': u'bill@example.com', u'name': u'Bill'}
 
     >>> fs = FieldSet(User)
-    >>> fs = fs.bind(data=data, with_prefix=False)
+    >>> fs = fs.bind(data=data, session=session, with_prefix=False)
     >>> fs.validate()
     True
 

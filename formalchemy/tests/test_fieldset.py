@@ -177,7 +177,7 @@ document.getElementById("Three--foo").focus();
 # test sync
 >>> print session.query(One).count()
 0
->>> fs_1 = FieldSet(One, data={})
+>>> fs_1 = FieldSet(One, data={}, session=session)
 >>> fs_1.sync()
 >>> session.flush()
 >>> print session.query(One).count()
@@ -314,7 +314,7 @@ False
  two
 </label>
 
->>> fs = FieldSet(User)
+>>> fs = FieldSet(User, session=session)
 >>> print fs.render()
 <div>
  <label class="field_req" for="User--email">
@@ -355,8 +355,6 @@ document.getElementById("User--email").focus();
   </option>
  </select>
 </div>
->>> FieldSet(User).render() == FieldSet(User, session).render()
-True
 
 >>> fs = FieldSet(bill)
 >>> print pretty_html(fs.orders.render())
@@ -553,7 +551,7 @@ document.getElementById("OTOParent--oto_child_id").focus();
 <OTOChild baz>
 
 # validation + sync
->>> fs_2 = FieldSet(Two, data={'Two--foo': ''})
+>>> fs_2 = FieldSet(Two, session=session, data={'Two--foo': ''})
 >>> fs_2.foo.value # '' is deserialized to None, so default of 133 is used
 '133'
 >>> fs_2.validate()
@@ -607,7 +605,7 @@ Traceback (most recent call last):
 PkError: Primary key of model has changed since binding, probably due to sync()ing a new instance (from None to 1)...
 >>> session.rollback()
 
->>> fs_1 = FieldSet(One, data={'One--id': '1'})
+>>> fs_1 = FieldSet(One, session=session, data={'One--id': '1'})
 >>> fs_1.configure(pk=True)
 >>> fs_1.validate()
 True
@@ -632,7 +630,7 @@ u'One-1-id'
 >>> fs_11.id.renderer.name
 u'One-2-id'
 
->>> fs_u = FieldSet(User, data={})
+>>> fs_u = FieldSet(User, session=session, data={})
 >>> fs_u.configure(include=[fs_u.orders])
 >>> fs_u.validate()
 True
@@ -900,13 +898,12 @@ True
 >>> print pretty_html(fs.start.render())
 <input id="Vertex--start-x" name="Vertex--start-x" type="text" value="1" />
 <input id="Vertex--start-y" name="Vertex--start-y" type="text" value="2" />
->>> fs.rebind(v) # this exercises a session bugfix
->>> fs.session == session
-True
+>>> fs.rebind(v)
 >>> fs.rebind(data={'Vertex--start-x': '10', 'Vertex--start-y': '20', 'Vertex--end-x': '30', 'Vertex--end-y': '40'})
 >>> fs.validate()
 True
 >>> fs.sync()
+>>> session.add(v)
 >>> session.flush()
 >>> v.id
 1
@@ -964,7 +961,7 @@ True
 >>> print fs_or.user.render_readonly()
 <a href="mailto:bill@example.com">Bill</a>
 
->>> out = FieldSet(OrderUserTag)
+>>> out = FieldSet(OrderUserTag, session=session)
 >>> list(sorted(out._fields))
 ['id', 'order_id', 'order_user', 'tag', 'user_id']
 >>> print out.order_user.name
@@ -1003,7 +1000,7 @@ True
 >>> fs_r.validate()
 True
 
->>> fs_oo = FieldSet(OptionalOrder)
+>>> fs_oo = FieldSet(OptionalOrder, session=session)
 >>> fs_oo.configure(options=[fs_oo.user.with_null_as(('No user', ''))])
 >>> fs_oo.user._null_option
 ('No user', '')

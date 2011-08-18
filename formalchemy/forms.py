@@ -24,6 +24,13 @@ from sqlalchemy.util import OrderedDict
 from webob import multidict
 
 try:
+    from sqlalchemy.orm.descriptor_props import CompositeProperty
+except ImportError:
+    # <= SA 0.7
+    class CompositeProperty(object):
+        pass
+
+try:
     from sqlalchemy.orm.exc import UnmappedInstanceError
 except ImportError:
     class UnmappedInstanceError(Exception):
@@ -158,6 +165,12 @@ class FieldSet(DefaultRenderers):
               pylons request.params() objects and plain dictionaries are known
               to work.
 
+        - `request=None`:
+              WebOb-like object that can be taken in place of `data`.
+              FormAlchemy will make sure it's a POST, and use it's 'POST'
+              attribute as the data.  Also, the request object will be
+              available to renderers as the `.request` attribute.
+
         - `prefix=None`:
               the prefix to prepend to html name attributes. This is useful to avoid
               field name conflicts when there are two fieldsets creating objects
@@ -225,13 +238,15 @@ class FieldSet(DefaultRenderers):
     prettify = staticmethod(prettify)
 
     def __init__(self, model, session=None, data=None, prefix=None,
-                 format=u'%(model)s-%(pk)s-%(name)s'):
+                 format=u'%(model)s-%(pk)s-%(name)s',
+                 request=None):
         self._fields = OrderedDict()
         self._render_fields = OrderedDict()
         self.model = self.session = None
         self.readonly = False
         self.validator = None
         self.focus = True
+        self._request = request
         self._format = format
         self._prefix = prefix
         self._errors = []
@@ -242,7 +257,7 @@ class FieldSet(DefaultRenderers):
         self._original_cls = isinstance(model, type) and model or type(model)
 
         if self.__sa__:
-            FieldSet.rebind(self, model, session, data)
+            FieldSet.rebind(self, model, session, data, request)
 
             cls = isinstance(self.model, type) and self.model or type(self.model)
             try:
@@ -263,19 +278,22 @@ class FieldSet(DefaultRenderers):
             else:
                 # SA class.
                 # load synonyms so we can ignore them
-                synonyms = set(p for p in class_mapper(cls).iterate_properties
-                               if isinstance(p, SynonymProperty))
-                # load discriminators so we can ignore them
-                discs = set(p for p in class_mapper(cls).iterate_properties
-                            if hasattr(p, '_is_polymorphic_discriminator')
-                            and p._is_polymorphic_discriminator)
+                ignore_keys = set()
+                for p in class_mapper(cls).iterate_properties:
+                    if isinstance(p, SynonymProperty):
+                        ignore_keys.add(p.name)
+                    elif hasattr(p, '_is_polymorphic_discriminator') and p._is_polymorphic_discriminator:
+                        ignore_keys.add(p.key)
+                    elif isinstance(p, CompositeProperty):
+                        for p in p.props:
+                            ignore_keys.add(p.key)
+
                 # attributes we're interested in
                 attrs = []
                 for p in class_mapper(cls).iterate_properties:
                     attr = _get_attribute(cls, p)
-                    if ((isinstance(p, SynonymProperty) or attr.property.key not in (s.name for s in synonyms))
-                        and not isinstance(attr.impl, DynamicAttributeImpl)
-                        and p not in discs):
+                    if ((isinstance(p, SynonymProperty) or attr.property.key not in ignore_keys)
+                        and not isinstance(attr.impl, DynamicAttributeImpl)):
                         attrs.append(attr)
                 # sort relations last before storing in the OrderedDict
                 L = [fields.AttributeField(attr, self) for attr in attrs]
@@ -353,7 +371,8 @@ class FieldSet(DefaultRenderers):
         self.validator = global_validator
         self._render_fields = OrderedDict([(field.key, field) for field in self._get_fields(pk, exclude, include, options)])
 
-    def bind(self, model=None, session=None, data=None, with_prefix=True):
+    def bind(self, model=None, session=None, data=None, request=None,
+             with_prefix=True):
         """
         Return a copy of this FieldSet or Grid, bound to the given
         `model`, `session`, and `data`. The parameters to this method are the
@@ -362,24 +381,30 @@ class FieldSet(DefaultRenderers):
         Often you will create and `configure` a FieldSet or Grid at application
         startup, then `bind` specific instances to it for actual editing or display.
         """
-        if not (model is not None or session or data):
-            raise Exception('must specify at least one of {model, session, data}')
+        if not (model is not None or session or data or request):
+            raise Exception('must specify at least one of {model, session, data, request}')
+
         if not model:
             if not self.model:
                 raise Exception('model must be specified when none is already set')
             model = fields._pk(self.model) is None and type(self.model) or self.model
+
         # copy.copy causes a stacktrace on python 2.5.2/OSX + pylons.  unable to reproduce w/ simpler sample.
         mr = object.__new__(self.__class__)
         mr.__dict__ = dict(self.__dict__)
         # two steps so bind's error checking can work
-        FieldSet.rebind(mr, model, session, data, with_prefix=with_prefix)
+        FieldSet.rebind(mr, model, session, data, request,
+                        with_prefix=with_prefix)
         mr._fields = OrderedDict([(key, renderer.bind(mr)) for key, renderer in self._fields.iteritems()])
         if self._render_fields:
             mr._render_fields = OrderedDict([(field.key, field) for field in
                                              [field.bind(mr) for field in self._render_fields.itervalues()]])
+        mr._request = request
         return mr
 
-    def rebind(self, model=None, session=None, data=None, with_prefix=True):
+
+    def rebind(self, model=None, session=None, data=None, request=None,
+               with_prefix=True):
         """
         Like `bind`, but acts on this instance.  No return value.
         Not all parameters are treated the same; specifically, what happens if they are NOT specified is different:
@@ -387,8 +412,16 @@ class FieldSet(DefaultRenderers):
         * if `model` is not specified, the old model is used
         * if `session` is not specified, FA tries to re-guess session from the model
         * if `data` is not specified, it is rebound to None
+        * if `request` is specified and not `data` request.POST is used as data.
+          `request` is also saved to be access by renderers (as
+          `fs.FIELD.renderer.request`).
         * if `with_prefix` is False then a prefix ``{Model}-{pk}`` is added to each data keys
         """
+        if data is None and request is not None:
+            if hasattr(request, 'environ') and hasattr(request, 'POST'):
+                if request.environ.get('REQUEST_METHOD', '').upper() == 'POST':
+                    data = request.POST or None
+
         original_model = model
         if model:
             if isinstance(model, type):
@@ -500,9 +533,9 @@ class FieldSet(DefaultRenderers):
         If validation fails, the validator should raise `ValidationError`.
         """
         if self.readonly:
-            raise Exception('Cannot validate a read-only FieldSet')
+            raise ValidationError('Cannot validate a read-only FieldSet')
         if self.data is None:
-            raise Exception('Cannot validate without binding data')
+            raise ValidationError('Cannot validate without binding data')
         success = True
         for field in self.render_fields.itervalues():
             success = field._validate() and success
@@ -539,17 +572,13 @@ class FieldSet(DefaultRenderers):
                    "with the original primary key again, or by binding data to None.")
             raise exceptions.PkError(msg % (self._bound_pk, fields._pk(self.model)))
         engine = self.engine or config.engine
-        if self._render or self._render_readonly:
-            warnings.warn(DeprecationWarning('_render and _render_readonly are deprecated and will be removed in 1.5. Use a TemplateEngine instead'))
+        if 'request' not in kwargs:
+            kwargs['request'] = self._request
         if self.readonly:
-            if self._render_readonly is not None:
-                engine._update_args(kwargs)
-                return self._render_readonly(fieldset=self, **kwargs)
-            return engine('fieldset_readonly', fieldset=self, **kwargs)
-        if self._render is not None:
-            engine._update_args(kwargs)
-            return self._render(fieldset=self, **kwargs)
-        return engine('fieldset', fieldset=self, **kwargs)
+            template = 'fieldset_readonly'
+        else:
+            template = 'fieldset'
+        return engine(template, fieldset=self, **kwargs)
 
     @property
     def errors(self):
@@ -579,7 +608,7 @@ class FieldSet(DefaultRenderers):
     def copy(self, *args):
         """return a copy of the fieldset. args is a list of field names or field
         objects to render in the new fieldset"""
-        mr = self.bind(self.model, self.session, self.data)
+        mr = self.bind(self.model, self.session)
         _fields = self._render_fields or self._fields
         _new_fields = []
         if args:

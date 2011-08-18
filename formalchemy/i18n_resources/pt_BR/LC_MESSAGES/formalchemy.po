@@ -1,239 +1,241 @@
-# English translations for FormAlchemy.
-# Copyright (C) 2009 ORGANIZATION
+# Portuguese (Brazil) translations for FormAlchemy.
+# Copyright (C) 2011 ORGANIZATION
 # This file is distributed under the same license as the FormAlchemy
 # project.
-# FIRST AUTHOR <EMAIL@ADDRESS>, 2009.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2011.
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: FormAlchemy 1.1\n"
-"Report-Msgid-Bugs-To: formalchemy@googlegroups.com\n"
-"POT-Creation-Date: 2009-01-18 12:51+0100\n"
-"PO-Revision-Date: 2011-06-21 16:13+0200\n"
-"Last-Translator: gael@gawel.org\n"
-"Language-Team: fr <formalchemy@googlegroups.com>\n"
-"Plural-Forms: nplurals=2; plural=(n != 1)\n"
+"Project-Id-Version: FormAlchemy 1.3.9\n"
+"Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
+"POT-Creation-Date: 2011-06-21 16:13+0200\n"
+"PO-Revision-Date: 2011-08-01 20:45-0300\n"
+"Last-Translator: Rodrigo Ferreira de Souza <rodfersou@gmail.com>\n"
+"Language-Team: pt_BR <LL@li.org>\n"
+"Plural-Forms: nplurals=2; plural=(n > 1)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Generated-By: Babel 0.9.5\n"
+"Generated-By: Babel 0.9.6\n"
 
 #: formalchemy/fields.py:474
 msgid "Remove"
-msgstr ""
+msgstr "Remover"
 
 #: formalchemy/i18n.py:85
 msgid "Year"
-msgstr ""
+msgstr "Ano"
 
 #: formalchemy/i18n.py:86
 msgid "Month"
-msgstr ""
+msgstr "Mês"
 
 #: formalchemy/i18n.py:87
 msgid "Day"
-msgstr ""
+msgstr "Dia"
 
 #: formalchemy/i18n.py:88
 msgid "month_01"
-msgstr "January"
+msgstr "mês_01"
 
 #: formalchemy/i18n.py:89
 msgid "month_02"
-msgstr "February"
+msgstr "mês_02"
 
 #: formalchemy/i18n.py:90
 msgid "month_03"
-msgstr "March"
+msgstr "mês_03"
 
 #: formalchemy/i18n.py:91
 msgid "month_04"
-msgstr "April"
+msgstr "mês_04"
 
 #: formalchemy/i18n.py:92
 msgid "month_05"
-msgstr "May"
+msgstr "mês_05"
 
 #: formalchemy/i18n.py:93
 msgid "month_06"
-msgstr "June"
+msgstr "mês_06"
 
 #: formalchemy/i18n.py:94
 msgid "month_07"
-msgstr "July"
+msgstr "mês_07"
 
 #: formalchemy/i18n.py:95
 msgid "month_08"
-msgstr "August"
+msgstr "mês_09"
 
 #: formalchemy/i18n.py:96
 msgid "month_09"
-msgstr "September"
+msgstr "mês_09"
 
 #: formalchemy/i18n.py:97
 msgid "month_10"
-msgstr "October"
+msgstr "mês_10"
 
 #: formalchemy/i18n.py:98
 msgid "month_11"
-msgstr "November"
+msgstr "mês_11"
 
 #: formalchemy/i18n.py:99
 msgid "month_12"
-msgstr "December"
+msgstr "mês_12"
 
 #: formalchemy/validators.py:32
 msgid "Please select a value"
-msgstr ""
+msgstr "Por favor selecione um valor"
 
 #: formalchemy/validators.py:32
 msgid "Please enter a value"
-msgstr ""
+msgstr "Por favor digite um valor"
 
 #: formalchemy/validators.py:49
 msgid "Value is not an integer"
-msgstr ""
+msgstr "Valor não é um inteiro"
 
-#: formalchemy/validators.py:60 formalchemy/validators.py:72
+#: formalchemy/validators.py:60
+#: formalchemy/validators.py:72
 msgid "Value is not a number"
-msgstr ""
+msgstr "Valor não é um número"
 
 #: formalchemy/validators.py:95
 msgid "Missing @ sign"
-msgstr ""
+msgstr "Faltando o símbolo @"
 
 #: formalchemy/validators.py:98
 msgid "Control characters present"
-msgstr ""
+msgstr "Caracteres de controle encontrados"
 
 #: formalchemy/validators.py:100
 msgid "Non-ASCII characters present"
-msgstr ""
+msgstr "Encontrados caracteres não-ASCII"
 
 #: formalchemy/validators.py:104
 msgid "Recipient must be non-empty"
-msgstr ""
+msgstr "Campo deve ser preenchido"
 
 #: formalchemy/validators.py:106
 msgid "Recipient must not end with '.'"
-msgstr ""
+msgstr "Campo não pode terminar com '.'"
 
 #: formalchemy/validators.py:121
 msgid "Unterminated quoted section in recipient"
-msgstr ""
+msgstr "Campo com com aspas não fechadas"
 
 #: formalchemy/validators.py:124
 msgid "Quoted section must be followed by '@' or '.'"
-msgstr ""
+msgstr "Campo deve ser seguido por '@' ou '.'"
 
 #: formalchemy/validators.py:127
 msgid "Reserved character present in recipient"
-msgstr ""
+msgstr "Caractere proibido encontrado no campo"
 
 #: formalchemy/validators.py:132
 msgid "Domain must be non-empty"
-msgstr ""
+msgstr "Campo deve ser preenchido"
 
 #: formalchemy/validators.py:134
 msgid "Domain must not end with '.'"
-msgstr ""
+msgstr "Campo não deve terminar com '.'"
 
 #: formalchemy/validators.py:136
 msgid "Domain must not contain '..'"
-msgstr ""
+msgstr "Campo não pode conter '..'"
 
 #: formalchemy/validators.py:138
 msgid "Reserved character present in domain"
-msgstr ""
+msgstr "Caractere proibido encontrado no campo"
 
 #: formalchemy/validators.py:148
 #, python-format
 msgid "Value must be at least %d characters long"
-msgstr ""
+msgstr "Valor deve ter pelo menos %d caracteres"
 
 #: formalchemy/validators.py:150
 #, python-format
 msgid "Value must be no more than %d characters long"
-msgstr ""
+msgstr "Valor deve ser menor que %d caracteres"
 
 #: formalchemy/validators.py:165
 msgid "Invalid input"
-msgstr ""
+msgstr "Entrada inválida"
 
 #: formalchemy/ext/fsblob.py:26
 #, python-format
 msgid "Invalid file extension. Must be %s, "
-msgstr ""
+msgstr "Extensão de arquivo inválida. Deve ser %s,"
 
 #: formalchemy/ext/fsblob.py:33
 #, python-format
 msgid "Invalid image file. Must be %s, "
-msgstr ""
+msgstr "Arquivo de imagem inválido. Deve ser %s."
 
 #: formalchemy/ext/pylons/admin.py:25
 msgid "Add"
-msgstr ""
+msgstr "Adicionar"
 
 #: formalchemy/ext/pylons/admin.py:26
 msgid "Edit"
-msgstr ""
+msgstr "Editar"
 
 #: formalchemy/ext/pylons/admin.py:27
 msgid "New"
-msgstr ""
+msgstr "Novo"
 
 #: formalchemy/ext/pylons/admin.py:28
 msgid "Save"
-msgstr ""
+msgstr "Salvar"
 
 #: formalchemy/ext/pylons/admin.py:29
 msgid "Delete"
-msgstr ""
+msgstr "Apagar"
 
 #: formalchemy/ext/pylons/admin.py:30
 msgid "Cancel"
-msgstr ""
+msgstr "Cancelar"
 
 #: formalchemy/ext/pylons/admin.py:31
 msgid "Models"
-msgstr ""
+msgstr "Modelos"
 
-#: formalchemy/ext/pylons/admin.py:32 formalchemy/ext/pylons/admin.py:35
+#: formalchemy/ext/pylons/admin.py:32
+#: formalchemy/ext/pylons/admin.py:35
 msgid "Existing objects"
-msgstr ""
+msgstr "Objetos existentes"
 
 #: formalchemy/ext/pylons/admin.py:33
 msgid "New object"
-msgstr ""
+msgstr "Novo objeto"
 
 #: formalchemy/ext/pylons/admin.py:34
 msgid "Related types"
-msgstr ""
+msgstr "Tipos relacionados"
 
 #: formalchemy/ext/pylons/admin.py:36
 msgid "Create form"
-msgstr ""
+msgstr "Criar formulário"
 
 #: formalchemy/ext/pylons/admin.py:81
 msgid "edit"
-msgstr ""
+msgstr "editar"
 
 #: formalchemy/ext/pylons/admin.py:90
 msgid "delete"
-msgstr ""
+msgstr "apagar"
 
 #: formalchemy/ext/pylons/admin.py:201
 #, python-format
 msgid "Created %s %s"
-msgstr ""
+msgstr "Criado %s %s"
 
 #: formalchemy/ext/pylons/admin.py:204
 #, python-format
 msgid "Modified %s %s"
-msgstr ""
+msgstr "Modificado %s %s"
 
 #: formalchemy/ext/pylons/admin.py:236
 #, python-format
 msgid "Deleted %s %s"
-msgstr ""
+msgstr "Apagado %s %s"
 

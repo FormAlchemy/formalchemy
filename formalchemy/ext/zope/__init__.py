@@ -466,6 +466,7 @@ class FieldSet(BaseFieldSet):
         schema.Time: fatypes.Time,
         schema.Choice: fatypes.Unicode,
         schema.List: fatypes.List,
+        schema.Password: fatypes.Unicode,
     }
 
     def __init__(self, model, **kwargs):
@@ -488,6 +489,8 @@ class FieldSet(BaseFieldSet):
                     self._fields[name].set(instructions=field.description)
                 if field.required:
                     self._fields[name].validators.append(validators.required)
+                if klass is schema.Password:
+                    self._fields[name].set(renderer=fields.PasswordFieldRenderer)
                 if klass is schema.Text:
                     self._fields[name].set(renderer=fields.TextAreaFieldRenderer)
                 if klass is schema.List:
@@ -500,7 +503,7 @@ class FieldSet(BaseFieldSet):
                     self._fields[name].set(renderer=fields.SelectFieldRenderer,
                                            options=self.iface[name])
 
-    def bind(self, model, session=None, data=None):
+    def bind(self, model, session=None, data=None, request=None):
         if not (model is not None or session or data):
             raise Exception('must specify at least one of {model, session, data}')
         # copy.copy causes a stacktrace on python 2.5.2/OSX + pylons.  unable to reproduce w/ simpler sample.
@@ -508,6 +511,7 @@ class FieldSet(BaseFieldSet):
         mr.__dict__ = dict(self.__dict__)
         # two steps so bind's error checking can work
         mr.rebind(model, session, data)
+        mr._request = request
         mr._fields = OrderedDict([(key, renderer.bind(mr)) for key, renderer in self._fields.iteritems()])
         if self._render_fields:
             mr._render_fields = OrderedDict([(field.key, field) for field in

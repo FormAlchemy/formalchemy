@@ -55,7 +55,8 @@ class TemplateEngine(object):
         return ''
 
     def _update_args(cls, kw):
-        kw['F_'] = get_translator(kw.get('lang', None)).gettext
+        kw['F_'] = get_translator(lang=kw.get('lang', None),
+                                  request=kw.get('request', None))
         kw['html'] = helpers
         return kw
     _update_args = classmethod(_update_args)
