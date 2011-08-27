@@ -339,6 +339,8 @@ class FieldRenderer(object):
 
     def _deserialize(self, data):
         if isinstance(self.field.type, fatypes.Boolean):
+            if isinstance(data, bool):
+                 return data
             if data is not None:
                 if data.lower() in ['1', 't', 'true', 'yes']: return True
                 if data.lower() in ['0', 'f', 'false', 'no']: return False
@@ -357,6 +359,8 @@ class FieldRenderer(object):
                 return validators.float_(data, self)
 
         def _date(data):
+            if isinstance(data, datetime.date):
+                return data
             if data == 'YYYY-MM-DD' or data == '-MM-DD' or not data.strip():
                 return None
             try:
@@ -364,6 +368,8 @@ class FieldRenderer(object):
             except:
                 raise validators.ValidationError('Invalid date')
         def _time(data):
+            if isinstance(data, datetime.time):
+                return data
             if data == 'HH:MM:SS' or not data.strip():
                 return None
             try:
@@ -376,6 +382,8 @@ class FieldRenderer(object):
         if isinstance(self.field.type, fatypes.Time):
             return _time(data)
         if isinstance(self.field.type, fatypes.DateTime):
+            if isinstance(data, datetime.datetime):
+                return data
             data_date, data_time = data.split(' ')
             dt, tm = _date(data_date), _time(data_time)
             if dt is None and tm is None:
