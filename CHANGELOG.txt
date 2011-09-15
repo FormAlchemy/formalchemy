@@ -14,6 +14,10 @@
 
 * Improved documentation for the Field.set() method
 
+* Support zope.schema.Password
+
+* Fix issues 9, 10, 11, 12
+
 
 1.4
 ----
