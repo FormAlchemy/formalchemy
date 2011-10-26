@@ -116,6 +116,7 @@ class _RESTController(object):
                       member_name=self.member_name,
                       breadcrumb=self.breadcrumb(**kwargs),
                       F_=get_translator())
+        self.update_resources()
         if self.engine:
             return self.engine.render(self.template, **kwargs)
         else:
@@ -261,6 +262,10 @@ class _RESTController(object):
             grid.append(Field('edit', fatypes.String, edit_link()))
             grid.append(Field('delete', fatypes.String, delete_link()))
             grid.readonly = True
+
+    def update_resources(self):
+        """A hook to add some fanstatic resources"""
+        pass
 
     def index(self, format='html', **kwargs):
         """REST api"""
