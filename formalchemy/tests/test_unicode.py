@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 from formalchemy.tests import *
-from webob.multidict import UnicodeMultiDict
-from webob.multidict import MultiDict
+from formalchemy.multidict import UnicodeMultiDict
+from formalchemy.multidict import MultiDict
 
 def test_unicode():
     """

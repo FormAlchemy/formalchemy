@@ -21,7 +21,7 @@ from sqlalchemy.orm.session import Session
 from sqlalchemy.orm.scoping import ScopedSession
 from sqlalchemy.orm.dynamic import DynamicAttributeImpl
 from sqlalchemy.util import OrderedDict
-from webob import multidict
+from formalchemy import multidict
 
 try:
     from sqlalchemy.orm.descriptor_props import CompositeProperty
@@ -490,6 +490,8 @@ class FieldSet(DefaultRenderers):
             self.data = None
         elif isinstance(data, multidict.UnicodeMultiDict):
             self.data = data
+        elif isinstance(data, multidict.MultiDict):
+            self.data = multidict.UnicodeMultiDict(multi=data, encoding=config.encoding)
         elif hasattr(data, 'getall') and hasattr(data, 'getone'):
             self.data = data
         elif isinstance(data, (dict, list)):

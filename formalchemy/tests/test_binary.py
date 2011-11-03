@@ -119,7 +119,7 @@ We need test data
 
     >>> data = get_fields(TEST_DATA)
     >>> print data.getone('Binaries--file')
-    FieldStorage('Binaries--file', 'test.js')
+    FieldStorage(u'Binaries--file', u'test.js')
 
     >>> fs.rebind(data=data)
     >>> if fs.validate(): fs.sync()
