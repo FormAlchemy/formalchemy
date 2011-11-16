@@ -115,6 +115,17 @@ class DefaultRenderers(object):
         'radio': fields.RadioSet,
         'password': fields.PasswordFieldRenderer,
         'textarea': fields.TextAreaFieldRenderer,
+        'email': fields.EmailFieldRenderer,
+        'url': fields.UrlFieldRenderer,
+        'number': fields.NumberFieldRenderer,
+        'range': fields.RangeFieldRenderer,
+        'date': fields.HTML5DateFieldRenderer,
+        'datetime': fields.HTML5DateTimeFieldRenderer,
+        'datetime_local': fields.LocalDateTimeFieldRenderer,
+        'month': fields.MonthFieldRender,
+        'week': fields.WeekFieldRenderer,
+        'time': fields.HTML5TimeFieldRenderer,
+        'color': fields.ColorFieldRenderer
     }
 
 
