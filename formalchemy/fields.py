@@ -456,7 +456,7 @@ class PasswordFieldRenderer(TextFieldRenderer):
     def render(self, **kwargs):
         return h.password_field(self.name, value=self.value, maxlength=self.length, **kwargs)
     def render_readonly(self):
-        return '*'*6
+        return '*' * 6
 
 class TextAreaFieldRenderer(FieldRenderer):
     """render a field as a textarea"""
@@ -564,7 +564,7 @@ class DateFieldRenderer(FieldRenderer):
         is_date_type = isinstance(value, (datetime.datetime, datetime.date, datetime.time))
         values = []
         for key, default in (('month', 'MM'), ('day', 'DD')):
-            name = self.name+'__'+key
+            name = self.name + '__' + key
             v = default
             if data is not None and name in data:
                 v = data[name]
@@ -611,7 +611,7 @@ class TimeFieldRenderer(FieldRenderer):
         is_time_type = isinstance(value, (datetime.datetime, datetime.date, datetime.time))
         values = []
         for key, default in (('hour', 'HH'), ('minute', 'MM'), ('second', 'SS')):
-            name = self.name+'__'+key
+            name = self.name + '__' + key
             v = default
             if data is not None and name in data:
                 v = data[name]
@@ -640,6 +640,105 @@ class DateTimeFieldRenderer(DateFieldRenderer, TimeFieldRenderer):
 
     def _serialized_value(self):
         return DateFieldRenderer._serialized_value(self) + ' ' + TimeFieldRenderer._serialized_value(self)
+
+
+class EmailFieldRenderer(FieldRenderer):
+    '''
+    Render a HTML5 email input field
+    '''
+
+    def render(self, **kwargs):
+        return h.text_field(self.name, value=self.value, type='email', **kwargs)
+
+
+class UrlFieldRenderer(FieldRenderer):
+    '''
+    Render a HTML5 url input field
+    '''
+
+    def render(self, **kwargs):
+        return h.text_field(self.name, value=self.value, type='url', **kwargs)
+
+
+class NumberFieldRenderer(FieldRenderer):
+    '''
+    Render a HTML5 number input field
+    '''
+
+    def render(self, **kwargs):
+        return h.text_field(self.name, value=self.value, type='number', **kwargs)
+
+
+class RangeFieldRenderer(FieldRenderer):
+    '''
+    Render a HTML5 range input field
+    '''
+
+    def render(self, **kwargs):
+        return h.text_field(self.name, value=self.value, type='range', **kwargs)
+
+
+class HTML5DateFieldRenderer(FieldRenderer):
+    '''
+    Render a HTML5 date input field
+    '''
+
+    def render(self, **kwargs):
+        return h.text_field(self.name, value=self.value, type='date', **kwargs)
+
+
+class HTML5DateTimeFieldRenderer(FieldRenderer):
+    '''
+    Render a HTML5 datetime input field
+    '''
+
+    def render(self, **kwargs):
+        return h.text_field(self.name, value=self.value, type='datetime', **kwargs)
+
+
+class LocalDateTimeFieldRenderer(FieldRenderer):
+    '''
+    Render a HTML5 datetime-local input field.
+    '''
+
+    def render(self, **kwargs):
+        return h.text_field(self.name, value=self.value, type='datetime-local', **kwargs)
+
+
+class MonthFieldRender(FieldRenderer):
+    '''
+    Render a HTML5 month input field.
+    '''
+
+    def render(self, **kwargs):
+        return h.text_field(self.name, value=self.value, type='month', **kwargs)
+
+
+class WeekFieldRenderer(FieldRenderer):
+    '''
+    Render a HTML5 week input field.
+    '''
+
+    def render(self, **kwargs):
+        return h.text_field(self.name, value=self.value, type='week', **kwargs)
+
+
+class HTML5TimeFieldRenderer(FieldRenderer):
+    '''
+    Render a HTML5 time input field.
+    '''
+
+    def render(self, **kwargs):
+        return h.text_field(self.name, value=self.value, type='time', **kwargs)
+
+
+class ColorFieldRenderer(FieldRenderer):
+    '''
+    Render a HTML5 color input field.
+    '''
+
+    def render(self, **kwargs):
+        return h.text_field(self.name, value=self.value, type='color', **kwargs)
 
 
 def _extract_options(options):
@@ -823,9 +922,9 @@ def _pk(instance):
 # 2.6 provides ast.literal_eval, but requiring 2.6 is a bit of a stretch for now.
 import compiler
 class _SafeEval(object):
-    def visit(self, node,**kw):
+    def visit(self, node, **kw):
         cls = node.__class__
-        meth = getattr(self,'visit'+cls.__name__,self.default)
+        meth = getattr(self, 'visit' + cls.__name__, self.default)
         return meth(node, **kw)
 
     def default(self, node, **kw):
@@ -841,10 +940,10 @@ class _SafeEval(object):
     def visitConst(self, node, **kw):
         return node.value
 
-    def visitTuple(self,node, **kw):
+    def visitTuple(self, node, **kw):
         return tuple(self.visit(i) for i in node.nodes)
 
-    def visitList(self,node, **kw):
+    def visitList(self, node, **kw):
         return [self.visit(i) for i in node.nodes]
 
 def _simple_eval(source):
@@ -1305,6 +1404,120 @@ class AbstractField(object):
         Return the field with all configuration changes reverted.
         """
         return deepcopy(self.parent._fields[self.name])
+
+    #==========================================================================
+    # HTML5 specific input types
+    #==========================================================================
+
+    def date(self):
+        '''
+        Render the field as a HTML5 date input type.
+        '''
+        field = deepcopy(self)
+        field._renderer = lambda f: f.parent.default_renderers['date']
+        return field
+
+    def datetime(self):
+        '''
+        Render the field as a HTML5 datetime input type.
+        '''
+        field = deepcopy(self)
+        field._renderer = lambda f: f.parent.default_renderers['datetime']
+        return field
+
+    def datetime_local(self):
+        '''
+        Render the field as a HTML5 datetime-local input type.
+        '''
+        field = deepcopy(self)
+        field._renderer = lambda f: f.parent.default_renderers['date']
+        return field
+
+    def month(self):
+        '''
+        Render the field as a HTML5 month input type.
+        '''
+        field = deepcopy(self)
+        field._renderer = lambda f: f.parent.default_renderers['month']
+        return field
+
+    def week(self):
+        '''
+        Render the field as a HTML5 week input type.
+        '''
+        field = deepcopy(self)
+        field._renderer = lambda f: f.parent.default_renderers['week']
+        return field
+
+    def time(self):
+        '''
+        Render the field as a HTML5 time input type.
+        '''
+        field = deepcopy(self)
+        field._renderer = lambda f: f.parent.default_renderers['time']
+        return field
+
+    def color(self):
+        '''
+        Render the field as a HTML5 color input type.
+        '''
+        field = deepcopy(self)
+        field._renderer = lambda f: f.parent.default_renderers['color']
+        return field
+
+    def range(self, min_=None, max_=None, step=None):
+        '''
+        Render the field as a HTML5 range input type, starting at `min_`,
+        ending at `max_`, with legal increments every `step` distance.  The
+        default is set by `value`.
+        '''
+        field = deepcopy(self)
+        field._renderer = lambda f: f.parent.default_renderers['range']
+        field.render_opts = {}
+        if min_:
+            field.render_opts["min"] = min_
+        if max_:
+            field.render_opts["max"] = max_
+        if step:
+            field.render_opts["step"] = step
+        if value:
+            field.render_opts["value"] = value
+        return field
+
+    def number(self, min_=None, max_=None, step=None):
+        '''
+        Render the field as a HTML5 number input type, starting at `min_`,
+        ending at `max_`, with legal increments every `step` distance.  The
+        default is set by `value`.
+        '''
+        field = deepcopy(self)
+        field._renderer = lambda f: f.parent.default_renderers['number']
+        field.render_opts = {}
+        if min_:
+            field.render_opts["min"] = min_
+        if max_:
+            field.render_opts["max"] = max_
+        if step:
+            field.render_opts["step"] = step
+        if value:
+            field.render_opts["value"] = value
+        return field
+
+    def url(self):
+        '''
+        Render the field as a HTML5 url input type.
+        '''
+        field = deepcopy(self)
+        field._renderer = lambda f: f.parent.default_renderers['url']
+        return field
+
+    def email(self):
+        '''
+        Render the field as a HTML5 email input type.
+        '''
+        field = deepcopy(self)
+        field._renderer = lambda f: f.parent.default_renderers['email']
+        return field
 
     def _get_renderer(self):
         for t in self.parent.default_renderers:
