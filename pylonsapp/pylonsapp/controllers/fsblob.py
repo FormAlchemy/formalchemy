@@ -20,7 +20,7 @@ class FsblobController(BaseController):
         if request.POST and c.fs.validate():
             c.fs.sync()
             if id:
-                meta.Session.update(record)
+                meta.Session.merge(record)
             else:
                 meta.Session.add(record)
             meta.Session.commit()

@@ -117,6 +117,19 @@ class FileFieldRenderer(Base):
                                  href=self.get_url(value), **kwargs)
         return ''
 
+    def _serialized_value(self):
+        name = self.name
+        if '%s--remove' % self.name in self.params:
+            self._path = None
+            return None
+        elif name in self.params:
+            return self.params.getone(self.name)
+        old_value = '%s--old' % self.name
+        if old_value in self.params:
+            self._path = self.params.getone(old_value)
+            return self._path
+        raise RuntimeError('This should never occurs')
+
     def deserialize(self):
         if self._path:
             return self._path
@@ -136,7 +149,6 @@ class FileFieldRenderer(Base):
         checkbox_name = '%s--remove' % self.name
         if not data and not self.params.has_key(checkbox_name):
             data = getattr(self.field.model, self.field.name)
-        return self._path
 
         # get value from old_value if needed
         old_value = '%s--old' % self.name
@@ -164,6 +176,7 @@ class FileFieldRenderer(Base):
 
 
 class ImageFieldRenderer(FileFieldRenderer):
+
     def render_readonly(self, **kwargs):
         """render the image tag with a link to the image itself.
         """

@@ -1,3 +1,10 @@
+1.4.2
+-----
+
+* WebOb1.2 compat
+
+* Add some HTML5 renderer
+
 1.4.1
 -----
 

@@ -41,15 +41,24 @@ def session_mapper(scoped_session):
         return sqla_mapper(cls, *arg, **kw)
     return mapper
 
-def application(model):
+def application(model, fieldset=None):
     def app(environ, start_response):
         tmpl = '''<DOCTYPE !html>
-        <html><body><form method="POST" action="">%s<input type="submit"/></body></html>'''
+        <html><body><form method="POST" action="" enctype="multipart/form-data">
+        %s
+        <input type="submit" id="submit" name="submit" />
+        </form></body></html>'''
         req = Request(environ)
         resp = Response()
-        fs = FieldSet(model)
+        if fieldset is None:
+            fs = FieldSet(model)
+        else:
+            fs = fieldset.bind(model)
         if req.method == 'POST':
-            fs = fs.bind(request=req)
+            if fieldset is None:
+                fs = fs.bind(request=req)
+            else:
+                fs = fs.bind(model=model, request=req)
             if fs.validate():
                 fs.sync()
                 fs.readonly = True
