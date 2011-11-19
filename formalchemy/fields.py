@@ -1465,7 +1465,7 @@ class AbstractField(object):
         field._renderer = lambda f: f.parent.default_renderers['color']
         return field
 
-    def range(self, min_=None, max_=None, step=None):
+    def range(self, min_=None, max_=None, step=None, value=None):
         '''
         Render the field as a HTML5 range input type, starting at `min_`,
         ending at `max_`, with legal increments every `step` distance.  The
@@ -1484,7 +1484,7 @@ class AbstractField(object):
             field.render_opts["value"] = value
         return field
 
-    def number(self, min_=None, max_=None, step=None):
+    def number(self, min_=None, max_=None, step=None, value=None):
         '''
         Render the field as a HTML5 number input type, starting at `min_`,
         ending at `max_`, with legal increments every `step` distance.  The
