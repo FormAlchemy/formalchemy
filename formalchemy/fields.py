@@ -97,6 +97,7 @@ class FieldRenderer(object):
     Subclasses should override `render` and `deserialize`.
     See their docstrings for details.
     """
+
     def __init__(self, field):
         self.field = field
         assert isinstance(self.field, AbstractField)
@@ -384,7 +385,14 @@ class FieldRenderer(object):
         if isinstance(self.field.type, fatypes.DateTime):
             if isinstance(data, datetime.datetime):
                 return data
-            data_date, data_time = data.split(' ')
+            if 'Z' in data:
+                data = data.strip('Z')
+            if 'T' in data:
+                data_date, data_time = data.split('T')
+            elif ' ' in data:
+                data_date, data_time = data.split(' ')
+            else:
+                raise validators.ValidationError('Incomplete datetime: %s' % data)
             dt, tm = _date(data_date), _time(data_time)
             if dt is None and tm is None:
                 return None
@@ -660,7 +668,7 @@ class UrlFieldRenderer(FieldRenderer):
         return h.text_field(self.name, value=self.value, type='url', **kwargs)
 
 
-class NumberFieldRenderer(FieldRenderer):
+class NumberFieldRenderer(IntegerFieldRenderer):
     '''
     Render a HTML5 number input field
     '''
@@ -686,7 +694,6 @@ class HTML5DateFieldRenderer(FieldRenderer):
     def render(self, **kwargs):
         return h.text_field(self.name, value=self.value, type='date', **kwargs)
 
-
 class HTML5DateTimeFieldRenderer(FieldRenderer):
     '''
     Render a HTML5 datetime input field
@@ -694,7 +701,6 @@ class HTML5DateTimeFieldRenderer(FieldRenderer):
 
     def render(self, **kwargs):
         return h.text_field(self.name, value=self.value, type='datetime', **kwargs)
-
 
 class LocalDateTimeFieldRenderer(FieldRenderer):
     '''
@@ -730,7 +736,6 @@ class HTML5TimeFieldRenderer(FieldRenderer):
 
     def render(self, **kwargs):
         return h.text_field(self.name, value=self.value, type='time', **kwargs)
-
 
 class ColorFieldRenderer(FieldRenderer):
     '''
@@ -1226,6 +1231,8 @@ class AbstractField(object):
                 else:
                     renderer = HiddenFieldRenderer
                 self._renderer = renderer
+            elif attr in 'attrs':
+                self.render_opts.update(value)
             elif attr in mapping:
                 attr = mapping.get(attr)
                 setattr(self, attr, value)
@@ -1334,6 +1341,10 @@ class AbstractField(object):
         else:
             html_options['class_'] = self.is_required() and 'field_req' or 'field_opt'
         return h.content_tag('label', self.label(), **html_options)
+    def attrs(self, **kwargs):
+        """update ``render_opts``"""
+        self.render_opts.update(kwargs)
+        return self._modified(render_opts=self.render_opts)
     def readonly(self, value=True):
         """Render the field readonly."""
         return self._modified(_readonly=True)

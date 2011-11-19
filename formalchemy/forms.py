@@ -116,16 +116,22 @@ class DefaultRenderers(object):
         'password': fields.PasswordFieldRenderer,
         'textarea': fields.TextAreaFieldRenderer,
         'email': fields.EmailFieldRenderer,
+        fatypes.HTML5Url: fields.UrlFieldRenderer,
         'url': fields.UrlFieldRenderer,
+        fatypes.HTML5Number: fields.NumberFieldRenderer,
         'number': fields.NumberFieldRenderer,
         'range': fields.RangeFieldRenderer,
+        fatypes.HTML5Date: fields.HTML5DateFieldRenderer,
         'date': fields.HTML5DateFieldRenderer,
+        fatypes.HTML5DateTime: fields.HTML5DateTimeFieldRenderer,
         'datetime': fields.HTML5DateTimeFieldRenderer,
         'datetime_local': fields.LocalDateTimeFieldRenderer,
         'month': fields.MonthFieldRender,
         'week': fields.WeekFieldRenderer,
+        fatypes.HTML5Time: fields.HTML5TimeFieldRenderer,
         'time': fields.HTML5TimeFieldRenderer,
-        'color': fields.ColorFieldRenderer
+        fatypes.HTML5Color: fields.ColorFieldRenderer,
+        'color': fields.ColorFieldRenderer,
     }
 
 

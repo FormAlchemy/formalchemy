@@ -1080,40 +1080,6 @@ True
 <div>
 ...
 
->>> html5_test_fieldset = FieldSet(Three)
->>> print html5_test_fieldset.foo.url().render()
-<input id="Three--foo" name="Three--foo" type="url" />
-
->>> print html5_test_fieldset.foo.email().render()
-<input id="Three--foo" name="Three--foo" type="email" />
-
->>> print html5_test_fieldset.foo.range(min_=2, max_=10, step=5).render()
-<input id="Three--foo" max="10" min="2" name="Three--foo" step="5" type="range" />
-
->>> print html5_test_fieldset.foo.number(min_=2, max_=10, step=5).render()
-<input id="Three--foo" max="10" min="2" name="Three--foo" step="5" type="number" />
-
->>> print html5_test_fieldset.foo.time().render()
-<input id="Three--foo" name="Three--foo" type="time" />
-
->>> print html5_test_fieldset.foo.date().render()
-<input id="Three--foo" name="Three--foo" type="date" />
-
->>> print html5_test_fieldset.foo.datetime().render()
-<input id="Three--foo" name="Three--foo" type="datetime" />
-
->>> print html5_test_fieldset.foo.datetime_local().render()
-<input id="Three--foo" name="Three--foo" type="date" />
-
->>> print html5_test_fieldset.foo.week().render()
-<input id="Three--foo" name="Three--foo" type="week" />
-
->>> print html5_test_fieldset.foo.month().render()
-<input id="Three--foo" name="Three--foo" type="month" />
-
->>> print html5_test_fieldset.foo.color().render()
-<input id="Three--foo" name="Three--foo" type="color" />
-
 """
 
 if __name__ == '__main__':

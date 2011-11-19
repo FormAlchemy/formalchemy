@@ -11,6 +11,27 @@ except ImportError:
 
 sa_types = set([Integer, Float, String, Unicode, Text, LargeBinary, Boolean, Date, DateTime, Time, Numeric, Interval])
 
+class HTML5Email(String):
+    """HTML5 email field"""
+
+class HTML5Url(String):
+    """HTML5 url field"""
+
+class HTML5Number(Integer):
+    """HTML5 number field"""
+
+class HTML5Color(String):
+    """HTML5 color field"""
+
+class HTML5DateTime(DateTime):
+    """HTML5 datetime field"""
+
+class HTML5Date(Date):
+    """HTML5 date field"""
+
+class HTML5Time(Time):
+    """HTML5 time field"""
+
 class List(TypeEngine):
     def get_dbapi_type(self):
         raise NotImplementedError()
