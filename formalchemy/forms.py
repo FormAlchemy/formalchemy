@@ -21,7 +21,7 @@ from sqlalchemy.orm.session import Session
 from sqlalchemy.orm.scoping import ScopedSession
 from sqlalchemy.orm.dynamic import DynamicAttributeImpl
 from sqlalchemy.util import OrderedDict
-from webob import multidict
+from formalchemy import multidict
 
 try:
     from sqlalchemy.orm.descriptor_props import CompositeProperty
@@ -115,6 +115,23 @@ class DefaultRenderers(object):
         'radio': fields.RadioSet,
         'password': fields.PasswordFieldRenderer,
         'textarea': fields.TextAreaFieldRenderer,
+        'email': fields.EmailFieldRenderer,
+        fatypes.HTML5Url: fields.UrlFieldRenderer,
+        'url': fields.UrlFieldRenderer,
+        fatypes.HTML5Number: fields.NumberFieldRenderer,
+        'number': fields.NumberFieldRenderer,
+        'range': fields.RangeFieldRenderer,
+        fatypes.HTML5Date: fields.HTML5DateFieldRenderer,
+        'date': fields.HTML5DateFieldRenderer,
+        fatypes.HTML5DateTime: fields.HTML5DateTimeFieldRenderer,
+        'datetime': fields.HTML5DateTimeFieldRenderer,
+        'datetime_local': fields.LocalDateTimeFieldRenderer,
+        'month': fields.MonthFieldRender,
+        'week': fields.WeekFieldRenderer,
+        fatypes.HTML5Time: fields.HTML5TimeFieldRenderer,
+        'time': fields.HTML5TimeFieldRenderer,
+        fatypes.HTML5Color: fields.ColorFieldRenderer,
+        'color': fields.ColorFieldRenderer,
     }
 
 
@@ -490,6 +507,8 @@ class FieldSet(DefaultRenderers):
             self.data = None
         elif isinstance(data, multidict.UnicodeMultiDict):
             self.data = data
+        elif isinstance(data, multidict.MultiDict):
+            self.data = multidict.UnicodeMultiDict(multi=data, encoding=config.encoding)
         elif hasattr(data, 'getall') and hasattr(data, 'getone'):
             self.data = data
         elif isinstance(data, (dict, list)):

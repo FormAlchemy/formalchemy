@@ -2,10 +2,12 @@
 import os
 import glob
 import logging
+import unittest
 logging.basicConfig()
 logging.getLogger().setLevel(logging.DEBUG)
 
 from BeautifulSoup import BeautifulSoup # required for html prettification
+from webob import Request, Response
 
 from sqlalchemy import *
 from sqlalchemy.orm import *
@@ -38,6 +40,35 @@ def session_mapper(scoped_session):
         cls.query = scoped_session.query_property()
         return sqla_mapper(cls, *arg, **kw)
     return mapper
+
+def application(model, fieldset=None):
+    def app(environ, start_response):
+        tmpl = '''<DOCTYPE !html>
+        <html><body><form method="POST" action="" enctype="multipart/form-data">
+        %s
+        <input type="submit" id="submit" name="submit" />
+        </form></body></html>'''
+        req = Request(environ)
+        resp = Response()
+        if fieldset is None:
+            fs = FieldSet(model)
+        else:
+            fs = fieldset.bind(model)
+        if req.method == 'POST':
+            if fieldset is None:
+                fs = fs.bind(request=req)
+            else:
+                fs = fs.bind(model=model, request=req)
+            if fs.validate():
+                fs.sync()
+                fs.readonly = True
+                resp.body = tmpl % ('<b>OK<b>' + fs.render(),)
+            else:
+                resp.body = tmpl % fs.render()
+        else:
+            resp.body = tmpl % fs.render()
+        return resp(environ, start_response)
+    return app
 
 
 engine = create_engine('sqlite://')

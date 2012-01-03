@@ -1,3 +1,14 @@
+1.4.2
+-----
+
+* WebOb1.2 compat
+
+* Add some HTML5 renderer
+
+* Improve fsblob deletion. issue 16
+
+* Add support for fanstatic in pytlons (thanks to Bruno Binet aka inneos)
+
 1.4.1
 -----
 

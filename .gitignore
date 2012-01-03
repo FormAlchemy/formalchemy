@@ -11,6 +11,7 @@ pyramidapp/*.db
 pylonsapp/data/
 pylonsapp/development.db
 pylonsapp/pylonsapp/public/*/*/*/*.txt
+pylonsapp/pylonsapp/public/*/*/*/*.*
 .installed.cfg
 .coverage
 *.pt.py
