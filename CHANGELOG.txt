@@ -1,7 +1,7 @@
 1.4.3dev
 --------
 
-* No changes yet.
+* Allow fields to set their `readonly` status to False as well as True.
 
 1.4.2
 -----
