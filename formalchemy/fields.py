@@ -1346,8 +1346,13 @@ class AbstractField(object):
         self.render_opts.update(kwargs)
         return self._modified(render_opts=self.render_opts)
     def readonly(self, value=True):
-        """Render the field readonly."""
-        return self._modified(_readonly=True)
+        """
+        Render the field readonly.
+
+        By default, this marks a field to be rendered as read-only.
+        Setting the `value` argument to `False` marks the field as editable.
+        """
+        return self._modified(_readonly=value)
     def hidden(self):
         """Render the field hidden.  (Value only, no label.)"""
         if isinstance(self.type, fatypes.Date):
