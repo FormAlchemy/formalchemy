@@ -3,7 +3,6 @@
 # This module is part of FormAlchemy and is released under
 # the MIT License: http://www.opensource.org/licenses/mit-license.php
 
-import os
 import cgi
 import logging
 logger = logging.getLogger('formalchemy.' + __name__)
@@ -14,12 +13,11 @@ import warnings
 
 from sqlalchemy.orm.interfaces import MANYTOMANY
 from sqlalchemy.orm.interfaces import ONETOMANY
-from sqlalchemy.orm.interfaces import MANYTOONE
 from sqlalchemy.orm import class_mapper, Query
-from sqlalchemy.orm.attributes import ScalarAttributeImpl, ScalarObjectAttributeImpl, CollectionAttributeImpl, InstrumentedAttribute
+from sqlalchemy.orm.attributes import ScalarAttributeImpl, ScalarObjectAttributeImpl, CollectionAttributeImpl
 from sqlalchemy.orm.properties import CompositeProperty, ColumnProperty
 from sqlalchemy import exceptions as sqlalchemy_exceptions
-from sqlalchemy.orm import compile_mappers, object_session, class_mapper
+from sqlalchemy.orm import object_session
 from formalchemy import helpers as h
 from formalchemy import fatypes, validators
 from formalchemy.exceptions import FieldNotFoundError
