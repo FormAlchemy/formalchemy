@@ -161,10 +161,23 @@ def select(name, selected, select_options, **attrs):
     """
     if 'options' in attrs:
         del attrs['options']
-    if select_options and isinstance(select_options[0], (list, tuple)):
-        select_options = [(v, k) for k, v in select_options]
+    select_options = _sanitize_select_options(select_options)
     _update_fa(attrs, name)
     return tags.select(name, selected, select_options, **attrs)
+
+def _sanitize_select_options(options):
+    if isinstance(options, (list, tuple)):
+        if _only_contains_leaves(options) and len(options) >= 2:
+            return (options[1], options[0])
+        else:
+            return [_sanitize_select_options(option) for option in options]
+    return options
+
+def _only_contains_leaves(option):
+    for sub_option in option:
+        if isinstance(sub_option, (list, tuple)):
+            return False
+    return True
 
 def _update_fa(attrs, name):
     if 'id' not in attrs:
