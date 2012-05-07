@@ -60,17 +60,20 @@ Usage
 from formalchemy.forms import FieldSet as BaseFieldSet
 from formalchemy.tables import Grid as BaseGrid
 from formalchemy.fields import Field as BaseField
+from formalchemy.fields import TextFieldRenderer, SelectFieldRenderer
 from formalchemy.forms import SimpleMultiDict
 from formalchemy import fields
 from formalchemy import validators
 from formalchemy import fatypes
 from sqlalchemy.util import OrderedDict
-from rdfalchemy import descriptors
+from rdfalchemy import descriptors, rdfSubject
+import rdflib
 
 from datetime import datetime
 
 
-__all__ = ['Field', 'FieldSet']
+__all__ = ['Field', 'FieldSet', 'RdfFieldRenderer']
+
 
 class Session(object):
     """A SA like Session to implement rdf"""
@@ -107,7 +110,15 @@ class Field(BaseField):
     def sync(self):
         """Set the attribute's value in `model` to the value given in `data`"""
         if not self.is_readonly():
-            setattr(self.model, self.name, self._deserialize())
+            deser = self._deserialize()
+            orig = getattr(self.model, self.name)
+            if (orig != deser):
+                if isinstance(orig, list):
+                    # first remove the original triples, instead of doing sophisticated
+                    # set manipulations
+                    setattr(self.model, self.name, [])
+                setattr(self.model, self.name, deser)
+
 
 class FieldSet(BaseFieldSet):
     __sa__ = False
@@ -187,6 +198,57 @@ class Grid(BaseGrid, FieldSet):
 
     def _set_active(self, instance, session=None):
         FieldSet.rebind(self, instance, session or self.session, self.data)
+
+
+class RdfFieldRenderer(TextFieldRenderer):
+    """render a rdf field  as a text field"""
+
+    def stringify_value(self, v):
+        return v.n3()
+
+    def _deserialize(self, data):
+        """ data has the pattern "<uri>" """
+        uri = data[1:-1]
+        # We have to retrieve the type to rebuild the object
+        attr = self.__dict__['field']
+        # Be careful when orig = None !!!!!
+        orig = getattr(attr.model, attr.name)
+        if None == orig:
+            return rdfSubject(rdflib.term.URIRef(uri))
+        elif isinstance(orig, list):
+            # rdfalchemy mapper gives me the solution
+            rt = attr.model.__class__.__dict__[attr.name].range_type
+            from rdfalchemy.orm import mapper
+            alch_map = mapper()
+            try:
+                cls = alch_map[str(rt)]
+                return cls(rdflib.term.URIRef(uri))
+            except:
+                rdfSubject(rdflib.term.URIRef(uri))
+        else:
+            return type(orig)(rdflib.term.URIRef(uri))
+
+
+class RdfSelectFieldRenderer(SelectFieldRenderer, RdfFieldRenderer):
+
+    def _serialized_value(self):
+        if self.name not in self.params:
+            if self.field.is_collection:
+                return []
+            return None
+        return RdfFieldRenderer._serialized_value(self)
+
+    def render_readonly(self, options=None, **kwargs):
+        """render a string representation of the field value.
+                Try to retrieve a value from `options`
+        """
+        if not options or self.field.is_scalar_relation:
+            return RdfFieldRenderer.render_readonly(self)
+        super(RdfSelectFieldRenderer, self).render_readonly(options, **kwargs)
+
+
+
+
 
 def test_sync():
     from rdfalchemy.samples.company import Company
