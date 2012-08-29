@@ -64,7 +64,7 @@ msgstr "Juillet"
 
 #: formalchemy/i18n.py:95
 msgid "month_08"
-msgstr "Aoüt"
+msgstr "Août"
 
 #: formalchemy/i18n.py:96
 msgid "month_09"
