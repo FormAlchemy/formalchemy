@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: FormAlchemy 0.5.1\n"
 "Report-Msgid-Bugs-To: formalchemy@googlegroups.com\n"
-"POT-Creation-Date: 2008-08-27 12:33+0200\n"
+"POT-Creation-Date: 2011-06-21 16:13+0200\n"
 "PO-Revision-Date: 2011-06-21 16:13+0200\n"
 "Last-Translator: gael@gawel.org\n"
 "Language-Team: fr <formalchemy@googlegroups.com>\n"
@@ -16,7 +16,7 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Generated-By: Babel 0.9.5\n"
+"Generated-By: Babel 0.9.6\n"
 
 #: formalchemy/fields.py:474
 msgid "Remove"
@@ -64,7 +64,7 @@ msgstr "Juillet"
 
 #: formalchemy/i18n.py:95
 msgid "month_08"
-msgstr "Aoüt"
+msgstr "Août"
 
 #: formalchemy/i18n.py:96
 msgid "month_09"

@@ -94,8 +94,7 @@ msgstr "Por favor digite um valor"
 msgid "Value is not an integer"
 msgstr "Valor não é um inteiro"
 
-#: formalchemy/validators.py:60
-#: formalchemy/validators.py:72
+#: formalchemy/validators.py:60 formalchemy/validators.py:72
 msgid "Value is not a number"
 msgstr "Valor não é um número"
 
@@ -199,8 +198,7 @@ msgstr "Cancelar"
 msgid "Models"
 msgstr "Modelos"
 
-#: formalchemy/ext/pylons/admin.py:32
-#: formalchemy/ext/pylons/admin.py:35
+#: formalchemy/ext/pylons/admin.py:32 formalchemy/ext/pylons/admin.py:35
 msgid "Existing objects"
 msgstr "Objetos existentes"
 
