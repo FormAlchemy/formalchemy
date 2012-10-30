@@ -145,9 +145,9 @@ def length(min=0, max=None):
     max_ = max
     def f(value, field=None):
         if len(value) < min_:
-            raise ValidationError(_('Value must be at least %(min) characters long') % {'min': min_})
+            raise ValidationError(_('Value must be at least %(min)d characters long') % {'min': min_})
         if max_ is not None and len(value) > max_:
-            raise ValidationError(_('Value must be no more than %(max) characters long') % {'min': max_})
+            raise ValidationError(_('Value must be no more than %(max)d characters long') % {'max': max_})
     return f
 
 def maxlength(max):
