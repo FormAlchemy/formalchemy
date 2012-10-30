@@ -50,8 +50,6 @@ def _stringify(k, null_value=u''):
         return unicode(k)
     elif isinstance(k, datetime.timedelta):
         return '%s.%s' % (k.days, k.seconds)
-    elif hasattr(k, '__repr__'):
-        return k.__repr__()
     else:
         return unicode(str(k), config.encoding)
 
