@@ -16,7 +16,10 @@ from sqlalchemy.orm.interfaces import ONETOMANY
 from sqlalchemy.orm import class_mapper, Query
 from sqlalchemy.orm.attributes import ScalarAttributeImpl, ScalarObjectAttributeImpl, CollectionAttributeImpl
 from sqlalchemy.orm.properties import CompositeProperty, ColumnProperty
-from sqlalchemy import exceptions as sqlalchemy_exceptions
+try:
+    from sqlalchemy import exc as sqlalchemy_exceptions
+except ImportError:
+    from sqlalchemy import exceptions as sqlalchemy_exceptions
 from sqlalchemy.orm import object_session
 from formalchemy import helpers as h
 from formalchemy import fatypes, validators
