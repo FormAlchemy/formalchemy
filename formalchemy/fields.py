@@ -27,6 +27,7 @@ from formalchemy.exceptions import FieldNotFoundError
 from formalchemy import config
 from formalchemy.i18n import get_translator
 from formalchemy.i18n import _
+from formalchemy.helpers import html_escape
 
 __all__ = ['Field', 'FieldRenderer',
            'TextFieldRenderer', 'TextAreaFieldRenderer',
@@ -63,7 +64,7 @@ def _htmlify(k, null_value=u''):
         except TypeError:
             # not callable. skipping
             pass
-    return _stringify(k, null_value)
+    return html_escape(_stringify(k, null_value))
 
 class _NoDefault(object):
     def __repr__(self):
