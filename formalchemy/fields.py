@@ -10,6 +10,7 @@ logger = logging.getLogger('formalchemy.' + __name__)
 from copy import copy, deepcopy
 import datetime
 import warnings
+from werkzeug import escape
 
 from sqlalchemy.orm.interfaces import MANYTOMANY
 from sqlalchemy.orm.interfaces import ONETOMANY
@@ -63,7 +64,7 @@ def _htmlify(k, null_value=u''):
         except TypeError:
             # not callable. skipping
             pass
-    return _stringify(k, null_value)
+    return escape(_stringify(k, null_value))
 
 class _NoDefault(object):
     def __repr__(self):
