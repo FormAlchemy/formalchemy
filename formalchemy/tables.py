@@ -140,6 +140,12 @@ class Grid(FieldSet):
     def _set_active(self, instance, session=None):
         FieldSet.rebind(self, instance, session or self.session, self.data)
 
+    def __iter__(self):
+        """Iterates over the rows, also binds to the specific instance"""
+        for row in self.rows:
+            self._set_active(row)
+            yield row
+
     def get_errors(self, row):
         if self._errors:
             return self._errors.get(row, {})
@@ -157,8 +163,7 @@ class Grid(FieldSet):
             raise Exception('Cannot validate a read-only Grid')
         self._errors.clear()
         success = True
-        for row in self.rows:
-            self._set_active(row)
+        for row in self:
             row_errors = {}
             for field in self.render_fields.itervalues():
                 success = field._validate() and success
