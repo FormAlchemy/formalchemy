@@ -56,7 +56,7 @@ Customizing Grid
 Overriding `Grid` rendering is similar to :class:`~formalchemy.forms.FieldSet`.  The differences are:
 
   * The default templates take a `collection` parameter instead of `fieldset`, which is the instance of `Grid` to render
-  * The instances given to the collection are available in `collection.rows`; to access the fields of each single row, call `_set_active(row)`, then access `render_fields`.
+  * The instances given to the collection are available by iterating the collection (`for row in collection`). Alternately, you can call `_set_active(row)`.
 
 The default templates are `formalchemy.tables.template_grid_readonly` and `formalchemy.tables.template_grid`.
 

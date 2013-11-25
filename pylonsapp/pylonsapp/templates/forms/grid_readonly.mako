@@ -8,8 +8,7 @@
 </thead>
 
 <tbody>
-%for i, row in enumerate(collection.rows):
-  <% collection._set_active(row) %>
+%for i, row in enumerate(collection):
   <tr class="${i % 2 and 'odd' or 'even'}">
   %for field in collection.render_fields.itervalues():
     <td>${field.render_readonly()|n}</td>
