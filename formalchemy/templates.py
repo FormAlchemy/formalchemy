@@ -40,7 +40,7 @@ class TemplateEngine(object):
             self.templates[name] = self.get_template(name, **kw)
 
     def get_template(self, name, **kw):
-        """return the template object for `name`. Must be override by engines"""
+        """return the template object for `name`. Likely to be overridden by engines"""
         return None
 
     def get_filename(self, name):
@@ -51,8 +51,8 @@ class TemplateEngine(object):
                 return filename
 
     def render(self, template_name, **kwargs):
-        """render the template. Must be override by engines"""
-        return ''
+        """render the template. Must be overridden by engines"""
+        raise NotImplementedError("You need to implement %s.render." % self.__class__.__name__)
 
     def _update_args(cls, kw):
         kw['F_'] = get_translator(lang=kw.get('lang', None),
