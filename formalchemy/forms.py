@@ -184,7 +184,7 @@ class FieldSet(DefaultRenderers):
 
         - `request=None`:
               WebOb-like object that can be taken in place of `data`.
-              FormAlchemy will make sure it's a POST, and use it's 'POST'
+              FormAlchemy will make sure it's a POST, and use its 'POST'
               attribute as the data.  Also, the request object will be
               available to renderers as the `.request` attribute.
 

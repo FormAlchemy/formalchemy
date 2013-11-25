@@ -121,7 +121,7 @@ RESTful controller
 
 This module provide a RESTful controller for formalchemy's FieldSets.
 
-You can use your fieldset as a REST resource. And yes, it's also work with JSON.
+You can use your fieldset as a REST resource. And yes, it also works with JSON.
 
 Usage
 ------
