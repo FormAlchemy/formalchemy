@@ -595,7 +595,8 @@ class FieldSet(DefaultRenderers):
         if self.data is None:
             raise Exception("No data bound; cannot sync")
         for field in self.render_fields.itervalues():
-            field.sync(force=force)
+            if not field.is_readonly():
+                field.sync(force=force)
         if self.session:
             self.session.add(self.model)
 
