@@ -1028,7 +1028,7 @@ True
 >>> fs_bad.configure(include=[Field('invalid')])
 Traceback (most recent call last):
 ...
-ValueError: Unrecognized Field `AttributeField(invalid)` in `include` -- did you mean to call append() first?
+ValueError: Unrecognized Field `Field(invalid)` in `include` -- did you mean to call append() first?
 
 >>> fs_s = FieldSet(Synonym)
 >>> fs_s._fields

@@ -1195,11 +1195,11 @@ class AbstractField(object):
             >>> field.set(label='My field', renderer=SelectFieldRenderer,
             ...           options=[('Value', 1)],
             ...           validators=[lambda x: x, lambda y: y])
-            AttributeField(myfield)
+            Field(myfield)
             >>> field.label_text
             'My field'
             >>> field.renderer
-            <SelectFieldRenderer for AttributeField(myfield)>
+            <SelectFieldRenderer for Field(myfield)>
 
         """
         attrs = kwattrs.keys()
@@ -1638,6 +1638,10 @@ class AbstractField(object):
     def _deserialize(self):
         return self.renderer.deserialize()
 
+    def __repr__(self):
+        return '%s(%s)' % (self.__class__.__name__,self.name)
+
+
 class Field(AbstractField):
     """
     A manually-added form field
@@ -1707,9 +1711,6 @@ class Field(AbstractField):
         """Set the attribute's value in `model` to the value given in `data`"""
         if not self.is_readonly():
             self._value = self._deserialize()
-
-    def __repr__(self):
-        return 'AttributeField(%s)' % self.name
 
     def __unicode__(self):
         return self.render_readonly()
@@ -1922,8 +1923,8 @@ class AttributeField(AbstractField):
         return hash(self._impl)
 
     def __repr__(self):
-        return 'AttributeField(%s)' % self.key
-
+        return '%s(%s)' % (self.__class__.__name__,self.key)
+ 
     def render(self):
         if self.is_readonly():
             return self.render_readonly()

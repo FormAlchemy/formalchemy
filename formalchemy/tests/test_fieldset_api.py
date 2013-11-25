@@ -38,7 +38,7 @@ def extend():
     >>> fs._render_fields.keys()
     []
     >>> fs.added
-    AttributeField(added)
+    Field(added)
 
     >>> fs = FieldSet(User)
     >>> fs.configure()
@@ -48,7 +48,7 @@ def extend():
     >>> fs._render_fields.keys()
     ['email', 'password', 'name', 'orders', 'added']
     >>> fs.added
-    AttributeField(added)
+    Field(added)
     """
 
 def insert():
@@ -60,7 +60,7 @@ def insert():
     >>> fs._render_fields.keys()
     []
     >>> fs.login
-    AttributeField(login)
+    Field(login)
 
     >>> fs = FieldSet(User)
     >>> fs.configure()
@@ -70,7 +70,7 @@ def insert():
     >>> fs._render_fields.keys()
     ['email', 'login', 'password', 'name', 'orders']
     >>> fs.login
-    AttributeField(login)
+    Field(login)
     """
 
 def test_insert_after_relation():
@@ -102,7 +102,7 @@ def insert_after():
     >>> fs._render_fields.keys()
     []
     >>> fs.login
-    AttributeField(login)
+    Field(login)
 
     >>> fs = FieldSet(User)
     >>> fs.configure()
@@ -112,7 +112,7 @@ def insert_after():
     >>> fs._render_fields.keys()
     ['email', 'password', 'login', 'name', 'orders']
     >>> fs.login
-    AttributeField(login)
+    Field(login)
 
     >>> fs.insert_after('somethingbad', Field('login'))  #doctest: +ELLIPSIS
     Traceback (most recent call last):
@@ -174,41 +174,41 @@ def field_set():
 
     >>> field = Field('password', value='passwd', renderer=PasswordFieldRenderer)
     >>> field.renderer
-    <PasswordFieldRenderer for AttributeField(password)>
+    <PasswordFieldRenderer for Field(password)>
     >>> field.raw_value
     'passwd'
 
     >>> field.set(value='new_passwd')
-    AttributeField(password)
+    Field(password)
     >>> field.raw_value
     'new_passwd'
 
     >>> field.set(required=True)
-    AttributeField(password)
+    Field(password)
     >>> field.validators  #doctest: +ELLIPSIS
     [<function required at ...>]
     >>> field.set(required=False)
-    AttributeField(password)
+    Field(password)
     >>> field.validators
     []
 
     >>> field.set(html={'this': 'that'})
-    AttributeField(password)
+    Field(password)
     >>> field.html_options
     {'this': 'that'}
     >>> field.set(html={'some': 'thing'})
-    AttributeField(password)
+    Field(password)
     >>> field.html_options
     {'this': 'that', 'some': 'thing'}
 
     >>> bob = lambda x: x
     >>> field.set(validators=[bob])
-    AttributeField(password)
+    Field(password)
     >>> field.validators  #doctest: +ELLIPSIS
     [<function <lambda> at ...>]
 
     >>> field.set(validators=[bob])
-    AttributeField(password)
+    Field(password)
     >>> field.validators  #doctest: +ELLIPSIS
     [<function <lambda> at ...>, <function <lambda> at ...>]
 
