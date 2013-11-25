@@ -1917,10 +1917,10 @@ class AttributeField(AbstractField):
 
         * if `force` is True then the KeyError will be skipped.
         """
-            try:
-                setattr(self.model, self.name, self._deserialize())
-            except KeyError:
-                if not force: raise
+        try:
+            setattr(self.model, self.name, self._deserialize())
+        except KeyError:
+            if not force: raise
 
     def __eq__(self, other):
         # we override eq so that when we configure with options=[...], we can match the renders in options
