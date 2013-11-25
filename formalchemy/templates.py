@@ -4,6 +4,7 @@ import sys
 
 from formalchemy.i18n import get_translator
 from formalchemy import helpers
+from markupsafe import Markup
 
 from tempita import Template as TempitaTemplate
 try:
@@ -40,7 +41,7 @@ class TemplateEngine(object):
             self.templates[name] = self.get_template(name, **kw)
 
     def get_template(self, name, **kw):
-        """return the template object for `name`. Must be override by engines"""
+        """return the template object for `name`. Likely to be overridden by engines"""
         return None
 
     def get_filename(self, name):
@@ -51,8 +52,8 @@ class TemplateEngine(object):
                 return filename
 
     def render(self, template_name, **kwargs):
-        """render the template. Must be override by engines"""
-        return ''
+        """render the template. Must be overridden by engines"""
+        raise NotImplementedError("You need to implement %s.render." % self.__class__.__name__)
 
     def _update_args(cls, kw):
         kw['F_'] = get_translator(lang=kw.get('lang', None),
@@ -77,7 +78,7 @@ class TempitaEngine(TemplateEngine):
 
     def render(self, template_name, **kwargs):
         template = self.templates.get(template_name, None)
-        return template.substitute(**kwargs)
+        return Markup(template.substitute(**kwargs))
 
 class MakoEngine(TemplateEngine):
     """Template engine for mako. File extension is `.mako`.
@@ -97,7 +98,7 @@ class MakoEngine(TemplateEngine):
 
     def render(self, template_name, **kwargs):
         template = self.templates.get(template_name, None)
-        return template.render_unicode(**kwargs)
+        return Markup(template.render_unicode(**kwargs))
 
 class GenshiEngine(TemplateEngine):
     """Template engine for genshi. File extension is `.html`.
@@ -111,7 +112,7 @@ class GenshiEngine(TemplateEngine):
 
     def render(self, template_name, **kwargs):
         template = self.templates.get(template_name, None)
-        return template.generate(**kwargs).render('html', doctype=None)
+        return Markup(template.generate(**kwargs).render('html', doctype=None))
 
 
 if HAS_MAKO:
