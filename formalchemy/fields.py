@@ -1706,7 +1706,7 @@ class Field(AbstractField):
             self._value = self._deserialize()
 
     def __repr__(self):
-        return 'AttributeField(%s)' % self.name
+        return '%s(%s)' % (self.__class__.__name__,self.name)
 
     def __unicode__(self):
         return self.render_readonly()
@@ -1917,9 +1917,6 @@ class AttributeField(AbstractField):
             return False
     def __hash__(self):
         return hash(self._impl)
-
-    def __repr__(self):
-        return 'AttributeField(%s)' % self.key
 
     def render(self):
         if self.is_readonly():
