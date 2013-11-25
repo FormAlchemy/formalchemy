@@ -22,6 +22,11 @@ from sqlalchemy.orm.scoping import ScopedSession
 from sqlalchemy.orm.dynamic import DynamicAttributeImpl
 from sqlalchemy.util import OrderedDict
 from formalchemy import multidict
+try:
+    from werkzeug.datastructures import MultiDict as WerkzeugMD
+except ImportError:
+    class WerkzeugMD:
+        pass
 
 try:
     from sqlalchemy.orm.descriptor_props import CompositeProperty
@@ -81,6 +86,8 @@ class SimpleMultiDict(multidict.UnicodeMultiDict):
         for value in args:
             if isinstance(value, (list, tuple)):
                 items = value
+            elif isinstance(value,WerkzeugMD):
+                items = value.items(True)
             else:
                 items = value.items()
             for k, v in items:
