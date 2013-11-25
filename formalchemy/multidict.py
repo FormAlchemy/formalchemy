@@ -97,6 +97,17 @@ class UnicodeMultiDict(DictMixin):
         """
         return self._decode_value(self.multi.getone(self._encode_key(key)))
 
+    def update(self, other):
+        """"
+        Override all values in `self` whose keys are present in `other`.
+        """
+        seen = set()
+        for k, v in other.iteritems():
+            if k not in seen:
+                seen.add(k)
+                del self[k]
+            self.add(k, v)
+
     def mixed(self):
         """
         Returns a dictionary where the values are either single
