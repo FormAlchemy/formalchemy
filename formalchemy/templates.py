@@ -4,6 +4,7 @@ import sys
 
 from formalchemy.i18n import get_translator
 from formalchemy import helpers
+from markupsafe import Markup
 
 from tempita import Template as TempitaTemplate
 try:
@@ -77,7 +78,7 @@ class TempitaEngine(TemplateEngine):
 
     def render(self, template_name, **kwargs):
         template = self.templates.get(template_name, None)
-        return template.substitute(**kwargs)
+        return Markup(template.substitute(**kwargs))
 
 class MakoEngine(TemplateEngine):
     """Template engine for mako. File extension is `.mako`.
@@ -97,7 +98,7 @@ class MakoEngine(TemplateEngine):
 
     def render(self, template_name, **kwargs):
         template = self.templates.get(template_name, None)
-        return template.render_unicode(**kwargs)
+        return Markup(template.render_unicode(**kwargs))
 
 class GenshiEngine(TemplateEngine):
     """Template engine for genshi. File extension is `.html`.
@@ -111,7 +112,7 @@ class GenshiEngine(TemplateEngine):
 
     def render(self, template_name, **kwargs):
         template = self.templates.get(template_name, None)
-        return template.generate(**kwargs).render('html', doctype=None)
+        return Markup(template.generate(**kwargs).render('html', doctype=None))
 
 
 if HAS_MAKO:
