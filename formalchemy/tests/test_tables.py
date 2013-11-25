@@ -118,7 +118,7 @@ def test_extra_field():
     ...
     Exception: instances must be an iterable, not <class 'formalchemy.tests.User'>
 
-    Simulate creating a grid in a different thread than it's used in:
+    Simulate creating a grid in a different thread than the one it's used in:
     >>> _Session = sessionmaker(bind=engine)
     >>> _old_session = _Session()
     >>> assert _old_session != object_session(john)

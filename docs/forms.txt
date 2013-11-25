@@ -28,8 +28,8 @@ Binding
 
 Binding occurs at first on :class:`FieldSet` object creation.
 
-The :class:`~formalchemy.forms.FieldSet` object constructor takes it's
-parameters and calls it's base class's constructor.
+The :class:`~formalchemy.forms.FieldSet` object constructor takes i's
+parameters and calls its base class's constructor.
 
 
 Fields

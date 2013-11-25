@@ -74,7 +74,7 @@ del _NoDefault
 def deserialize_once(func):
     """Simple deserialization caching decorator.
 
-    To be used on a Renderer object's `deserialize` function, to cache it's
+    To be used on a Renderer object's `deserialize` function, to cache its
     result while it's being called once for ``validate()`` and another time
     when doing ``sync()``.
     """
@@ -312,11 +312,11 @@ class FieldRenderer(object):
 
         .. note::
          Note that this function will be called *twice*, once when
-         the fieldset is `.validate()`'d -- with it's value only tested,
-         and a second time when the fieldset is `.sync()`'d -- and it's
+         the fieldset is `.validate()`'d -- with its value only tested,
+         and a second time when the fieldset is `.sync()`'d -- and its
          value assigned to the model. Also note that deserialize() can
          also raise a ValidationError() exception if it finds some
-         errors converting it's values.
+         errors converting its values.
 
         If calling this function twice poses a problem to your logic, for
         example, if you have heavy database queries, or temporary objects
