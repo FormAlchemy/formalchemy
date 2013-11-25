@@ -504,7 +504,7 @@ class FieldSet(DefaultRenderers):
             data = SimpleMultiDict([('%s-%s' % (prefix, k), v) for k, v in data.items()], encoding=encoding)
 
         if data is None:
-            data = None
+            pass
         elif isinstance(data, multidict.UnicodeMultiDict):
             data = data
         elif isinstance(data, multidict.MultiDict):
@@ -514,12 +514,12 @@ class FieldSet(DefaultRenderers):
         elif isinstance(data, (dict, list)):
             data = SimpleMultiDict(data, encoding=config.encoding)
         else:
-            raise Exception('unsupported data object %s.  currently only dicts and Paste multidicts are supported' % self.data)
+            raise Exception('unsupported data object %s.  currently only dicts and Paste multidicts are supported' % data)
 
         ## Do not erase existing values.
-        if not data:
+        if not data and hasattr(self,'data'):
             pass
-        elif self.data:
+        elif getattr(self, 'data', None):
             self.data = self.data.copy().update(data)
         else:
             self.data = data
