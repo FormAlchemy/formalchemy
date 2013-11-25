@@ -749,11 +749,10 @@ class FieldSet(DefaultRenderers):
             raise ValueError('pk option must be True or False, not %s' % pk)
 
         # verify that options that should be lists of Fields, are
-        for iterable in ['include', 'exclude', 'options']:
-            try:
-                L = list(eval(iterable))
-            except:
-                raise ValueError('`%s` parameter should be an iterable' % iterable)
+        include = list(include)
+        exclude = list(exclude)
+        options = list(options)
+        for L in (include, exclude, options):
             for field in L:
                 if not isinstance(field, fields.AbstractField):
                     raise TypeError('non-AbstractField object `%s` found in `%s`' % (field, iterable))
@@ -762,11 +761,10 @@ class FieldSet(DefaultRenderers):
 
         # if include is given, those are the fields used.  otherwise, include those not explicitly (or implicitly) excluded.
         if not include:
-            ignore = list(exclude) # don't modify `exclude` directly to avoid surprising caller
             if not pk:
-                ignore.extend([wrapper for wrapper in self._raw_fields() if wrapper.is_pk and not wrapper.is_collection])
-            ignore.extend([wrapper for wrapper in self._raw_fields() if wrapper.is_raw_foreign_key])
-            include = [field for field in self._raw_fields() if field not in ignore]
+                exclude.extend([wrapper for wrapper in self._raw_fields() if wrapper.is_pk and not wrapper.is_collection])
+            exclude.extend([wrapper for wrapper in self._raw_fields() if wrapper.is_raw_foreign_key])
+            include = [field for field in self._raw_fields() if field not in exclude]
 
         # in the returned list, replace any fields in `include` w/ the corresponding one in `options`, if present.
         # this is a bit clunky because we want to
