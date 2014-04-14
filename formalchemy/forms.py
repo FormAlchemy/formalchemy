@@ -752,7 +752,8 @@ class FieldSet(DefaultRenderers):
         include = list(include)
         exclude = list(exclude)
         options = list(options)
-        for L in (include, exclude, options):
+        for iterable in ('include', 'exclude', 'options'):
+            L = locals()[iterable]
             for field in L:
                 if not isinstance(field, fields.AbstractField):
                     raise TypeError('non-AbstractField object `%s` found in `%s`' % (field, iterable))
