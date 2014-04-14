@@ -1,0 +1,8 @@
+Document: formalchemy
+Title: FormAlchemy reference documentation
+Author: Alexandre Conrad, Jonathan Ellis, Gaël Pasgrimaud
+Abstract: This documentation describes FormAlchemy usage and API
+Section: Programming/Python
+
+Format: Text
+Files: /usr/share/doc/python-formalchemy/txt/*

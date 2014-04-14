@@ -1,0 +1,25 @@
+Source: python-formalchemy
+Section: python
+Priority: optional
+Maintainer: Shell Xu <shell909090@gmail.com>
+Build-Depends: debhelper (>= 8), python-setuptools (>= 0.6), python-all-dev
+X-Python-Version: >= 2.5
+Standards-Version: 3.9.3
+Homepage: http://docs.formalchemy.org/
+
+Package: python-formalchemy
+Architecture: any
+Depends: ${misc:Depends}, ${python:Depends}, python-pylons
+Suggests: python-beautifulsoup 
+Description: HTML input form fields from your SQLAlchemy mapped classes
+ FormAlchemy greatly speeds development with SQLAlchemy mapped classes (models)
+ in a HTML forms environment.
+ .
+ FormAlchemy eliminates boilerplate by autogenerating HTML input fields from a
+ given model. FormAlchemy will try to figure out what kind of HTML code should
+ be returned by introspecting the model's properties and generate ready-to-use
+ HTML code that will fit the developer's application.
+ .
+ Of course, FormAlchemy can't figure out everything, i.e, the developer might
+ want to display only a few columns from the given model. Thus, FormAlchemy is
+ also highly customizable.
