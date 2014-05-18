@@ -1852,7 +1852,11 @@ class AttributeField(AbstractField):
             prop = getattr(self._property, '_proxied_property', None)
             if prop is None:
                 prop = self._property
-            return prop.columns
+            try:
+                return tuple(prop.local_columns)
+                # it's a set, we want something indexable
+            except AttributeError: # compatibility for SQLAlchemy < 0.9
+                return prop.columns
         else:
             # collection -- use the mapped class's PK
             assert self.is_collection, self._impl.__class__
