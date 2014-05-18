@@ -313,8 +313,8 @@ class FieldRenderer(object):
 
         .. note::
          Note that this function will be called *twice*, once when
-         the fieldset is `.validate()`'d -- with its value only tested,
-         and a second time when the fieldset is `.sync()`'d -- and its
+         the fieldset is `.validate()`d -- with its value only tested,
+         and a second time when the fieldset is `.sync()`d -- and its
          value assigned to the model. Also note that deserialize() can
          also raise a ValidationError() exception if it finds some
          errors converting its values.
@@ -1079,7 +1079,7 @@ class AbstractField(object):
         try:
             wrapper._renderer = copy(self._renderer)
         except TypeError: # 2.4 support
-            # it's a lambda, safe to just use same referende
+            # it's a lambda, safe to just use same reference
             pass
         if hasattr(wrapper._renderer, 'field'):
             wrapper._renderer.field = wrapper
