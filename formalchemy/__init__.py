@@ -6,9 +6,9 @@
 from sqlalchemy import Column as SAColumn
 from formalchemy import templates
 from formalchemy import config
-from formalchemy.tables import *
-from formalchemy.forms import *
-from formalchemy.fields import *
+from formalchemy.tables import Grid
+from formalchemy.forms import FieldSet, SimpleMultiDict
+from formalchemy.fields import Field, FieldRenderer
 from formalchemy.validators import ValidationError
 import formalchemy.validators as validators
 import formalchemy.fatypes as types
