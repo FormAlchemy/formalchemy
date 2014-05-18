@@ -1774,10 +1774,23 @@ class AttributeField(AbstractField):
             # itself. SA should probably have called .type something
             # different, or just not instantiated them...
             self.type = self._property.composite_class.__new__(self._property.composite_class)
-        elif len(_columns) > 1:
-            self.type = None # may have to be more accurate here
         else:
-            self.type = _columns[0].type
+            # Test whether this is a multi-column foreign key, or a
+            # joined-inheritance table. In the latter case it doesn't
+            # matter which key we pick, as they're natural-joined anyway.
+            #
+            # Using names here is a hack.
+            # Also, joined inheritance needs test cases.
+            if len(_columns) > 1:
+                names = set()
+                for c in _columns:
+                    names.add(c.key)
+            else:
+                names = (1,)
+            if len(names) > 1:
+                self.type = None
+            else:
+                self.type = _columns[0].type
 
         self.key = self._impl.key
         self._column_name = '_'.join([c.name for c in _columns])
