@@ -6,7 +6,18 @@ import unittest
 logging.basicConfig()
 logging.getLogger().setLevel(logging.DEBUG)
 
-from BeautifulSoup import BeautifulSoup # required for html prettification
+try:
+    from bs4 import BeautifulSoup as _BeautifulSoup
+    class BeautifulSoup(_BeautifulSoup):
+        def prettify(self):
+            if self.html: self.html.unwrap()
+            if self.body: self.body.unwrap()
+            res = super(BeautifulSoup,self).prettify()
+            res = res.replace("/>"," />")
+            res = res.replace("  />"," />")
+            return str(res)
+except ImportError:
+    from BeautifulSoup import BeautifulSoup # required for html prettification
 from webob import Request, Response
 
 from sqlalchemy import *
@@ -62,11 +73,11 @@ def application(model, fieldset=None):
             if fs.validate():
                 fs.sync()
                 fs.readonly = True
-                resp.body = tmpl % ('<b>OK<b>' + fs.render(),)
+                resp.body = tmpl % ('<b>OK<b>' + fs.render().encode("utf-8"),)
             else:
                 resp.body = tmpl % fs.render()
         else:
-            resp.body = tmpl % fs.render()
+            resp.body = tmpl % fs.render().encode("utf-8")
         return resp(environ, start_response)
     return app
 
@@ -387,9 +398,7 @@ else:
     raise ImportError('mako is required for testing')
 
 def pretty_html(html):
-    if isinstance(html, unicode):
-        html = html.encode('utf-8')
-    soup = BeautifulSoup(str(html))
+    soup = BeautifulSoup(html)
     return soup.prettify().strip()
 
 class FieldSet(DefaultFieldSet):
