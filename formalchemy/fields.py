@@ -611,15 +611,18 @@ class TimeFieldRenderer(FieldRenderer):
     def _render(self, **kwargs):
         data = self.params
         value = self.field.model_value
-        hour_options = ['HH'] + [str(i) for i in xrange(24)]
-        minute_options = ['MM' ] + [str(i) for i in xrange(60)]
-        second_options = ['SS'] + [str(i) for i in xrange(60)]
+        F_ = self.get_translator(**kwargs)
+        opts = {}
+        opts['hour'] = [(str(i),str(i)) for i in xrange(24)]
+        opts['minute'] = [(str(i),str(i)) for i in xrange(60)]
+        opts['second'] = [(str(i),str(i)) for i in xrange(60)]
         hh_name = self.name + '__hour'
         mm_name = self.name + '__minute'
         ss_name = self.name + '__second'
         is_time_type = isinstance(value, (datetime.datetime, datetime.date, datetime.time))
         values = []
-        for key, default in (('hour', 'HH'), ('minute', 'MM'), ('second', 'SS')):
+        for key, text, default in (('hour', F_('HH'), 'HH'), ('minute', F_('MM'), 'MM'), ('second', F_('SS'), 'SS')):
+            opts[key] = [(text,default)] + opts[key]
             name = self.name + '__' + key
             v = default
             if data is not None and name in data:
@@ -631,9 +634,9 @@ class TimeFieldRenderer(FieldRenderer):
             values.append(v)
         hh, mm, ss = values
         return h.literal(':').join([
-                    h.select(hh_name, [hh], hour_options, **kwargs),
-                    h.select(mm_name, [mm], minute_options, **kwargs),
-                    h.select(ss_name, [ss], second_options, **kwargs)])
+                    h.select(hh_name, [hh], opts['hour'], **kwargs),
+                    h.select(mm_name, [mm], opts['minute'], **kwargs),
+                    h.select(ss_name, [ss], opts['second'], **kwargs)])
     def render(self, **kwargs):
         return h.content_tag('span', self._render(**kwargs), id=self.name)
 

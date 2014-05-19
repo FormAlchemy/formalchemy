@@ -296,14 +296,14 @@ False
 </label>
 
 >>> assert fs.foo.radio(options=['one', 'two']).render() == fs.foo.dropdown(options=['one', 'two']).radio().render()
->>> print fs.foo.radio(options=['one', 'two']).dropdown().render()
+>>> print fs.foo.radio(options=[('one','one'), ('two','two')]).dropdown().render()
 <select id="Two--foo" name="Two--foo">
 <option value="one">one</option>
 <option value="two">two</option>
 </select>
 
->>> assert fs.foo.dropdown(options=['one', 'two']).render() == fs.foo.radio(options=['one', 'two']).dropdown().render()
->>> print pretty_html(fs.foo.dropdown(options=['one', 'two'], multiple=True).checkbox().render())
+>>> assert fs.foo.dropdown(options=[('one','one'), ('two','two')]).render() == fs.foo.radio(options=[('one','one'), ('two','two')]).dropdown().render()
+>>> print pretty_html(fs.foo.dropdown(options=[('one','one'), ('two','two')], multiple=True).checkbox().render())
 <input id="Two--foo_0" name="Two--foo" type="checkbox" value="one" />
 <label for="Two--foo_0">
  one
@@ -962,7 +962,7 @@ True
 <a href="mailto:bill@example.com">Bill</a>
 
 >>> out = FieldSet(OrderUserTag, session=session)
->>> list(sorted(out._fields))
+>>> list(str(x) for x in sorted(out._fields))
 ['id', 'order_id', 'order_user', 'tag', 'user_id']
 >>> print out.order_user.name
 order_user
@@ -970,7 +970,7 @@ order_user
 False
 >>> out.order_user.is_composite_foreign_key
 True
->>> list(sorted(out.render_fields))
+>>> list(str(x) for x in sorted(out.render_fields))
 ['order_user', 'tag']
 >>> print pretty_html(out.order_user.render())
 <select id="OrderUserTag--order_user" name="OrderUserTag--order_user">
