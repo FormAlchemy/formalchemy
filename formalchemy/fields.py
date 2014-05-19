@@ -10,9 +10,11 @@ logger = logging.getLogger('formalchemy.' + __name__)
 from copy import copy, deepcopy
 import datetime
 import warnings
+from werkzeug import escape
 
 from sqlalchemy.orm.interfaces import MANYTOMANY
 from sqlalchemy.orm.interfaces import ONETOMANY
+from sqlalchemy.orm.interfaces import MANYTOONE
 from sqlalchemy.orm import class_mapper, Query
 from sqlalchemy.orm.attributes import ScalarAttributeImpl, ScalarObjectAttributeImpl, CollectionAttributeImpl
 from sqlalchemy.orm.properties import CompositeProperty, ColumnProperty
@@ -20,7 +22,7 @@ try:
     from sqlalchemy import exc as sqlalchemy_exceptions
 except ImportError:
     from sqlalchemy import exceptions as sqlalchemy_exceptions
-from sqlalchemy.orm import object_session
+from sqlalchemy.orm import compile_mappers, object_session, class_mapper
 from formalchemy import helpers as h
 from formalchemy import fatypes, validators
 from formalchemy.exceptions import FieldNotFoundError
@@ -1041,7 +1043,7 @@ class AbstractField(object):
     _valide_options = [
             'validate', 'renderer', 'hidden', 'required', 'readonly',
             'null_as', 'label', 'multiple', 'options', 'validators',
-            'size', 'instructions', 'metadata', 'html']
+            'size', 'instructions', 'metadata', 'html', 'attrs']
 
     def __init__(self, parent, name=None, type=fatypes.String, **kwattrs):
         # the FieldSet (or any ModelRenderer) owning this instance
@@ -1236,7 +1238,7 @@ class AbstractField(object):
                 else:
                     renderer = HiddenFieldRenderer
                 self._renderer = renderer
-            elif attr in 'attrs':
+            elif attr == 'attrs':
                 self.render_opts.update(value)
             elif attr in mapping:
                 attr = mapping.get(attr)
@@ -1549,7 +1551,7 @@ class AbstractField(object):
                 return self.parent.default_renderers[t]
         raise TypeError(
                 'No renderer found for field %s. '
-                'Type %s as no default renderer' % (self.name, self.type))
+                'Type %s has no default renderer' % (self.name, self.type))
 
     @property
     def renderer(self):
@@ -1707,10 +1709,17 @@ class Field(AbstractField):
             return self._value(self.model)
         return self._value
 
-    def sync(self):
-        """Set the attribute's value in `model` to the value given in `data`"""
+    def sync(self, force=False):
+        """
+        Set the attribute's value in `model` to the value given in `data`
+        
+        * if `force` is True then the KeyError will be skipped.
+        """
         if not self.is_readonly():
-            self._value = self._deserialize()
+            try:
+                self._value = self._deserialize()
+            except KeyError:
+                if not force: raise
 
     def __unicode__(self):
         return self.render_readonly()
@@ -1924,10 +1933,16 @@ class AttributeField(AbstractField):
                 return arg
         return None
 
-    def sync(self):
-        """Set the attribute's value in `model` to the value given in `data`"""
-        if not self.is_readonly():
+    def sync(self, force=False):
+        """
+        Set the attribute's value in `model` to the value given in `data`
+
+        * if `force` is True then the KeyError will be skipped.
+        """
+        try:
             setattr(self.model, self.name, self._deserialize())
+        except KeyError:
+            if not force: raise
 
     def __eq__(self, other):
         # we override eq so that when we configure with options=[...], we can match the renders in options

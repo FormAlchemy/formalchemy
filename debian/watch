@@ -1,0 +1,3 @@
+version=3
+
+http://pypi.python.org/pypi/FormAlchemy/ http://pypi.python.org/packages/source/F/FormAlchemy/FormAlchemy-(.+).tar.gz#md5=[0-9a-f]*

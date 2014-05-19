@@ -1,0 +1,106 @@
+Description: separate template and resources from source code.
+
+--- python-formalchemy-1.4.1.orig/setup.py
++++ python-formalchemy-1.4.1/setup.py
+@@ -50,6 +50,14 @@ long_description = '.. contents::\n\n' +
+ 
+ version='1.4.2'
+ 
++def get_i18n_res():
++    rslt = []
++    for name in os.listdir('formalchemy/i18n_resources'):
++        if not os.path.isdir(os.path.join('formalchemy/i18n_resources', name)):
++            continue
++        rslt.append((os.path.join('share','locale',name,'LC_MESSAGES'), ['formalchemy/i18n_resources/%s/LC_MESSAGES/formalchemy.mo' % name]))
++    return rslt
++
+ setup(name='FormAlchemy',
+       license='MIT License',
+       version=version,
+@@ -60,11 +68,7 @@ setup(name='FormAlchemy',
+       url='http://docs.formalchemy.org/',
+       install_requires=['SQLAlchemy', 'Tempita', 'WebHelpers', 'WebOb'],
+       packages=find_packages(),
+-      package_data={'formalchemy': ['*.tmpl', 'i18n_resources/*/LC_MESSAGES/formalchemy.mo',
+-                                    'ext/pylons/*.mako', 'ext/pylons/resources/*.css', 'ext/pylons/resources/*.png',
+-                                    'tests/data/mako/*.mako', 'tests/data/genshi/*.html',
+-                                    'paster_templates/pylons_fa/+package+/*/*_tmpl',
+-                                    ]},
++      data_files=get_i18n_res(),
+       include_package_data=True,
+       classifiers=[
+           'Development Status :: 5 - Production/Stable',
+--- python-formalchemy-1.4.1.orig/MANIFEST.in
++++ python-formalchemy-1.4.1/MANIFEST.in
+@@ -7,10 +7,11 @@ exclude *.ini
+ exclude bootstrap.py
+ exclude RELEASE_NOTES.txt
+ recursive-exclude pylonsapp *
+-recursive-include formalchemy *tmpl
+-recursive-include formalchemy *mako
+-recursive-include formalchemy *pt
+-recursive-include formalchemy *css
+-recursive-include formalchemy *png
+-recursive-include formalchemy/i18n_resources *
++recursive-exclude formalchemy *tmpl
++recursive-exclude formalchemy *mako
++recursive-exclude formalchemy *pt
++recursive-exclude formalchemy *css
++recursive-exclude formalchemy *png
++recursive-exclude formalchemy/i18n_resources *
++recursive-exclude formalchemy/paster_templates *
+ recursive-include formalchemy/tests/data *
+--- python-formalchemy-1.4.1.orig/formalchemy/i18n.py
++++ python-formalchemy-1.4.1/formalchemy/i18n.py
+@@ -6,7 +6,7 @@
+ import os
+ from gettext import GNUTranslations
+ 
+-i18n_path = os.path.join(os.path.dirname(__file__), 'i18n_resources')
++i18n_path = '/usr/share/locale/'
+ 
+ try:
+     from pyramid.i18n import get_localizer
+--- python-formalchemy-1.4.1.orig/formalchemy/templates.py
++++ python-formalchemy-1.4.1/formalchemy/templates.py
+@@ -20,8 +20,7 @@ except ImportError:
+     HAS_GENSHI = False
+ 
+ MAKO_TEMPLATES = os.path.join(
+-        os.path.dirname(__file__),
+-        'paster_templates','pylons_fa','+package+','templates', 'forms')
++    '/usr/share/python-formalchemy/+package+/', 'templates', 'forms')
+ 
+ class TemplateEngine(object):
+     """Base class for templates engines
+@@ -45,7 +44,7 @@ class TemplateEngine(object):
+ 
+     def get_filename(self, name):
+         """return the filename for template `name`"""
+-        for dirname in self.directories + [os.path.dirname(__file__)]:
++        for dirname in self.directories + [os.path.dirname(__file__), '/usr/share/python-formalchemy']:
+             filename = os.path.join(dirname, '%s.%s' % (name, self.extension))
+             if os.path.isfile(filename):
+                 return filename
+--- python-formalchemy-1.4.1.orig/formalchemy/ext/pylons/pastertemplate.py
++++ python-formalchemy-1.4.1/formalchemy/ext/pylons/pastertemplate.py
+@@ -7,7 +7,7 @@ except ImportError:
+         pass
+ else:
+     class PylonsTemplate(Template):
+-        _template_dir = ('formalchemy', 'paster_templates/pylons_fa')
++        _template_dir = ('/usr/share/python-formalchemy/')
+         summary = 'Pylons application template with formalchemy support'
+         required_templates = ['pylons']
+         template_renderer = staticmethod(paste_script_template_renderer)
+--- python-formalchemy-1.4.1.orig/formalchemy/ext/pylons/admin.py
++++ python-formalchemy-1.4.1/formalchemy/ext/pylons/admin.py
+@@ -37,7 +37,7 @@ _('Create form')
+ 
+ # templates
+ 
+-template_dir = os.path.dirname(__file__)
++template_dir = '/usr/share/python-formalchemy/ext'
+ static_dir = os.path.join(template_dir, 'resources')
+ 
+ def flash(msg):

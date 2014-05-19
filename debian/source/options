@@ -1,0 +1,3 @@
+extend-diff-ignore = "(^|/)formalchemy/i18n_resources/[a-z]+/LC_MESSAGES/formalchemy.mo$"
+extend-diff-ignore = "(^|/)FormAlchemy.egg-info/.*$"
+single-debian-patch

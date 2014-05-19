@@ -1,0 +1,4 @@
+sqlalchemy python-sqlalchemy
+tempita python-tempita
+webhelpers python-webhelpers
+webob python-webob

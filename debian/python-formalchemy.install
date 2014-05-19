@@ -1,0 +1,5 @@
+docs/*.txt usr/share/doc/python-formalchemy/txt
+formalchemy/paster_templates/pylons_fa/+package+/ usr/share/python-formalchemy/
+formalchemy/*.tmpl usr/share/python-formalchemy/
+formalchemy/ext/pylons/*.mako usr/share/python-formalchemy/ext/
+formalchemy/ext/pylons/resources usr/share/python-formalchemy/ext/
