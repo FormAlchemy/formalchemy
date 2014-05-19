@@ -44,7 +44,9 @@ from formalchemy import config
 from formalchemy import exceptions
 from formalchemy import fatypes
 
-from tempita import Template as TempitaTemplate # must import after base
+from tempita import Template as _TempitaTemplate # must import after base
+class TempitaTemplate(_TempitaTemplate):
+	default_encoding = None
 
 configure_mappers() # initializes InstrumentedAttributes
 

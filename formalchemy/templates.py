@@ -5,7 +5,9 @@ import sys
 from formalchemy.i18n import get_translator
 from formalchemy import helpers
 
-from tempita import Template as TempitaTemplate
+from tempita import Template as _TempitaTemplate
+class TempitaTemplate(_TempitaTemplate):
+	default_encoding = None
 try:
     from mako.lookup import TemplateLookup
     from mako.template import Template as MakoTemplate
@@ -72,6 +74,7 @@ class TempitaEngine(TemplateEngine):
     extension = 'tmpl'
     def get_template(self, name, **kw):
         filename = self.get_filename(name)
+        kw['encoding'] = 'utf-8'
         if filename:
             return TempitaTemplate.from_filename(filename, **kw)
 

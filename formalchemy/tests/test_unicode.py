@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+from __future__ import unicode_literals
 from formalchemy.tests import *
 from formalchemy.multidict import UnicodeMultiDict
 from formalchemy.multidict import MultiDict
@@ -37,8 +38,8 @@ def test_unicode():
 def test_unicode_data(self):
     """
     >>> fs = FieldSet(User, session=session)
-    >>> data = UnicodeMultiDict(MultiDict({'User--name': 'José', 'User--email': 'j@jose.com', 'User--password': 'pwd'}), encoding='utf-8')
-    >>> data.encoding
+    >>> data = UnicodeMultiDict(MultiDict({'User--name': u'José', 'User--email': 'j@jose.com', 'User--password': 'pwd'}), encoding='utf-8')
+    >>> str(data.encoding)
     'utf-8'
     >>> fs.rebind(data=data)
     >>> fs.data is data
