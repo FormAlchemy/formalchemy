@@ -9,17 +9,18 @@ import logging
 logger = logging.getLogger('formalchemy.' + __name__)
 
 
-MIN_SA_VERSION = '0.4.5'
+MIN_SA_VERSION = '0.5'
 from sqlalchemy import __version__
 if __version__.split('.') < MIN_SA_VERSION.split('.'):
     raise ImportError('Version %s or later of SQLAlchemy required' % MIN_SA_VERSION)
 
 from sqlalchemy.orm.attributes import InstrumentedAttribute
-from sqlalchemy.orm.properties import SynonymProperty
+from sqlalchemy.orm.properties import SynonymProperty, CompositeProperty
 from sqlalchemy.orm import configure_mappers, object_session, class_mapper
 from sqlalchemy.orm.session import Session
 from sqlalchemy.orm.scoping import ScopedSession
 from sqlalchemy.orm.dynamic import DynamicAttributeImpl
+from sqlalchemy.orm.exc import UnmappedInstanceError
 from sqlalchemy.util import OrderedDict
 from formalchemy import multidict
 try:
@@ -27,21 +28,6 @@ try:
 except ImportError:
     class WerkzeugMD:
         pass
-
-try:
-    from sqlalchemy.orm.descriptor_props import CompositeProperty
-except ImportError:
-    # <= SA 0.7
-    class CompositeProperty(object):
-        pass
-
-try:
-    from sqlalchemy.orm.exc import UnmappedInstanceError
-except ImportError:
-    class UnmappedInstanceError(Exception):
-        """
-            Exception to provide support for sqlalchemy < 0.6
-        """
 
 from formalchemy.validators import ValidationError
 from formalchemy import fields
@@ -56,16 +42,10 @@ class TempitaTemplate(_TempitaTemplate):
 configure_mappers() # initializes InstrumentedAttributes
 
 
-try:
-    # 0.5
-    from sqlalchemy.orm.attributes import manager_of_class
-    def _get_attribute(cls, p):
-        manager = manager_of_class(cls)
-        return manager[p.key]
-except ImportError:
-    # 0.4
-    def _get_attribute(cls, p):
-        return getattr(cls, p.key)
+from sqlalchemy.orm.attributes import manager_of_class
+def _get_attribute(cls, p):
+    manager = manager_of_class(cls)
+    return manager[p.key]
 
 
 def prettify(text):
