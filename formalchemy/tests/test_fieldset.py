@@ -1032,7 +1032,15 @@ ValueError: Unrecognized Field `Field(invalid)` in `include` -- did you mean to 
 
 >>> fs_s = FieldSet(Synonym)
 >>> fs_s._fields
-{'foo': AttributeField(foo), 'id': AttributeField(id)}
+{'_foo': AttributeField(_foo), 'id': AttributeField(id)}
+
+>>> fs_s = FieldSet(AliasedRecursive)
+>>> fs_s._fields
+{'parent_id': AttributeField(parent_id), 'foo': AttributeField(foo), 'id': AttributeField(id), 'parent': AttributeField(parent)}
+
+>>> fs_s = FieldSet(RecursiveChild)
+>>> fs_s._fields
+{'bar': AttributeField(bar), 'parent': AttributeField(parent), 'typ_id': AttributeField(typ_id), 'parent_id': AttributeField(parent_id), 'foo': AttributeField(foo), 'id': AttributeField(id)}
 
 >>> fs_prefix = FieldSet(Two, prefix="myprefix")
 >>> print(fs_prefix.render())
@@ -1079,6 +1087,56 @@ True
 >>> print fs_conflict.render() #doctest: +ELLIPSIS
 <div>
 ...
+
+>>> fs_syn = FieldSet(Synonym)
+>>> print fs_syn.render()
+<div>
+ <label class="field_opt" for="Synonym--_foo">
+  foo
+ </label>
+ <input id="Synonym--_foo" name="Synonym--_foo" type="text" />
+</div>
+<script type="text/javascript">
+ //<![CDATA[
+document.getElementById("Synonym--_foo").focus();
+//]]>
+</script>
+
+>>> fs_rec = FieldSet(RecursiveChild, session=session)
+>>> print fs_rec.render() #doctest: +ELLIPSIS
+<div>
+ <label class="field_req" for="RecursiveChild--typ_id">
+  Typ id
+ </label>
+ <input id="RecursiveChild--typ_id" name="RecursiveChild--typ_id" type="text" value="42" />
+</div>
+<script type="text/javascript">
+ //<![CDATA[
+document.getElementById("RecursiveChild--typ_id").focus();
+//]]>
+</script>
+<div>
+ <label class="field_opt" for="RecursiveChild--foo">
+  Foo
+ </label>
+ <input id="RecursiveChild--foo" name="RecursiveChild--foo" type="text" />
+</div>
+<div>
+ <label class="field_opt" for="RecursiveChild--bar">
+  Bar
+ </label>
+ <input id="RecursiveChild--bar" name="RecursiveChild--bar" type="text" />
+</div>
+<div>
+ <label class="field_opt" for="RecursiveChild--parent_id">
+  Parent
+ </label>
+ <select id="RecursiveChild--parent_id" name="RecursiveChild--parent_id">
+  <option selected="selected" value="">
+   None
+  </option>
+ </select>
+</div>
 
 """
 

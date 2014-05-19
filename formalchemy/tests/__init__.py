@@ -206,6 +206,26 @@ class Recursive(Base):
     parent_id = Column(Integer, ForeignKey("recursives.id"))
     parent = relation('Recursive', primaryjoin=parent_id==id, uselist=False, remote_side=parent_id)
 
+class RecursiveBase(Base):
+    __tablename__ = 'recursivebase'
+    __mapper_args__ = {'polymorphic_on': 'typ_id'}
+
+    id = Column(Integer, primary_key=True)
+    typ_id = Column(Integer, nullable=False)
+    foo = Column(Text, nullable=True)
+    parent_id = Column(Integer, ForeignKey(id))
+    parent = relation('Recursive', primaryjoin=parent_id==id, uselist=False, remote_side=parent_id)
+
+class RecursiveChild(RecursiveBase):
+    __tablename__ = 'recursivechild'
+    __mapper_args__ = {'polymorphic_identity': 42}
+    id = Column(None, ForeignKey(RecursiveBase.id, ondelete='CASCADE', onupdate='RESTRICT'), primary_key=True)
+    bar = Column(Text, nullable=True)
+    @classmethod
+    def __declare_last__(cls):
+        if not hasattr(cls,'owner'):
+            cls.owner = cls.parent
+
 class Synonym(Base):
     __tablename__ = 'synonyms'
     id = Column(Integer, primary_key=True)
@@ -215,6 +235,17 @@ class Synonym(Base):
     def _get_foo(self):
         return self._foo
     foo = synonym('_foo', descriptor=property(_get_foo, _set_foo))
+
+class AliasedRecursive(Base):
+    __tablename__ = 'aliasedrecursive'
+    id = Column(Integer, primary_key=True)
+    foo = Column(Text, nullable=True)
+    parent_id = Column(Integer, ForeignKey(id))
+    parent = relation('Recursive', primaryjoin=parent_id==id, uselist=False, remote_side=parent_id)
+    @classmethod
+    def __declare_last__(cls):
+        if not hasattr(cls,'owner'):
+            cls.owner = cls.parent
 
 class OTOChild(Base):
     __tablename__ = 'one_to_one_child'
