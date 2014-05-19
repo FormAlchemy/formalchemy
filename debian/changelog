@@ -1,3 +1,9 @@
+python-formalchemy (1.4.4~git2-e4bfb0dd6-2) smurf; urgency=medium
+
+  * Add debian/.gitignore
+
+ -- Matthias Urlichs <matthias@urlichs.de>  Mon, 19 May 2014 15:07:42 +0200
+
 python-formalchemy (1.4.4~git2-e4bfb0dd6-1) smurf; urgency=medium
 
   * Major rebuild
