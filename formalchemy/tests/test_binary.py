@@ -2,6 +2,7 @@ import cgi
 import shutil
 import tempfile
 from StringIO import StringIO
+from nose import with_setup
 
 from formalchemy.fields import FileFieldRenderer
 from formalchemy.ext import fsblob
@@ -42,6 +43,20 @@ Content-Type: application/x-javascript
 def get_fields(data):
     return multidict.MultiDict.from_fieldstorage(cgi.FieldStorage(fp=StringIO(data), environ=ENVIRON))
 
+TEMPDIR = tempfile.mkdtemp()
+
+class FFRenderer(FileFieldRenderer):
+    storage_path = TEMPDIR
+
+def setup_tempdir():
+    if not os.path.isdir(TEMPDIR):
+        os.makedirs(TEMPDIR)
+
+def teardown_tempdir():
+    if os.path.isdir(TEMPDIR):
+        shutil.rmtree(TEMPDIR)
+
+@with_setup(setup_tempdir, teardown_tempdir)
 def test_binary():
     r"""
 
@@ -52,8 +67,8 @@ def test_binary():
 
         >>> fs = FieldSet(Three)
         >>> record = fs.model
-        >>> fs.configure(include=[fs.bar.with_renderer(FileFieldRenderer)])
-        >>> isinstance(fs.bar.renderer, FileFieldRenderer)
+        >>> fs.configure(include=[fs.bar.with_renderer(FFRenderer)])
+        >>> isinstance(fs.bar.renderer, FFRenderer)
         True
 
     At creation time only the input field is rendered
@@ -124,7 +139,7 @@ def test_binary():
 
         >>> data = get_fields(TEST_DATA)
         >>> print data.getone('Binaries--file')
-        FieldStorage(u'Binaries--file', u'test.js')
+        FieldStorage('Binaries--file', 'test.js')
 
         >>> fs.rebind(data=data)
         >>> if fs.validate(): fs.sync()
