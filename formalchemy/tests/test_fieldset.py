@@ -20,8 +20,8 @@ __doc__ = r"""
 binding should not change attribute order:
 >>> fs = FieldSet(User)
 >>> fs_bound = fs.bind(User)
->>> fs_bound._fields.values()
-[AttributeField(id), AttributeField(email), AttributeField(password), AttributeField(name), AttributeField(orders)]
+>>> sorted(fs_bound._fields.items())
+[('email', AttributeField(email)), ('id', AttributeField(id)), ('name', AttributeField(name)), ('orders', AttributeField(orders)), ('password', AttributeField(password))]
 
 >>> fs = FieldSet(User2)
 >>> fs._raw_fields()
@@ -848,8 +848,8 @@ AttributeError: Do not set field attributes manually.  Use append() or configure
 
 # join
 >>> fs = FieldSet(Order__User)
->>> fs._fields.values()
-[AttributeField(orders_id), AttributeField(orders_user_id), AttributeField(orders_quantity), AttributeField(users_id), AttributeField(users_email), AttributeField(users_password), AttributeField(users_name)]
+>>> sorted(fs._fields.items())
+[(u'orders_id', AttributeField(orders_id)), (u'orders_quantity', AttributeField(orders_quantity)), (u'orders_user_id', AttributeField(orders_user_id)), (u'users_email', AttributeField(users_email)), (u'users_id', AttributeField(users_id)), (u'users_name', AttributeField(users_name)), (u'users_password', AttributeField(users_password))]
 >>> fs.rebind(session.query(Order__User).filter_by(orders_id=1).one())
 >>> print configure_and_render(fs, focus=None)
 <div>
@@ -1031,16 +1031,16 @@ Traceback (most recent call last):
 ValueError: Unrecognized Field `Field(invalid)` in `include` -- did you mean to call append() first?
 
 >>> fs_s = FieldSet(Synonym)
->>> fs_s._fields
-{'_foo': AttributeField(_foo), 'id': AttributeField(id)}
+>>> sorted(fs_s._fields.items())
+[('_foo', AttributeField(_foo)), ('id', AttributeField(id))]
 
 >>> fs_s = FieldSet(AliasedRecursive)
->>> fs_s._fields
-{'parent_id': AttributeField(parent_id), 'foo': AttributeField(foo), 'id': AttributeField(id), 'parent': AttributeField(parent)}
+>>> sorted(fs_s._fields.items())
+[('foo', AttributeField(foo)), ('id', AttributeField(id)), ('parent', AttributeField(parent)), ('parent_id', AttributeField(parent_id))]
 
 >>> fs_s = FieldSet(RecursiveChild)
->>> fs_s._fields
-{'bar': AttributeField(bar), 'parent': AttributeField(parent), 'typ_id': AttributeField(typ_id), 'parent_id': AttributeField(parent_id), 'foo': AttributeField(foo), 'id': AttributeField(id)}
+>>> sorted(fs_s._fields.items())
+[('bar', AttributeField(bar)), ('foo', AttributeField(foo)), ('id', AttributeField(id)), ('parent', AttributeField(parent)), ('parent_id', AttributeField(parent_id)), ('typ_id', AttributeField(typ_id))]
 
 >>> fs_prefix = FieldSet(Two, prefix="myprefix")
 >>> print(fs_prefix.render())
