@@ -210,9 +210,13 @@ from formalchemy import fatypes
 from sqlalchemy.util import OrderedDict
 from datetime import datetime
 from uuid import UUID
-from zope import schema
-from zope.schema import interfaces
-from zope import interface
+try:
+    from zope import schema
+    from zope.schema import interfaces
+    from zope import interface
+except ImportError:
+    from unittest.case import SkipTest
+    raise SkipTest("Zope is not available")
 
 class Pk(property):
     """FormAlchemy use a ``_pk`` attribute to identify objects. You can use

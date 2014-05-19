@@ -105,8 +105,12 @@ from formalchemy import fields
 from formalchemy import validators
 from formalchemy import fatypes
 from sqlalchemy.util import OrderedDict
-from couchdbkit.schema.properties_proxy import LazySchemaList
-from couchdbkit import schema
+try:
+    from couchdbkit.schema.properties_proxy import LazySchemaList
+    from couchdbkit import schema
+except ImportError:
+    from unittest.case import SkipTest
+    raise SkipTest("couchdbkit is not available")
 
 from datetime import datetime
 

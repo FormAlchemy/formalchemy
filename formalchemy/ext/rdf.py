@@ -66,8 +66,12 @@ from formalchemy import fields
 from formalchemy import validators
 from formalchemy import fatypes
 from sqlalchemy.util import OrderedDict
-from rdfalchemy import descriptors, rdfSubject
-import rdflib
+try:
+    from rdfalchemy import descriptors, rdfSubject
+    import rdflib
+except ImportError:
+    from unittest.case import SkipTest
+    raise SkipTest("rdfalchems is not available")
 
 from datetime import datetime
 
