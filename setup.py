@@ -5,6 +5,12 @@ from os.path import join
 import sys
 import os
 
+def get_version(fname='formalchemy/__init__.py'):
+    with open(fname) as f:
+        for line in f:
+            if line.startswith('__version__'):
+                return eval(line.split('=')[-1])
+
 try:
     from msgfmt import Msgfmt
 except:
@@ -48,11 +54,9 @@ long_description = '.. contents::\n\n' +\
                    '=======\n\n' +\
                    read('CHANGELOG.txt')
 
-version='1.4.4-dev'
-
 setup(name='FormAlchemy',
       license='MIT License',
-      version=version,
+      version=get_version(),
       description='FormAlchemy greatly speeds development with SQLAlchemy mapped classes (models) in a HTML forms environment.',
       long_description=long_description,
       author='Alexandre Conrad, Jonathan Ellis, Gaël Pasgrimaud',
