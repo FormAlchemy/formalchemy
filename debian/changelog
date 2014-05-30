@@ -1,3 +1,9 @@
+python-formalchemy (1.4.4~git2-e4bfb0dd6-3) smurf; urgency=medium
+
+  * Arch:all, dammit
+
+ -- Matthias Urlichs <matthias@urlichs.de>  Fri, 30 May 2014 15:05:23 +0200
+
 python-formalchemy (1.4.4~git2-e4bfb0dd6-2) smurf; urgency=medium
 
   * Add debian/.gitignore

@@ -8,7 +8,7 @@ Standards-Version: 3.9.3
 Homepage: http://docs.formalchemy.org/
 
 Package: python-formalchemy
-Architecture: any
+Architecture: all
 Depends: ${misc:Depends}, ${python:Depends}, python-pylons
 Suggests: python-beautifulsoup 
 Description: HTML input form fields from your SQLAlchemy mapped classes
