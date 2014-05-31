@@ -1076,11 +1076,7 @@ class AbstractField(object):
         wrapper.render_opts = dict(self.render_opts)
         wrapper.validators = list(self.validators)
         wrapper.errors = list(self.errors)
-        try:
-            wrapper._renderer = copy(self._renderer)
-        except TypeError: # 2.4 support
-            # it's a lambda, safe to just use same reference
-            pass
+        wrapper._renderer = copy(self._renderer)
         if hasattr(wrapper._renderer, 'field'):
             wrapper._renderer.field = wrapper
         return wrapper

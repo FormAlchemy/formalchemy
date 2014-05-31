@@ -7,20 +7,6 @@
 from exceptions import ValidationError
 from i18n import _
 
-if 'any' not in locals():
-    # pre-2.5 support
-    def any(seq):
-        """
-        >>> any(xrange(10))
-        True
-        >>> any([0, 0, 0])
-        False
-        """
-        for o in seq:
-            if o:
-                return True
-        return False
-
 def accepts_none(func):
     """validator decorator to validate None value"""
     func.accepts_none = True
