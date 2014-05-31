@@ -1114,7 +1114,7 @@ class AbstractField(object):
         if self.is_required() and validators.required not in L:
             L.append(validators.required)
         for validator in L:
-            if (not (hasattr(validator, 'accepts_none') and validator.accepts_none)) and value is None:
+            if value is None and not getattr(validator, 'accepts_none', False):
                 continue
             try:
                 validator(value, self)

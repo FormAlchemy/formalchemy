@@ -12,12 +12,12 @@ def accepts_none(func):
     func.accepts_none = True
     return func
 
+@accepts_none
 def required(value, field=None):
     """Successful if value is neither None nor the empty string (yes, including empty lists)"""
     if value is None or value == '':
         msg = isinstance(value, list) and _('Please select a value') or _('Please enter a value')
         raise ValidationError(msg)
-required = accepts_none(required)
 
 # other validators will not be called for empty values
 
@@ -27,7 +27,7 @@ def integer(value, field=None):
     # but this is called from deserialize as well as validation
     if isinstance(value, int):
         return value
-    if value is None or not value.strip():
+    if not value.strip():
         return None
     try:
         return int(value)
@@ -38,7 +38,7 @@ def float_(value, field=None):
     """Successful if value is a float"""
     # the validator contract says you don't have to worry about "value is None",
     # but this is called from deserialize as well as validation
-    if value is None or not value.strip():
+    if not value.strip():
         return None
     try:
         return float(value)
@@ -50,7 +50,7 @@ def decimal_(value, field=None):
     """Successful if value can represent a decimal"""
     # the validator contract says you don't have to worry about "value is None",
     # but this is called from deserialize as well as validation
-    if value is None or not value.strip():
+    if not value.strip():
         return None
     try:
         return Decimal(value)
