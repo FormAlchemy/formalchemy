@@ -528,8 +528,6 @@ class FieldSet(DefaultRenderers):
             return
 
         if session:
-            if not isinstance(session, Session) and not isinstance(session, ScopedSession):
-                raise ValueError('Invalid SQLAlchemy session object %s' % session)
             self.session = session
         elif model:
             if '_obj_session' in locals():
