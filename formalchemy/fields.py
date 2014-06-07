@@ -167,7 +167,7 @@ class FieldRenderer(object):
             # submitted value.  do not deserialize here since that requires valid data, which we might not have
             try:
                 v = self._serialized_value()
-            except FieldNotFoundError, e:
+            except FieldNotFoundError as e:
                 v = None
         else:
             v = None
@@ -1080,7 +1080,7 @@ class AbstractField(object):
             # Call renderer.deserialize(), because the deserializer can
             # also raise a ValidationError
             value = self._deserialize()
-        except validators.ValidationError, e:
+        except validators.ValidationError as e:
             self.errors.append(e.message)
             return False
 
@@ -1092,13 +1092,13 @@ class AbstractField(object):
                 continue
             try:
                 validator(value, self)
-            except validators.ValidationError, e:
+            except validators.ValidationError as e:
                 self.errors.append(e.message)
             except TypeError:
                 warnings.warn(DeprecationWarning('Please provide a field argument to your %r validator. Your validator will break in FA 1.5' % validator))
                 try:
                     validator(value)
-                except validators.ValidationError, e:
+                except validators.ValidationError as e:
                     self.errors.append(e.message)
         return not self.errors
 

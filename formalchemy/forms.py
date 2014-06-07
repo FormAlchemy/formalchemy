@@ -434,7 +434,7 @@ class FieldSet(DefaultRenderers):
             if isinstance(model, type):
                 try:
                     model = model()
-                except Exception, e:
+                except Exception as e:
                     model_error = str(e)
                     msg = ("%s appears to be a class, not an instance, but "
                            "FormAlchemy cannot instantiate it. "
@@ -555,7 +555,7 @@ class FieldSet(DefaultRenderers):
             self._errors = []
             try:
                 self.validator(self)
-            except ValidationError, e:
+            except ValidationError as e:
                 self._errors = e.args
                 success = False
         return success
