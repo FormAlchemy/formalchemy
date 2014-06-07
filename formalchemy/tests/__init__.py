@@ -485,7 +485,7 @@ class ImgRenderer(TextFieldRenderer):
     def render(self, *args, **kwargs):
         return '<img src="%s">' % self.value
 
-import fake_module
+from formalchemy.tests import fake_module
 fake_module.__dict__.update({
         'fs': FieldSet(User, session=session),
         })
