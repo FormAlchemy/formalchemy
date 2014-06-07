@@ -1,14 +1,24 @@
 """
 A small module to wrap WebHelpers in FormAlchemy.
 """
-from webhelpers.html.tags import text
-from webhelpers.html.tags import hidden
-from webhelpers.html.tags import password
-from webhelpers.html.tags import textarea
-from webhelpers.html.tags import checkbox
-from webhelpers.html.tags import radio
-from webhelpers.html import tags
-from webhelpers.html import HTML, literal
+try:
+    from webhelpers2.html.tags import text
+    from webhelpers2.html.tags import hidden
+    from webhelpers2.html.tags import password
+    from webhelpers2.html.tags import textarea
+    from webhelpers2.html.tags import checkbox
+    from webhelpers2.html.tags import radio
+    from webhelpers2.html import tags
+    from webhelpers2.html import HTML, literal
+except ImportError:
+    from webhelpers.html.tags import text
+    from webhelpers.html.tags import hidden
+    from webhelpers.html.tags import password
+    from webhelpers.html.tags import textarea
+    from webhelpers.html.tags import checkbox
+    from webhelpers.html.tags import radio
+    from webhelpers.html import tags
+    from webhelpers.html import HTML, literal
 
 def html_escape(s):
     return HTML(s)
