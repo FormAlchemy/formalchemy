@@ -13,6 +13,8 @@
 
 * XSS protection: always HTML-escape field contents
 
+* added an iterator to Grid
+
 1.4.3
 -----
 
