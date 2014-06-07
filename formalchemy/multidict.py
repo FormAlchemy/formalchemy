@@ -1,10 +1,10 @@
 # -*- coding: utf-8 -*-
 import cgi
 import copy
-from UserDict import DictMixin
+from collections import MutableMapping
 from webob.multidict import MultiDict
 
-class UnicodeMultiDict(DictMixin):
+class UnicodeMultiDict(MutableMapping):
     """
     A MultiDict wrapper that decodes returned values to unicode on the
     fly. Decoding is not applied to assigned values.
