@@ -32,7 +32,7 @@ def test_dt_hang_up():
     >>> fs.validate()
     False
 
-    >>> print pretty_html(fs.td.render()) #doctest: +ELLIPSIS
+    >>> print(pretty_html(fs.td.render())) #doctest: +ELLIPSIS
     <span id="MyClass--td">
      <select id="MyClass--td__month" name="MyClass--td__month">
       ...
@@ -93,19 +93,19 @@ def test_hidden():
     """
     >>> fs = FieldSet(Dt)
     >>> _ = fs.foo.set(hidden=True)
-    >>> print pretty_html(fs.foo.render()) #doctest: +ELLIPSIS
+    >>> print(pretty_html(fs.foo.render())) #doctest: +ELLIPSIS
     <div style="display:none;">
      <span id="Dt--foo">
     ...
 
     >>> _ = fs.bar.set(hidden=True)
-    >>> print pretty_html(fs.bar.render()) #doctest: +ELLIPSIS
+    >>> print(pretty_html(fs.bar.render())) #doctest: +ELLIPSIS
     <div style="display:none;">
      <span id="Dt--bar">
     ...
 
     >>> _ = fs.foobar.set(hidden=True)
-    >>> print pretty_html(fs.foobar.render()) #doctest: +ELLIPSIS
+    >>> print(pretty_html(fs.foobar.render())) #doctest: +ELLIPSIS
     <div style="display:none;">
      <span id="Dt--foobar">
     ...
@@ -116,7 +116,7 @@ def test_hidden():
 __doc__ = r"""
 >>> fs = FieldSet(Dt)
 >>> fs.configure(options=[fs.foobar.with_renderer(DateTimeFieldRendererFr)])
->>> print pretty_html(fs.foobar.with_html(lang='fr').render()) #doctest: +ELLIPSIS
+>>> print(pretty_html(fs.foobar.with_html(lang='fr').render())) #doctest: +ELLIPSIS
 <span id="Dt--foobar">
  <select id="Dt--foobar__day" lang="fr" name="Dt--foobar__day">
   <option selected="selected" value="DD">
@@ -133,7 +133,7 @@ __doc__ = r"""
 ...
 
 >>> fs = FieldSet(Dt)
->>> print pretty_html(fs.foobar.render()) #doctest: +ELLIPSIS
+>>> print(pretty_html(fs.foobar.render())) #doctest: +ELLIPSIS
 <span id="Dt--foobar">
  <select id="Dt--foobar__month" name="Dt--foobar__month">
   <option selected="selected" value="MM">
@@ -173,7 +173,7 @@ __doc__ = r"""
 >>> fs = FieldSet(Dt)
 >>> dt = fs.model
 >>> dt.foo = datetime.date(2008, 6, 3);  dt.bar=datetime.time(14, 16, 18);  dt.foobar=datetime.datetime(2008, 6, 3, 14, 16, 18)
->>> print pretty_html(fs.foo.render()) #doctest: +ELLIPSIS
+>>> print(pretty_html(fs.foo.render())) #doctest: +ELLIPSIS
 <span id="Dt--foo">
  <select id="Dt--foo__month" name="Dt--foo__month">
   <option value="MM">
@@ -201,7 +201,7 @@ __doc__ = r"""
  <input id="Dt--foo__year" maxlength="4" name="Dt--foo__year" size="4" type="text" value="2008" />
 </span>
 
->>> print pretty_html(fs.bar.render()) #doctest: +ELLIPSIS
+>>> print(pretty_html(fs.bar.render())) #doctest: +ELLIPSIS
 <span id="Dt--bar">
  <select id="Dt--bar__hour" name="Dt--bar__hour">
   <option value="HH">
@@ -270,7 +270,7 @@ __doc__ = r"""
  </select>
 </span>
 
->>> print pretty_html(fs.foobar.render()) #doctest: +ELLIPSIS
+>>> print(pretty_html(fs.foobar.render())) #doctest: +ELLIPSIS
 <span id="Dt--foobar">
  <select id="Dt--foobar__month" name="Dt--foobar__month">
   <option value="MM">
@@ -328,7 +328,7 @@ __doc__ = r"""
 </span>
 
 >>> fs.rebind(dt, data={'Dt--foo__day': 'DD', 'Dt--foo__month': '2', 'Dt--foo__year': '', 'Dt--bar__hour': 'HH', 'Dt--bar__minute': '6', 'Dt--bar__second': '8'})
->>> print pretty_html(fs.foo.render()) #doctest: +ELLIPSIS
+>>> print(pretty_html(fs.foo.render())) #doctest: +ELLIPSIS
 <span id="Dt--foo">
  <select id="Dt--foo__month" name="Dt--foo__month">
   <option value="MM">
@@ -356,7 +356,7 @@ __doc__ = r"""
  </select>
  <input id="Dt--foo__year" maxlength="4" name="Dt--foo__year" size="4" type="text" value="" />
 </span>
->>> print pretty_html(fs.bar.render()) #doctest: +ELLIPSIS
+>>> print(pretty_html(fs.bar.render())) #doctest: +ELLIPSIS
 <span id="Dt--bar">
  <select id="Dt--bar__hour" name="Dt--bar__hour">
   <option value="HH">
@@ -434,17 +434,17 @@ False
 
 >>> fs.rebind(dt)
 >>> dt.bar = datetime.time(0)
->>> print fs.bar.render() #doctest: +ELLIPSIS
+>>> print(fs.bar.render()) #doctest: +ELLIPSIS
 <span id="Dt--bar"><select id="Dt--bar__hour" name="Dt--bar__hour">
 <option value="HH">HH</option>
 <option selected="selected" value="0">0</option>
 ...
 
->>> print fs.bar.render_readonly()
+>>> print(fs.bar.render_readonly())
 00:00:00
 
 >>> fs = FieldSet(Dt)
->>> print fs.bar.render() #doctest: +ELLIPSIS
+>>> print(fs.bar.render()) #doctest: +ELLIPSIS
 <span id="Dt--bar"><select id="Dt--bar__hour" name="Dt--bar__hour">
 <option selected="selected" value="HH">HH</option>
 <option value="0">0</option>

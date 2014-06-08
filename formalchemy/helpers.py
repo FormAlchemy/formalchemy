@@ -33,9 +33,9 @@ def content_tag(name, content, **options):
 
     Examples::
 
-        >>> print content_tag("p", "Hello world!")
+        >>> print(content_tag("p", "Hello world!"))
         <p>Hello world!</p>
-        >>> print content_tag("div", content_tag("p", "Hello world!"), class_="strong")
+        >>> print(content_tag("div", content_tag("p", "Hello world!"), class_="strong"))
         <div class="strong"><p>Hello world!</p></div>
     """
     if content is None:
@@ -79,7 +79,7 @@ def text_area(name, content='', **options):
 
     Example::
 
-        >>> print text_area("Body", '', size="25x10")
+        >>> print(text_area("Body", '', size="25x10"))
         <textarea cols="25" id="Body" name="Body" rows="10"></textarea>
     """
     _update_fa(options, name)
@@ -114,7 +114,7 @@ def file_field(name, value=None, **options):
 
     Example::
 
-        >>> print file_field('myfile')
+        >>> print(file_field('myfile'))
         <input id="myfile" name="myfile" type="file" />
     """
     _update_fa(options, name)
@@ -137,13 +137,13 @@ def tag(name, open=False, **options):
 
     Examples::
 
-        >>> print tag("br")
+        >>> print(tag("br"))
         <br />
-        >>> print tag("br", True)
+        >>> print(tag("br", True))
         <br>
-        >>> print tag("input", type="text")
+        >>> print(tag("input", type="text"))
         <input type="text" />
-        >>> print tag("input", type='text', disabled='disabled')
+        >>> print(tag("input", type='text', disabled='disabled'))
         <input disabled="disabled" type="text" />
     """
     return HTML.tag(name, _closed=not open, **options)
@@ -152,7 +152,7 @@ def label(value, **kwargs):
     """
     Return a label tag
 
-        >>> print label('My label', for_='fieldname')
+        >>> print(label('My label', for_='fieldname'))
         <label for="fieldname">My label</label>
 
     """

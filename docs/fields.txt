@@ -55,12 +55,12 @@ Render a string field::
 
 Edit mode::
 
-    >>> print fs.text.render()
+    >>> print(fs.text.render())
     <input id="One--text" name="One--text" type="text" value="a value" />
 
 Read only mode::
 
-    >>> print fs.text.render_readonly()
+    >>> print(fs.text.render_readonly())
     a value
 
 IntegerFieldRenderer
@@ -82,12 +82,12 @@ Render a string field::
 
 Edit mode::
 
-    >>> print fs.passwd.render()
+    >>> print(fs.passwd.render())
     <input id="One--passwd" name="One--passwd" type="password" />
 
 Read only mode::
 
-    >>> print fs.passwd.render_readonly()
+    >>> print(fs.passwd.render_readonly())
     ******
 
 TextAreaFieldRenderer
@@ -103,12 +103,12 @@ Render a string field::
 
 Edit mode::
 
-    >>> print fs.text.render()
+    >>> print(fs.text.render())
     <textarea id="One--text" name="One--text">a value</textarea>
 
 Read only mode::
 
-    >>> print fs.text.render_readonly()
+    >>> print(fs.text.render_readonly())
     a value
 
 HiddenFieldRenderer
@@ -124,12 +124,12 @@ Render a string field::
 
 Edit mode::
 
-    >>> print fs.render()
+    >>> print(fs.render())
     <input id="One--text" name="One--text" type="hidden" value="h" />
 
 Read only mode::
 
-    >>> print fs.text.render_readonly()
+    >>> print(fs.text.render_readonly())
     <BLANKLINE>
 
 HiddenFieldRendererFactory
@@ -163,7 +163,7 @@ Render a date field::
 
 Edit mode::
 
-    >>> print pretty_html(fs.date.render())  #doctest: +ELLIPSIS
+    >>> print(pretty_html(fs.date.render()))  #doctest: +ELLIPSIS
     <span id="One--date">
      <select id="One--date__month" name="One--date__month">
       <option value="MM">
@@ -194,7 +194,7 @@ Edit mode::
 
 Read only mode::
 
-    >>> print fs.date.render_readonly()
+    >>> print(fs.date.render_readonly())
     2000-12-31
 
 TimeFieldRenderer
@@ -211,7 +211,7 @@ Render a time field::
 
 Edit mode::
 
-    >>> print pretty_html(fs.time.render())  #doctest: +ELLIPSIS
+    >>> print(pretty_html(fs.time.render()))  #doctest: +ELLIPSIS
     <span id="One--time">
      <select id="One--time__hour" name="One--time__hour">
       <option value="HH">
@@ -267,7 +267,7 @@ Edit mode::
 
 Read only mode::
 
-    >>> print fs.time.render_readonly()
+    >>> print(fs.time.render_readonly())
     09:03:30
 
 DateTimeFieldRenderer
@@ -284,7 +284,7 @@ Render a datetime field::
 
 Edit mode::
 
-    >>> print pretty_html(fs.datetime.render())  #doctest: +ELLIPSIS
+    >>> print(pretty_html(fs.datetime.render()))  #doctest: +ELLIPSIS
     <span id="One--datetime">
      <select id="One--datetime__month" name="One--datetime__month">
       <option value="MM">
@@ -341,7 +341,7 @@ Edit mode::
 
 Read only mode::
 
-    >>> print fs.datetime.render_readonly()
+    >>> print(fs.datetime.render_readonly())
     2000-12-31 09:03:30
 
 HiddenDateFieldRenderer
@@ -472,7 +472,7 @@ Then bind it to a specific field::
 
 Here is the result for edit mode::
 
-  >>> print fs.render()
+  >>> print(fs.render())
   <div>
    <label class="field_opt" for="One--link">
     Link
@@ -489,7 +489,7 @@ Here is the result for edit mode::
 And for read only mode::
 
   >>> fs.readonly = True
-  >>> print fs.render()
+  >>> print(fs.render())
   <tbody>
    <tr>
     <td class="field_readonly">

@@ -41,7 +41,7 @@ Render it::
     >>> # rendering
     >>> fs.name.is_required()
     True
-    >>> print fs.render() # doctest: +ELLIPSIS +NORMALIZE_WHITESPACE
+    >>> print(fs.render()) # doctest: +ELLIPSIS +NORMALIZE_WHITESPACE
     <div>
       <label class="field_req" for="Pet--name">Name</label>
       <input id="Pet--name" name="Pet--name" type="text" value="dewey" />
@@ -68,7 +68,7 @@ Same for grids::
     >>> # grid
     >>> grid = couchdb.Grid(Pet, [p, Pet()])
     >>> grid.configure(include=[grid.name, grid.type, grid.birthdate, grid.weight_in_pounds, grid.friends])
-    >>> print grid.render() # doctest: +SKIP +ELLIPSIS +NORMALIZE_WHITESPACE
+    >>> print(grid.render()) # doctest: +SKIP +ELLIPSIS +NORMALIZE_WHITESPACE
     <thead>
       <tr>
           <th>Name</th>

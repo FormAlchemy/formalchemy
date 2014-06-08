@@ -1704,10 +1704,10 @@ class AttributeField(AbstractField):
         """
             >>> from formalchemy.tests import FieldSet, Order
             >>> fs = FieldSet(Order)
-            >>> print fs.user.key
+            >>> print(fs.user.key)
             user
 
-            >>> print fs.user.name
+            >>> print(fs.user.name)
             user_id
         """
         AbstractField.__init__(self, parent)

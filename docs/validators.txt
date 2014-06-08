@@ -49,7 +49,7 @@ a class instead of an object, the class will be instantiated for you.)
 The object will be placed into the current session, if one exists::
 
   >>> if fs.validate(): fs.sync()
-  >>> print bill.name
+  >>> print(bill.name)
   Sam
 
 

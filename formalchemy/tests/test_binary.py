@@ -73,7 +73,7 @@ def test_binary():
 
     At creation time only the input field is rendered
 
-        >>> print fs.render()
+        >>> print(fs.render())
         <div>
          <label class="field_opt" for="Three--bar">
           Bar
@@ -89,7 +89,7 @@ def test_binary():
     If the field has a value then we add a check box to remove it
 
         >>> record.bar = '/path/to/file'
-        >>> print fs.render()
+        >>> print(fs.render())
         <div>
          <label class="field_opt" for="Three--bar">
           Bar
@@ -115,7 +115,7 @@ def test_binary():
 
     The field value does not change
 
-        >>> print record.bar
+        >>> print(record.bar)
         /path/to/file
 
     Try to remove it by checking the checkbox
@@ -127,7 +127,7 @@ def test_binary():
 
     The field value is removed
 
-        >>> print record.bar
+        >>> print(record.bar)
         <BLANKLINE>
 
     Also check that this work with cgi.FieldStorage
@@ -138,7 +138,7 @@ def test_binary():
     We need test data
 
         >>> data = get_fields(TEST_DATA)
-        >>> print data.getone('Binaries--file')
+        >>> print(data.getone('Binaries--file'))
         FieldStorage('Binaries--file', 'test.js')
 
         >>> fs.rebind(data=data)
@@ -146,7 +146,7 @@ def test_binary():
 
     We get the file, yeah.
 
-        >>> print record.file
+        >>> print(record.file)
         var test = null;
         <BLANKLINE>
 
@@ -158,7 +158,7 @@ def test_binary():
 
     The field value dos not change
 
-        >>> print record.file
+        >>> print(record.file)
         var test = null;
         <BLANKLINE>
 
@@ -170,21 +170,21 @@ def test_binary():
 
     The field value is now empty
 
-        >>> print record.file
+        >>> print(record.file)
         <BLANKLINE>
 
     See what append in read only mode
 
         >>> record.file = 'e'*1000
-        >>> print fs.file.render_readonly()
+        >>> print(fs.file.render_readonly())
         1 KB
 
         >>> record.file = 'e'*1000*1024
-        >>> print fs.file.render_readonly()
+        >>> print(fs.file.render_readonly())
         1000.00 KB
 
         >>> record.file = 'e'*2*1024*1024
-        >>> print fs.file.render_readonly()
+        >>> print(fs.file.render_readonly())
         2.00 MB
 
     """

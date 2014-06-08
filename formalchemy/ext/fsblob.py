@@ -35,10 +35,10 @@ def image_extension(extensions=['jpeg', 'jpg', 'gif', 'png']):
 
 def normalized_basename(path):
     """
-    >>> print normalized_basename(u'c:\\Prog files\My fil\xe9.jpg')
+    >>> print(normalized_basename(u'c:\\Prog files\My fil\xe9.jpg'))
     My_fil.jpg
 
-    >>> print normalized_basename('c:\\Prog files\My fil\xc3\xa9.jpg')
+    >>> print(normalized_basename('c:\\Prog files\My fil\xc3\xa9.jpg'))
     My_fil.jpg
 
     """

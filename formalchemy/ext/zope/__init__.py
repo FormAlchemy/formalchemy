@@ -45,7 +45,7 @@ Fields are aware of schema attributes:
 
 We can use the form::
 
-    >>> print fs.render().strip() #doctest: +ELLIPSIS +NORMALIZE_WHITESPACE
+    >>> print(fs.render().strip()) #doctest: +ELLIPSIS +NORMALIZE_WHITESPACE
     <div>
       <label class="field_req" for="Pet--name">Name</label>
       <textarea id="Pet--name" name="Pet--name">dewey</textarea>
@@ -133,7 +133,7 @@ Looks nice ! Let's use the grid:
 
     >>> grid = Grid(IPet)
     >>> grid = grid.bind([p])
-    >>> print grid.render().strip() #doctest: +ELLIPSIS
+    >>> print(grid.render().strip()) #doctest: +ELLIPSIS
     <thead>
       <tr>
           <th>Name</th>

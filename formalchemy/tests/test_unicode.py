@@ -15,21 +15,21 @@ def test_unicode():
     >>> session.flush()
     >>> FieldSet.default_renderers = original_renderers.copy()
     >>> fs = FieldSet(jose)
-    >>> print fs.render() #doctest: +ELLIPSIS
+    >>> print(fs.render()) #doctest: +ELLIPSIS
     <div>
     ...<input id="User-3-name" maxlength="30" name="User-3-name" type="text" value="José" />...
 
     >>> fs.readonly = True
-    >>> print fs.render() #doctest: +ELLIPSIS
+    >>> print(fs.render()) #doctest: +ELLIPSIS
     <tbody>...José...
 
     >>> fs = FieldSet(order4)
-    >>> print fs.render() #doctest: +ELLIPSIS
+    >>> print(fs.render()) #doctest: +ELLIPSIS
     <div>
     ...José...
 
     >>> fs.readonly = True
-    >>> print fs.render() #doctest: +ELLIPSIS
+    >>> print(fs.render()) #doctest: +ELLIPSIS
     <tbody>...José...
 
     >>> session.rollback()

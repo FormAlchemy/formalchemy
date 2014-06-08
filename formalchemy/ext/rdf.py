@@ -18,7 +18,7 @@ Usage
     >>> fs.stock.value
     ['value1']
 
-    >>> print fs.render().strip() # doctest: +ELLIPSIS +NORMALIZE_WHITESPACE
+    >>> print(fs.render().strip()) # doctest: +ELLIPSIS +NORMALIZE_WHITESPACE
     <div>
       <label class="field_opt" for="Company--stockDescription">Stockdescription</label>
       <input id="Company--stockDescription" name="Company--stockDescription" type="text" value="description" />
@@ -35,7 +35,7 @@ Usage
 
     >>> fs = Grid(Company, [c])
     >>> fs.configure(options=[fs.stock.set(options=['value1', 'value2'])], readonly=True)
-    >>> print fs.render().strip() #doctest: +NORMALIZE_WHITESPACE
+    >>> print(fs.render().strip()) #doctest: +NORMALIZE_WHITESPACE
     <thead>
       <tr>
           <th>Stockdescription</th>

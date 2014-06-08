@@ -38,13 +38,13 @@ def ls(*args):
     files.sort()
     for f in files:
         if os.path.isdir(f):
-            print 'D %s' % os.path.basename(f)
+            print('D %s' % os.path.basename(f))
         else:
-            print '- %s' % os.path.basename(f)
+            print('- %s' % os.path.basename(f))
 
 def cat(*args):
     filename = os.path.join(os.path.dirname(__file__), *args)
-    print open(filename).read()
+    print(open(filename).read())
 
 def session_mapper(scoped_session):
     def mapper(cls, *arg, **kw):
