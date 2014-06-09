@@ -135,7 +135,7 @@ class FieldSet(BaseFieldSet):
     def __init__(self, model, **kwargs):
         BaseFieldSet.__init__(self, model, **kwargs)
         BaseFieldSet.rebind(self, model, data=kwargs.get('data', None))
-        for k, v in model.__dict__.iteritems():
+        for k, v in model.__dict__.items():
             if not k.startswith('_'):
                 descriptor = type(v)
                 t = self._mapping.get(descriptor)
@@ -156,10 +156,10 @@ class FieldSet(BaseFieldSet):
         mr.__dict__ = dict(self.__dict__)
         # two steps so bind's error checking can work
         mr.rebind(model, session, data)
-        mr._fields = OrderedDict([(key, renderer.bind(mr)) for key, renderer in self._fields.iteritems()])
+        mr._fields = OrderedDict([(key, renderer.bind(mr)) for key, renderer in self._fields.items()])
         if self._render_fields:
             mr._render_fields = OrderedDict([(field.key, field) for field in
-                                             [field.bind(mr) for field in self._render_fields.itervalues()]])
+                                             [field.bind(mr) for field in self._render_fields.values()]])
         return mr
 
     def rebind(self, model, session=None, data=None):

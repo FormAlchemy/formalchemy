@@ -1116,7 +1116,7 @@ class AbstractField(object):
     def _modified(self, **kwattrs):
         # return a copy of self, with the given attributes modified
         copied = deepcopy(self)
-        for attr, value in kwattrs.iteritems():
+        for attr, value in kwattrs.items():
             setattr(copied, attr, value)
         return copied
 
@@ -1288,7 +1288,7 @@ class AbstractField(object):
               `name`, or `id` for example).  Use with caution.
         """
         new_opts = copy(self.html_options)
-        for k, v in html_options.iteritems():
+        for k, v in html_options.items():
             new_opts[k.rstrip('_')] = v
         return self._modified(html_options=new_opts)
     def label(self, text=NoDefault):

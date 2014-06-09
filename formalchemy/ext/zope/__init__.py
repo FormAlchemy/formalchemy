@@ -517,10 +517,10 @@ class FieldSet(BaseFieldSet):
         # two steps so bind's error checking can work
         mr.rebind(model, session, data)
         mr._request = request
-        mr._fields = OrderedDict([(key, renderer.bind(mr)) for key, renderer in self._fields.iteritems()])
+        mr._fields = OrderedDict([(key, renderer.bind(mr)) for key, renderer in self._fields.items()])
         if self._render_fields:
             mr._render_fields = OrderedDict([(field.key, field) for field in
-                                             [field.bind(mr) for field in self._render_fields.itervalues()]])
+                                             [field.bind(mr) for field in self._render_fields.values()]])
         return mr
 
     def gen_model(self, model=None, dict_like=False, **kwargs):

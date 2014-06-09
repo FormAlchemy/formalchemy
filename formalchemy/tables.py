@@ -167,7 +167,7 @@ class Grid(FieldSet):
         success = True
         for row in self:
             row_errors = {}
-            for field in self.render_fields.itervalues():
+            for field in self.render_fields.values():
                 success = field._validate() and success
                 if field.errors:
                     row_errors[field] = field.errors

@@ -50,7 +50,7 @@ Here is an example::
 
   >>> cat(mako_templates_dir, 'fieldset.mako')
   <ul>
-  %for field in fieldset.render_fields.itervalues():
+  %for field in fieldset.render_fields.values():
   <li>${field.name}</li>
   %endfor
   </ul>
@@ -79,7 +79,7 @@ Same with genshi except that :mod:`formalchemy` don't provide default templates:
 
   >>> cat(genshi_templates_dir, 'fieldset.html')
   <ul xmlns:py="http://genshi.edgewall.org/">
-  <li py:for="field in fieldset.render_fields.itervalues()">${field.name}</li>
+  <li py:for="field in fieldset.render_fields.values()">${field.name}</li>
   </ul>
   <BLANKLINE>
 

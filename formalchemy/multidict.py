@@ -107,7 +107,7 @@ class UnicodeMultiDict(MutableMapping):
         request.
         """
         unicode_mixed = {}
-        for key, value in self.multi.mixed().iteritems():
+        for key, value in self.multi.mixed().items():
             if isinstance(value, list):
                 value = [self._decode_value(value) for value in value]
             else:
@@ -121,7 +121,7 @@ class UnicodeMultiDict(MutableMapping):
         list of values.
         """
         unicode_dict = {}
-        for key, value in self.multi.dict_of_lists().iteritems():
+        for key, value in self.multi.dict_of_lists().items():
             value = [self._decode_value(value) for value in value]
             unicode_dict[self._decode_key(key)] = value
         return unicode_dict
@@ -153,7 +153,7 @@ class UnicodeMultiDict(MutableMapping):
         return (self._decode_key(k), self._decode_value(v))
 
     def __repr__(self):
-        items = map('(%r, %r)'.__mod__, _hide_passwd(self.iteritems()))
+        items = map('(%r, %r)'.__mod__, _hide_passwd(self.items()))
         return '%s([%s])' % (self.__class__.__name__, ', '.join(items))
 
     def __len__(self):
@@ -164,27 +164,27 @@ class UnicodeMultiDict(MutableMapping):
     ##
 
     def keys(self):
-        return [self._decode_key(k) for k in self.multi.iterkeys()]
+        return [self._decode_key(k) for k in self.multi.keys()]
 
     def iterkeys(self):
-        for k in self.multi.iterkeys():
+        for k in self.multi.keys():
             yield self._decode_key(k)
 
     __iter__ = iterkeys
 
     def items(self):
         return [(self._decode_key(k), self._decode_value(v))
-                for k, v in self.multi.iteritems()]
+                for k, v in self.multi.items()]
 
     def iteritems(self):
-        for k, v in self.multi.iteritems():
+        for k, v in self.multi.items():
             yield (self._decode_key(k), self._decode_value(v))
 
     def values(self):
-        return [self._decode_value(v) for v in self.multi.itervalues()]
+        return [self._decode_value(v) for v in self.multi.values()]
 
     def itervalues(self):
-        for v in self.multi.itervalues():
+        for v in self.multi.values():
             yield self._decode_value(v)
 
 def _hide_passwd(items):

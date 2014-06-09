@@ -212,13 +212,13 @@ class _RESTController(object):
         Default is::
 
             fs = self.get_fieldset()
-            for field in fs.render_fields.itervalues():
+            for field in fs.render_fields.values():
                 if field.is_readonly():
                     del fs[field.name]
             return fs
         """
         fs = self.get_fieldset()
-        for field in fs.render_fields.itervalues():
+        for field in fs.render_fields.values():
             if field.is_readonly():
                 del fs[field.name]
         return fs
@@ -411,7 +411,7 @@ class _ModelsController(_RESTController):
                 key = model.__name__
                 models[key] = model_url(self.collection_name, model_name=key)
         else:
-            for key, obj in self.model.__dict__.iteritems():
+            for key, obj in self.model.__dict__.items():
                 if not key.startswith('_'):
                     if Document is not None:
                         try:

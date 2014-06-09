@@ -404,10 +404,10 @@ class FieldSet(DefaultRenderers):
         # two steps so bind's error checking can work
         FieldSet.rebind(mr, model, session, data, request,
                         with_prefix=with_prefix)
-        mr._fields = OrderedDict([(key, renderer.bind(mr)) for key, renderer in self._fields.iteritems()])
+        mr._fields = OrderedDict([(key, renderer.bind(mr)) for key, renderer in self._fields.items()])
         if self._render_fields:
             mr._render_fields = OrderedDict([(field.key, field) for field in
-                                             [field.bind(mr) for field in self._render_fields.itervalues()]])
+                                             [field.bind(mr) for field in self._render_fields.values()]])
         mr._request = request
         return mr
 
@@ -548,7 +548,7 @@ class FieldSet(DefaultRenderers):
         if self.data is None:
             raise ValidationError('Cannot validate without binding data')
         success = True
-        for field in self.render_fields.itervalues():
+        for field in self.render_fields.values():
             success = field._validate() and success
         # run this _after_ the field validators, since each field validator
         # resets its error list. we want to allow the global validator to add
@@ -570,7 +570,7 @@ class FieldSet(DefaultRenderers):
             raise Exception('Cannot sync a read-only FieldSet')
         if self.data is None:
             raise Exception("No data bound; cannot sync")
-        for field in self.render_fields.itervalues():
+        for field in self.render_fields.values():
             field.sync()
         if self.session:
             self.session.add(self.model)
@@ -602,7 +602,7 @@ class FieldSet(DefaultRenderers):
         if self._errors:
             errors[None] = self._errors
         errors.update(dict([(field, field.errors)
-                            for field in self.render_fields.itervalues() if field.errors]))
+                            for field in self.render_fields.values() if field.errors]))
         return errors
 
 
@@ -670,7 +670,7 @@ class FieldSet(DefaultRenderers):
         else:
             raise TypeError('field must be a Field. Got %r' % field)
         new_field.parent = self
-        items = list(fields_.iteritems()) # prepare for Python 3
+        items = list(fields_.items()) # prepare for Python 3
         items.insert(index, (new_field.name, new_field))
         if self._render_fields:
             self._render_fields = OrderedDict(items)
@@ -694,7 +694,7 @@ class FieldSet(DefaultRenderers):
         else:
             raise TypeError('field must be a Field. Got %r' % field)
         new_field.parent = self
-        items = list(fields_.iteritems())
+        items = list(fields_.items())
         new_item = (new_field.name, new_field)
         if index + 1 == len(items): # after the last element ?
             items.append(new_item)
