@@ -442,9 +442,9 @@ class Field(BaseField):
         bound = field.bind(self.model)
         try:
             bound.validate(value)
-        except schema.ValidationError, e:
+        except schema.ValidationError as e:
             self.errors.append(e.doc())
-        except schema._bootstrapinterfaces.ConstraintNotSatisfied, e:
+        except schema._bootstrapinterfaces.ConstraintNotSatisfied as e:
             self.errors.append(e.doc())
 
         return not self.errors
