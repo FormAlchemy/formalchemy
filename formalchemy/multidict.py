@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 import cgi
 import copy
+from six import string_types
 from collections import MutableMapping
 from webob.multidict import MultiDict
 
@@ -39,7 +40,7 @@ class UnicodeMultiDict(MutableMapping):
         return key
 
     def _encode_key(self, key):
-        if self.decode_keys and isinstance(key, unicode):
+        if self.decode_keys and isinstance(key, string_types):
             return key.encode(self.encoding, self.errors)
         return key
 
@@ -54,13 +55,13 @@ class UnicodeMultiDict(MutableMapping):
             # decode FieldStorage's field name and filename
             value = copy.copy(value)
             if self.decode_keys:
-                if not isinstance(value.name, unicode):
+                if not isinstance(value.name, string_types):
                     value.name = value.name.decode(self.encoding, self.errors)
             if value.filename:
-                if not isinstance(value.filename, unicode):
+                if not isinstance(value.filename, string_types):
                     value.filename = value.filename.decode(self.encoding,
                                                            self.errors)
-        elif not isinstance(value, unicode):
+        elif not isinstance(value, string_types):
             try:
                 value = value.decode(self.encoding, self.errors)
             except AttributeError:
@@ -68,7 +69,7 @@ class UnicodeMultiDict(MutableMapping):
         return value
 
     def _encode_value(self, value):
-        if isinstance(value, unicode):
+        if isinstance(value, string_types):
             value = value.encode(self.encoding, self.errors)
         return value
 

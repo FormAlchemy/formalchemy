@@ -3,6 +3,8 @@
 # This module is part of FormAlchemy and is released under
 # the MIT License: http://www.opensource.org/licenses/mit-license.php
 
+from six import string_types
+
 import formalchemy.helpers as h
 
 from formalchemy import config
@@ -108,7 +110,7 @@ class Grid(FieldSet):
         _new_fields = []
         if args:
             for field in args:
-                if isinstance(field, basestring):
+                if isinstance(field, string_types):
                     if field in _fields:
                         field = _fields.get(field)
                     else:

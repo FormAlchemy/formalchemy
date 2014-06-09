@@ -210,6 +210,7 @@ from formalchemy import fatypes
 from sqlalchemy.util import OrderedDict
 from datetime import datetime
 from uuid import UUID
+from six import text_type
 try:
     from zope import schema
     from zope.schema import interfaces
@@ -435,7 +436,7 @@ class Field(BaseField):
 
         value = self._deserialize()
 
-        if isinstance(self.type, fatypes.Unicode) and not isinstance(value, unicode):
+        if isinstance(self.type, fatypes.Unicode) and not isinstance(value, text_type):
             value = _stringify(value)
 
         field = self.parent.iface[self.name]

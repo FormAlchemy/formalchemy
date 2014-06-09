@@ -10,6 +10,7 @@ logger = logging.getLogger('formalchemy.' + __name__)
 from copy import copy, deepcopy
 import datetime
 import warnings
+from six import string_types,text_type
 
 from sqlalchemy.orm.interfaces import MANYTOMANY
 from sqlalchemy.orm.interfaces import ONETOMANY
@@ -46,16 +47,14 @@ __all__ = ['Field', 'FieldRenderer',
 def _stringify(k, null_value=u''):
     if k is None:
         return null_value
-    if isinstance(k, str):
-        return unicode(k, config.encoding)
-    elif isinstance(k, unicode):
+    if isinstance(k, string_types):
         return k
     elif hasattr(k, '__unicode__'):
-        return unicode(k)
+        return k.__unicode__()
     elif isinstance(k, datetime.timedelta):
         return '%s.%s' % (k.days, k.seconds)
     else:
-        return unicode(str(k), config.encoding)
+        return text_type(k)
 
 def _htmlify(k, null_value=u''):
     if hasattr(k, '__html__'):
@@ -142,7 +141,7 @@ class FieldRenderer(object):
         clsname = self.field.model.__class__.__name__
         pk = self.field.parent._bound_pk
         assert pk != ''
-        if isinstance(pk, basestring) or not hasattr(pk, '__iter__'):
+        if isinstance(pk, string_types) or not hasattr(pk, '__iter__'):
             pk_string = _stringify(pk)
         else:
             # remember to use a delimiter that can be used in the DOM (specifically, no commas).
@@ -233,7 +232,7 @@ class FieldRenderer(object):
             return ''
         if isinstance(value, list):
             return h.literal(', ').join([self.stringify_value(item, as_html=True) for item in value])
-        if isinstance(value, unicode):
+        if isinstance(value, string_types):
             return value
         return self.stringify_value(value, as_html=True)
 
@@ -762,7 +761,7 @@ def _extract_options(options):
             yield choice
         # ... or just a string.
         else:
-            if not isinstance(choice, basestring):
+            if not isinstance(choice, string_types):
                 raise Exception('List, tuple, or string value expected as option (got %r)' % choice)
             yield (choice, choice)
 
@@ -1512,10 +1511,10 @@ class AbstractField(object):
 
     def _get_renderer(self):
         for t in self.parent.default_renderers:
-            if not isinstance(t, basestring) and type(self.type) is t:
+            if not isinstance(t, string_types) and type(self.type) is t:
                 return self.parent.default_renderers[t]
         for t in self.parent.default_renderers:
-            if not isinstance(t, basestring) and isinstance(self.type, t):
+            if not isinstance(t, string_types) and isinstance(self.type, t):
                 return self.parent.default_renderers[t]
         raise TypeError(
                 'No renderer found for field %s. '
@@ -1684,6 +1683,7 @@ class Field(AbstractField):
 
     def __unicode__(self):
         return self.render_readonly()
+    __str__ = __unicode__
 
     def __eq__(self, other):
         # we override eq so that when we configure with options=[...], we can match the renders in options

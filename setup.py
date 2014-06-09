@@ -4,6 +4,7 @@ import xml.sax.saxutils
 from os.path import join
 import sys
 import os
+from six import text_type
 
 def get_version(fname='formalchemy/__init__.py'):
     with open(fname) as f:
@@ -40,7 +41,7 @@ else:
 def read(filename):
     text = open(filename).read()
     try:
-        text = unicode(text, 'utf-8').encode('ascii', 'xmlcharrefreplace')
+        text = text.decode('utf-8')
     except NameError:
         return ''
     return xml.sax.saxutils.escape(text)

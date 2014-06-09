@@ -6,6 +6,8 @@
 import cgi
 import warnings
 import logging
+import operator
+from six import string_types
 logger = logging.getLogger('formalchemy.' + __name__)
 
 
@@ -622,7 +624,7 @@ class FieldSet(DefaultRenderers):
         _new_fields = []
         if args:
             for field in args:
-                if isinstance(field, basestring):
+                if isinstance(field, string_types):
                     if field in _fields:
                         field = _fields.get(field)
                     else:

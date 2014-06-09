@@ -254,6 +254,7 @@ class OTOChild(Base):
 
     def __unicode__(self):
         return self.baz
+    __str__ = __unicode__
 
     def __repr__(self):
         return '<OTOChild %s>' % self.baz
@@ -271,6 +272,7 @@ class Order(Base):
     quantity = Column(Integer, nullable=False)
     def __unicode__(self):
         return 'Quantity: %s' % self.quantity
+    __str__ = __unicode__
     def __repr__(self):
         return '<Order for user %s: %s>' % (self.user_id, self.quantity)
 
@@ -282,6 +284,7 @@ class OptionalOrder(Base): # the user is optional, not the order
     user = relation('User')
     def __unicode__(self):
         return 'Quantity: %s' % self.quantity
+    __str__ = __unicode__
     def __repr__(self):
         return '<OptionalOrder for user %s: %s>' % (self.user_id, self.quantity)
 
@@ -296,6 +299,7 @@ class User(Base):
     orders_dl = dynamic_loader(Order)
     def __unicode__(self):
         return self.name
+    __str__ = __unicode__
     def __repr__(self):
         return '<User %s>' % self.name
     def __html__(self):
