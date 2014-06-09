@@ -306,7 +306,7 @@ class FieldSet(DefaultRenderers):
                         attrs.append(attr)
                 # sort relations last before storing in the OrderedDict
                 L = [fields.AttributeField(attr, self) for attr in attrs]
-                L.sort(lambda a, b: cmp(a.is_relation, b.is_relation)) # note, key= not used for 2.3 support
+                L.sort(key=operator.attrgetter('is_relation'))
                 self._fields.update((field.key, field) for field in L)
 
 
