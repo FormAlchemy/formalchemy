@@ -205,7 +205,7 @@ TimeFieldRenderer
 
 Render a time field::
 
-    >>> time = datetime(2000, 12, 31, 9, 03, 30).time()
+    >>> time = datetime(2000, 12, 31, 9, 3, 30).time()
     >>> fs = FieldSet(One)
     >>> fs.append(Field(name='time', type=types.Time, value=time))
 
