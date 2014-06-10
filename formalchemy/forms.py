@@ -6,7 +6,6 @@
 import cgi
 import warnings
 import logging
-import operator
 from six import string_types
 logger = logging.getLogger('formalchemy.' + __name__)
 
@@ -272,8 +271,7 @@ class FieldSet(DefaultRenderers):
                 class_mapper(cls)
             except:
                 # this class is not managed by SA.  extract any raw Fields defined on it.
-                keys = cls.__dict__.keys()
-                keys.sort(lambda a, b: cmp(a.lower(), b.lower())) # 2.3 support
+                keys = sorted(cls.__dict__.keys(), key=lambda a: a.lower())
                 for key in keys:
                     field = cls.__dict__[key]
                     if isinstance(field, fields.Field):
@@ -306,7 +304,7 @@ class FieldSet(DefaultRenderers):
                         attrs.append(attr)
                 # sort relations last before storing in the OrderedDict
                 L = [fields.AttributeField(attr, self) for attr in attrs]
-                L.sort(key=operator.attrgetter('is_relation'))
+                L.sort(key=lambda a: a.is_relation)
                 self._fields.update((field.key, field) for field in L)
 
 
