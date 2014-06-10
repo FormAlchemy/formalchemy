@@ -1171,13 +1171,11 @@ class AbstractField(object):
             <SelectFieldRenderer for Field(myfield)>
 
         """
-        attrs = kwattrs.keys()
         mapping = dict(renderer='_renderer',
                        readonly='_readonly',
                        null_as='_null_option',
                        label='label_text')
-        for attr in attrs:
-            value = kwattrs.pop(attr)
+        for attr,value in kwattrs.items():
             if attr == 'validate':
                 self.validators.append(value)
             elif attr == 'validators':
