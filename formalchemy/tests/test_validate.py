@@ -4,7 +4,7 @@ from formalchemy.tests import *
 def validate_empty():
     """
     >>> fs = FieldSet(bill)
-    >>> fs.validate()
+    >>> fs.validate() #doctest: +ELLIPSIS,+IGNORE_EXCEPTION_DETAIL
     Traceback (most recent call last):
     ...
     ValidationError: Cannot validate without binding data
