@@ -478,13 +478,6 @@ def configure_and_render(fs, **options):
     fs.configure(**options)
     return fs.render()
 
-if not hasattr(__builtins__, 'sorted'):
-    # 2.3 support
-    def sorted(L, key=lambda a: a):
-        L = list(L)
-        L.sort(lambda a, b: cmp(key(a), key(b)))
-        return L
-
 class ImgRenderer(TextFieldRenderer):
     def render(self, *args, **kwargs):
         return '<img src="%s">' % self.value
