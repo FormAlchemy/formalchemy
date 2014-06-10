@@ -6,13 +6,13 @@ __doc__ = r"""
 # some low-level testing first
 
 >>> fs = FieldSet(order1)
->>> fs._raw_fields()
+>>> list(fs._raw_fields())
 [AttributeField(id), AttributeField(user_id), AttributeField(quantity), AttributeField(user)]
 >>> fs.user.name
 'user_id'
 
 >>> fs = FieldSet(bill)
->>> fs._raw_fields()
+>>> list(fs._raw_fields())
 [AttributeField(id), AttributeField(email), AttributeField(password), AttributeField(name), AttributeField(orders)]
 >>> fs.orders.name
 'orders'
@@ -24,7 +24,7 @@ binding should not change attribute order:
 [('email', AttributeField(email)), ('id', AttributeField(id)), ('name', AttributeField(name)), ('orders', AttributeField(orders)), ('password', AttributeField(password))]
 
 >>> fs = FieldSet(User2)
->>> fs._raw_fields()
+>>> list(fs._raw_fields())
 [AttributeField(user_id), AttributeField(address_id), AttributeField(name), AttributeField(address)]
 
 >>> fs.render() #doctest: +ELLIPSIS
