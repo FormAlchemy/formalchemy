@@ -4,14 +4,14 @@
 # the MIT License: http://www.opensource.org/licenses/mit-license.php
 
 # todo 2.0 pass field and value (so exception can refer to field name, for instance)
-from exceptions import ValidationError
-from i18n import _
+from formalchemy.exceptions import ValidationError
+from formalchemy.i18n import _
 
 if 'any' not in locals():
     # pre-2.5 support
     def any(seq):
         """
-        >>> any(xrange(10))
+        >>> any(range(10))
         True
         >>> any([0, 0, 0])
         False

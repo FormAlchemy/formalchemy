@@ -7,7 +7,7 @@
 </div>
 {{endfor}}
 
-{{for field in fieldset.render_fields.itervalues()}}
+{{for field in fieldset.render_fields.values()}}
 {{if field.requires_label}}
 <div>
   {{field.label_tag()}}

@@ -41,7 +41,7 @@ Render it::
     >>> # rendering
     >>> fs.name.is_required()
     True
-    >>> print fs.render() # doctest: +ELLIPSIS +NORMALIZE_WHITESPACE
+    >>> print(fs.render()) # doctest: +ELLIPSIS +NORMALIZE_WHITESPACE
     <div>
       <label class="field_req" for="Pet--name">Name</label>
       <input id="Pet--name" name="Pet--name" type="text" value="dewey" />
@@ -68,7 +68,7 @@ Same for grids::
     >>> # grid
     >>> grid = couchdb.Grid(Pet, [p, Pet()])
     >>> grid.configure(include=[grid.name, grid.type, grid.birthdate, grid.weight_in_pounds, grid.friends])
-    >>> print grid.render() # doctest: +SKIP +ELLIPSIS +NORMALIZE_WHITESPACE
+    >>> print(grid.render()) # doctest: +SKIP +ELLIPSIS +NORMALIZE_WHITESPACE
     <thead>
       <tr>
           <th>Name</th>
@@ -281,10 +281,10 @@ class FieldSet(BaseFieldSet):
         mr.__dict__ = dict(self.__dict__)
         # two steps so bind's error checking can work
         mr.rebind(model, session, data)
-        mr._fields = OrderedDict([(key, renderer.bind(mr)) for key, renderer in self._fields.iteritems()])
+        mr._fields = OrderedDict([(key, renderer.bind(mr)) for key, renderer in self._fields.items()])
         if self._render_fields:
             mr._render_fields = OrderedDict([(field.key, field) for field in
-                                             [field.bind(mr) for field in self._render_fields.itervalues()]])
+                                             [field.bind(mr) for field in self._render_fields.values()]])
         return mr
 
     def rebind(self, model=None, session=None, data=None):
@@ -292,7 +292,7 @@ class FieldSet(BaseFieldSet):
             if not isinstance(model, self.doc):
                 try:
                     model = model()
-                except Exception, e:
+                except Exception as e:
                     raise Exception('''%s appears to be a class, not an instance,
                             but FormAlchemy cannot instantiate it.  (Make sure
                             all constructor parameters are optional!) %r - %s''' % (

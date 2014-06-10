@@ -1,6 +1,6 @@
 <thead>
   <tr>
-    {{for field in collection.render_fields.itervalues()}}
+    {{for field in collection.render_fields.values()}}
       <th>{{field.label()}}</th>
     {{endfor}}
   </tr>
@@ -9,7 +9,7 @@
 <tbody>
 {{for i, row in enumerate(collection):}}
   <tr class="{{i % 2 and 'odd' or 'even'}}">
-  {{for field in collection.render_fields.itervalues()}}
+  {{for field in collection.render_fields.values()}}
     <td>{{field.render_readonly()}}</td>
   {{endfor}}
   </tr>

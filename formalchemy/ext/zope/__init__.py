@@ -45,7 +45,7 @@ Fields are aware of schema attributes:
 
 We can use the form::
 
-    >>> print fs.render().strip() #doctest: +ELLIPSIS +NORMALIZE_WHITESPACE
+    >>> print(fs.render().strip()) #doctest: +ELLIPSIS +NORMALIZE_WHITESPACE
     <div>
       <label class="field_req" for="Pet--name">Name</label>
       <textarea id="Pet--name" name="Pet--name">dewey</textarea>
@@ -133,7 +133,7 @@ Looks nice ! Let's use the grid:
 
     >>> grid = Grid(IPet)
     >>> grid = grid.bind([p])
-    >>> print grid.render().strip() #doctest: +ELLIPSIS
+    >>> print(grid.render().strip()) #doctest: +ELLIPSIS
     <thead>
       <tr>
           <th>Name</th>
@@ -210,6 +210,7 @@ from formalchemy import fatypes
 from sqlalchemy.util import OrderedDict
 from datetime import datetime
 from uuid import UUID
+from six import text_type
 try:
     from zope import schema
     from zope.schema import interfaces
@@ -435,16 +436,16 @@ class Field(BaseField):
 
         value = self._deserialize()
 
-        if isinstance(self.type, fatypes.Unicode) and not isinstance(value, unicode):
+        if isinstance(self.type, fatypes.Unicode) and not isinstance(value, text_type):
             value = _stringify(value)
 
         field = self.parent.iface[self.name]
         bound = field.bind(self.model)
         try:
             bound.validate(value)
-        except schema.ValidationError, e:
+        except schema.ValidationError as e:
             self.errors.append(e.doc())
-        except schema._bootstrapinterfaces.ConstraintNotSatisfied, e:
+        except schema._bootstrapinterfaces.ConstraintNotSatisfied as e:
             self.errors.append(e.doc())
 
         return not self.errors
@@ -516,10 +517,10 @@ class FieldSet(BaseFieldSet):
         # two steps so bind's error checking can work
         mr.rebind(model, session, data)
         mr._request = request
-        mr._fields = OrderedDict([(key, renderer.bind(mr)) for key, renderer in self._fields.iteritems()])
+        mr._fields = OrderedDict([(key, renderer.bind(mr)) for key, renderer in self._fields.items()])
         if self._render_fields:
             mr._render_fields = OrderedDict([(field.key, field) for field in
-                                             [field.bind(mr) for field in self._render_fields.itervalues()]])
+                                             [field.bind(mr) for field in self._render_fields.values()]])
         return mr
 
     def gen_model(self, model=None, dict_like=False, **kwargs):

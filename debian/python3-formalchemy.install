@@ -1,0 +1,2 @@
+docs/*.txt usr/share/doc/python-formalchemy/txt
+formalchemy/*.tmpl usr/share/python-formalchemy/

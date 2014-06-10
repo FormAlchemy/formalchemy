@@ -27,8 +27,6 @@ if not HAS_PYLONS:
 class _Translator(object):
     """dummy translator"""
     def gettext(self, value):
-        if isinstance(value, str):
-            return unicode(value, 'utf-8')
         return value
 _translator = _Translator()
 
@@ -36,21 +34,21 @@ def get_translator(lang=None, request=None):
     """
     return a GNUTranslations instance for `lang`::
 
-        >>> translator = get_translator('fr')
-        ... assert translate('Remove') == 'Supprimer'
-        ... assert translate('month_01') == 'Janvier'
-        >>> translator = get_translator('en')
-        ... assert translate('Remove') == 'Remove'
-        ... assert translate('month_01') == 'January'
+        >>> translate = get_translator('fr')
+        >>> assert translate('Remove') == 'Supprimer'
+        >>> assert translate('month_01') == 'Janvier'
+        >>> translate = get_translator('en')
+        >>> assert translate('Remove') == 'Remove'
+        >>> assert translate('month_01') == 'January'
 
     The correct gettext method is stored in request if possible::
 
         >>> from webob import Request
         >>> req = Request.blank('/')
-        >>> translator = get_translator('fr', request=req)
-        ... assert translate('Remove') == 'Supprimer'
-        >>> translator = get_translator('en', request=req)
-        ... assert translate('Remove') == 'Supprimer'
+        >>> translate = get_translator('fr', request=req)
+        >>> assert translate('Remove') == 'Supprimer'
+        >>> translate = get_translator('en', request=req)
+        >>> assert translate('Remove') == 'Supprimer'
 
     """
     if request is not None:
@@ -85,8 +83,6 @@ def get_translator(lang=None, request=None):
             tr = GNUTranslations(open(translations_path, 'rb')).gettext
             def translate(value):
                 value = tr(value)
-                if not isinstance(value, unicode):
-                    return unicode(value, 'utf-8')
                 return value
             if request is not None:
                 request.environ['fa.translate'] = translate

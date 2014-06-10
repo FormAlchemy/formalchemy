@@ -96,7 +96,7 @@ class MakoEngine(TemplateEngine):
         except TopLevelLookupException:
             filename = os.path.join(MAKO_TEMPLATES, '%s.mako_tmpl' % name)
             if os.path.isfile(filename):
-                template = TempitaTemplate.from_filename(filename)
+                template = TempitaTemplate.from_filename(filename, encoding="utf-8")
                 return MakoTemplate(template.substitute(template_engine='mako'), **kw)
 
     def render(self, template_name, **kwargs):

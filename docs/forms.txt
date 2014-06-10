@@ -46,7 +46,7 @@ itself appropriately.
 :class:`~formalchemy.forms.FieldSet`::
 
   >>> fs = FieldSet(bill)
-  >>> print fs.name.value
+  >>> print(fs.name.value)
   Bill
 
 If you have an attribute name that conflicts with a built-in
@@ -146,7 +146,7 @@ Here is a callable exemple::
   ...     return fs.session.query(User).filter(User.name=='Bill')
   >>> fs3 = FieldSet(bill)
   >>> fs3.configure(options=[fs3.name.dropdown(options=custom_query)])
-  >>> print fs3.name.render()
+  >>> print(fs3.name.render())
   <select id="User-1-name" name="User-1-name">
   <option value="">None</option>
   <option value="1">Bill</option>
@@ -162,23 +162,23 @@ method, which takes a :mod:`Field <formalchemy.fields>` object as parameter::
   >>> fs3 = FieldSet(bill)
   >>> fs3.configure(include=[fs3.name, fs3.email])
   >>> fs3.append(Field('password', renderer='password'))
-  >>> fs3.render_fields.keys()
+  >>> list(fs3.render_fields.keys())
   ['name', 'email', 'password']
 
 You can also `insert` fields. Here we add a country before the password field::
 
   >>> fs3.insert(fs3.password, Field('country'))
-  >>> fs3.render_fields.keys()
+  >>> list(fs3.render_fields.keys())
   ['name', 'email', 'country', 'password']
 
 And finally, you can `delete` fields::
 
   >>> del fs3.country
-  >>> fs3.render_fields.keys()
+  >>> list(fs3.render_fields.keys())
   ['name', 'email', 'password']
 
   >>> del fs3['password']
-  >>> fs3.render_fields.keys()
+  >>> list(fs3.render_fields.keys())
   ['name', 'email']
 
 Here is `Field`'s constructor:
@@ -230,7 +230,7 @@ just call the `render` method to get an HTML string suitable for
 including in your page::
 
     >>> fs = FieldSet(bill)
-    >>> print fs.render() 
+    >>> print(fs.render())
     <div>
      <label class="field_req" for="User-1-email">
       Email
@@ -276,7 +276,7 @@ Note that there is no `form` element!  You must provide that yourself.
 You can also render individual fields for more fine-grained control::
 
   >>> fs = FieldSet(bill)
-  >>> print fs.name.render()
+  >>> print(fs.name.render())
   <input id="User-1-name" maxlength="30" name="User-1-name" type="text" value="Bill" />
 
 

@@ -78,7 +78,7 @@ Then you can initialize a `Grid` and bind it to a list of row instance::
 
 This will render instances as an html table::
 
-  >>> print tc.render()
+  >>> print(tc.render())
   <thead>
    <tr>
     <th>
@@ -118,7 +118,7 @@ You can also add a field to the `Grid` manually::
   >>> tc2 = Grid(User, [bill, john])
   >>> tc2.append(Field('link', type=types.String, value=lambda item: literal('<a href=%d>link</a>') % item.id))
   >>> tc2.configure(readonly=True)
-  >>> print tc2.render()
+  >>> print(tc2.render())
   <thead>
    <tr>
     <th>

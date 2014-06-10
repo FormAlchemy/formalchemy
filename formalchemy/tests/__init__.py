@@ -38,13 +38,13 @@ def ls(*args):
     files.sort()
     for f in files:
         if os.path.isdir(f):
-            print 'D %s' % os.path.basename(f)
+            print('D %s' % os.path.basename(f))
         else:
-            print '- %s' % os.path.basename(f)
+            print('- %s' % os.path.basename(f))
 
 def cat(*args):
     filename = os.path.join(os.path.dirname(__file__), *args)
-    print open(filename).read()
+    print(open(filename).read())
 
 def session_mapper(scoped_session):
     def mapper(cls, *arg, **kw):
@@ -54,7 +54,7 @@ def session_mapper(scoped_session):
 
 def application(model, fieldset=None):
     def app(environ, start_response):
-        tmpl = '''<DOCTYPE !html>
+        tmpl = u'''<DOCTYPE !html>
         <html><body><form method="POST" action="" enctype="multipart/form-data">
         %s
         <input type="submit" id="submit" name="submit" />
@@ -73,11 +73,11 @@ def application(model, fieldset=None):
             if fs.validate():
                 fs.sync()
                 fs.readonly = True
-                resp.body = tmpl % ('<b>OK<b>' + fs.render().encode("utf-8"),)
+                resp.text = tmpl % ('<b>OK<b>' + fs.render(),)
             else:
-                resp.body = tmpl % fs.render()
+                resp.text = tmpl % fs.render()
         else:
-            resp.body = tmpl % fs.render().encode("utf-8")
+            resp.text = tmpl % fs.render()
         return resp(environ, start_response)
     return app
 
@@ -254,6 +254,7 @@ class OTOChild(Base):
 
     def __unicode__(self):
         return self.baz
+    __str__ = __unicode__
 
     def __repr__(self):
         return '<OTOChild %s>' % self.baz
@@ -271,6 +272,7 @@ class Order(Base):
     quantity = Column(Integer, nullable=False)
     def __unicode__(self):
         return 'Quantity: %s' % self.quantity
+    __str__ = __unicode__
     def __repr__(self):
         return '<Order for user %s: %s>' % (self.user_id, self.quantity)
 
@@ -282,6 +284,7 @@ class OptionalOrder(Base): # the user is optional, not the order
     user = relation('User')
     def __unicode__(self):
         return 'Quantity: %s' % self.quantity
+    __str__ = __unicode__
     def __repr__(self):
         return '<OptionalOrder for user %s: %s>' % (self.user_id, self.quantity)
 
@@ -296,6 +299,7 @@ class User(Base):
     orders_dl = dynamic_loader(Order)
     def __unicode__(self):
         return self.name
+    __str__ = __unicode__
     def __repr__(self):
         return '<User %s>' % self.name
     def __html__(self):
@@ -474,18 +478,11 @@ def configure_and_render(fs, **options):
     fs.configure(**options)
     return fs.render()
 
-if not hasattr(__builtins__, 'sorted'):
-    # 2.3 support
-    def sorted(L, key=lambda a: a):
-        L = list(L)
-        L.sort(lambda a, b: cmp(key(a), key(b)))
-        return L
-
 class ImgRenderer(TextFieldRenderer):
     def render(self, *args, **kwargs):
         return '<img src="%s">' % self.value
 
-import fake_module
+from formalchemy.tests import fake_module
 fake_module.__dict__.update({
         'fs': FieldSet(User, session=session),
         })

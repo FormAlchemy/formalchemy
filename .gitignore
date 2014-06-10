@@ -21,3 +21,4 @@ pylonsapp/pylonsapp/public/*/*/*/*.*
 *.pyo
 *.log
 
+/.pybuild

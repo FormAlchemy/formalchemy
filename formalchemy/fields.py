@@ -10,7 +10,7 @@ logger = logging.getLogger('formalchemy.' + __name__)
 from copy import copy, deepcopy
 import datetime
 import warnings
-from werkzeug import escape
+from six import string_types,text_type, next
 
 from sqlalchemy.orm.interfaces import MANYTOMANY
 from sqlalchemy.orm.interfaces import ONETOMANY
@@ -48,16 +48,14 @@ __all__ = ['Field', 'FieldRenderer',
 def _stringify(k, null_value=u''):
     if k is None:
         return null_value
-    if isinstance(k, str):
-        return unicode(k, config.encoding)
-    elif isinstance(k, unicode):
+    if isinstance(k, string_types):
         return k
     elif hasattr(k, '__unicode__'):
-        return unicode(k)
+        return k.__unicode__()
     elif isinstance(k, datetime.timedelta):
         return '%s.%s' % (k.days, k.seconds)
     else:
-        return unicode(str(k), config.encoding)
+        return text_type(k)
 
 def _htmlify(k, null_value=u''):
     if hasattr(k, '__html__'):
@@ -144,7 +142,7 @@ class FieldRenderer(object):
         clsname = self.field.model.__class__.__name__
         pk = self.field.parent._bound_pk
         assert pk != ''
-        if isinstance(pk, basestring) or not hasattr(pk, '__iter__'):
+        if isinstance(pk, string_types) or not hasattr(pk, '__iter__'):
             pk_string = _stringify(pk)
         else:
             # remember to use a delimiter that can be used in the DOM (specifically, no commas).
@@ -169,7 +167,7 @@ class FieldRenderer(object):
             # submitted value.  do not deserialize here since that requires valid data, which we might not have
             try:
                 v = self._serialized_value()
-            except FieldNotFoundError, e:
+            except FieldNotFoundError as e:
                 v = None
         else:
             v = None
@@ -235,7 +233,7 @@ class FieldRenderer(object):
             return ''
         if isinstance(value, list):
             return h.literal(', ').join([self.stringify_value(item, as_html=True) for item in value])
-        if isinstance(value, unicode):
+        if isinstance(value, string_types):
             return value
         return self.stringify_value(value, as_html=True)
 
@@ -568,8 +566,8 @@ class DateFieldRenderer(FieldRenderer):
         data = self.params
         value = self.field.model_value
         F_ = self.get_translator(**kwargs)
-        month_options = [(F_('Month'), 'MM')] + [(F_('month_%02i' % i), str(i)) for i in xrange(1, 13)]
-        day_options = [(F_('Day'), 'DD')] + [(i, str(i)) for i in xrange(1, 32)]
+        month_options = [(F_('Month'), 'MM')] + [(F_('month_%02i' % i), str(i)) for i in range(1, 13)]
+        day_options = [(F_('Day'), 'DD')] + [(i, str(i)) for i in range(1, 32)]
         mm_name = self.name + '__month'
         dd_name = self.name + '__day'
         yyyy_name = self.name + '__year'
@@ -616,9 +614,9 @@ class TimeFieldRenderer(FieldRenderer):
         value = self.field.model_value
         F_ = self.get_translator(**kwargs)
         opts = {}
-        opts['hour'] = [(str(i),str(i)) for i in xrange(24)]
-        opts['minute'] = [(str(i),str(i)) for i in xrange(60)]
-        opts['second'] = [(str(i),str(i)) for i in xrange(60)]
+        opts['hour'] = [(str(i),str(i)) for i in range(24)]
+        opts['minute'] = [(str(i),str(i)) for i in range(60)]
+        opts['second'] = [(str(i),str(i)) for i in range(60)]
         hh_name = self.name + '__hour'
         mm_name = self.name + '__minute'
         ss_name = self.name + '__second'
@@ -764,7 +762,7 @@ def _extract_options(options):
             yield choice
         # ... or just a string.
         else:
-            if not isinstance(choice, basestring):
+            if not isinstance(choice, string_types):
                 raise Exception('List, tuple, or string value expected as option (got %r)' % choice)
             yield (choice, choice)
 
@@ -930,41 +928,11 @@ def _pk(instance):
     return tuple([_pk_one_column(instance, column) for column in columns])
 
 
-# see http://code.activestate.com/recipes/364469/ for explanation.
-# 2.6 provides ast.literal_eval, but requiring 2.6 is a bit of a stretch for now.
-import compiler
-class _SafeEval(object):
-    def visit(self, node, **kw):
-        cls = node.__class__
-        meth = getattr(self, 'visit' + cls.__name__, self.default)
-        return meth(node, **kw)
-
-    def default(self, node, **kw):
-        for child in node.getChildNodes():
-            return self.visit(child, **kw)
-
-    visitExpression = default
-
-    def visitName(self, node, **kw):
-        if node.name in ['True', 'False', 'None']:
-            return eval(node.name)
-
-    def visitConst(self, node, **kw):
-        return node.value
-
-    def visitTuple(self, node, **kw):
-        return tuple(self.visit(i) for i in node.nodes)
-
-    def visitList(self, node, **kw):
-        return [self.visit(i) for i in node.nodes]
-
+from ast import literal_eval
 def _simple_eval(source):
-    """like 2.6's ast.literal_eval, but only does constants, lists, and tuples, for serialized pk eval"""
     if source == '':
         return None
-    walker = _SafeEval()
-    ast = compiler.parse(source, 'eval')
-    return walker.visit(ast)
+    return literal_eval(source)
 
 
 def _query_options(L):
@@ -988,7 +956,7 @@ def _normalized_options(options):
         return options
     i = iter(options)
     try:
-        first = i.next()
+        first = next(i)
     except StopIteration:
         return []
     try:
@@ -1112,7 +1080,7 @@ class AbstractField(object):
             # Call renderer.deserialize(), because the deserializer can
             # also raise a ValidationError
             value = self._deserialize()
-        except validators.ValidationError, e:
+        except validators.ValidationError as e:
             self.errors.append(e.message)
             return False
 
@@ -1124,13 +1092,13 @@ class AbstractField(object):
                 continue
             try:
                 validator(value, self)
-            except validators.ValidationError, e:
+            except validators.ValidationError as e:
                 self.errors.append(e.message)
             except TypeError:
                 warnings.warn(DeprecationWarning('Please provide a field argument to your %r validator. Your validator will break in FA 1.5' % validator))
                 try:
                     validator(value)
-                except validators.ValidationError, e:
+                except validators.ValidationError as e:
                     self.errors.append(e.message)
         return not self.errors
 
@@ -1149,7 +1117,7 @@ class AbstractField(object):
     def _modified(self, **kwattrs):
         # return a copy of self, with the given attributes modified
         copied = deepcopy(self)
-        for attr, value in kwattrs.iteritems():
+        for attr, value in kwattrs.items():
             setattr(copied, attr, value)
         return copied
 
@@ -1204,13 +1172,11 @@ class AbstractField(object):
             <SelectFieldRenderer for Field(myfield)>
 
         """
-        attrs = kwattrs.keys()
         mapping = dict(renderer='_renderer',
                        readonly='_readonly',
                        null_as='_null_option',
                        label='label_text')
-        for attr in attrs:
-            value = kwattrs.pop(attr)
+        for attr,value in kwattrs.items():
             if attr == 'validate':
                 self.validators.append(value)
             elif attr == 'validators':
@@ -1321,7 +1287,7 @@ class AbstractField(object):
               `name`, or `id` for example).  Use with caution.
         """
         new_opts = copy(self.html_options)
-        for k, v in html_options.iteritems():
+        for k, v in html_options.items():
             new_opts[k.rstrip('_')] = v
         return self._modified(html_options=new_opts)
     def label(self, text=NoDefault):
@@ -1544,10 +1510,10 @@ class AbstractField(object):
 
     def _get_renderer(self):
         for t in self.parent.default_renderers:
-            if not isinstance(t, basestring) and type(self.type) is t:
+            if not isinstance(t, string_types) and type(self.type) is t:
                 return self.parent.default_renderers[t]
         for t in self.parent.default_renderers:
-            if not isinstance(t, basestring) and isinstance(self.type, t):
+            if not isinstance(t, string_types) and isinstance(self.type, t):
                 return self.parent.default_renderers[t]
         raise TypeError(
                 'No renderer found for field %s. '
@@ -1723,6 +1689,7 @@ class Field(AbstractField):
 
     def __unicode__(self):
         return self.render_readonly()
+    __str__ = __unicode__
 
     def __eq__(self, other):
         # we override eq so that when we configure with options=[...], we can match the renders in options
@@ -1743,10 +1710,10 @@ class AttributeField(AbstractField):
         """
             >>> from formalchemy.tests import FieldSet, Order
             >>> fs = FieldSet(Order)
-            >>> print fs.user.key
+            >>> print(fs.user.key)
             user
 
-            >>> print fs.user.name
+            >>> print(fs.user.name)
             user_id
         """
         AbstractField.__init__(self, parent)

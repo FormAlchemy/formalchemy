@@ -1,0 +1,7 @@
+/files
+/python-formalchemy
+/python3-formalchemy
+/*.substvars
+/*.log
+/files
+/*.debhelper

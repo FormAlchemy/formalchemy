@@ -49,7 +49,7 @@ a class instead of an object, the class will be instantiated for you.)
 The object will be placed into the current session, if one exists::
 
   >>> if fs.validate(): fs.sync()
-  >>> print bill.name
+  >>> print(bill.name)
   Sam
 
 
@@ -83,7 +83,7 @@ a ValidationError if it is invalid.
 
   >>> integer('1', field)
   1
-  >>> integer('1.2', field)
+  >>> integer('1.2', field) # doctest: +ELLIPSIS,+IGNORE_EXCEPTION_DETAIL
   Traceback (most recent call last):
   ...
   ValidationError: Value is not an integer
@@ -94,22 +94,22 @@ a ValidationError if it is invalid.
   1.0
   >>> float_('1.2', field)
   1.2
-  >>> float_('asdf', field)
+  >>> float_('asdf', field) # doctest: +ELLIPSIS,+IGNORE_EXCEPTION_DETAIL
   Traceback (most recent call last):
   ...
   ValidationError: Value is not a number
 
 .. autofunction:: currency
 
-  >>> currency('asdf', field)
+  >>> currency('asdf', field) # doctest: +ELLIPSIS,+IGNORE_EXCEPTION_DETAIL
   Traceback (most recent call last):
   ...
   ValidationError: Value is not a number
-  >>> currency('1', field)
+  >>> currency('1', field) # doctest: +ELLIPSIS,+IGNORE_EXCEPTION_DETAIL
   Traceback (most recent call last):
   ...
   ValidationError: Please specify full currency value, including cents (e.g., 12.34)
-  >>> currency('1.0', field)
+  >>> currency('1.0', field) # doctest: +ELLIPSIS,+IGNORE_EXCEPTION_DETAIL
   Traceback (most recent call last):
   ...
   ValidationError: Please specify full currency value, including cents (e.g., 12.34)
@@ -118,7 +118,7 @@ a ValidationError if it is invalid.
 .. autofunction:: required
 
   >>> required('asdf', field)
-  >>> required('', field)
+  >>> required('', field) # doctest: +ELLIPSIS,+IGNORE_EXCEPTION_DETAIL
   Traceback (most recent call last):
   ...
   ValidationError: Please enter a value
@@ -128,48 +128,48 @@ a ValidationError if it is invalid.
   >>> email('a+formalchemy@gmail.com', field)
   >>> email('a+."<>"@gmail.com', field)
   >>> email('a+."<>"."[]"@gmail.com', field)
-  >>> email('a+."<>@gmail.com', field)
+  >>> email('a+."<>@gmail.com', field) # doctest: +ELLIPSIS,+IGNORE_EXCEPTION_DETAIL
   Traceback (most recent call last):
   ...
   ValidationError: Unterminated quoted section in recipient
-  >>> email('a+."<>""[]"@gmail.com', field)
+  >>> email('a+."<>""[]"@gmail.com', field) # doctest: +ELLIPSIS,+IGNORE_EXCEPTION_DETAIL
   Traceback (most recent call last):
   ...
   ValidationError: Quoted section must be followed by '@' or '.'
-  >>> email('<>@gmail.com', field)
+  >>> email('<>@gmail.com', field) # doctest: +ELLIPSIS,+IGNORE_EXCEPTION_DETAIL
   Traceback (most recent call last):
   ...
   ValidationError: Reserved character present in recipient
-  >>> email(chr(0) + '@gmail.com', field)
+  >>> email(chr(0) + '@gmail.com', field) # doctest: +ELLIPSIS,+IGNORE_EXCEPTION_DETAIL
   Traceback (most recent call last):
   ...
   ValidationError: Control characters present
-  >>> email(chr(129) + '@gmail.com', field)
+  >>> email(chr(129) + '@gmail.com', field) # doctest: +ELLIPSIS,+IGNORE_EXCEPTION_DETAIL
   Traceback (most recent call last):
   ...
   ValidationError: Non-ASCII characters present
   >>> email('', field)
-  >>> email('asdf', field)
+  >>> email('asdf', field) # doctest: +ELLIPSIS,+IGNORE_EXCEPTION_DETAIL
   Traceback (most recent call last):
   ...
   ValidationError: Missing @ sign
-  >>> email('@', field)
+  >>> email('@', field) # doctest: +ELLIPSIS,+IGNORE_EXCEPTION_DETAIL
   Traceback (most recent call last):
   ...
   ValidationError: Recipient must be non-empty
-  >>> email('a@', field)
+  >>> email('a@', field) # doctest: +ELLIPSIS,+IGNORE_EXCEPTION_DETAIL
   Traceback (most recent call last):
   ...
   ValidationError: Domain must be non-empty
-  >>> email('a@gmail.com.', field)
+  >>> email('a@gmail.com.', field) # doctest: +ELLIPSIS,+IGNORE_EXCEPTION_DETAIL
   Traceback (most recent call last):
   ...
   ValidationError: Domain must not end with '.'
-  >>> email('a@gmail..com', field)
+  >>> email('a@gmail..com', field) # doctest: +ELLIPSIS,+IGNORE_EXCEPTION_DETAIL
   Traceback (most recent call last):
   ...
   ValidationError: Domain must not contain '..'
-  >>> email('a@gmail>com', field)
+  >>> email('a@gmail>com', field) # doctest: +ELLIPSIS,+IGNORE_EXCEPTION_DETAIL
   Traceback (most recent call last):
   ...
   ValidationError: Reserved character present in domain
@@ -179,11 +179,11 @@ Function generators
 
 .. autofunction:: length
 
-  >>> length(min=2, max=5)('a', field)
+  >>> length(min=2, max=5)('a', field) # doctest: +ELLIPSIS,+IGNORE_EXCEPTION_DETAIL
   Traceback (most recent call last):
   ...
   ValidationError: Value must be at least 2 characters long
-  >>> length(min=2, max=5)('abcdef', field)
+  >>> length(min=2, max=5)('abcdef', field) # doctest: +ELLIPSIS,+IGNORE_EXCEPTION_DETAIL
   Traceback (most recent call last):
   ...
   ValidationError: Value must be no more than 5 characters long
@@ -191,11 +191,11 @@ Function generators
 
 .. autofunction:: minlength
 
-  >>> minlength(0)('a', field)
+  >>> minlength(0)('a', field) # doctest: +ELLIPSIS,+IGNORE_EXCEPTION_DETAIL
   Traceback (most recent call last):
   ...
   ValueError: Invalid minimum length
-  >>> minlength(2)('a', field)
+  >>> minlength(2)('a', field) # doctest: +ELLIPSIS,+IGNORE_EXCEPTION_DETAIL
   Traceback (most recent call last):
   ...
   ValidationError: Value must be at least 2 characters long
@@ -203,12 +203,12 @@ Function generators
 
 .. autofunction:: maxlength
 
-  >>> maxlength(0)('a', field)
+  >>> maxlength(0)('a', field) # doctest: +ELLIPSIS,+IGNORE_EXCEPTION_DETAIL
   Traceback (most recent call last):
   ...
   ValueError: Invalid maximum length
   >>> maxlength(1)('a', field)
-  >>> maxlength(1)('ab', field)
+  >>> maxlength(1)('ab', field) # doctest: +ELLIPSIS,+IGNORE_EXCEPTION_DETAIL
   Traceback (most recent call last):
   ...
   ValidationError: Value must be no more than 1 characters long
@@ -216,7 +216,7 @@ Function generators
 .. autofunction:: regex
 
   >>> regex('[A-Z]+$')('ASDF', field)
-  >>> regex('[A-Z]+$')('abc', field)
+  >>> regex('[A-Z]+$')('abc', field) # doctest: +ELLIPSIS,+IGNORE_EXCEPTION_DETAIL
   Traceback (most recent call last):
   ...
   ValidationError: Invalid input

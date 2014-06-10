@@ -11,18 +11,18 @@ def test_label():
     >>> Label.__table__.c.label.info
     {'label': 'My label'}
     >>> fs = FieldSet(Label)
-    >>> print fs.label.label_text
+    >>> print(fs.label.label_text)
     My label
-    >>> print fs.label.label()
+    >>> print(fs.label.label())
     My label
     """
 
 def test_fk_label(self):
     """
     >>> fs = FieldSet(Order)
-    >>> print fs.user.label_text
+    >>> print(fs.user.label_text)
     User
-    >>> print fs.user.label()
+    >>> print(fs.user.label())
     User
     """
 

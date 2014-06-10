@@ -6,13 +6,13 @@ __doc__ = r"""
 # some low-level testing first
 
 >>> fs = FieldSet(order1)
->>> fs._raw_fields()
+>>> list(fs._raw_fields())
 [AttributeField(id), AttributeField(user_id), AttributeField(quantity), AttributeField(user)]
 >>> fs.user.name
 'user_id'
 
 >>> fs = FieldSet(bill)
->>> fs._raw_fields()
+>>> list(fs._raw_fields())
 [AttributeField(id), AttributeField(email), AttributeField(password), AttributeField(name), AttributeField(orders)]
 >>> fs.orders.name
 'orders'
@@ -24,7 +24,7 @@ binding should not change attribute order:
 [('email', AttributeField(email)), ('id', AttributeField(id)), ('name', AttributeField(name)), ('orders', AttributeField(orders)), ('password', AttributeField(password))]
 
 >>> fs = FieldSet(User2)
->>> fs._raw_fields()
+>>> list(fs._raw_fields())
 [AttributeField(user_id), AttributeField(address_id), AttributeField(name), AttributeField(address)]
 
 >>> fs.render() #doctest: +ELLIPSIS
@@ -36,7 +36,7 @@ Exception: No session found...
 >>> fs.configure(pk=True, focus=None)
 >>> fs.id.is_required()
 True
->>> print fs.render()
+>>> print(fs.render())
 <div>
  <label class="field_req" for="One--id">
   Id
@@ -50,7 +50,7 @@ True
 >>> fs.configure(pk=True)
 >>> fs
 <FieldSet (configured) with ['id', 'foo']>
->>> print fs.render()
+>>> print(fs.render())
 <div>
  <label class="field_req" for="Two--id">
   Id
@@ -70,7 +70,7 @@ document.getElementById("Two--id").focus();
 </div>
 
 >>> fs = FieldSet(Two)
->>> print fs.render()
+>>> print(fs.render())
 <div>
  <label class="field_opt" for="Two--foo">
   Foo
@@ -85,7 +85,7 @@ document.getElementById("Two--foo").focus();
 
 >>> fs = FieldSet(Two)
 >>> fs.configure(options=[fs.foo.label('A custom label')])
->>> print fs.render()
+>>> print(fs.render())
 <div>
  <label class="field_opt" for="Two--foo">
   A custom label
@@ -98,7 +98,7 @@ document.getElementById("Two--foo").focus();
 //]]>
 </script>
 >>> fs.configure(options=[fs.foo.label('')])
->>> print fs.render()
+>>> print(fs.render())
 <div>
  <label class="field_opt" for="Two--foo">
  </label>
@@ -116,12 +116,12 @@ document.getElementById("Two--foo").focus();
 
 >>> fs = FieldSet(Two)
 >>> fs.configure(include=[fs.foo.hidden()])
->>> print fs.render()
+>>> print(fs.render())
 <input id="Two--foo" name="Two--foo" type="hidden" value="133" />
 
 >>> fs = FieldSet(Two)
 >>> fs.configure(include=[fs.foo.dropdown([('option1', 'value1'), ('option2', 'value2')])])
->>> print fs.render()
+>>> print(fs.render())
 <div>
  <label class="field_opt" for="Two--foo">
   Foo
@@ -143,7 +143,7 @@ document.getElementById("Two--foo").focus();
 
 >>> fs = FieldSet(Two)
 >>> assert configure_and_render(fs, include=[fs.foo.dropdown([('option1', 'value1'), ('option2', 'value2')])]) == configure_and_render(fs, options=[fs.foo.dropdown([('option1', 'value1'), ('option2', 'value2')])]) 
->>> print pretty_html(fs.foo.with_html(onblur='test()').render())
+>>> print(pretty_html(fs.foo.with_html(onblur='test()').render()))
 <select id="Two--foo" name="Two--foo" onblur="test()">
  <option value="value1">
   option1
@@ -152,13 +152,13 @@ document.getElementById("Two--foo").focus();
   option2
  </option>
 </select>
->>> print fs.foo.reset().with_html(onblur='test').render()
+>>> print(fs.foo.reset().with_html(onblur='test').render())
 <input id="Two--foo" name="Two--foo" onblur="test" type="text" value="133" />
 
 # Test with_metadata()
 >>> fs = FieldSet(Three)
 >>> fs.configure(include=[fs.foo.with_metadata(instructions=u'Answer well')])
->>> print fs.render()
+>>> print(fs.render())
 <div>
  <label class="field_opt" for="Three--foo">
   Foo
@@ -175,20 +175,20 @@ document.getElementById("Three--foo").focus();
 </script>
 
 # test sync
->>> print session.query(One).count()
+>>> print(session.query(One).count())
 0
 >>> fs_1 = FieldSet(One, data={}, session=session)
 >>> fs_1.sync()
 >>> session.flush()
->>> print session.query(One).count()
+>>> print(session.query(One).count())
 1
 >>> session.rollback()
 
 >>> twof = TwoFloat(id=1, foo=32.2)
 >>> fs_twof = FieldSet(twof)
->>> print '%.1f' % fs_twof.foo.value
+>>> print('%.1f' % fs_twof.foo.value)
 32.2
->>> print pretty_html(fs_twof.foo.render())
+>>> print(pretty_html(fs_twof.foo.render()))
 <input id="TwoFloat-1-foo" name="TwoFloat-1-foo" type="text" value="32.2" />
 
 >>> import datetime
@@ -198,7 +198,7 @@ document.getElementById("Three--foo").focus();
 <IntervalFieldRenderer for AttributeField(foo)>
 >>> fs_twoi.foo.value
 datetime.timedelta(2, 17280)
->>> print pretty_html(fs_twoi.foo.render())
+>>> print(pretty_html(fs_twoi.foo.render()))
 <input id="TwoInterval-1-foo" name="TwoInterval-1-foo" type="text" value="2.17280" />
 >>> fs_twoi.rebind(data={"TwoInterval-1-foo": "3.1"})
 >>> fs_twoi.sync()
@@ -210,7 +210,7 @@ True
 # http://code.google.com/p/formalchemy/issues/detail?id=41
 >>> twon = TwoNumeric(id=1, foo=Decimal('2.3'))
 >>> fs_twon = FieldSet(twon)
->>> print pretty_html(fs_twon.foo.render())
+>>> print(pretty_html(fs_twon.foo.render()))
 <input id="TwoNumeric-1-foo" name="TwoNumeric-1-foo" type="text" value="2.3" />
 >>> fs_twon.rebind(data={"TwoNumeric-1-foo": "6.7"})
 >>> fs_twon.sync()
@@ -228,7 +228,7 @@ True
 >>> fs_cb = FieldSet(CheckBox)
 >>> fs_cb.field.value is None
 True
->>> print pretty_html(fs_cb.field.dropdown().render())
+>>> print(pretty_html(fs_cb.field.dropdown().render()))
 <select id="CheckBox--field" name="CheckBox--field">
  <option value="True">
   Yes
@@ -246,13 +246,13 @@ True
 False
 >>> fs_cb.field.renderer.value is None
 True
->>> print fs_cb.field.render()
+>>> print(fs_cb.field.render())
 <input id="CheckBox--field" name="CheckBox--field" type="checkbox" value="True" />
 >>> fs_cb.field.renderer #doctest: +ELLIPSIS
 <CheckBoxFieldRenderer for AttributeField(field)>
 >>> fs_cb.field.renderer._serialized_value() is None
 True
->>> print pretty_html(fs_cb.field.radio().render())
+>>> print(pretty_html(fs_cb.field.radio().render()))
 <input id="CheckBox--field_0" name="CheckBox--field" type="radio" value="True" />
 <label for="CheckBox--field_0">
  Yes
@@ -284,7 +284,7 @@ True
 False
 
 >>> fs = FieldSet(Two)
->>> print pretty_html(fs.foo.dropdown(options=['one', 'two']).radio().render())
+>>> print(pretty_html(fs.foo.dropdown(options=['one', 'two']).radio().render()))
 <input id="Two--foo_0" name="Two--foo" type="radio" value="one" />
 <label for="Two--foo_0">
  one
@@ -296,14 +296,14 @@ False
 </label>
 
 >>> assert fs.foo.radio(options=['one', 'two']).render() == fs.foo.dropdown(options=['one', 'two']).radio().render()
->>> print fs.foo.radio(options=[('one','one'), ('two','two')]).dropdown().render()
+>>> print(fs.foo.radio(options=[('one','one'), ('two','two')]).dropdown().render())
 <select id="Two--foo" name="Two--foo">
 <option value="one">one</option>
 <option value="two">two</option>
 </select>
 
 >>> assert fs.foo.dropdown(options=[('one','one'), ('two','two')]).render() == fs.foo.radio(options=[('one','one'), ('two','two')]).dropdown().render()
->>> print pretty_html(fs.foo.dropdown(options=[('one','one'), ('two','two')], multiple=True).checkbox().render())
+>>> print(pretty_html(fs.foo.dropdown(options=[('one','one'), ('two','two')], multiple=True).checkbox().render()))
 <input id="Two--foo_0" name="Two--foo" type="checkbox" value="one" />
 <label for="Two--foo_0">
  one
@@ -315,7 +315,7 @@ False
 </label>
 
 >>> fs = FieldSet(User, session=session)
->>> print fs.render()
+>>> print(fs.render())
 <div>
  <label class="field_req" for="User--email">
   Email
@@ -357,7 +357,7 @@ document.getElementById("User--email").focus();
 </div>
 
 >>> fs = FieldSet(bill)
->>> print pretty_html(fs.orders.render())
+>>> print(pretty_html(fs.orders.render()))
 <select id="User-1-orders" multiple="multiple" name="User-1-orders" size="5">
  <option value="2">
   Quantity: 5
@@ -369,7 +369,7 @@ document.getElementById("User--email").focus();
   Quantity: 10
  </option>
 </select>
->>> print pretty_html(fs.orders.checkbox().render())
+>>> print(pretty_html(fs.orders.checkbox().render()))
 <input id="User-1-orders_0" name="User-1-orders" type="checkbox" value="2" />
 <label for="User-1-orders_0">
  Quantity: 5
@@ -385,7 +385,7 @@ document.getElementById("User--email").focus();
  Quantity: 10
 </label>
 
->>> print fs.orders.checkbox(options=session.query(Order).filter_by(id=1)).render()
+>>> print(fs.orders.checkbox(options=session.query(Order).filter_by(id=1)).render())
 <input checked="checked" id="User-1-orders_0" name="User-1-orders" type="checkbox" value="1" /><label for="User-1-orders_0">Quantity: 10</label>
 
 >>> fs = FieldSet(bill, data={})
@@ -394,7 +394,7 @@ document.getElementById("User--email").focus();
 True
 
 >>> fs = FieldSet(bill, data={'User-1-orders': ['2', '3']})
->>> print pretty_html(fs.orders.render())
+>>> print(pretty_html(fs.orders.render()))
 <select id="User-1-orders" multiple="multiple" name="User-1-orders" size="5">
  <option selected="selected" value="2">
   Quantity: 5
@@ -413,18 +413,18 @@ True
 [<Order for user 1: 10>]
 
 >>> fs = FieldSet(Two)
->>> print fs.foo.render()
+>>> print(fs.foo.render())
 <input id="Two--foo" name="Two--foo" type="text" value="133" />
 
 >>> fs = FieldSet(Two)
->>> print fs.foo.dropdown([('option1', 'value1'), ('option2', 'value2')]).render()
+>>> print(fs.foo.dropdown([('option1', 'value1'), ('option2', 'value2')]).render())
 <select id="Two--foo" name="Two--foo">
 <option value="value1">option1</option>
 <option value="value2">option2</option>
 </select>
 
 >>> fs = FieldSet(Order, session)
->>> print fs.render()
+>>> print(fs.render())
 <div>
  <label class="field_req" for="Order--quantity">
   Quantity
@@ -463,7 +463,7 @@ document.getElementById("Order--quantity").focus();
 10
 >>> fs.session == object_session(order1)
 True
->>> print fs.render()
+>>> print(fs.render())
 <div>
  <label class="field_req" for="Order-1-id">
   Id
@@ -492,7 +492,7 @@ document.getElementById("Order-1-id").focus();
 
 >>> fs = FieldSet(One)
 >>> fs.configure(pk=True)
->>> print fs.render()
+>>> print(fs.render())
 <div>
  <label class="field_req" for="One--id">
   Id
@@ -505,10 +505,10 @@ document.getElementById("One--id").focus();
 //]]>
 </script>
 >>> fs.configure(include=[])
->>> print fs.render()
+>>> print(fs.render())
 <BLANKLINE>
 >>> fs.configure(pk=True, focus=None)
->>> print fs.render()
+>>> print(fs.render())
 <div>
  <label class="field_req" for="One--id">
   Id
@@ -525,11 +525,11 @@ ValueError: ...
 >>> fs = FieldSet(Two)
 >>> fs.configure()
 >>> fs2 = fs.bind(Two)
->>> [fs2 == field.parent for field in fs2._render_fields.itervalues()]
+>>> [fs2 == field.parent for field in fs2._render_fields.values()]
 [True]
 
 >>> fs = FieldSet(OTOParent, session)
->>> print fs.render()
+>>> print(fs.render())
 <div>
  <label class="field_req" for="OTOParent--oto_child_id">
   Child
@@ -561,7 +561,7 @@ True
 False
 >>> fs_2.errors
 {AttributeField(foo): ['Please enter a value']}
->>> print fs_2.render()
+>>> print(fs_2.render())
 <div>
  <label class="field_req" for="Two--foo">
   Foo
@@ -573,12 +573,12 @@ False
 </div>
 >>> fs_2.rebind(data={'Two--foo': 'asdf'})
 >>> fs_2.data
-SimpleMultiDict([('Two--foo', u'asdf')])
+SimpleMultiDict([('Two--foo', 'asdf')])
 >>> fs_2.validate()
 False
 >>> fs_2.errors
 {AttributeField(foo): ['Value is not an integer']}
->>> print fs_2.render()
+>>> print(fs_2.render())
 <div>
  <label class="field_req" for="Two--foo">
   Foo
@@ -590,7 +590,7 @@ False
 </div>
 >>> fs_2.rebind(data={'Two--foo': '2'})
 >>> fs_2.data
-SimpleMultiDict([('Two--foo', u'2')])
+SimpleMultiDict([('Two--foo', '2')])
 >>> fs_2.validate()
 True
 >>> fs_2.errors
@@ -599,7 +599,7 @@ True
 >>> fs_2.model.foo
 2
 >>> session.flush()
->>> print fs_2.render() #doctest: +ELLIPSIS
+>>> print(fs_2.render()) #doctest: +ELLIPSIS,+IGNORE_EXCEPTION_DETAIL
 Traceback (most recent call last):
 ...
 PkError: Primary key of model has changed since binding, probably due to sync()ing a new instance (from None to 1)...
@@ -613,8 +613,8 @@ True
 >>> fs_1.model.id
 1
 >>> fs_1.rebind(data={'One--id': 'asdf'})
->>> fs_1.id.renderer.name
-u'One--id'
+>>> str(fs_1.id.renderer.name)
+'One--id'
 >>> fs_1.validate()
 False
 >>> fs_1.errors
@@ -623,12 +623,12 @@ False
 # test updating _bound_pk copy
 >>> one = One(id=1)
 >>> fs_11 = FieldSet(one)
->>> fs_11.id.renderer.name
-u'One-1-id'
+>>> str(fs_11.id.renderer.name)
+'One-1-id'
 >>> one.id = 2
 >>> fs_11.rebind(one)
->>> fs_11.id.renderer.name
-u'One-2-id'
+>>> str(fs_11.id.renderer.name)
+'One-2-id'
 
 >>> fs_u = FieldSet(User, session=session, data={})
 >>> fs_u.configure(include=[fs_u.orders])
@@ -646,16 +646,16 @@ True
 >>> session.rollback()
 
 >>> fs_3 = FieldSet(Three, data={'Three--foo': 'asdf', 'Three--bar': 'fdsa'})
->>> fs_3.foo.value
-u'asdf'
->>> print fs_3.foo.textarea().render()
+>>> print(fs_3.foo.value)
+asdf
+>>> print(fs_3.foo.textarea().render())
 <textarea id="Three--foo" name="Three--foo">asdf</textarea>
->>> print fs_3.foo.textarea("3x4").render()
+>>> print(fs_3.foo.textarea("3x4").render())
 <textarea cols="3" id="Three--foo" name="Three--foo" rows="4">asdf</textarea>
->>> print fs_3.foo.textarea((3,4)).render()
+>>> print(fs_3.foo.textarea((3,4)).render())
 <textarea cols="3" id="Three--foo" name="Three--foo" rows="4">asdf</textarea>
->>> fs_3.bar.value
-u'fdsa'
+>>> print(fs_3.bar.value)
+fdsa
 >>> def custom_validator(fs):
 ...   if fs.foo.value != fs.bar.value:
 ...     fs.foo.errors.append('does not match bar')
@@ -663,9 +663,9 @@ u'fdsa'
 >>> fs_3.configure(global_validator=custom_validator, focus=None)
 >>> fs_3.validate()
 False
->>> sorted(fs_3.errors.items())
-[(None, ('foo and bar do not match',)), (AttributeField(foo), ['does not match bar'])]
->>> print fs_3.render()
+>>> sorted((k.key if k is not None else 'NONE', v) for k,v in fs_3.errors.items())
+[('NONE', ('foo and bar do not match',)), ('foo', ['does not match bar'])]
+>>> print(fs_3.render())
 <div class="fieldset_error">
  foo and bar do not match
 </div>
@@ -688,12 +688,12 @@ False
 # custom renderer
 >>> fs_3 = FieldSet(Three, data={'Three--foo': 'http://example.com/image.png'})
 >>> fs_3.configure(include=[fs_3.foo.with_renderer(ImgRenderer)])
->>> print fs_3.foo.render()
+>>> print(fs_3.foo.render())
 <img src="http://example.com/image.png">
 
 # natural PKs
 >>> fs_npk = FieldSet(NaturalOrder, session)
->>> print fs_npk.render()
+>>> print(fs_npk.render())
 <div>
  <label class="field_req" for="NaturalOrder--quantity">
   Quantity
@@ -719,8 +719,8 @@ document.getElementById("NaturalOrder--quantity").focus();
  </select>
 </div>
 >>> fs_npk.rebind(norder2, session, data={'NaturalOrder-2-user_email': nbill.email, 'NaturalOrder-2-quantity': str(norder2.quantity)})
->>> fs_npk.user_email.renderer.name
-u'NaturalOrder-2-user_email'
+>>> str(fs_npk.user_email.renderer.name)
+'NaturalOrder-2-user_email'
 >>> fs_npk.sync()
 >>> fs_npk.model.user_email == nbill.email
 True
@@ -740,7 +740,7 @@ True
 # Field
 >>> fs = FieldSet(One)
 >>> fs.add(Field('foo'))
->>> print configure_and_render(fs, focus=None)
+>>> print(configure_and_render(fs, focus=None))
 <div>
  <label class="field_opt" for="One--foo">
   Foo
@@ -752,7 +752,7 @@ True
 >>> fs.add(Field('foo', types.Integer, value=2))
 >>> fs.foo.value
 2
->>> print configure_and_render(fs, focus=None)
+>>> print(configure_and_render(fs, focus=None))
 <div>
  <label class="field_opt" for="One--foo">
   Foo
@@ -766,7 +766,7 @@ True
 
 >>> fs = FieldSet(One)
 >>> fs.add(Field('foo', types.Integer, value=2).dropdown(options=[('1', 1), ('2', 2)]))
->>> print configure_and_render(fs, focus=None)
+>>> print(configure_and_render(fs, focus=None))
 <div>
  <label class="field_opt" for="One--foo">
   Foo
@@ -793,7 +793,7 @@ True
 
 >>> fs_1 = FieldSet(One)
 >>> fs_1.add(Field('foo', types.Integer, value=[2, 3]).dropdown(options=[('1', 1), ('2', 2), ('3', 3)], multiple=True))
->>> print configure_and_render(fs_1, focus=None)
+>>> print(configure_and_render(fs_1, focus=None))
 <div>
  <label class="field_opt" for="One--foo">
   Foo
@@ -833,7 +833,7 @@ False
 >>> d[types.Boolean] = BooleanSelectRenderer
 >>> fs = FieldSet(CheckBox)
 >>> fs.default_renderers = d
->>> print fs.field.render()
+>>> print(fs.field.render())
 <select id="CheckBox--field" name="CheckBox--field">
 <option value="True">Yes</option>
 <option value="False">No</option>
@@ -848,10 +848,10 @@ AttributeError: Do not set field attributes manually.  Use append() or configure
 
 # join
 >>> fs = FieldSet(Order__User)
->>> sorted(fs._fields.items())
-[(u'orders_id', AttributeField(orders_id)), (u'orders_quantity', AttributeField(orders_quantity)), (u'orders_user_id', AttributeField(orders_user_id)), (u'users_email', AttributeField(users_email)), (u'users_id', AttributeField(users_id)), (u'users_name', AttributeField(users_name)), (u'users_password', AttributeField(users_password))]
+>>> sorted((str(k),v) for k,v in fs._fields.items())
+[('orders_id', AttributeField(orders_id)), ('orders_quantity', AttributeField(orders_quantity)), ('orders_user_id', AttributeField(orders_user_id)), ('users_email', AttributeField(users_email)), ('users_id', AttributeField(users_id)), ('users_name', AttributeField(users_name)), ('users_password', AttributeField(users_password))]
 >>> fs.rebind(session.query(Order__User).filter_by(orders_id=1).one())
->>> print configure_and_render(fs, focus=None)
+>>> print(configure_and_render(fs, focus=None))
 <div>
  <label class="field_req" for="Order__User-1_1-orders_quantity">
   Orders quantity
@@ -888,14 +888,14 @@ True
 
 >>> FieldSet.default_renderers[Point] = PointFieldRenderer
 >>> fs = FieldSet(Vertex)
->>> print pretty_html(fs.start.render())
+>>> print(pretty_html(fs.start.render()))
 <input id="Vertex--start-x" name="Vertex--start-x" type="text" value="" />
 <input id="Vertex--start-y" name="Vertex--start-y" type="text" value="" />
 >>> fs.rebind(Vertex)
 >>> v = fs.model
 >>> v.start = Point(1,2)
 >>> v.end = Point(3,4)
->>> print pretty_html(fs.start.render())
+>>> print(pretty_html(fs.start.render()))
 <input id="Vertex--start-x" name="Vertex--start-x" type="text" value="1" />
 <input id="Vertex--start-y" name="Vertex--start-y" type="text" value="2" />
 >>> fs.rebind(v)
@@ -920,7 +920,7 @@ True
 >>> t.configure(readonly=True)
 >>> t.readonly
 True
->>> print t.render()
+>>> print(t.render())
 <tbody>
  <tr>
   <td class="field_readonly">
@@ -958,13 +958,13 @@ True
 >>> session.refresh(john)
 
 >>> fs_or = FieldSet(order1)
->>> print fs_or.user.render_readonly()
+>>> print(fs_or.user.render_readonly())
 <a href="mailto:bill@example.com">Bill</a>
 
 >>> out = FieldSet(OrderUserTag, session=session)
 >>> list(str(x) for x in sorted(out._fields))
 ['id', 'order_id', 'order_user', 'tag', 'user_id']
->>> print out.order_user.name
+>>> print(out.order_user.name)
 order_user
 >>> out.order_user.is_raw_foreign_key
 False
@@ -972,7 +972,7 @@ False
 True
 >>> list(str(x) for x in sorted(out.render_fields))
 ['order_user', 'tag']
->>> print pretty_html(out.order_user.render())
+>>> print(pretty_html(out.order_user.render()))
 <select id="OrderUserTag--order_user" name="OrderUserTag--order_user">
  <option value="(1, 1)">
   OrderUser(1, 1)
@@ -985,7 +985,7 @@ True
 >>> out.validate()
 True
 >>> out.sync()
->>> print out.model.order_user
+>>> print(out.model.order_user)
 OrderUser(1, 2)
 
 >>> fs = FieldSet(Function)
@@ -1004,7 +1004,7 @@ True
 >>> fs_oo.configure(options=[fs_oo.user.with_null_as(('No user', ''))])
 >>> fs_oo.user._null_option
 ('No user', '')
->>> print pretty_html(fs_oo.user.render())
+>>> print(pretty_html(fs_oo.user.render()))
 <select id="OptionalOrder--user_id" name="OptionalOrder--user_id">
  <option selected="selected" value="">
   No user
@@ -1065,7 +1065,7 @@ True
 
 >>> fs_two = FieldSet(Two)
 >>> fs_two.configure(options=[fs_two.foo.label('1 < 2')])
->>> print fs_two.render()
+>>> print(fs_two.render())
 <div>
  <label class="field_opt" for="Two--foo">
   1 &lt; 2
@@ -1084,12 +1084,12 @@ True
 
 >>> fs_conflict = FieldSet(ConflictNames)
 >>> fs_conflict.rebind(conflict_names)
->>> print fs_conflict.render() #doctest: +ELLIPSIS
+>>> print(fs_conflict.render()) #doctest: +ELLIPSIS
 <div>
 ...
 
 >>> fs_syn = FieldSet(Synonym)
->>> print fs_syn.render()
+>>> print(fs_syn.render())
 <div>
  <label class="field_opt" for="Synonym--_foo">
   foo
@@ -1103,7 +1103,7 @@ document.getElementById("Synonym--_foo").focus();
 </script>
 
 >>> fs_rec = FieldSet(RecursiveChild, session=session)
->>> print fs_rec.render() #doctest: +ELLIPSIS
+>>> print(fs_rec.render()) #doctest: +ELLIPSIS
 <div>
  <label class="field_req" for="RecursiveChild--typ_id">
   Typ id
