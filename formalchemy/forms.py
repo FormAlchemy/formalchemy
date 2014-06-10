@@ -686,7 +686,7 @@ class FieldSet(DefaultRenderers):
             raise ValueError('Can only add Field objects; got %s instead' % field)
         if isinstance(field, fields.AbstractField):
             try:
-                index = fields_.keys().index(field.key)
+                index = list(fields_.keys()).index(field.key)
             except ValueError:
                 raise ValueError('%s not in fields' % field.key)
         else:
@@ -804,5 +804,5 @@ class FieldSet(DefaultRenderers):
             conf = ' (configured)'
             _fields = self._render_fields
         return '<%s%s with %r>' % (self.__class__.__name__, conf,
-                                   _fields.keys())
+                                   list(_fields.keys()))
 
