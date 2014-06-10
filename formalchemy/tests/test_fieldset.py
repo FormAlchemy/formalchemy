@@ -599,7 +599,7 @@ True
 >>> fs_2.model.foo
 2
 >>> session.flush()
->>> print(fs_2.render()) #doctest: +ELLIPSIS
+>>> print(fs_2.render()) #doctest: +ELLIPSIS,+IGNORE_EXCEPTION_DETAIL
 Traceback (most recent call last):
 ...
 PkError: Primary key of model has changed since binding, probably due to sync()ing a new instance (from None to 1)...
