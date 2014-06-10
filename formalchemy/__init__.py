@@ -33,9 +33,13 @@ def Column(*args, **kwargs):
 
     """
     info = kwargs.get('info', {})
+    drop = set()
     for k, v in kwargs.items():
         if k in column_options:
-            info[k] = kwargs.pop(k)
+            info[k] = v
+            drop.add(k)
+    for k in drop:
+        del kwargs[k]
     if info:
         kwargs['info'] = info
     return SAColumn(*args, **kwargs)
