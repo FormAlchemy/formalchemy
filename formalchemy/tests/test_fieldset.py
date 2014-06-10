@@ -663,8 +663,8 @@ fdsa
 >>> fs_3.configure(global_validator=custom_validator, focus=None)
 >>> fs_3.validate()
 False
->>> sorted(fs_3.errors.items())
-[(None, ('foo and bar do not match',)), (AttributeField(foo), ['does not match bar'])]
+>>> sorted((k.key if k is not None else 'NONE', v) for k,v in fs_3.errors.items())
+[('NONE', ('foo and bar do not match',)), ('foo', ['does not match bar'])]
 >>> print(fs_3.render())
 <div class="fieldset_error">
  foo and bar do not match
