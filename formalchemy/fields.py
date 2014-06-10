@@ -565,8 +565,8 @@ class DateFieldRenderer(FieldRenderer):
         data = self.params
         value = self.field.model_value
         F_ = self.get_translator(**kwargs)
-        month_options = [(F_('Month'), 'MM')] + [(F_('month_%02i' % i), str(i)) for i in xrange(1, 13)]
-        day_options = [(F_('Day'), 'DD')] + [(i, str(i)) for i in xrange(1, 32)]
+        month_options = [(F_('Month'), 'MM')] + [(F_('month_%02i' % i), str(i)) for i in range(1, 13)]
+        day_options = [(F_('Day'), 'DD')] + [(i, str(i)) for i in range(1, 32)]
         mm_name = self.name + '__month'
         dd_name = self.name + '__day'
         yyyy_name = self.name + '__year'
@@ -613,9 +613,9 @@ class TimeFieldRenderer(FieldRenderer):
         value = self.field.model_value
         F_ = self.get_translator(**kwargs)
         opts = {}
-        opts['hour'] = [(str(i),str(i)) for i in xrange(24)]
-        opts['minute'] = [(str(i),str(i)) for i in xrange(60)]
-        opts['second'] = [(str(i),str(i)) for i in xrange(60)]
+        opts['hour'] = [(str(i),str(i)) for i in range(24)]
+        opts['minute'] = [(str(i),str(i)) for i in range(60)]
+        opts['second'] = [(str(i),str(i)) for i in range(60)]
         hh_name = self.name + '__hour'
         mm_name = self.name + '__minute'
         ss_name = self.name + '__second'

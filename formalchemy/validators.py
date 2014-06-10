@@ -11,7 +11,7 @@ if 'any' not in locals():
     # pre-2.5 support
     def any(seq):
         """
-        >>> any(xrange(10))
+        >>> any(range(10))
         True
         >>> any([0, 0, 0])
         False
