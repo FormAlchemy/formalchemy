@@ -11,20 +11,23 @@ def to_dict():
     >>> fs = FieldSet(User, session=session)
     >>> _ = fs.password.set(renderer=PasswordFieldRenderer)
 
-    >>> fs.to_dict()
-    {u'User--id': None, u'User--name': None, u'User--email': None, u'User--orders': []}
+    >>> sorted(str("%s=%s"%(k,v)) for k,v in fs.to_dict().items())
+    ['User--email=None', 'User--id=None', 'User--name=None', 'User--orders=[]']
 
     >>> fs = FieldSet(bill)
     >>> _ = fs.password.set(renderer=PasswordFieldRenderer)
 
-    >>> fs.to_dict()
-    {u'User-1-email': u'bill@example.com', u'User-1-id': 1, u'User-1-orders': [1], u'User-1-name': u'Bill'}
+    >>> sorted(str("%s=%s"%(k,v)) for k,v in fs.to_dict().items())
+    ['User-1-email=bill@example.com', 'User-1-id=1', 'User-1-name=Bill', 'User-1-orders=[1]']
 
-    >>> fs.to_dict(with_prefix=False)
-    {'orders': [1], 'id': 1, 'name': u'Bill', 'email': u'bill@example.com'}
+    >>> sorted(str("%s=%s"%(k,v)) for k,v in fs.to_dict(with_prefix=False).items())
+    ['email=bill@example.com', 'id=1', 'name=Bill', 'orders=[1]']
 
-    >>> print(json.dumps(fs.to_dict(with_prefix=False, as_string=True)))
-    {"orders": "Quantity: 10", "password": "******", "id": "1", "name": "Bill", "email": "bill@example.com"}
+    Yes, this is convoluted; the order of keys in json.dumps() is undefined.
+
+    >>> d = json.loads(json.dumps(fs.to_dict(with_prefix=False, as_string=True)))
+    >>> sorted(str("%s=%s"%(k,v)) for k,v in d.items())
+    ['email=bill@example.com', 'id=1', 'name=Bill', 'orders=Quantity: 10', 'password=******']
     """
 
 def bind_without_prefix():

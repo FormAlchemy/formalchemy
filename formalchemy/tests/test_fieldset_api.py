@@ -198,8 +198,8 @@ def field_set():
     {'this': 'that'}
     >>> field.set(html={'some': 'thing'})
     Field(password)
-    >>> field.html_options
-    {'this': 'that', 'some': 'thing'}
+    >>> sorted(field.html_options.items())
+    [('some', 'thing'), ('this', 'that')]
 
     >>> bob = lambda x: x
     >>> field.set(validators=[bob])
