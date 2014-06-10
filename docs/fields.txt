@@ -278,7 +278,7 @@ DateTimeFieldRenderer
 
 Render a datetime field::
 
-    >>> datetime = datetime(2000, 12, 31, 9, 03, 30)
+    >>> datetime = datetime(2000, 12, 31, 9, 3, 30)
     >>> fs = FieldSet(One)
     >>> fs.append(Field(name='datetime', type=types.DateTime, value=datetime))
 
