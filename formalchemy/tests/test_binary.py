@@ -1,6 +1,6 @@
 import sys
 if sys.version_info.major == 3:
-    from py3 import fa_cgi as cgi # py3's cgi.py is buggy
+    from formalchemy.tests import fa_cgi as cgi # py3's cgi.py is buggy
     from io import StringIO
 else:
     import cgi
