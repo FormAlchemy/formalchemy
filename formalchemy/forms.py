@@ -761,8 +761,7 @@ class FieldSet(DefaultRenderers):
         # this is a bit clunky because we want to
         #   1. preserve the order given in `include`
         #   2. not modify `include` (or `options`) directly; that could surprise the caller
-        options_dict = {} # create + update for 2.3's benefit
-        options_dict.update(dict([(wrapper, wrapper) for wrapper in options]))
+        options_dict = dict([(wrapper, wrapper) for wrapper in options])
         L = []
         for wrapper in include:
             if wrapper in options_dict:
