@@ -2,7 +2,12 @@
 from formalchemy.tests import *
 from formalchemy.fatypes import *
 from formalchemy import tests
-from webtest import SeleniumApp, selenium
+try:
+    from webtest import SeleniumApp, selenium
+except ImportError:
+    from unittest.case import SkipTest
+    raise SkipTest("Selenium is not available")
+
 
 def test_render():
     """
