@@ -54,7 +54,7 @@ def session_mapper(scoped_session):
 
 def application(model, fieldset=None):
     def app(environ, start_response):
-        tmpl = '''<DOCTYPE !html>
+        tmpl = u'''<DOCTYPE !html>
         <html><body><form method="POST" action="" enctype="multipart/form-data">
         %s
         <input type="submit" id="submit" name="submit" />
@@ -73,11 +73,11 @@ def application(model, fieldset=None):
             if fs.validate():
                 fs.sync()
                 fs.readonly = True
-                resp.body = tmpl % ('<b>OK<b>' + fs.render().encode("utf-8"),)
+                resp.text = tmpl % ('<b>OK<b>' + fs.render(),)
             else:
-                resp.body = tmpl % fs.render()
+                resp.text = tmpl % fs.render()
         else:
-            resp.body = tmpl % fs.render().encode("utf-8")
+            resp.text = tmpl % fs.render()
         return resp(environ, start_response)
     return app
 
