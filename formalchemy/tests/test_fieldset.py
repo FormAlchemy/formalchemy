@@ -613,8 +613,8 @@ True
 >>> fs_1.model.id
 1
 >>> fs_1.rebind(data={'One--id': 'asdf'})
->>> fs_1.id.renderer.name
-u'One--id'
+>>> str(fs_1.id.renderer.name)
+'One--id'
 >>> fs_1.validate()
 False
 >>> fs_1.errors
@@ -623,12 +623,12 @@ False
 # test updating _bound_pk copy
 >>> one = One(id=1)
 >>> fs_11 = FieldSet(one)
->>> fs_11.id.renderer.name
-u'One-1-id'
+>>> str(fs_11.id.renderer.name)
+'One-1-id'
 >>> one.id = 2
 >>> fs_11.rebind(one)
->>> fs_11.id.renderer.name
-u'One-2-id'
+>>> str(fs_11.id.renderer.name)
+'One-2-id'
 
 >>> fs_u = FieldSet(User, session=session, data={})
 >>> fs_u.configure(include=[fs_u.orders])
@@ -719,8 +719,8 @@ document.getElementById("NaturalOrder--quantity").focus();
  </select>
 </div>
 >>> fs_npk.rebind(norder2, session, data={'NaturalOrder-2-user_email': nbill.email, 'NaturalOrder-2-quantity': str(norder2.quantity)})
->>> fs_npk.user_email.renderer.name
-u'NaturalOrder-2-user_email'
+>>> str(fs_npk.user_email.renderer.name)
+'NaturalOrder-2-user_email'
 >>> fs_npk.sync()
 >>> fs_npk.model.user_email == nbill.email
 True
@@ -848,8 +848,8 @@ AttributeError: Do not set field attributes manually.  Use append() or configure
 
 # join
 >>> fs = FieldSet(Order__User)
->>> sorted(fs._fields.items())
-[(u'orders_id', AttributeField(orders_id)), (u'orders_quantity', AttributeField(orders_quantity)), (u'orders_user_id', AttributeField(orders_user_id)), (u'users_email', AttributeField(users_email)), (u'users_id', AttributeField(users_id)), (u'users_name', AttributeField(users_name)), (u'users_password', AttributeField(users_password))]
+>>> sorted((str(k),v) for k,v in fs._fields.items())
+[('orders_id', AttributeField(orders_id)), ('orders_quantity', AttributeField(orders_quantity)), ('orders_user_id', AttributeField(orders_user_id)), ('users_email', AttributeField(users_email)), ('users_id', AttributeField(users_id)), ('users_name', AttributeField(users_name)), ('users_password', AttributeField(users_password))]
 >>> fs.rebind(session.query(Order__User).filter_by(orders_id=1).one())
 >>> print(configure_and_render(fs, focus=None))
 <div>
