@@ -23,6 +23,8 @@ except ImportError:
 def html_escape(s):
     return HTML(s)
 
+import six
+
 escape_once = html_escape
 
 def content_tag(name, content, **options):
@@ -173,6 +175,8 @@ def select(name, selected, select_options, **attrs):
         del attrs['options']
     select_options = _sanitize_select_options(select_options)
     _update_fa(attrs, name)
+    if six.PY3 and isinstance(selected,map): # this test fails with py2
+        selected = tuple(selected)
     return tags.select(name, selected, select_options, **attrs)
 
 def _sanitize_select_options(options):
