@@ -39,11 +39,7 @@ else:
     print('.mo files compilation success')
 
 def read(filename):
-    text = open(filename).read()
-    try:
-        text = text.decode('utf-8')
-    except NameError:
-        return ''
+    text = open(filename,'r').read()
     return xml.sax.saxutils.escape(text)
 
 long_description = '.. contents::\n\n' +\

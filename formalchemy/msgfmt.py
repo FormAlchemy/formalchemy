@@ -65,7 +65,7 @@ class Msgfmt:
         if isinstance(self.po, str):
             output = open(self.po, 'rb').readlines()
         if not output:
-            raise ValueError, "self.po is invalid! %s" % type(self.po)
+            raise ValueError("self.po is invalid! %s" % type(self.po))
         return output
 
     def add(self, id, str, fuzzy):
@@ -102,7 +102,7 @@ class Msgfmt:
             voffsets += [l2, o2+valuestart]
         offsets = koffsets + voffsets
         output = struct.pack("Iiiiiii",
-                             0x950412deL,       # Magic
+                             0x950412de,       # Magic
                              0,                 # Version
                              len(keys),         # # of entries
                              7*4,               # start of key index
@@ -159,7 +159,7 @@ class Msgfmt:
             # XXX: eval is evil because it could be abused
             try:
                 l = eval(l, globals())
-            except Exception, msg:
+            except Exception as msg:
                 raise PoSyntaxError('%s (line %d of po file %s): \n%s' % (msg, lno, self.name, l))
             if section == ID:
                 msgid += l
