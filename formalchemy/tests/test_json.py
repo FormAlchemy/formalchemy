@@ -40,13 +40,13 @@ def bind_without_prefix():
     >>> fs.validate()
     True
     >>> fs.password.value
-    u'1'
+    '1'
 
     >>> data = {u'password': u'2', u'id': 1, u'orders': [1], u'email': u'bill@example.com', u'name': u'Bill'}
     >>> fs = fs.bind(bill, data=data, with_prefix=False)
     >>> fs.validate()
     True
     >>> fs.password.value
-    u'2'
+    '2'
 
     """
