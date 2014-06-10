@@ -3,7 +3,7 @@
 # This module is part of FormAlchemy and is released under
 # the MIT License: http://www.opensource.org/licenses/mit-license.php
 
-from six import string_types
+from six import string_types, next
 
 import formalchemy.helpers as h
 
@@ -80,7 +80,7 @@ class Grid(FieldSet):
         if not session:
             i = iter(instances)
             try:
-                instance = i.next()
+                instance = next(i)
             except StopIteration:
                 pass
             else:

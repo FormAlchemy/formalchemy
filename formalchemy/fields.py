@@ -10,7 +10,7 @@ logger = logging.getLogger('formalchemy.' + __name__)
 from copy import copy, deepcopy
 import datetime
 import warnings
-from six import string_types,text_type
+from six import string_types,text_type, next
 
 from sqlalchemy.orm.interfaces import MANYTOMANY
 from sqlalchemy.orm.interfaces import ONETOMANY
@@ -955,7 +955,7 @@ def _normalized_options(options):
         return options
     i = iter(options)
     try:
-        first = i.next()
+        first = next(i)
     except StopIteration:
         return []
     try:
