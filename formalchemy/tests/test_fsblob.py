@@ -2,7 +2,7 @@ import os
 import cgi
 import shutil
 import tempfile
-from StringIO import StringIO
+from io import StringIO
 from nose import with_setup
 
 from formalchemy.tests import *
