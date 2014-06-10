@@ -664,7 +664,7 @@ class FieldSet(DefaultRenderers):
             raise ValueError('Can only add Field objects; got %s instead' % field)
         if isinstance(field, fields.AbstractField):
             try:
-                index = fields_.keys().index(field.key)
+                index = list(fields_.keys()).index(field.key)
             except ValueError:
                 raise ValueError('%s not in fields' % field.key)
         else:
