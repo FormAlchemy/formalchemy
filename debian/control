@@ -27,7 +27,7 @@ Description: HTML input form fields from your SQLAlchemy mapped classes
  also highly customizable.
 
 Package: python3-formalchemy
-Architecture: any
+Architecture: all
 Depends: ${misc:Depends}, ${python3:Depends}
 Suggests: python3-bs4
 Description: HTML input form fields from your SQLAlchemy mapped classes
