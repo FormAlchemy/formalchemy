@@ -1,0 +1,59 @@
+How to release FormAlchemy
+==========================
+
+This assumes that the maintainance branch is 1.5 and we want to release
+version 1.5.3.
+
+Check out the release branch:
+
+  $ git checkout v1.5
+
+Run tests::
+
+  $ nosetests
+  $ nosetests3
+
+Make sure you have a clean working directory:
+
+  $ git status
+
+Update version numbers:
+
+  $ : remove the -dev suffix
+  $ vi CHANGELOG.txt formalchemy/__init__.py
+  $ git commit -a
+
+Tag the release:
+
+  $ : use the tag to briefly describe this release's highlights
+  $ git tag -s v1.5.3
+
+Compile .mo files, create the tarball, and push to PyPI::
+
+  $ python setup.py make_dist register upload
+
+Prepare for the next cycle:
+
+  $ : increment version numbers. Add a -dev suffix!
+  $ vi CHANGELOG.txt formalchemy/__init__.py
+  $ git commit -a
+
+Merge the release into the master branch:
+
+  $ git checkout master
+  $ : use the release tag, NOT the release branch
+  $ git merge v1.5.3
+  $ : you will have conflicts in these files. Fix them.
+  $ vi CHANGELOG.txt formalchemy/__init__.py
+  $ git commit -a
+
+make sure that the master branch still works:
+
+  $ nosetests
+  $ nosetests3
+
+Finally, update git:
+
+  $ git push --tags --all
+
+
