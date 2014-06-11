@@ -1,7 +1,7 @@
 1.5.3 (unreleased)
 -----
 
-* None yet.
+* Allow overriding renderer_opts via an "attrs=…" column option
 
 1.5.2
 -----

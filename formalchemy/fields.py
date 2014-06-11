@@ -1011,7 +1011,7 @@ class AbstractField(object):
     _valide_options = [
             'validate', 'renderer', 'hidden', 'required', 'readonly',
             'null_as', 'label', 'multiple', 'options', 'validators',
-            'size', 'instructions', 'metadata', 'html']
+            'size', 'instructions', 'metadata', 'html', 'attrs']
 
     def __init__(self, parent, name=None, type=fatypes.String, **kwattrs):
         # the FieldSet (or any ModelRenderer) owning this instance
@@ -1200,7 +1200,7 @@ class AbstractField(object):
                 else:
                     renderer = HiddenFieldRenderer
                 self._renderer = renderer
-            elif attr in 'attrs':
+            elif attr == 'attrs':
                 self.render_opts.update(value)
             elif attr in mapping:
                 attr = mapping.get(attr)
