@@ -221,6 +221,9 @@ parameter, such as here, to render name and options-as-checkboxes::
   >>> fs2 = fs.bind(bill)
   >>> fs2.configure(include=[fs.name, fs.orders.checkbox()]) 
 
+Calls to `configure` do not accumulate; that is, calling it will undo
+**all** effects of a previous call before applying your changes. If you
+need to further modify your form, use `reconfigure` instead.
 
 Rendering
 ---------

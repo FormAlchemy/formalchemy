@@ -338,8 +338,11 @@ class FieldSet(DefaultRenderers):
                 element. False means do not focus at all.
           * `readonly=False`:
                 if true, the fieldset will be rendered as a table (tbody)
-                instead of a group of input elements.  Opening and closing
-                table tags are not included.
+                of names+values instead of a group of input elements.
+                Opening and closing table tags are not included.
+          * `modify=False`:
+                if true, the fieldset will be further modified by this call.
+                Otherwise the raw fields will be used.
 
         Only one of {`include`, `exclude`} may be specified.
 
@@ -372,11 +375,26 @@ class FieldSet(DefaultRenderers):
         parameter, such as here, to render name and options-as-checkboxes:
 
         >>> fs.configure(include=[fs.name, fs.orders.checkbox()])
+
+        Calling `configure` multiple times will only leave the last call's
+        effects in place. If you want to further modify a form, use
+        `reconfigure`.
+
         """
         self.focus = focus
         self.readonly = readonly
         self.validator = global_validator
-        self._render_fields = OrderedDict([(field.key, field) for field in self._get_fields(pk, exclude, include, options)])
+        self._render_fields = OrderedDict([(field.key, field) for field in self._get_fields(pk, exclude, include, options, use_rendered=False)])
+
+    def reconfigure(self, pk=False, focus=True, readonly=False, global_validator=None, exclude=[], include=[], options=[]):
+        """
+        Like `configure`, but does not undo the effects of a previous call
+        to `configure` or `reconfigure`.
+        """
+        self.focus = focus
+        self.readonly = readonly
+        self.validator = global_validator
+        self._render_fields = OrderedDict([(field.key, field) for field in self._get_fields(pk, exclude, include, options, use_rendered=True)])
 
     def bind(self, model=None, session=None, data=None, request=None,
              with_prefix=True):
@@ -510,8 +528,6 @@ class FieldSet(DefaultRenderers):
             return
 
         if session:
-            if not isinstance(session, Session) and not isinstance(session, ScopedSession):
-                raise ValueError('Invalid SQLAlchemy session object %s' % session)
             self.session = session
         elif model:
             if '_obj_session' in locals():
@@ -726,10 +742,13 @@ class FieldSet(DefaultRenderers):
 
         return dict(data)
 
-    def _raw_fields(self):
-        return self._fields.values()
+    def _raw_fields(self, use_rendered=False):
+        if use_rendered and self._render_fields:
+            return self._render_fields.values()
+        else:
+            return self._fields.values()
 
-    def _get_fields(self, pk=False, exclude=[], include=[], options=[]):
+    def _get_fields(self, pk=False, exclude=[], include=[], options=[], use_rendered=False):
         # sanity check
         if include and exclude:
             raise Exception('Specify at most one of include, exclude')
@@ -753,9 +772,9 @@ class FieldSet(DefaultRenderers):
         # if include is given, those are the fields used.  otherwise, include those not explicitly (or implicitly) excluded.
         if not include:
             if not pk:
-                exclude.extend([wrapper for wrapper in self._raw_fields() if wrapper.is_pk and not wrapper.is_collection])
-            exclude.extend([wrapper for wrapper in self._raw_fields() if wrapper.is_raw_foreign_key])
-            include = [field for field in self._raw_fields() if field not in exclude]
+                exclude.extend([wrapper for wrapper in self._raw_fields(use_rendered) if wrapper.is_pk and not wrapper.is_collection])
+            exclude.extend([wrapper for wrapper in self._raw_fields(use_rendered) if wrapper.is_raw_foreign_key])
+            include = [field for field in self._raw_fields(use_rendered) if field not in exclude]
 
         # in the returned list, replace any fields in `include` w/ the corresponding one in `options`, if present.
         # this is a bit clunky because we want to
