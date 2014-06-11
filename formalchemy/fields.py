@@ -14,6 +14,7 @@ from six import string_types,text_type, next
 
 from sqlalchemy.orm.interfaces import MANYTOMANY
 from sqlalchemy.orm.interfaces import ONETOMANY
+from sqlalchemy.orm.interfaces import MANYTOONE
 from sqlalchemy.orm import class_mapper, Query
 from sqlalchemy.orm.attributes import ScalarAttributeImpl, ScalarObjectAttributeImpl, CollectionAttributeImpl
 from sqlalchemy.orm.properties import CompositeProperty, ColumnProperty
@@ -21,7 +22,7 @@ try:
     from sqlalchemy import exc as sqlalchemy_exceptions
 except ImportError:
     from sqlalchemy import exceptions as sqlalchemy_exceptions
-from sqlalchemy.orm import object_session
+from sqlalchemy.orm import compile_mappers, object_session, class_mapper
 from formalchemy import helpers as h
 from formalchemy import fatypes, validators
 from formalchemy.exceptions import FieldNotFoundError
