@@ -1513,7 +1513,7 @@ class AbstractField(object):
                 return self.parent.default_renderers[t]
         raise TypeError(
                 'No renderer found for field %s. '
-                'Type %s as no default renderer' % (self.name, self.type))
+                'Type %s has no default renderer' % (self.name, self.type))
 
     @property
     def renderer(self):
