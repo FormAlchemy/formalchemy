@@ -42,7 +42,7 @@ def read(filename):
     text = open(filename,'r').read()
     return xml.sax.saxutils.escape(text)
 
-long_description = '.. contents::\n\n' +\
+long_description = '.. contents:: :depth:1\n\n' +\
                    'Description\n' +\
                    '===========\n\n' +\
                    read('README.txt') +\
