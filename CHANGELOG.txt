@@ -1,5 +1,34 @@
-1.4.4-dev
----------
+1.5.2
+-----
+
+* Pull in the 1.4.5-dev changes. Sorry about that.
+
+1.5.1
+-----
+
+* minor code reorg
+
+1.5.0
+-----
+
+* The big one: be compatible with Python 3.x.
+
+  * actually, Python 3.3+, because of u'' string literals
+
+  * drop Pylons support because that won't be ported to Py3
+
+  * skip HTML5 tests until Selenium works with Py3
+
+1.4.5-dev
+------------------
+
+* Add FieldSet.reconfigure (like configure, but doesn't toss your previous changes)
+
+* Don't test whether the session you pass in is a member of well-known session class.
+  It may be a proxy object.
+
+1.4.4
+-----
 
 * SQLAlchemy 0.9+ support
 
