@@ -55,7 +55,7 @@ def test_post_on_grid():
     True
     >>> g.validate()
     True
-    >>> print g.render()  #doctest: +ELLIPSIS
+    >>> print(g.render())  #doctest: +ELLIPSIS
     <thead>...<input id="User-1-password" maxlength="20" name="User-1-password" type="text" value="xx" />...</tbody>
     """
     

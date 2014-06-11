@@ -6,18 +6,18 @@ def test_renderer_names():
     Check that the input name take care of multiple primary keys::
 
         >>> fs = FieldSet(primary1)
-        >>> print fs.field.render()
+        >>> print(fs.field.render())
         <input id="PrimaryKeys-1_22-field" maxlength="10" name="PrimaryKeys-1_22-field" type="text" value="value1" />
 
         >>> fs = FieldSet(primary2)
-        >>> print fs.field.render()
+        >>> print(fs.field.render())
         <input id="PrimaryKeys-1_33-field" maxlength="10" name="PrimaryKeys-1_33-field" type="text" value="value2" />
 
     Check form rendering with keys::
 
         >>> fs = FieldSet(primary2)
         >>> fs.configure(pk=True)
-        >>> print fs.render()
+        >>> print(fs.render())
         <div>
          <label class="field_req" for="PrimaryKeys-1_33-id">
           Id
@@ -50,7 +50,7 @@ def test_foreign_keys():
         >>> fs = FieldSet(orderuser2)
         >>> fs.configure(pk=True)
 
-        >>> print pretty_html(fs.user.render())
+        >>> print(pretty_html(fs.user.render()))
         <select id="OrderUser-1_2-user_id" name="OrderUser-1_2-user_id">
          <option selected="selected" value="1">
           Bill
@@ -60,7 +60,7 @@ def test_foreign_keys():
          </option>
         </select>
 
-        >>> print pretty_html(fs.order.render())
+        >>> print(pretty_html(fs.order.render()))
         <select id="OrderUser-1_2-order_id" name="OrderUser-1_2-order_id">
          <option value="1">
           Quantity: 10

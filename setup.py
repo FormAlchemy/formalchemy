@@ -4,6 +4,7 @@ import xml.sax.saxutils
 from os.path import join
 import sys
 import os
+from six import text_type
 
 def get_version(fname='formalchemy/__init__.py'):
     with open(fname) as f:
@@ -38,11 +39,7 @@ else:
     print('.mo files compilation success')
 
 def read(filename):
-    text = open(filename).read()
-    try:
-        text = unicode(text, 'utf-8').encode('ascii', 'xmlcharrefreplace')
-    except NameError:
-        return ''
+    text = open(filename,'r').read()
     return xml.sax.saxutils.escape(text)
 
 long_description = '.. contents::\n\n' +\
@@ -62,8 +59,8 @@ setup(name='FormAlchemy',
       author='Alexandre Conrad, Jonathan Ellis, Gaël Pasgrimaud',
       author_email='formalchemy@googlegroups.com',
       url='http://docs.formalchemy.org/',
-      install_requires=['SQLAlchemy', 'Tempita', 'WebHelpers', 'WebOb', 'MarkupSafe'],
-      packages=find_packages(),
+      install_requires=['SQLAlchemy', 'Tempita', 'WebHelpers2', 'WebOb', 'MarkupSafe'],
+      packages=find_packages(exclude=('py3',)),
       package_data={'formalchemy': ['*.tmpl', 'i18n_resources/*/LC_MESSAGES/formalchemy.mo',
                                     'ext/pylons/*.mako', 'ext/pylons/resources/*.css', 'ext/pylons/resources/*.png',
                                     'tests/data/mako/*.mako', 'tests/data/genshi/*.html',

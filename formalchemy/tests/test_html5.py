@@ -2,42 +2,47 @@
 from formalchemy.tests import *
 from formalchemy.fatypes import *
 from formalchemy import tests
-from webtest import SeleniumApp, selenium
+try:
+    from webtest import SeleniumApp, selenium
+except ImportError:
+    from unittest.case import SkipTest
+    raise SkipTest("Selenium is not available")
+
 
 def test_render():
     """
     >>> html5_test_fieldset = FieldSet(Three)
-    >>> print html5_test_fieldset.foo.url().render()
+    >>> print(html5_test_fieldset.foo.url().render())
     <input id="Three--foo" name="Three--foo" type="url" />
 
-    >>> print html5_test_fieldset.foo.email().render()
+    >>> print(html5_test_fieldset.foo.email().render())
     <input id="Three--foo" name="Three--foo" type="email" />
 
-    >>> print html5_test_fieldset.foo.range(min_=2, max_=10, step=5).render()
+    >>> print(html5_test_fieldset.foo.range(min_=2, max_=10, step=5).render())
     <input id="Three--foo" max="10" min="2" name="Three--foo" step="5" type="range" />
 
-    >>> print html5_test_fieldset.foo.number(min_=2, max_=10, step=5).render()
+    >>> print(html5_test_fieldset.foo.number(min_=2, max_=10, step=5).render())
     <input id="Three--foo" max="10" min="2" name="Three--foo" step="5" type="number" />
 
-    >>> print html5_test_fieldset.foo.time().render()
+    >>> print(html5_test_fieldset.foo.time().render())
     <input id="Three--foo" name="Three--foo" type="time" />
 
-    >>> print html5_test_fieldset.foo.date().render()
+    >>> print(html5_test_fieldset.foo.date().render())
     <input id="Three--foo" name="Three--foo" type="date" />
 
-    >>> print html5_test_fieldset.foo.datetime().render()
+    >>> print(html5_test_fieldset.foo.datetime().render())
     <input id="Three--foo" name="Three--foo" type="datetime" />
 
-    >>> print html5_test_fieldset.foo.datetime_local().render()
+    >>> print(html5_test_fieldset.foo.datetime_local().render())
     <input id="Three--foo" name="Three--foo" type="date" />
 
-    >>> print html5_test_fieldset.foo.week().render()
+    >>> print(html5_test_fieldset.foo.week().render())
     <input id="Three--foo" name="Three--foo" type="week" />
 
-    >>> print html5_test_fieldset.foo.month().render()
+    >>> print(html5_test_fieldset.foo.month().render())
     <input id="Three--foo" name="Three--foo" type="month" />
 
-    >>> print html5_test_fieldset.foo.color().render()
+    >>> print(html5_test_fieldset.foo.color().render())
     <input id="Three--foo" name="Three--foo" type="color" />
     """
 

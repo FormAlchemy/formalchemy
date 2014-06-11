@@ -71,7 +71,7 @@ class Config(object):
     def _get_config(self, config, prefix):
         values = {}
         config_keys = config.keys()
-        for k in config_keys:
+        for k in list(config_keys):
             if k.startswith(prefix):
                 v = config.pop(k)
                 k = k[len(prefix):]

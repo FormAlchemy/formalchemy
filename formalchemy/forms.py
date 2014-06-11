@@ -6,6 +6,7 @@
 import cgi
 import warnings
 import logging
+from six import string_types
 logger = logging.getLogger('formalchemy.' + __name__)
 
 
@@ -270,8 +271,7 @@ class FieldSet(DefaultRenderers):
                 class_mapper(cls)
             except:
                 # this class is not managed by SA.  extract any raw Fields defined on it.
-                keys = cls.__dict__.keys()
-                keys.sort(lambda a, b: cmp(a.lower(), b.lower())) # 2.3 support
+                keys = sorted(cls.__dict__.keys(), key=lambda a: a.lower())
                 for key in keys:
                     field = cls.__dict__[key]
                     if isinstance(field, fields.Field):
@@ -304,7 +304,7 @@ class FieldSet(DefaultRenderers):
                         attrs.append(attr)
                 # sort relations last before storing in the OrderedDict
                 L = [fields.AttributeField(attr, self) for attr in attrs]
-                L.sort(lambda a, b: cmp(a.is_relation, b.is_relation)) # note, key= not used for 2.3 support
+                L.sort(key=lambda a: a.is_relation)
                 self._fields.update((field.key, field) for field in L)
 
 
@@ -420,10 +420,10 @@ class FieldSet(DefaultRenderers):
         # two steps so bind's error checking can work
         FieldSet.rebind(mr, model, session, data, request,
                         with_prefix=with_prefix)
-        mr._fields = OrderedDict([(key, renderer.bind(mr)) for key, renderer in self._fields.iteritems()])
+        mr._fields = OrderedDict([(key, renderer.bind(mr)) for key, renderer in self._fields.items()])
         if self._render_fields:
             mr._render_fields = OrderedDict([(field.key, field) for field in
-                                             [field.bind(mr) for field in self._render_fields.itervalues()]])
+                                             [field.bind(mr) for field in self._render_fields.values()]])
         mr._request = request
         return mr
 
@@ -452,7 +452,7 @@ class FieldSet(DefaultRenderers):
             if isinstance(model, type):
                 try:
                     model = model()
-                except Exception, e:
+                except Exception as e:
                     model_error = str(e)
                     msg = ("%s appears to be a class, not an instance, but "
                            "FormAlchemy cannot instantiate it. "
@@ -562,7 +562,7 @@ class FieldSet(DefaultRenderers):
         if self.data is None:
             raise ValidationError('Cannot validate without binding data')
         success = True
-        for field in self.render_fields.itervalues():
+        for field in self.render_fields.values():
             success = field._validate() and success
         # run this _after_ the field validators, since each field validator
         # resets its error list. we want to allow the global validator to add
@@ -571,7 +571,7 @@ class FieldSet(DefaultRenderers):
             self._errors = []
             try:
                 self.validator(self)
-            except ValidationError, e:
+            except ValidationError as e:
                 self._errors = e.args
                 success = False
         return success
@@ -619,7 +619,7 @@ class FieldSet(DefaultRenderers):
         if self._errors:
             errors[None] = self._errors
         errors.update(dict([(field, field.errors)
-                            for field in self.render_fields.itervalues() if field.errors]))
+                            for field in self.render_fields.values() if field.errors]))
         return errors
 
 
@@ -641,7 +641,7 @@ class FieldSet(DefaultRenderers):
         _new_fields = []
         if args:
             for field in args:
-                if isinstance(field, basestring):
+                if isinstance(field, string_types):
                     if field in _fields:
                         field = _fields.get(field)
                     else:
@@ -681,13 +681,13 @@ class FieldSet(DefaultRenderers):
             raise ValueError('Can only add Field objects; got %s instead' % field)
         if isinstance(field, fields.AbstractField):
             try:
-                index = fields_.keys().index(field.key)
+                index = list(fields_.keys()).index(field.key)
             except ValueError:
                 raise ValueError('%s not in fields' % field.key)
         else:
             raise TypeError('field must be a Field. Got %r' % field)
         new_field.parent = self
-        items = list(fields_.iteritems()) # prepare for Python 3
+        items = list(fields_.items()) # prepare for Python 3
         items.insert(index, (new_field.name, new_field))
         if self._render_fields:
             self._render_fields = OrderedDict(items)
@@ -705,13 +705,13 @@ class FieldSet(DefaultRenderers):
             raise ValueError('Can only add Field objects; got %s instead' % field)
         if isinstance(field, fields.AbstractField):
             try:
-                index = fields_.keys().index(field.key)
+                index = list(fields_.keys()).index(field.key)
             except ValueError:
                 raise ValueError('%s not in fields' % field.key)
         else:
             raise TypeError('field must be a Field. Got %r' % field)
         new_field.parent = self
-        items = list(fields_.iteritems())
+        items = list(fields_.items())
         new_item = (new_field.name, new_field)
         if index + 1 == len(items): # after the last element ?
             items.append(new_item)
@@ -783,8 +783,7 @@ class FieldSet(DefaultRenderers):
         # this is a bit clunky because we want to
         #   1. preserve the order given in `include`
         #   2. not modify `include` (or `options`) directly; that could surprise the caller
-        options_dict = {} # create + update for 2.3's benefit
-        options_dict.update(dict([(wrapper, wrapper) for wrapper in options]))
+        options_dict = dict([(wrapper, wrapper) for wrapper in options])
         L = []
         for wrapper in include:
             if wrapper in options_dict:
@@ -827,5 +826,5 @@ class FieldSet(DefaultRenderers):
             conf = ' (configured)'
             _fields = self._render_fields
         return '<%s%s with %r>' % (self.__class__.__name__, conf,
-                                   _fields.keys())
+                                   list(_fields.keys()))
 

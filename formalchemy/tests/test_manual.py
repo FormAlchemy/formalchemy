@@ -15,7 +15,7 @@ class ReportByUserForm(object):
 def test_manual(self):
     """
     >>> fs = FieldSet(Manual)
-    >>> print configure_and_render(fs, focus=None)
+    >>> print(configure_and_render(fs, focus=None))
     <div>
      <label class="field_opt" for="Manual--a">
       A
@@ -43,13 +43,13 @@ def test_manual(self):
      </textarea>
     </div>
     >>> fs.rebind(data={'Manual--a': 'asdf'})
-    >>> print pretty_html(fs.a.render())
+    >>> print(pretty_html(fs.a.render()))
     <input id="Manual--a" name="Manual--a" type="text" value="asdf" />
 
     >>> t = FieldSet(Manual)
     >>> t.configure(include=[t.a, t.b], readonly=True)
     >>> t.model.b = [1, 2]
-    >>> print t.render()
+    >>> print(t.render())
     <tbody>
      <tr>
       <td class="field_readonly">
@@ -68,11 +68,11 @@ def test_manual(self):
      </tr>
     </tbody>
     >>> t.model.a = 'test'
-    >>> print t.a.render_readonly()
+    >>> print(t.a.render_readonly())
     test
     >>> t.configure(readonly=True, options=[t.a.with_renderer(EscapingReadonlyRenderer)])
     >>> t.model.a = '<test>'
-    >>> print t.a.render_readonly()
+    >>> print(t.a.render_readonly())
     &lt;test&gt;
 
     """
@@ -80,7 +80,7 @@ def test_manual(self):
 def test_manual2():
     """
     >>> fs = FieldSet(ReportByUserForm)
-    >>> print fs.render() #doctest: +ELLIPSIS
+    >>> print(fs.render()) #doctest: +ELLIPSIS
     <div>
      <label class="field_req" for="ReportByUserForm--from_date">
       From date

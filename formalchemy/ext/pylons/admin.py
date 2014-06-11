@@ -51,17 +51,17 @@ def get_forms(model_module, forms):
     """scan model and forms"""
     if forms is not None:
         model_fieldsets = dict((form.model.__class__.__name__, form)
-                               for form in forms.__dict__.itervalues()
+                               for form in forms.__dict__.values()
                                if isinstance(form, FieldSet))
         model_grids = dict((form.model.__class__.__name__, form)
-                           for form in forms.__dict__.itervalues()
+                           for form in forms.__dict__.values()
                            if isinstance(form, Grid))
     else:
         model_fieldsets = dict()
         model_grids = dict()
 
     # generate missing forms, grids
-    for key, obj in model_module.__dict__.iteritems():
+    for key, obj in model_module.__dict__.items():
         try:
             class_mapper(obj)
         except:
@@ -73,7 +73,7 @@ def get_forms(model_module, forms):
         if key not in model_grids:
             model_grids[key] = Grid(obj)
     # add Edit + Delete link to grids
-    for modelname, grid in model_grids.iteritems():
+    for modelname, grid in model_grids.items():
         def edit_link():
             model_url = url('models', modelname=modelname)
             return lambda item: '<a href="%(url)s/%(id)s" title="%(label)s" class="icon edit">%(label)s</a>' % dict(
@@ -135,7 +135,7 @@ class AdminController(object):
                 values.append((pk, url('view_model', pk)))
             return self.render_json(records=dict(values), page_count=page.page_count, page=page.page)
         grid = grid.bind(instances=page, session=None)
-        clsnames = [f.relation_type().__name__ for f in grid._fields.itervalues() if f.is_relation]
+        clsnames = [f.relation_type().__name__ for f in grid._fields.values() if f.is_relation]
         return self._engine('admin_list', c=c,
                             grid=grid,
                             page=page,

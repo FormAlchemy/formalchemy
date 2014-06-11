@@ -4,7 +4,7 @@ def test_rebind_and_render(self):
 
     >>> g = Grid(User, session=session)
     >>> g.rebind([bill, john])
-    >>> print pretty_html(g.render())
+    >>> print(pretty_html(g.render()))
     <thead>
      <tr>
       <th>
@@ -79,14 +79,14 @@ def test_extra_field():
     >>> g = Grid(User, session=session)
     >>> g.add(Field('edit', types.String, 'fake edit link'))
     >>> g._set_active(john)
-    >>> print g.edit.render()
+    >>> print(g.edit.render())
     <input id="User-2-edit" name="User-2-edit" type="text" value="fake edit link" />
 
     And extra field w/ callable value:
     >>> g = Grid(User, session=session)
     >>> g.add(Field('edit', types.String, lambda o: 'fake edit link for %s' % o.id))
     >>> g._set_active(john)
-    >>> print g.edit.render()
+    >>> print(g.edit.render())
     <input id="User-2-edit" name="User-2-edit" type="text" value="fake edit link for 2" />
 
     Text syncing:
@@ -132,7 +132,7 @@ def test_rebind_render():
     Explicitly test rebind + render:
     >>> g = Grid(User, session=session, prefix="myprefix")
     >>> g.rebind([bill, john])
-    >>> print pretty_html(g.render())
+    >>> print(pretty_html(g.render()))
     <thead>
      <tr>
       <th>
@@ -204,7 +204,7 @@ def test_rebind_render():
     True
     >>> g.sync()
     >>> bill.email
-    u'updatebill_@example.com'
+    'updatebill_@example.com'
     """
 
 if __name__ == '__main__':

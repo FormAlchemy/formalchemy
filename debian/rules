@@ -1,7 +1,11 @@
 #!/usr/bin/make -f
 # -*- makefile -*-
 
-%:
-	dh $@ --with python2
+export PYBUILD_NAME=formalchemy
+export PYTHONPATH=$(pwd)
 
-override_dh_auto_build:
+%:
+	dh $@ --with python2,python3 --buildsystem=pybuild
+
+override_dh_auto_test:
+	: dh_auto_test -O--buildsystem=pybuild

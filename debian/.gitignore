@@ -2,3 +2,5 @@
 /*.debhelper
 /*.substvars
 /python-formalchemy
+/python3-formalchemy
+/*.log

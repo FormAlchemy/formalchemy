@@ -12,7 +12,7 @@ def test_render_aliases():
     >>> alias = session.query(Aliases).first()
     >>> alias
     >>> fs = FieldSet(Aliases)
-    >>> print fs.render()
+    >>> print(fs.render())
     <div>
      <label class="field_opt" for="Aliases--text">
       Text

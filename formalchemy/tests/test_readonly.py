@@ -8,7 +8,7 @@ def test_readonly_mode():
 
         >>> fs = FieldSet(Two)
         >>> fs.configure(options=[fs.foo.readonly()])
-        >>> print fs.render()
+        >>> print(fs.render())
         <div>
          <label class="field_opt" for="Two--foo">
           Foo
@@ -24,7 +24,7 @@ def test_focus_with_readonly_mode():
 
         >>> fs = FieldSet(Three)
         >>> fs.configure(options=[fs.foo.readonly()])
-        >>> print fs.render()
+        >>> print(fs.render())
         <div>
          <label class="field_opt" for="Three--foo">
           Foo

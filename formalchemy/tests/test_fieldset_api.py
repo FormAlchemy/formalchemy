@@ -6,10 +6,10 @@ def copy():
     """
     >>> fs = FieldSet(User)
     >>> fs1 = fs.copy(fs.id, fs.email)
-    >>> fs1._render_fields.keys()
+    >>> list(fs1._render_fields.keys())
     ['id', 'email']
     >>> fs2 = fs.copy(fs.name, fs.email)
-    >>> fs2._render_fields.keys()
+    >>> list(fs2._render_fields.keys())
     ['name', 'email']
     """
 
@@ -17,15 +17,15 @@ def append():
     """
     >>> fs = FieldSet(User)
     >>> fs.append(Field('added'))
-    >>> fs._fields.keys()
+    >>> list(fs._fields.keys())
     ['id', 'email', 'password', 'name', 'orders', 'added']
 
     >>> fs = FieldSet(User)
     >>> fs.configure()
     >>> fs.append(Field('added'))
-    >>> fs._fields.keys()
+    >>> list(fs._fields.keys())
     ['id', 'email', 'password', 'name', 'orders']
-    >>> fs._render_fields.keys()
+    >>> list(fs._render_fields.keys())
     ['email', 'password', 'name', 'orders', 'added']
     """
 
@@ -33,9 +33,9 @@ def extend():
     """
     >>> fs = FieldSet(User)
     >>> fs.extend([Field('added')])
-    >>> fs._fields.keys()
+    >>> list(fs._fields.keys())
     ['id', 'email', 'password', 'name', 'orders', 'added']
-    >>> fs._render_fields.keys()
+    >>> list(fs._render_fields.keys())
     []
     >>> fs.added
     Field(added)
@@ -43,9 +43,9 @@ def extend():
     >>> fs = FieldSet(User)
     >>> fs.configure()
     >>> fs.extend([Field('added')])
-    >>> fs._fields.keys()
+    >>> list(fs._fields.keys())
     ['id', 'email', 'password', 'name', 'orders']
-    >>> fs._render_fields.keys()
+    >>> list(fs._render_fields.keys())
     ['email', 'password', 'name', 'orders', 'added']
     >>> fs.added
     Field(added)
@@ -55,9 +55,9 @@ def insert():
     """
     >>> fs = FieldSet(User)
     >>> fs.insert(fs.password, Field('login'))
-    >>> fs._fields.keys()
+    >>> list(fs._fields.keys())
     ['id', 'email', 'login', 'password', 'name', 'orders']
-    >>> fs._render_fields.keys()
+    >>> list(fs._render_fields.keys())
     []
     >>> fs.login
     Field(login)
@@ -65,9 +65,9 @@ def insert():
     >>> fs = FieldSet(User)
     >>> fs.configure()
     >>> fs.insert(fs.password, Field('login'))
-    >>> fs._fields.keys()
+    >>> list(fs._fields.keys())
     ['id', 'email', 'password', 'name', 'orders']
-    >>> fs._render_fields.keys()
+    >>> list(fs._render_fields.keys())
     ['email', 'login', 'password', 'name', 'orders']
     >>> fs.login
     Field(login)
@@ -79,7 +79,7 @@ def test_insert_after_relation():
     >>> fs.configure()
     >>> fs.insert(fs.child, Field('foo'))
     >>> fs.insert_after(fs.child, Field('bar'))
-    >>> fs._render_fields.keys()
+    >>> list(fs._render_fields.keys())
     ['foo', 'child', 'bar']
     """
 
@@ -89,7 +89,7 @@ def test_insert_after_alias():
     >>> fs.configure()
     >>> fs.insert(fs.text, Field('foo'))
     >>> fs.insert_after(fs.text, Field('bar'))
-    >>> fs._render_fields.keys()
+    >>> list(fs._render_fields.keys())
     ['foo', 'text', 'bar']
     """
 
@@ -97,9 +97,9 @@ def insert_after():
     """
     >>> fs = FieldSet(User)
     >>> fs.insert_after(fs.password, Field('login'))
-    >>> fs._fields.keys()
+    >>> list(fs._fields.keys())
     ['id', 'email', 'password', 'login', 'name', 'orders']
-    >>> fs._render_fields.keys()
+    >>> list(fs._render_fields.keys())
     []
     >>> fs.login
     Field(login)
@@ -107,9 +107,9 @@ def insert_after():
     >>> fs = FieldSet(User)
     >>> fs.configure()
     >>> fs.insert_after(fs.password, Field('login'))
-    >>> fs._fields.keys()
+    >>> list(fs._fields.keys())
     ['id', 'email', 'password', 'name', 'orders']
-    >>> fs._render_fields.keys()
+    >>> list(fs._render_fields.keys())
     ['email', 'password', 'login', 'name', 'orders']
     >>> fs.login
     Field(login)
@@ -140,9 +140,9 @@ def delete():
 
     >>> fs.configure()
     >>> del fs.name
-    >>> fs._fields.keys()
+    >>> list(fs._fields.keys())
     ['id', 'email', 'password', 'name', 'orders']
-    >>> fs._render_fields.keys()
+    >>> list(fs._render_fields.keys())
     ['email', 'password', 'orders']
 
     """
@@ -198,8 +198,8 @@ def field_set():
     {'this': 'that'}
     >>> field.set(html={'some': 'thing'})
     Field(password)
-    >>> field.html_options
-    {'this': 'that', 'some': 'thing'}
+    >>> sorted(field.html_options.items())
+    [('some', 'thing'), ('this', 'that')]
 
     >>> bob = lambda x: x
     >>> field.set(validators=[bob])

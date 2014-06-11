@@ -1,13 +1,18 @@
-import cgi
+import sys
+if sys.version_info.major == 3:
+    from py3 import fa_cgi as cgi # py3's cgi.py is buggy
+    from io import StringIO
+else:
+    import cgi
+    from StringIO import StringIO
 import shutil
 import tempfile
-from StringIO import StringIO
 from nose import with_setup
 
 from formalchemy.fields import FileFieldRenderer
 from formalchemy.ext import fsblob
 from formalchemy.tests import *
-from webtest import TestApp, selenium
+from webtest import TestApp
 from webob import multidict
 
 BOUNDARY='testdata'
@@ -31,6 +36,7 @@ Content-Type: application/x-javascript
 ''' % (BOUNDARY, BOUNDARY)
 REMOVE_DATA = '''--%s
 Content-Disposition: form-data; name="Binaries--file--remove"
+
 1
 --%s
 Content-Disposition: form-data; name="Binaries--file"; filename=""
@@ -73,7 +79,7 @@ def test_binary():
 
     At creation time only the input field is rendered
 
-        >>> print fs.render()
+        >>> print(fs.render())
         <div>
          <label class="field_opt" for="Three--bar">
           Bar
@@ -89,7 +95,7 @@ def test_binary():
     If the field has a value then we add a check box to remove it
 
         >>> record.bar = '/path/to/file'
-        >>> print fs.render()
+        >>> print(fs.render())
         <div>
          <label class="field_opt" for="Three--bar">
           Bar
@@ -115,7 +121,7 @@ def test_binary():
 
     The field value does not change
 
-        >>> print record.bar
+        >>> print(record.bar)
         /path/to/file
 
     Try to remove it by checking the checkbox
@@ -127,7 +133,7 @@ def test_binary():
 
     The field value is removed
 
-        >>> print record.bar
+        >>> print(record.bar)
         <BLANKLINE>
 
     Also check that this work with cgi.FieldStorage
@@ -138,15 +144,15 @@ def test_binary():
     We need test data
 
         >>> data = get_fields(TEST_DATA)
-        >>> print data.getone('Binaries--file')
-        FieldStorage('Binaries--file', 'test.js')
+        >>> print(data.getone('Binaries--file')) # doctest: +ELLIPSIS
+        FieldStorage('Binaries--file', 'test.js'...)
 
         >>> fs.rebind(data=data)
         >>> if fs.validate(): fs.sync()
 
     We get the file, yeah.
 
-        >>> print record.file
+        >>> print(record.file.decode("utf-8"))
         var test = null;
         <BLANKLINE>
 
@@ -158,7 +164,7 @@ def test_binary():
 
     The field value dos not change
 
-        >>> print record.file
+        >>> print(record.file.decode("utf-8"))
         var test = null;
         <BLANKLINE>
 
@@ -170,21 +176,21 @@ def test_binary():
 
     The field value is now empty
 
-        >>> print record.file
+        >>> print(record.file)
         <BLANKLINE>
 
     See what append in read only mode
 
         >>> record.file = 'e'*1000
-        >>> print fs.file.render_readonly()
+        >>> print(fs.file.render_readonly())
         1 KB
 
         >>> record.file = 'e'*1000*1024
-        >>> print fs.file.render_readonly()
+        >>> print(fs.file.render_readonly())
         1000.00 KB
 
         >>> record.file = 'e'*2*1024*1024
-        >>> print fs.file.render_readonly()
+        >>> print(fs.file.render_readonly())
         2.00 MB
 
     """
@@ -207,7 +213,7 @@ class BlobTestCase(unittest.TestCase):
         resp = self.app.get('/')
         resp.mustcontain('type="file"')
         resp = self.app.post('/', {"Three--bar":'bar'},
-                             upload_files=[('Three--foo', 'foo.txt', 'data')])
+                             upload_files=[('Three--foo', 'foo.txt', b'data')])
         resp = self.app.get('/')
         resp.mustcontain('<a href="/media/', '/foo.txt">', 'foo.txt (1 KB)')
         self.assert_(self.binary.foo.endswith('foo.txt'), repr(self.binary.foo))

@@ -3,7 +3,9 @@
 # This module is part of FormAlchemy and is released under
 # the MIT License: http://www.opensource.org/licenses/mit-license.php
 
-import helpers as h
+from six import string_types, next
+
+import formalchemy.helpers as h
 
 from formalchemy import config
 from formalchemy.forms import FieldSet
@@ -78,7 +80,7 @@ class Grid(FieldSet):
         if not session:
             i = iter(instances)
             try:
-                instance = i.next()
+                instance = next(i)
             except StopIteration:
                 pass
             else:
@@ -108,7 +110,7 @@ class Grid(FieldSet):
         _new_fields = []
         if args:
             for field in args:
-                if isinstance(field, basestring):
+                if isinstance(field, string_types):
                     if field in _fields:
                         field = _fields.get(field)
                     else:
@@ -165,7 +167,7 @@ class Grid(FieldSet):
         success = True
         for row in self:
             row_errors = {}
-            for field in self.render_fields.itervalues():
+            for field in self.render_fields.values():
                 success = field._validate() and success
                 if field.errors:
                     row_errors[field] = field.errors

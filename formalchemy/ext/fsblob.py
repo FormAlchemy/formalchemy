@@ -5,6 +5,7 @@ import cgi
 import string
 import random
 import shutil
+from six import string_types
 import formalchemy.helpers as h
 from formalchemy.fields import FileFieldRenderer as Base
 from formalchemy.fields import FieldRenderer
@@ -35,17 +36,16 @@ def image_extension(extensions=['jpeg', 'jpg', 'gif', 'png']):
 
 def normalized_basename(path):
     """
-    >>> print normalized_basename(u'c:\\Prog files\My fil\xe9.jpg')
+    >>> print(normalized_basename(u'c:\\Prog files\My fil\xe9.jpg'))
     My_fil.jpg
 
-    >>> print normalized_basename('c:\\Prog files\My fil\xc3\xa9.jpg')
+    >>> print(normalized_basename('c:\\Prog files\My fil\xc3\xa9.jpg'))
     My_fil.jpg
 
     """
-    if isinstance(path, str):
-        path = path.decode('utf-8', 'ignore').encode('ascii', 'ignore')
-    if isinstance(path, unicode):
+    if isinstance(path, string_types):
         path = path.encode('ascii', 'ignore')
+    path = path.decode('ascii')
     filename = path.split('/')[-1]
     filename = filename.split('\\')[-1]
     return filename.replace(' ', '_')

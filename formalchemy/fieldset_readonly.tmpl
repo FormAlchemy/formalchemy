@@ -1,5 +1,5 @@
 <tbody>
-{{for field in fieldset.render_fields.itervalues()}}
+{{for field in fieldset.render_fields.values()}}
 {{if field.requires_label}}
   <tr>
     <td class="field_readonly">{{field.label()}}:</td>

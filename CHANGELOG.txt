@@ -1,9 +1,28 @@
+1.4.4-dev
+---------
+
+* SQLAlchemy 0.9+ support
+
+* dropped sqlalchemy 0.4 compatibility
+
+* Enable passing 'attrs' to field options
+
+* Interoperability with Werkzeug
+
+* Grid interface: iterate columns directly
+
+* XSS protection: always HTML-escape field contents
+
+* added an iterator to Grid
+
 1.4.3
---------
+-----
 
 * Allow fields to set their `readonly` status to False as well as True.
 
 * SQLAlchemy 0.8+ support
+
+* Broke the test system and added questionable fixes (IMHO -- smurfix)
 
 1.4.2
 -----
