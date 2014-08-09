@@ -46,5 +46,5 @@ def Column(*args, **kwargs):
 
 
 __all__ = ["FieldSet", "Field", "FieldRenderer", "Grid", "ValidationError", "validators", "SimpleMultiDict", "types"]
-__version__ = "1.5.3"
+__version__ = "1.5.4"
 
