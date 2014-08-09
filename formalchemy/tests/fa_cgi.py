@@ -4,6 +4,9 @@
 # formalchemy with Python3 because the original cgi.py is buggy.
 # See Python bugs 20504 and 21705.
 
+# make it not die when glanced at by py2
+from __future__ import print_function
+
 """Support module for CGI (Common Gateway Interface) scripts.
 
 This module defines a number of utilities for use by CGI scripts
@@ -26,18 +29,23 @@ __version__ = "2.6"
 # Imports
 # =======
 
-from io import StringIO, BytesIO, TextIOWrapper
-from collections import Mapping
-import sys
-import os
-import urllib.parse
-from email.parser import FeedParser
-from email.message import Message
-from warnings import warn
-import html
-import locale
-import tempfile
-import cgi as real
+try:
+    from io import StringIO, BytesIO, TextIOWrapper
+    from collections import Mapping
+    import sys
+    import os
+    import urllib.parse
+    from email.parser import FeedParser
+    from email.message import Message
+    from warnings import warn
+    import html
+    import locale
+    import tempfile
+    import cgi as real
+except ImportError:
+    from unittest.case import SkipTest
+    raise SkipTest("this file is not used with python2")
+
 
 __all__ = ["MiniFieldStorage", "FieldStorage",
            "parse", "parse_qs", "parse_qsl", "parse_multipart",

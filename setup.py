@@ -42,7 +42,7 @@ def read(filename):
     text = open(filename,'r').read()
     return xml.sax.saxutils.escape(text)
 
-long_description = '.. contents::\n\n' +\
+long_description = '.. contents:: :depth:1\n\n' +\
                    'Description\n' +\
                    '===========\n\n' +\
                    read('README.txt') +\
@@ -59,7 +59,7 @@ setup(name='FormAlchemy',
       author='Alexandre Conrad, Jonathan Ellis, Gaël Pasgrimaud, Matthias Urlichs',
       author_email='formalchemy@googlegroups.com',
       url='http://docs.formalchemy.org/',
-      install_requires=['SQLAlchemy', 'Tempita', 'WebHelpers2', 'WebOb', 'MarkupSafe'],
+      install_requires=['SQLAlchemy', 'Tempita', 'WebHelpers2', 'WebOb', 'MarkupSafe', 'six'],
       packages=find_packages(exclude=('formalchemy.tests',)),
       package_data={'formalchemy': ['*.tmpl', 'i18n_resources/*/LC_MESSAGES/formalchemy.mo',
                                     'ext/pylons/*.mako', 'ext/pylons/resources/*.css', 'ext/pylons/resources/*.png',
