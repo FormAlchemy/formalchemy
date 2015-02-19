@@ -173,7 +173,7 @@ def select(name, selected, select_options, **attrs):
     """
     if 'options' in attrs:
         del attrs['options']
-    select_options = _sanitize_select_options(select_options)
+    select_options = (tags.Option(*reversed(o)) for o in _sanitize_select_options(select_options))
     _update_fa(attrs, name)
     if six.PY3 and isinstance(selected,map): # this test fails with py2
         selected = tuple(selected)
