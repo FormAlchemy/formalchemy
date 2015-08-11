@@ -287,9 +287,9 @@ class FieldSet(DefaultRenderers):
                 ignore_keys = set()
                 for p in class_mapper(cls).iterate_properties:
                     if isinstance(p, SynonymProperty):
-                        #ignore_keys.add(p.name)
+                        ignore_keys.add(p.name)
                         # Can't ignore the original, this hides synonymized relationships when the ID it points to is not also synonymed
-                        ignore_keys.add(p.key)
+                        # ignore_keys.add(p.key)
                     elif hasattr(p, '_is_polymorphic_discriminator') and p._is_polymorphic_discriminator:
                         ignore_keys.add(p.key)
                     elif isinstance(p, CompositeProperty):
@@ -300,7 +300,9 @@ class FieldSet(DefaultRenderers):
                 attrs = []
                 for p in class_mapper(cls).iterate_properties:
                     attr = _get_attribute(cls, p)
-                    if attr.property.key not in ignore_keys and p.key not in ignore_keys and not isinstance(attr.impl, DynamicAttributeImpl):
+                    if ((isinstance(p, SynonymProperty) or (attr.property.key not in ignore_keys
+                        and p.key not in ignore_keys))
+                        and not isinstance(attr.impl, DynamicAttributeImpl)):
                         attrs.append(attr)
                 # sort relations last before storing in the OrderedDict
                 L = [fields.AttributeField(attr, self) for attr in attrs]
