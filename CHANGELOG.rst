@@ -1,7 +1,7 @@
 Changes
 =======
 
-1.5.6 (unreleased)
+1.5.6 (2020-11-12)
 ------------------
 
 * Release with completed changelog and updated links.
