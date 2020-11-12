@@ -30,12 +30,8 @@ def compile_po(path):
                     mo.write(mo_content)
                     mo.close()
 
-try:
-    compile_po(join(os.getcwd(), 'formalchemy', 'i18n_resources'))
-except Exception:
-    print('Error while building .mo files')
-else:
-    print('.mo files compilation success\n')
+# We compile .mo files during setup. Don't think, it is a good idea. [sallner]
+compile_po(join(os.getcwd(), 'formalchemy', 'i18n_resources'))
 
 def read(filename):
     text = open(filename,'r').read()
