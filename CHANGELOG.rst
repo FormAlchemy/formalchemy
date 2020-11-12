@@ -1,3 +1,21 @@
+Changes
+=======
+
+1.5.6 (unreleased)
+------------------
+
+* Release with completed changelog and updated links.
+
+1.5.5
+-----
+
+* Fix a wrong import of ``six`` in ``setup.py``.
+
+1.5.4
+-----
+
+* No changes were recorded.
+
 1.5.3
 -----
 
@@ -25,7 +43,7 @@
   * skip HTML5 tests until Selenium works with Py3
 
 1.4.5-dev
-------------------
+---------
 
 * Add FieldSet.reconfigure (like configure, but doesn't toss your previous changes)
 

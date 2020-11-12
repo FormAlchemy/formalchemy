@@ -35,20 +35,18 @@ try:
 except Exception:
     print('Error while building .mo files')
 else:
-    print('.mo files compilation success')
+    print('.mo files compilation success\n')
 
 def read(filename):
     text = open(filename,'r').read()
     return xml.sax.saxutils.escape(text)
 
-long_description = '.. contents:: :depth:1\n\n' +\
+long_description = '.. contents:: :depth: 1\n\n' +\
                    'Description\n' +\
                    '===========\n\n' +\
                    read('README.txt') +\
                    '\n\n' +\
-                   'Changes\n' +\
-                   '=======\n\n' +\
-                   read('CHANGELOG.txt')
+                   read('CHANGELOG.rst')
 
 setup(name='FormAlchemy',
       license='MIT License',
@@ -57,7 +55,7 @@ setup(name='FormAlchemy',
       long_description=long_description,
       author='Alexandre Conrad, Jonathan Ellis, Gaël Pasgrimaud, Matthias Urlichs',
       author_email='formalchemy@googlegroups.com',
-      url='http://docs.formalchemy.org/',
+      url='https://github.com/FormAlchemy/formalchemy',
       install_requires=['SQLAlchemy', 'Tempita', 'WebHelpers2', 'WebOb', 'MarkupSafe', 'six'],
       packages=find_packages(exclude=('formalchemy.tests',)),
       package_data={'formalchemy': ['*.tmpl', 'i18n_resources/*/LC_MESSAGES/formalchemy.mo',

@@ -6,6 +6,7 @@ exclude docs/*.py
 exclude docs/Makefile
 include *.sh
 include *.txt
+include *.rst
 include docs/*.txt
 prune pylonsapp
 recursive-include docs *.pdf
